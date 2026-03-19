@@ -1,0 +1,850 @@
+// =============================================================================
+// PsyScale — Prisma Schema
+// PostgreSQL — HDS conforme
+// Champs sensibles marqués // ENCRYPTED — chiffrés AES-256-GCM via EncryptionService
+// =============================================================================
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum UserRole {
+  psychologist
+  patient
+  admin
+}
+
+enum SubscriptionPlan {
+  free
+  starter
+  pro
+  clinic
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  canceled
+}
+
+enum SessionType {
+  individual
+  group
+  online
+}
+
+enum SessionPaymentStatus {
+  pending
+  paid
+  free
+}
+
+enum PatientStatus {
+  active
+  inactive
+  archived
+}
+
+enum AppointmentStatus {
+  scheduled
+  confirmed
+  cancelled
+  completed
+  no_show
+}
+
+enum ExerciseStatus {
+  assigned
+  in_progress
+  completed
+  skipped
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  expired
+}
+
+enum PaymentType {
+  session
+  course
+  subscription
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+}
+
+enum ReferralInviteStatus {
+  pending
+  used
+  rewarded
+
+  @@map("referral_invite_status")
+}
+
+enum TherapyOrientation {
+  TCC
+  PSYCHODYNAMIQUE
+  SYSTEMIQUE
+  ACT
+  AUTRE
+}
+
+// =============================================================================
+// Core Tables
+// =============================================================================
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String?   @map("password_hash") // patients only — null for psychologists (Keycloak)
+  role         UserRole  @default(patient)
+  avatarUrl    String?   @map("avatar_url")
+  locale       String    @default("fr")
+  timezone     String    @default("Europe/Paris")
+  lastSignInAt DateTime? @map("last_sign_in_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  psychologist     Psychologist?
+  patient          Patient?        @relation("UserPatient")
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  courseEnrollments CourseEnrollment[]
+  sentMessages     Message[]       @relation("MessageSender")
+
+  @@map("users")
+}
+
+model Psychologist {
+  id             String  @id @default(uuid())
+  userId         String  @unique @map("user_id")
+  name           String
+  slug           String  @unique
+  specialization String?
+  bio            String?
+  phone          String?
+  address        String?
+  adeliNumber    String? @map("adeli_number")
+  isOnboarded    Boolean @default(false) @map("is_onboarded")
+  defaultSessionDuration Int @default(50) @map("default_session_duration")
+  defaultSessionRate     Decimal? @map("default_session_rate") @db.Decimal(10, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription      Subscription?
+  patients          Patient[]
+  sessions          Session[]
+  appointments      Appointment[]
+  courses           Course[]
+  payments          Payment[]
+  invoices          Invoice[]
+  onboardingProgress OnboardingProgress?
+  patientInvitations PatientInvitation[]
+  aiUsages          AiUsage[]
+  conversations     Conversation[]
+  marketingContents MarketingContent[]
+  assessments       Assessment[]
+  noteTemplates     NoteTemplate[]
+  networkProfile    PsyNetworkProfile?
+  referralsSent     Referral[]           @relation("ReferralFrom")
+  referralsReceived Referral[]           @relation("ReferralTo")
+  networkGroups     NetworkGroup[]       @relation("NetworkGroupOwner")
+  groupMemberships  NetworkGroupMember[] @relation("NetworkGroupMembership")
+  supervisionGroups SupervisionGroup[]   @relation("SupervisionGroupOwner")
+  supervisionMemberships SupervisionMember[] @relation("SupervisionMembership")
+  caseStudies       CaseStudy[]          @relation("CaseStudyPresenter")
+  availability      Availability[]
+  referralInvitesSent     ReferralInvite[] @relation("InviteFrom")
+  referralInviteReceived  ReferralInvite?  @relation("InviteTo")
+
+  @@map("psychologists")
+}
+
+model Availability {
+  id             String  @id @default(uuid())
+  psychologistId String  @map("psychologist_id")
+  dayOfWeek      Int     // 0=Lundi, 1=Mardi, ..., 6=Dimanche
+  startTime      String  // "09:00"
+  endTime        String  // "17:00"
+  isActive       Boolean @default(true) @map("is_active")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@map("availability")
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  psychologistId       String             @unique @map("psychologist_id")
+  stripeCustomerId     String?            @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
+  plan                 SubscriptionPlan   @default(free)
+  status               SubscriptionStatus @default(trialing)
+  trialEndsAt          DateTime?          @map("trial_ends_at")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
+  cancelAtPeriodEnd    Boolean            @default(false) @map("cancel_at_period_end")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@index([stripeSubscriptionId], name: "idx_subscriptions_stripe")
+  @@map("subscriptions")
+}
+
+// =============================================================================
+// Patient Tables
+// =============================================================================
+
+model Patient {
+  id              String        @id @default(uuid())
+  psychologistId  String        @map("psychologist_id")
+  userId          String?       @unique @map("user_id")
+  name            String
+  email           String?
+  phone           String?
+  birthDate       DateTime?     @map("birth_date") @db.Date
+  notes           String?       // ENCRYPTED — AES-256-GCM
+  status          PatientStatus @default(active)
+  source          String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  psychologist     Psychologist        @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  user             User?               @relation("UserPatient", fields: [userId], references: [id])
+  sessions         Session[]
+  appointments     Appointment[]
+  moodTrackings    MoodTracking[]
+  exercises        Exercise[]
+  journalEntries   JournalEntry[]
+  conversations    Conversation[]
+  gdprConsents     GdprConsent[]
+  invitations      PatientInvitation[]
+  payments         Payment[]
+  invoices         Invoice[]
+  assessments      Assessment[]
+
+  @@index([psychologistId], name: "idx_patients_psychologist")
+  @@map("patients")
+}
+
+model Session {
+  id              String               @id @default(uuid())
+  patientId       String               @map("patient_id")
+  psychologistId  String               @map("psychologist_id")
+  date            DateTime
+  duration        Int                  // minutes
+  type            SessionType          @default(individual)
+  notes           String?              // ENCRYPTED — AES-256-GCM
+  summaryAi       String?              @map("summary_ai") // ENCRYPTED si contient données patients
+  tags            String[]
+  rate            Decimal?             @db.Decimal(10, 2)
+  paymentStatus   SessionPaymentStatus @default(pending) @map("payment_status")
+  orientation     TherapyOrientation?
+  templateId      String?              @map("template_id")
+  createdAt       DateTime             @default(now()) @map("created_at")
+
+  // Relations
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist Psychologist  @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  appointment  Appointment?
+
+  @@index([patientId], name: "idx_sessions_patient")
+  @@index([psychologistId, date(sort: Desc)], name: "idx_sessions_psy_date")
+  @@map("sessions")
+}
+
+model NoteTemplate {
+  id             String             @id @default(uuid())
+  psychologistId String?            @map("psychologist_id") // null = template système
+  orientation    TherapyOrientation
+  name           String
+  description    String?
+  sections       Json               // Array<{ id: string; title: string; placeholder: string; required: boolean }>
+  isSystem       Boolean            @default(false) @map("is_system")
+  isActive       Boolean            @default(true) @map("is_active")
+  createdAt      DateTime           @default(now()) @map("created_at")
+
+  psychologist   Psychologist?      @relation(fields: [psychologistId], references: [id], onDelete: SetNull)
+
+  @@map("note_templates")
+}
+
+// =============================================================================
+// Network / Réseau Pro
+// =============================================================================
+
+enum ReferralStatus {
+  pending
+  accepted
+  declined
+  completed
+}
+
+enum GroupType {
+  supervision
+  intervision
+  formation
+  autre
+}
+
+model PsyNetworkProfile {
+  id               String   @id @default(uuid())
+  psychologistId   String   @unique @map("psychologist_id")
+  isVisible        Boolean  @default(true) @map("is_visible")  // visible dans l'annuaire
+  city             String?
+  department       String?  // ex: "54", "75"
+  approaches       String[] // ex: ["TCC", "ACT", "PSYCHODYNAMIQUE"]
+  specialties      String[] // ex: ["anxiété", "dépression", "trauma"]
+  languages        String[] @default(["fr"])
+  acceptsReferrals Boolean  @default(true) @map("accepts_referrals")
+  acceptsMonPsy    Boolean  @default(false) @map("accepts_mon_psy")  // Dispositif MonPsy SS
+  offersVisio      Boolean  @default(false) @map("offers_visio")     // Séances en visioconférence
+  bio              String?  // bio réseau (différente de la bio cabinet)
+  avatarUrl        String?  @map("avatar_url")
+  websiteUrl       String?  @map("website_url")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@map("psy_network_profiles")
+}
+
+model Referral {
+  id              String         @id @default(uuid())
+  fromPsyId       String         @map("from_psy_id")
+  toPsyId         String         @map("to_psy_id")
+  patientInitials String?        @map("patient_initials")  // jamais nom complet
+  message         String?        // ENCRYPTED AES-256-GCM
+  reason          String?        // motif d'adressage
+  status          ReferralStatus @default(pending)
+  respondedAt     DateTime?      @map("responded_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  fromPsy Psychologist @relation("ReferralFrom", fields: [fromPsyId], references: [id], onDelete: Cascade)
+  toPsy   Psychologist @relation("ReferralTo", fields: [toPsyId], references: [id], onDelete: Cascade)
+
+  @@index([fromPsyId, createdAt(sort: Desc)])
+  @@index([toPsyId, status])
+  @@map("referrals")
+}
+
+model NetworkGroup {
+  id          String    @id @default(uuid())
+  ownerId     String    @map("owner_id")
+  type        GroupType
+  name        String
+  description String?
+  city        String?
+  isPrivate   Boolean   @default(false) @map("is_private")
+  maxMembers  Int       @default(20) @map("max_members")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  owner   Psychologist      @relation("NetworkGroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members NetworkGroupMember[]
+
+  @@map("network_groups")
+}
+
+model NetworkGroupMember {
+  id        String   @id @default(uuid())
+  groupId   String   @map("group_id")
+  psyId     String   @map("psy_id")
+  role      String   @default("member") // "owner" | "member"
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  group NetworkGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  psy   Psychologist @relation("NetworkGroupMembership", fields: [psyId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, psyId])
+  @@map("network_group_members")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  psychologistId  String            @map("psychologist_id")
+  patientId       String            @map("patient_id")
+  sessionId       String?           @unique @map("session_id")
+  scheduledAt     DateTime          @map("scheduled_at")
+  duration        Int               // minutes
+  status          AppointmentStatus @default(scheduled)
+  reminderSentAt  DateTime?         @map("reminder_sent_at")
+  reason          String?           // motif de consultation
+  source          String            @default("internal") // "internal" | "public"
+  cancelToken     String?           @unique @map("cancel_token")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  session      Session?     @relation(fields: [sessionId], references: [id])
+
+  @@index([psychologistId, scheduledAt], name: "idx_appointments_psy_date")
+  @@map("appointments")
+}
+
+// =============================================================================
+// Patient Portal Tables
+// =============================================================================
+
+model MoodTracking {
+  id        String   @id @default(uuid())
+  patientId String   @map("patient_id")
+  mood      Int      // 1-10
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, createdAt(sort: Desc)], name: "idx_mood_patient_date")
+  @@map("mood_tracking")
+}
+
+model Exercise {
+  id              String         @id @default(uuid())
+  patientId       String         @map("patient_id")
+  title           String
+  description     String
+  status          ExerciseStatus @default(assigned)
+  createdByAi     Boolean        @default(false) @map("created_by_ai")
+  dueDate         DateTime?      @map("due_date") @db.Date
+  completedAt     DateTime?      @map("completed_at")
+  patientFeedback String?        @map("patient_feedback")
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("exercises")
+}
+
+model JournalEntry {
+  id        String   @id @default(uuid())
+  patientId String   @map("patient_id")
+  content   String   // ENCRYPTED — AES-256-GCM
+  mood      Int?
+  tags      String[]
+  isPrivate Boolean  @default(false) @map("is_private")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("journal_entries")
+}
+
+// =============================================================================
+// Messaging Tables
+// =============================================================================
+
+model Conversation {
+  id             String   @id @default(uuid())
+  psychologistId String   @map("psychologist_id")
+  patientId      String   @map("patient_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  messages     Message[]
+
+  @@unique([psychologistId, patientId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String    @map("conversation_id")
+  senderId       String    @map("sender_id")
+  content        String    // ENCRYPTED — AES-256-GCM
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@map("messages")
+}
+
+// =============================================================================
+// Formations Tables
+// =============================================================================
+
+model Course {
+  id             String   @id @default(uuid())
+  psychologistId String   @map("psychologist_id")
+  title          String
+  description    String
+  price          Decimal  @db.Decimal(10, 2)
+  isPublished    Boolean  @default(false) @map("is_published")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  psychologist Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  modules      CourseModule[]
+  enrollments  CourseEnrollment[]
+
+  @@map("courses")
+}
+
+model CourseModule {
+  id       String  @id @default(uuid())
+  courseId String  @map("course_id")
+  title    String
+  videoUrl String? @map("video_url")
+  content  String?
+  order    Int     @default(0)
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("course_modules")
+}
+
+model CourseEnrollment {
+  id         String   @id @default(uuid())
+  courseId   String   @map("course_id")
+  userId     String   @map("user_id")
+  paymentId  String?  @map("payment_id")
+  progress   Json     @default("{}")
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([courseId, userId])
+  @@map("course_enrollments")
+}
+
+// =============================================================================
+// Billing Tables
+// =============================================================================
+
+model Payment {
+  id                    String        @id @default(uuid())
+  psychologistId        String        @map("psychologist_id")
+  patientId             String?       @map("patient_id")
+  type                  PaymentType
+  amount                Decimal       @db.Decimal(10, 2)
+  status                PaymentStatus @default(pending)
+  stripePaymentIntentId String?       @map("stripe_payment_intent_id")
+  invoiceUrl            String?       @map("invoice_url")
+  createdAt             DateTime      @default(now()) @map("created_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient?     @relation(fields: [patientId], references: [id])
+
+  @@map("payments")
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  psychologistId String        @map("psychologist_id")
+  patientId      String?       @map("patient_id")
+  invoiceNumber  String        @unique @map("invoice_number")
+  amountTtc      Decimal       @map("amount_ttc") @db.Decimal(10, 2)
+  status         InvoiceStatus @default(draft)
+  issuedAt       DateTime      @map("issued_at") @db.Date
+  pdfUrl         String?       @map("pdf_url")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient?     @relation(fields: [patientId], references: [id])
+
+  @@map("invoices")
+}
+
+model StripeEvent {
+  id            String   @id @default(uuid())
+  stripeEventId String   @unique @map("stripe_event_id")
+  type          String
+  processedAt   DateTime @default(now()) @map("processed_at")
+
+  @@map("stripe_events")
+}
+
+// =============================================================================
+// Compliance HDS Tables
+// =============================================================================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String   @map("actor_id")
+  actorType  String   @map("actor_type")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  ipAddress  String?  @map("ip_address")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId, createdAt(sort: Desc)], name: "idx_audit_entity")
+  @@map("audit_logs")
+}
+
+model GdprConsent {
+  id          String    @id @default(uuid())
+  patientId   String    @map("patient_id")
+  type        String
+  version     String
+  consentedAt DateTime  @default(now()) @map("consented_at")
+  withdrawnAt DateTime? @map("withdrawn_at")
+  ipAddress   String?   @map("ip_address")
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("gdpr_consents")
+}
+
+// ============ Outcome Tracking ============
+
+enum AssessmentType {
+  PHQ9
+  GAD7
+  CORE_OM
+}
+
+enum AssessmentStatus {
+  pending
+  completed
+}
+
+model AssessmentTemplate {
+  id            String         @id @default(uuid())
+  type          AssessmentType
+  name          String
+  description   String?
+  questions     Json           // Array<{ id: string; text: string; minValue: number; maxValue: number; labels: string[] }>
+  scoringRanges Json           // Array<{ min: number; max: number; label: string; severity: string }>
+  maxScore      Int            @map("max_score")
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  assessments Assessment[]
+
+  @@map("assessment_templates")
+}
+
+model Assessment {
+  id             String           @id @default(uuid())
+  templateId     String           @map("template_id")
+  patientId      String           @map("patient_id")
+  psychologistId String           @map("psychologist_id")
+  answers        String?          // ENCRYPTED — AES-256-GCM (JSON stringifié avant chiffrement)
+  score          Int?
+  severity       String?
+  status         AssessmentStatus @default(pending)
+  completedAt    DateTime?        @map("completed_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  template     AssessmentTemplate @relation(fields: [templateId], references: [id])
+  patient      Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist Psychologist       @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, createdAt(sort: Desc)], name: "idx_assessments_patient_date")
+  @@index([psychologistId], name: "idx_assessments_psy")
+  @@map("assessments")
+}
+
+// =============================================================================
+// System Tables
+// =============================================================================
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  type      String
+  title     String
+  body      String
+  data      Json?
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model OnboardingProgress {
+  id             String    @id @default(uuid())
+  psychologistId String    @unique @map("psychologist_id")
+  stepsCompleted String[]  @map("steps_completed")
+  completedAt    DateTime? @map("completed_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@map("onboarding_progress")
+}
+
+model PatientInvitation {
+  id             String           @id @default(uuid())
+  psychologistId String           @map("psychologist_id")
+  patientId      String           @map("patient_id")
+  email          String
+  token          String           @unique
+  status         InvitationStatus @default(pending)
+  expiresAt      DateTime         @map("expires_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("patient_invitations")
+}
+
+model AiUsage {
+  id             String   @id @default(uuid())
+  psychologistId String   @map("psychologist_id")
+  feature        String
+  tokensUsed     Int      @map("tokens_used")
+  model          String
+  costUsd        Decimal  @map("cost_usd") @db.Decimal(10, 6)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@map("ai_usage")
+}
+
+model MarketingContent {
+  id             String   @id @default(uuid())
+  psychologistId String   @map("psychologist_id")
+  type           String   // linkedin | newsletter | blog
+  theme          String
+  tone           String   // professional | warm | educational
+  content        String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+
+  @@map("marketing_contents")
+}
+
+model Lead {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  source    String   @default("landing_beta")
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("leads")
+}
+
+// ─── Supervision / Intervision ──────────────────────────────────────────────
+
+enum SupervisionGroupType {
+  supervision
+  intervision
+
+  @@map("supervision_group_type")
+}
+
+enum SupervisionSessionStatus {
+  planned
+  completed
+  cancelled
+
+  @@map("supervision_session_status")
+}
+
+model SupervisionGroup {
+  id          String                @id @default(uuid())
+  ownerId     String                @map("owner_id")
+  type        SupervisionGroupType
+  name        String
+  description String?
+  isPrivate   Boolean               @default(false) @map("is_private")
+  maxMembers  Int                   @default(12) @map("max_members")
+  createdAt   DateTime              @default(now()) @map("created_at")
+  updatedAt   DateTime              @updatedAt @map("updated_at")
+
+  owner    Psychologist             @relation("SupervisionGroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members  SupervisionMember[]
+  sessions SupervisionSession[]
+
+  @@map("supervision_groups")
+}
+
+model SupervisionMember {
+  id        String   @id @default(uuid())
+  groupId   String   @map("group_id")
+  psyId     String   @map("psy_id")
+  role      String   @default("member") // "owner" | "member"
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  group SupervisionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  psy   Psychologist     @relation("SupervisionMembership", fields: [psyId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, psyId])
+  @@map("supervision_members")
+}
+
+model SupervisionSession {
+  id          String                   @id @default(uuid())
+  groupId     String                   @map("group_id")
+  scheduledAt DateTime                 @map("scheduled_at")
+  duration    Int                      @default(90) // minutes
+  location    String?                  // visio URL ou adresse
+  status      SupervisionSessionStatus @default(planned)
+  notes       String?                  @db.Text // ENCRYPTED AES-256-GCM
+  createdAt   DateTime                 @default(now()) @map("created_at")
+
+  group      SupervisionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  caseStudies CaseStudy[]
+
+  @@index([groupId, scheduledAt(sort: Desc)])
+  @@map("supervision_sessions")
+}
+
+model CaseStudy {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  presenterId String   @map("presenter_id")
+  // Données anonymisées uniquement — jamais nom/identifiant patient
+  initials    String?  // ex: "P.M." — optionnel
+  ageRange    String?  @map("age_range") // ex: "30-40 ans"
+  problematic String   @db.Text
+  content     String   @db.Text // ENCRYPTED AES-256-GCM
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  session   SupervisionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  presenter Psychologist       @relation("CaseStudyPresenter", fields: [presenterId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("case_studies")
+}
+
+// =============================================================================
+// Referral / Parrainage
+// =============================================================================
+
+model ReferralInvite {
+  id            String              @id @default(uuid())
+  code          String              @unique
+  referrerId    String              @map("referrer_id")
+  referredId    String?             @unique @map("referred_id")
+  status        ReferralInviteStatus @default(pending)
+  rewardGivenAt DateTime?           @map("reward_given_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  referrer Psychologist  @relation("InviteFrom", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred Psychologist? @relation("InviteTo", fields: [referredId], references: [id])
+
+  @@index([referrerId])
+  @@index([code])
+  @@map("referral_invites")
+}

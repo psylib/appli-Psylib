@@ -1,0 +1,173 @@
+{
+  "realm": "psyscale",
+  "displayName": "PsyLib",
+  "displayNameHtml": "<strong>PsyLib</strong>",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "accessTokenLifespan": 900,
+  "refreshTokenMaxReuse": 0,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 28800,
+  "defaultSignatureAlgorithm": "RS256",
+  "revokeRefreshToken": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "psychologist",
+        "description": "Psychologue libéral — accès dashboard complet",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
+        "name": "patient",
+        "description": "Patient — accès espace patient uniquement",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
+        "name": "admin",
+        "description": "Administrateur PsyScale — accès backoffice complet",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "psyscale-app",
+      "name": "PsyScale App",
+      "description": "Client OIDC principal pour l'application Next.js",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "change-me-in-production",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "https://app.psylib.eu/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "https://app.psylib.eu"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
+      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
+      "attributes": {
+        "access.token.lifespan": "900",
+        "client.session.idle.timeout": "28800",
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://app.psylib.eu/*"
+      }
+    },
+    {
+      "clientId": "psyscale-admin",
+      "name": "PsyScale Admin Service",
+      "description": "Client service account pour les opérations admin NestJS",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "change-me-admin-in-production",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 10,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicyReportOnly": "",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  },
+  "smtpServer": {
+    "host": "mailhog",
+    "port": "1025",
+    "from": "noreply@psylib.eu",
+    "fromDisplayName": "PsyLib",
+    "ssl": "false",
+    "starttls": "false",
+    "auth": "false"
+  },
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "enabledEventTypes": [
+    "LOGIN",
+    "LOGIN_ERROR",
+    "LOGOUT",
+    "LOGOUT_ERROR",
+    "CODE_TO_TOKEN",
+    "CODE_TO_TOKEN_ERROR",
+    "REFRESH_TOKEN",
+    "REFRESH_TOKEN_ERROR",
+    "UPDATE_PASSWORD",
+    "UPDATE_PASSWORD_ERROR",
+    "UPDATE_TOTP",
+    "REGISTER",
+    "REGISTER_ERROR",
+    "IDENTITY_PROVIDER_LOGIN",
+    "SEND_RESET_PASSWORD",
+    "RESET_PASSWORD",
+    "RESET_PASSWORD_ERROR"
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": ["fr", "en"],
+  "defaultLocale": "fr",
+  "passwordPolicy": "length(12) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and notUsername(undefined) and notEmail(undefined)"
+}

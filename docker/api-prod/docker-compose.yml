@@ -1,0 +1,67 @@
+version: '3.8'
+
+# PsyScale API — Production OVH HDS
+# Services : NestJS API + PostgreSQL 16 + Redis 7
+# Déploiement : OVH VPS HDS via SSH + GitHub Container Registry
+
+services:
+  api:
+    image: ghcr.io/${GITHUB_REPO}/psyscale-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - psyscale
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-psyscale}
+      POSTGRES_USER: ${POSTGRES_USER:-psyscale}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-psyscale} -d ${POSTGRES_DB:-psyscale}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - psyscale
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --save 60 1
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - psyscale
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  psyscale:
+    driver: bridge

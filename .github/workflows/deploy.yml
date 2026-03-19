@@ -1,0 +1,181 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deploy sans détection de changements'
+        type: boolean
+        default: false
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/psyscale-api
+
+jobs:
+  # ─── Détection des changements ──────────────────────────────────────────────
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.changes.outputs.api }}
+      web: ${{ steps.changes.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - 'packages/**'
+              - 'docker/api-prod/**'
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+
+  # ─── Build & push image Docker → GitHub Container Registry ──────────────────
+  build-api:
+    name: Build API image
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.api == 'true' || github.event.inputs.force_deploy == 'true'
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Deploy API → OVH VPS via SSH ───────────────────────────────────────────
+  deploy-api:
+    name: Deploy API → OVH VPS
+    runs-on: ubuntu-latest
+    needs: [changes, build-api]
+    if: needs.changes.outputs.api == 'true' || github.event.inputs.force_deploy == 'true'
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.OVH_API_VPS_SSH_KEY }}
+
+      - name: Deploy via SSH
+        env:
+          VPS_HOST: ${{ secrets.OVH_API_VPS_HOST }}
+          VPS_USER: ${{ secrets.OVH_API_VPS_USER }}
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository_owner }}/psyscale
+          IMAGE_TAG: ${{ needs.build-api.outputs.image_tag }}
+          DEPLOY_DIR: /opt/psyscale-api
+        run: |
+          IMAGE="${{ env.GHCR_REGISTRY }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}"
+
+          ssh -o StrictHostKeyChecking=no "${VPS_USER}@${VPS_HOST}" bash <<ENDSSH
+          set -euo pipefail
+
+          echo "🔑 Login GHCR..."
+          echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin
+
+          echo "⬇️  Pull image ${IMAGE}..."
+          docker pull "${IMAGE}"
+          docker tag "${IMAGE}" "ghcr.io/${{ env.IMAGE_NAME }}:latest"
+
+          echo "🗄️  Migrations Prisma..."
+          cd ${DEPLOY_DIR}
+          IMAGE_TAG="${IMAGE_TAG}" docker compose run --rm --no-deps api \
+            sh -c "npx prisma migrate deploy"
+
+          echo "🔄 Restart API..."
+          IMAGE_TAG="${IMAGE_TAG}" docker compose up -d --no-deps --pull never api
+
+          echo "⏳ Health check..."
+          for i in \$(seq 1 30); do
+            if curl -sf http://localhost:4000/health > /dev/null 2>&1; then
+              echo "✅ API up !"
+              break
+            fi
+            [ \$i -eq 30 ] && { echo "❌ API timeout"; docker compose logs --tail=50 api; exit 1; }
+            sleep 2
+          done
+
+          docker image prune -f --filter "until=24h"
+          docker logout ghcr.io
+          ENDSSH
+
+  # ─── Deploy Web → Vercel (inchangé) ─────────────────────────────────────────
+  deploy-web:
+    name: Deploy Web → Vercel
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.web == 'true' || github.event.inputs.force_deploy == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          vercel-args: '--prod'
+
+  # ─── Notification ────────────────────────────────────────────────────────────
+  notify:
+    name: Deployment status
+    runs-on: ubuntu-latest
+    needs: [deploy-api, deploy-web]
+    if: always()
+    steps:
+      - name: Status
+        run: |
+          API="${{ needs.deploy-api.result }}"
+          WEB="${{ needs.deploy-web.result }}"
+          echo "API deploy: $API"
+          echo "Web deploy: $WEB"
+          if [[ "$API" == "failure" || "$WEB" == "failure" ]]; then
+            echo "❌ Deploy failed"
+            exit 1
+          fi
+          echo "✅ Deploy OK — commit ${{ github.sha }}"

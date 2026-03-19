@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* PsyLib Design Tokens */
+    --color-primary: #3D52A0;
+    --color-primary-light: #7B9CDA;
+    --color-accent: #0D9488;
+    --color-warm: #7C3AED;
+    --color-bg: #F8F7FF;
+    --color-surface: #F1F0F9;
+    --color-text: #1E1B4B;
+
+    /* shadcn/ui compatibility */
+    --background: 246 100% 99%;
+    --foreground: 244 48% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 244 48% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 244 48% 20%;
+    --primary: 228 43% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 248 50% 95%;
+    --secondary-foreground: 244 48% 20%;
+    --muted: 248 50% 95%;
+    --muted-foreground: 228 20% 50%;
+    --accent: 175 83% 32%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 248 30% 88%;
+    --input: 248 30% 88%;
+    --ring: 228 43% 43%;
+    --radius: 0.5rem;
+
+    /* Mood tokens */
+    --mood-5: #10B981;
+    --mood-4: #84CC16;
+    --mood-3: #F59E0B;
+    --mood-2: #F97316;
+    --mood-1: #EF4444;
+  }
+
+  /* Focus visible — WCAG 2.4.7 — ne JAMAIS supprimer */
+  *:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  /* Body base */
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Éléments interactifs — minimum 44px (WCAG 2.5.5) */
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Scrollbar custom */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #c4c4e0 transparent;
+  }
+}
+
+@layer utilities {
+  /* Truncation multi-lignes */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Safe area pour mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

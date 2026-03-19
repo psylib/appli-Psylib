@@ -1,0 +1,106 @@
+version: '3.9'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Base de données principale (HDS en production : AWS RDS)
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: psyscale-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: psyscale
+      POSTGRES_PASSWORD: psyscale
+      POSTGRES_DB: psyscale
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U psyscale -d psyscale']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 — Queue BullMQ (jobs async : emails, IA, webhooks)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: psyscale-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Keycloak 24 — Auth (OVH HDS en production — seul choix conforme)
+  # Import automatique du realm psyscale au démarrage
+  # ---------------------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: psyscale-keycloak
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/psyscale
+      KC_DB_USERNAME: psyscale
+      KC_DB_PASSWORD: psyscale
+      KC_DB_SCHEMA: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HTTP_ENABLED: 'true'
+    command:
+      - start-dev
+      - --import-realm
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'exec 3<>/dev/tcp/localhost/8080 && echo -e "GET /health/ready HTTP/1.1\r\nHost: localhost\r\n\r\n" >&3 && cat <&3 | grep -q "200"',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # ---------------------------------------------------------------------------
+  # MailHog — Catch emails en développement
+  # UI : http://localhost:8025
+  # SMTP : localhost:1025
+  # ---------------------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: psyscale-mailhog
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    logging:
+      driver: none
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: psyscale-network

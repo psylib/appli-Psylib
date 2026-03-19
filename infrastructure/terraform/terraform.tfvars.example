@@ -1,0 +1,12 @@
+aws_region        = "eu-west-3"
+environment       = "prod"
+app_name          = "psyscale"
+domain_name       = "psyscale.fr"
+api_domain        = "api.psyscale.fr"
+db_username       = "psyscale"
+db_password       = "CHANGE_ME_STRONG_PASSWORD_32_CHARS"
+db_name           = "psyscale"
+api_cpu           = 512
+api_memory        = 1024
+api_desired_count = 2
+certificate_arn   = "arn:aws:acm:eu-west-3:ACCOUNT:certificate/XXXX"

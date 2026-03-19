@@ -1,0 +1,105 @@
+// @ts-check
+import { withSentryConfig } from '@sentry/nextjs';
+
+/** @type {import('next').NextConfig} */
+
+// URLs de production (depuis les variables d'environnement)
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:4000';
+const keycloakUrl = process.env.KEYCLOAK_URL || 'http://localhost:8080';
+
+const nextConfig = {
+  // Output standalone pour Docker — désactivé sur Vercel (Vercel gère nativement)
+  output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
+
+  // Strict mode React
+  reactStrictMode: true,
+
+  // Headers de sécurité HTTP — Obligatoire HDS
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          // HSTS — Force HTTPS
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
+          },
+          // Clickjacking protection
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          // MIME sniffing protection
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // Referrer policy
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          // Content Security Policy
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval requis Next.js
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com",
+              "img-src 'self' data: https: blob:",
+              // connect-src dynamique : dev (localhost) + prod (vraies URLs)
+              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} https://eu.posthog.com https://o4511050353475584.ingest.de.sentry.io`,
+              "frame-src 'self'",
+              "frame-ancestors 'none'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+          // Permissions Policy — désactive fonctionnalités non utilisées
+          {
+            key: 'Permissions-Policy',
+            value: [
+              'camera=()',
+              'microphone=()',
+              'geolocation=()',
+              'payment=(self)',
+              'usb=()',
+            ].join(', '),
+          },
+          // XSS Protection (legacy browsers)
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
+  },
+
+  // Images — domaines autorisés
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.psylib.eu',
+      },
+    ],
+  },
+
+  // Packages transpilés du monorepo
+  transpilePackages: ['@psyscale/shared-types'],
+};
+
+export default withSentryConfig(nextConfig, {
+  org: 'psylib',
+  project: 'psylib-web',
+  silent: true,
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});
