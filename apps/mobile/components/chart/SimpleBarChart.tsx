@@ -17,7 +17,7 @@ export function SimpleBarChart({
   data,
   height = 160,
   color = Colors.primary,
-  formatValue = (v) => String(v),
+  formatValue: _formatValue = (v: number) => String(v),
 }: BarChartProps) {
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const barWidth = Math.max(20, Math.min(40, 300 / data.length));
@@ -27,9 +27,9 @@ export function SimpleBarChart({
   return (
     <View style={styles.container}>
       <Svg width={chartWidth} height={height} viewBox={`0 0 ${chartWidth} ${height}`}>
-        {data.map((item, index) => {
+        {data.map((item, idx) => {
           const barHeight = (item.value / maxValue) * (height - 30);
-          const x = index * (barWidth + gap);
+          const x = idx * (barWidth + gap);
           const y = height - 30 - barHeight;
 
           return (
@@ -47,7 +47,7 @@ export function SimpleBarChart({
         })}
       </Svg>
       <View style={[styles.labelsRow, { width: chartWidth }]}>
-        {data.map((item, index) => (
+        {data.map((item) => (
           <Text
             key={item.label}
             style={[styles.label, { width: barWidth + gap }]}

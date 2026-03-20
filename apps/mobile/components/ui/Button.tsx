@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   StyleSheet,
   ViewStyle,
-  TextStyle,
 } from 'react-native';
 import { Colors } from '@/constants/colors';
 
@@ -64,7 +63,7 @@ export function Button({
           color={variant === 'outline' || variant === 'ghost' ? Colors.primary : Colors.white}
         />
       ) : (
-        <Text style={[styles.text, textStyles[variant], textStyles[size]]}>
+        <Text style={[textStyles.text, textStyles[variant], textStyles[size]]}>
           {children}
         </Text>
       )}

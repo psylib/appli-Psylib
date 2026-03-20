@@ -33,6 +33,7 @@ export default function AiSummaryScreen() {
             size="lg"
             fullWidth
             disabled={!sessionId}
+            accessibilityLabel="Generer le resume"
           >
             Generer le resume
           </Button>
@@ -48,7 +49,7 @@ export default function AiSummaryScreen() {
         {error && (
           <Card style={styles.errorCard}>
             <Text style={styles.errorText}>{error}</Text>
-            <Button onPress={reset} variant="outline" size="sm">
+            <Button onPress={reset} variant="outline" size="sm" accessibilityLabel="Reessayer">
               Reessayer
             </Button>
           </Card>

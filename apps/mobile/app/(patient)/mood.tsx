@@ -79,7 +79,7 @@ export default function MoodScreen() {
               placeholderTextColor={Colors.mutedLight}
               multiline
             />
-            <Button onPress={handleSubmit} loading={submitMood.isPending} variant="primary" size="lg" fullWidth>
+            <Button onPress={handleSubmit} loading={submitMood.isPending} variant="primary" size="lg" fullWidth accessibilityLabel="Enregistrer l'humeur">
               Enregistrer
             </Button>
           </View>

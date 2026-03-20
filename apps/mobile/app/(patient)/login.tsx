@@ -51,7 +51,7 @@ export default function PatientLoginScreen() {
             secureTextEntry
           />
           {error && <Text style={styles.error}>{error}</Text>}
-          <Button onPress={handleLogin} loading={isLoading} variant="primary" size="lg" fullWidth>
+          <Button onPress={handleLogin} loading={isLoading} variant="primary" size="lg" fullWidth accessibilityLabel="Se connecter">
             Se connecter
           </Button>
         </View>

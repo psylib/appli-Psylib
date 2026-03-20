@@ -2,7 +2,7 @@
  * Route index — Redirect vers (tabs) si authentifié, sinon login
  */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';

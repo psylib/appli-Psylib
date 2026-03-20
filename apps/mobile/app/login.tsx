@@ -3,15 +3,12 @@
  * Authorization Code Flow + PKCE via expo-auth-session
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   ScrollView,
-  ActivityIndicator,
-  Platform,
   TextInput,
   Alert,
 } from 'react-native';

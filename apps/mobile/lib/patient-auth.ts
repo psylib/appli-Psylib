@@ -3,7 +3,6 @@
  * Separate JWT from psy auth.
  */
 import Constants from 'expo-constants';
-import { storage } from './storage';
 
 const API_BASE =
   (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ??

@@ -70,6 +70,7 @@ export default function AiExerciseScreen() {
           size="lg"
           fullWidth
           disabled={!theme.trim()}
+          accessibilityLabel="Generer un exercice"
         >
           Generer un exercice
         </Button>

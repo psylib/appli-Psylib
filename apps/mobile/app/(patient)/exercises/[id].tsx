@@ -74,6 +74,7 @@ export default function ExerciseDetailScreen() {
                 variant="primary"
                 size="lg"
                 fullWidth
+                accessibilityLabel="Marquer comme termine"
               >
                 Marquer comme termine
               </Button>

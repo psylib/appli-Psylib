@@ -2,7 +2,7 @@
  * Patient Portal Layout — 4 tabs: Accueil | Humeur | Exercices | Journal
  */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
 import { Text } from 'react-native';
 import { Colors } from '@/constants/colors';

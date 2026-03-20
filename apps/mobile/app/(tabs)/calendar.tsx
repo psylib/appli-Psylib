@@ -76,8 +76,8 @@ export default function CalendarScreen() {
 
   const weekDays = useMemo(() => getWeekDays(baseDate), [baseDate]);
 
-  const startOfWeek = weekDays[0];
-  const endOfWeek = weekDays[6];
+  const startOfWeek = weekDays[0]!;
+  const endOfWeek = weekDays[6]!;
 
   const {
     data: appointmentsData,

@@ -16,7 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { KpiCard } from '@/components/KpiCard';
-import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/store/auth.store';
 import { useDashboardStats, useTodayAppointments, useDashboardChecklist } from '@/hooks/useDashboard';
 import { useUnreadCount } from '@/hooks/useNotifications';

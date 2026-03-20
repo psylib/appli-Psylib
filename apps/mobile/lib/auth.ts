@@ -107,7 +107,6 @@ export async function revokeTokens(
   const config: RevokeTokenRequestConfig = {
     clientId: CLIENT_ID,
     token: tokens.accessToken,
-    tokenTypeHint: 'access_token',
   };
   try {
     await revokeAsync(config, discovery);

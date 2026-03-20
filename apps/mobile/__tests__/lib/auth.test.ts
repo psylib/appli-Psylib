@@ -1,10 +1,27 @@
 /**
  * Auth module tests — token management, expiry, persistence
  */
-import { isTokenExpired, loadStoredTokens } from '@/lib/auth';
-import { storage } from '@/lib/storage';
 
-// Mock SecureStore
+// Mock expo modules before any imports
+jest.mock('expo-auth-session', () => ({
+  AuthRequest: jest.fn(),
+  exchangeCodeAsync: jest.fn(),
+  makeRedirectUri: jest.fn(() => 'psylib://auth/callback'),
+  useAuthRequest: jest.fn(() => [null, null, jest.fn()]),
+  useAutoDiscovery: jest.fn(),
+  TokenResponse: jest.fn(),
+  refreshAsync: jest.fn(),
+  revokeAsync: jest.fn(),
+}));
+
+jest.mock('expo-web-browser', () => ({
+  maybeCompleteAuthSession: jest.fn(),
+}));
+
+jest.mock('expo-constants', () => ({
+  expoConfig: { extra: { keycloakUrl: 'http://test', keycloakRealm: 'test', keycloakClientId: 'test' } },
+}));
+
 jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(),
   getItemAsync: jest.fn(),
@@ -18,19 +35,22 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn(),
 }));
 
+import { isTokenExpired, loadStoredTokens } from '@/lib/auth';
+import { storage } from '@/lib/storage';
+
 describe('isTokenExpired', () => {
   it('returns false when token is not expired', () => {
-    const expiresAt = Date.now() + 600_000; // 10 minutes from now
+    const expiresAt = Date.now() + 600_000;
     expect(isTokenExpired(expiresAt)).toBe(false);
   });
 
   it('returns true when token is expired', () => {
-    const expiresAt = Date.now() - 1000; // 1 second ago
+    const expiresAt = Date.now() - 1000;
     expect(isTokenExpired(expiresAt)).toBe(true);
   });
 
   it('returns true within 60s safety margin', () => {
-    const expiresAt = Date.now() + 30_000; // 30 seconds from now (within 60s margin)
+    const expiresAt = Date.now() + 30_000;
     expect(isTokenExpired(expiresAt)).toBe(true);
   });
 

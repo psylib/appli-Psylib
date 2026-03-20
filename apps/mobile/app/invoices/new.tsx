@@ -41,7 +41,6 @@ export default function NewInvoiceScreen() {
     control,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -115,6 +114,7 @@ export default function NewInvoiceScreen() {
             variant="primary"
             size="lg"
             fullWidth
+            accessibilityLabel="Creer la facture"
           >
             Creer la facture
           </Button>

@@ -3,8 +3,6 @@
  */
 import React from 'react';
 import {
-  View,
-  Text,
   ScrollView,
   StyleSheet,
   Alert,
@@ -143,6 +141,7 @@ export default function NewPatientScreen() {
               variant="primary"
               size="lg"
               fullWidth
+              accessibilityLabel="Creer le patient"
             >
               Creer le patient
             </Button>

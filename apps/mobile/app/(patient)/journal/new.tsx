@@ -69,6 +69,7 @@ export default function NewJournalEntryScreen() {
             variant="primary"
             size="lg"
             fullWidth
+            accessibilityLabel="Sauvegarder l'entree"
           >
             Sauvegarder
           </Button>

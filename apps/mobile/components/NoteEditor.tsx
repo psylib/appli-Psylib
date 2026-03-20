@@ -16,7 +16,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
 } from 'react-native';
 import { Colors } from '@/constants/colors';
 import { useAutosaveNotes } from '@/hooks/useSessions';
@@ -278,7 +277,6 @@ export function NoteEditor({
           textAlignVertical="top"
           accessibilityLabel="Notes de séance"
           accessibilityHint={readOnly ? undefined : 'Autosauvegarde toutes les 30 secondes'}
-          accessibilityMultiline
         />
       </View>
 
@@ -287,7 +285,7 @@ export function NoteEditor({
       {/* ------------------------------------------------------------------ */}
       {!readOnly && (
         <View style={styles.footer}>
-          <Text style={styles.wordCount} accessibilityLiveRegion="off">
+          <Text style={styles.wordCount} accessibilityLiveRegion="none">
             {wordCount > 0 ? `${wordCount} mot${wordCount > 1 ? 's' : ''}` : 'Commencez à rédiger...'}
           </Text>
           <Text style={styles.encryptionHint}>

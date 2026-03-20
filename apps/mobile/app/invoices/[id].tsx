@@ -64,7 +64,7 @@ export default function InvoiceDetailScreen() {
           <InfoRow label="Date d'emission" value={new Date(invoice.issuedAt).toLocaleDateString('fr-FR')} />
         </Card>
 
-        <Button onPress={handleSharePdf} loading={pdfLoading} variant="primary" size="lg" fullWidth>
+        <Button onPress={handleSharePdf} loading={pdfLoading} variant="primary" size="lg" fullWidth accessibilityLabel="Partager le PDF">
           Partager le PDF
         </Button>
       </ScrollView>

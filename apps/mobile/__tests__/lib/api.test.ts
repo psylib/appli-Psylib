@@ -88,11 +88,16 @@ describe('apiClient', () => {
         json: () => Promise.resolve({ message: 'Patient not found' }),
       });
 
-      await expect(apiClient.get('/patients/999')).rejects.toThrow(ApiError);
-      await expect(apiClient.get('/patients/999').catch((e) => e)).resolves.toMatchObject({
-        statusCode: 404,
-        message: 'Patient not found',
-      });
+      try {
+        await apiClient.get('/patients/999');
+        fail('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ApiError);
+        expect(e).toMatchObject({
+          statusCode: 404,
+          message: 'Patient not found',
+        });
+      }
     });
 
     it('throws ApiError on 5xx responses', async () => {
@@ -109,10 +114,15 @@ describe('apiClient', () => {
     it('throws network error when fetch fails', async () => {
       mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
 
-      await expect(apiClient.get('/health')).rejects.toThrow(ApiError);
-      await expect(apiClient.get('/health').catch((e) => e)).resolves.toMatchObject({
-        statusCode: 0,
-      });
+      try {
+        await apiClient.get('/health');
+        fail('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ApiError);
+        expect(e).toMatchObject({
+          statusCode: 0,
+        });
+      }
     });
 
     it('handles 204 No Content', async () => {
