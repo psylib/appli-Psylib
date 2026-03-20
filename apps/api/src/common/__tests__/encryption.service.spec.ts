@@ -59,10 +59,11 @@ describe('EncryptionService', () => {
   });
 
   describe('format du ciphertext', () => {
-    it('devrait être au format iv:authTag:encrypted (3 parties séparées par :)', () => {
+    it('devrait être au format v1:iv:authTag:encrypted (4 parties séparées par :)', () => {
       const encrypted = service.encrypt('test');
       const parts = encrypted.split(':');
-      expect(parts).toHaveLength(3);
+      expect(parts).toHaveLength(4);
+      expect(parts[0]).toBe('v1');
     });
 
     it('devrait détecter un texte chiffré via isEncrypted()', () => {
@@ -94,8 +95,8 @@ describe('EncryptionService', () => {
     it('devrait lever une erreur si le ciphertext est altéré (auth tag invalide)', () => {
       const encrypted = service.encrypt('données sensibles');
       const parts = encrypted.split(':');
-      // Altère le message chiffré
-      const tampered = `${parts[0]}:${parts[1]}:AAAA`;
+      // Altère le message chiffré (format v1:iv:authTag:data)
+      const tampered = `${parts[0]}:${parts[1]}:${parts[2]}:AAAA`;
       expect(() => service.decrypt(tampered)).toThrow();
     });
 

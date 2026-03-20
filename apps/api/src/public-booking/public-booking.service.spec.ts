@@ -62,19 +62,30 @@ function createEmailMock() {
   };
 }
 
+function createCacheMock() {
+  return {
+    get: vi.fn().mockResolvedValue(null),
+    set: vi.fn().mockResolvedValue(undefined),
+    del: vi.fn().mockResolvedValue(undefined),
+    delByPattern: vi.fn().mockResolvedValue(undefined),
+  };
+}
+
 // ─── Suite ────────────────────────────────────────────────────────────────────
 
 describe('PublicBookingService', () => {
   let service: PublicBookingService;
   let prisma: ReturnType<typeof createPrismaMock>;
+  let cacheService: ReturnType<typeof createCacheMock>;
   let availabilityService: ReturnType<typeof createAvailabilityMock>;
   let emailService: ReturnType<typeof createEmailMock>;
 
   beforeEach(() => {
     prisma = createPrismaMock();
+    cacheService = createCacheMock();
     availabilityService = createAvailabilityMock();
     emailService = createEmailMock();
-    service = new PublicBookingService(prisma as any, availabilityService as any, emailService as any);
+    service = new PublicBookingService(prisma as any, cacheService as any, availabilityService as any, emailService as any);
   });
 
   // ─── getPublicProfile ────────────────────────────────────────────────────
