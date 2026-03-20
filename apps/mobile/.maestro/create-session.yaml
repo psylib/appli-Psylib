@@ -1,0 +1,37 @@
+# Maestro E2E — Create a new session
+# Prerequisites: Logged in as psychologist
+
+appId: eu.psylib.app
+
+---
+
+# Navigate to sessions tab
+- tapOn: "Seances"
+- waitForAnimationToEnd
+
+# Tap the FAB to create new session
+- tapOn:
+    text: "+"
+- waitForAnimationToEnd
+
+# Verify we're on the new session screen
+- assertVisible: "Nouvelle seance"
+
+# Select a patient (tap the first one in the list/picker)
+- tapOn: "Choisir un patient"
+- waitForAnimationToEnd
+- tapOn:
+    index: 0
+
+# Fill in session details
+- tapOn: "Notes"
+- inputText: "Seance de test E2E - Maestro"
+
+# Save the session
+- tapOn: "Enregistrer"
+- waitForAnimationToEnd
+
+# Verify we're back on sessions list
+- extendedWaitUntil:
+    visible: "Seances"
+    timeout: 10000

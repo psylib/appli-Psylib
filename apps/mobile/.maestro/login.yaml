@@ -1,0 +1,40 @@
+# Maestro E2E — Login flow (Keycloak OIDC)
+# Prerequisites: EAS development build running on device/emulator
+
+appId: eu.psylib.app
+
+---
+
+# App should start on login screen
+- assertVisible: "Connexion"
+
+# Tap the login button to open Keycloak
+- tapOn: "Se connecter"
+
+# Wait for Keycloak web view to load
+- waitForAnimationToEnd
+
+# Fill email field
+- tapOn:
+    id: "username"
+- inputText: ${EMAIL}
+
+# Fill password field
+- tapOn:
+    id: "password"
+- inputText: ${PASSWORD}
+
+# Submit login form
+- tapOn:
+    id: "kc-login"
+
+# Wait for auth callback and app navigation
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: "Accueil"
+    timeout: 15000
+
+# Verify we're on the dashboard
+- assertVisible: "Bonjour"
+- assertVisible: "Patients"
+- assertVisible: "Agenda"

@@ -1,12 +1,8 @@
 /**
- * Keycloak OIDC Authentication — expo-auth-session
- *
- * Flow : Authorization Code + PKCE
- * - Discovery endpoint via openid-configuration
- * - Tokens stockés dans expo-secure-store
- * - Refresh automatique avant expiration (buffer 60s)
+ * Keycloak OIDC Authentication — expo-auth-session (SDK 55)
+ * Flow: Authorization Code + PKCE
+ * Client ID: psylib-mobile
  */
-
 import {
   AuthRequest,
   exchangeCodeAsync,
@@ -22,7 +18,6 @@ import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
 import { storage } from './storage';
 
-// Nécessaire pour que le navigateur web se ferme correctement après le callback
 WebBrowser.maybeCompleteAuthSession();
 
 const KEYCLOAK_URL =
@@ -33,12 +28,12 @@ const KEYCLOAK_REALM =
   'psyscale';
 const CLIENT_ID =
   (Constants.expoConfig?.extra?.keycloakClientId as string | undefined) ??
-  'psyscale-app';
+  'psylib-mobile';
 
 export const DISCOVERY_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/.well-known/openid-configuration`;
 
 export const REDIRECT_URI = makeRedirectUri({
-  scheme: 'psyscale',
+  scheme: 'psylib',
   path: 'auth/callback',
 });
 
@@ -49,10 +44,6 @@ export interface TokenSet {
   expiresAt: number; // Unix timestamp ms
 }
 
-/**
- * Hook Expo pour initier la connexion OIDC
- * Utilise PKCE automatiquement via AuthRequest
- */
 export function useKeycloakAuth() {
   const discovery = useAutoDiscovery(DISCOVERY_URL);
 
@@ -69,9 +60,6 @@ export function useKeycloakAuth() {
   return { request, response, promptAsync, discovery };
 }
 
-/**
- * Échange le code d'autorisation contre des tokens
- */
 export async function exchangeCodeForTokens(
   code: string,
   request: AuthRequest,
@@ -94,35 +82,24 @@ export async function exchangeCodeForTokens(
   return tokenSet;
 }
 
-/**
- * Rafraîchit le token d'accès via le refresh token
- * Retourne null si le refresh token est absent ou expiré
- */
 export async function refreshAccessToken(
   refreshToken: string,
   discovery: NonNullable<ReturnType<typeof useAutoDiscovery>>,
 ): Promise<TokenSet | null> {
   try {
     const tokenResponse = await refreshAsync(
-      {
-        clientId: CLIENT_ID,
-        refreshToken,
-      },
+      { clientId: CLIENT_ID, refreshToken },
       discovery,
     );
     const tokenSet = buildTokenSet(tokenResponse);
     await persistTokens(tokenSet);
     return tokenSet;
   } catch {
-    // Refresh token expiré — déconnexion nécessaire
     await storage.clearAll();
     return null;
   }
 }
 
-/**
- * Révoque les tokens côté Keycloak (logout)
- */
 export async function revokeTokens(
   tokens: TokenSet,
   discovery: NonNullable<ReturnType<typeof useAutoDiscovery>>,
@@ -135,14 +112,11 @@ export async function revokeTokens(
   try {
     await revokeAsync(config, discovery);
   } catch {
-    // On supprime les tokens locaux même si la révocation échoue
+    // On supprime les tokens locaux meme si la revocation echoue
   }
   await storage.clearAll();
 }
 
-/**
- * Charge les tokens depuis SecureStore
- */
 export async function loadStoredTokens(): Promise<TokenSet | null> {
   const [accessToken, refreshToken, expiryStr, idToken] = await Promise.all([
     storage.getAccessToken(),
@@ -161,19 +135,12 @@ export async function loadStoredTokens(): Promise<TokenSet | null> {
   };
 }
 
-/**
- * Vérifie si le token d'accès est expiré (avec buffer de 60s)
- */
 export function isTokenExpired(expiresAt: number): boolean {
   return Date.now() >= expiresAt - 60_000;
 }
 
-// ---------------------------------------------------------------------------
-// Helpers privés
-// ---------------------------------------------------------------------------
-
 function buildTokenSet(response: TokenResponse): TokenSet {
-  const expiresIn = response.expiresIn ?? 900; // 15min par défaut
+  const expiresIn = response.expiresIn ?? 900;
   return {
     accessToken: response.accessToken,
     refreshToken: response.refreshToken ?? null,
@@ -189,8 +156,6 @@ async function persistTokens(tokens: TokenSet): Promise<void> {
       ? storage.setRefreshToken(tokens.refreshToken)
       : Promise.resolve(),
     storage.setTokenExpiry(tokens.expiresAt),
-    tokens.idToken
-      ? storage.setIdToken(tokens.idToken)
-      : Promise.resolve(),
+    tokens.idToken ? storage.setIdToken(tokens.idToken) : Promise.resolve(),
   ]);
 }

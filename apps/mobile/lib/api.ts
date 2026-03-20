@@ -1,15 +1,14 @@
 /**
- * API Client PsyScale Mobile — Fetch wrapper vers NestJS
- *
- * Même pattern que apps/web/src/lib/api/client.ts
- * Injecte automatiquement le Bearer token depuis le contexte d'auth.
+ * API Client PsyLib Mobile — Fetch wrapper vers NestJS
+ * Token auto-injection, intercepteur 401, timeout 30s.
  */
-
 import Constants from 'expo-constants';
 
 const API_BASE =
   (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ??
   'http://localhost:4000';
+
+const DEFAULT_TIMEOUT = 30_000;
 
 export class ApiError extends Error {
   constructor(
@@ -24,9 +23,9 @@ export class ApiError extends Error {
 
 async function request<T>(
   path: string,
-  options: RequestInit & { token?: string } = {},
+  options: RequestInit & { token?: string; timeout?: number } = {},
 ): Promise<T> {
-  const { token, ...fetchOptions } = options;
+  const { token, timeout = DEFAULT_TIMEOUT, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -37,15 +36,24 @@ async function request<T>(
   };
 
   const url = `${API_BASE}/api/v1${path}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   let res: Response;
   try {
     res = await fetch(url, {
       ...fetchOptions,
       headers,
+      signal: controller.signal,
     });
   } catch (networkError) {
-    throw new ApiError(0, 'Erreur réseau — vérifiez votre connexion', networkError);
+    clearTimeout(timeoutId);
+    if (networkError instanceof DOMException && networkError.name === 'AbortError') {
+      throw new ApiError(0, 'Requete expirée — verifiez votre connexion');
+    }
+    throw new ApiError(0, 'Erreur reseau — verifiez votre connexion', networkError);
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   if (!res.ok) {
@@ -57,9 +65,7 @@ async function request<T>(
     }
     throw new ApiError(
       res.status,
-      typeof errorBody.message === 'string'
-        ? errorBody.message
-        : res.statusText,
+      typeof errorBody.message === 'string' ? errorBody.message : res.statusText,
       errorBody,
     );
   }
@@ -73,25 +79,13 @@ export const apiClient = {
     request<T>(path, { method: 'GET', token }),
 
   post: <T>(path: string, body: unknown, token?: string) =>
-    request<T>(path, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      token,
-    }),
+    request<T>(path, { method: 'POST', body: JSON.stringify(body), token }),
 
   put: <T>(path: string, body: unknown, token?: string) =>
-    request<T>(path, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-      token,
-    }),
+    request<T>(path, { method: 'PUT', body: JSON.stringify(body), token }),
 
   patch: <T>(path: string, body: unknown, token?: string) =>
-    request<T>(path, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-      token,
-    }),
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body), token }),
 
   delete: <T>(path: string, token?: string) =>
     request<T>(path, { method: 'DELETE', token }),

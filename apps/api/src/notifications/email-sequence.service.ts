@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from './email.service';
+import { SmsService } from './sms.service';
 import { ConfigService } from '@nestjs/config';
 
 const SEQUENCE_ACTIONS = {
@@ -19,6 +20,7 @@ export class EmailSequenceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
+    private readonly sms: SmsService,
     private readonly config: ConfigService,
   ) {
     this.frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
@@ -38,33 +40,56 @@ export class EmailSequenceService {
       where: {
         scheduledAt: { gte: windowStart, lte: windowEnd },
         status: { in: ['scheduled', 'confirmed'] },
-        reminderSentAt: null,
-        patient: { email: { not: null } },
+        OR: [
+          { reminderSentAt: null },
+          { smsReminderSentAt: null },
+        ],
       },
       include: {
-        patient: { select: { name: true, email: true } },
-        psychologist: { select: { name: true } },
+        patient: { select: { name: true, email: true, phone: true } },
+        psychologist: { select: { name: true, slug: true } },
       },
     });
 
     this.logger.log(`[Reminders] ${appointments.length} RDV à rappeler`);
 
     for (const appt of appointments) {
-      if (!appt.patient.email) continue;
-      try {
-        await this.email.sendAppointmentReminder(appt.patient.email, {
-          patientName: appt.patient.name,
-          psychologistName: appt.psychologist.name,
-          scheduledAt: appt.scheduledAt,
-          duration: appt.duration,
-        });
-        await this.prisma.appointment.update({
-          where: { id: appt.id },
-          data: { reminderSentAt: new Date() },
-        });
-        this.logger.log(`[Reminders] Rappel envoyé → ${appt.patient.email} (RDV ${appt.id})`);
-      } catch (err) {
-        this.logger.error(`[Reminders] Échec ${appt.id}: ${(err as Error).message}`);
+      const reminderData = {
+        patientName: appt.patient.name,
+        psychologistName: appt.psychologist.name,
+        scheduledAt: appt.scheduledAt,
+        duration: appt.duration,
+      };
+
+      // Email reminder
+      if (appt.patient.email && !appt.reminderSentAt) {
+        try {
+          await this.email.sendAppointmentReminder(appt.patient.email, reminderData);
+          await this.prisma.appointment.update({
+            where: { id: appt.id },
+            data: { reminderSentAt: new Date() },
+          });
+          this.logger.log(`[Reminders] Email envoyé → ${appt.patient.email} (RDV ${appt.id})`);
+        } catch (err) {
+          this.logger.error(`[Reminders] Échec email ${appt.id}: ${(err as Error).message}`);
+        }
+      }
+
+      // SMS reminder
+      if (appt.patient.phone && !appt.smsReminderSentAt) {
+        try {
+          const profileUrl = appt.psychologist.slug
+            ? `${this.frontendUrl}/psy/${appt.psychologist.slug}`
+            : undefined;
+          await this.sms.sendAppointmentReminder(appt.patient.phone, { ...reminderData, profileUrl });
+          await this.prisma.appointment.update({
+            where: { id: appt.id },
+            data: { smsReminderSentAt: new Date() },
+          });
+          this.logger.log(`[Reminders] SMS envoyé → ${appt.patient.phone} (RDV ${appt.id})`);
+        } catch (err) {
+          this.logger.error(`[Reminders] Échec SMS ${appt.id}: ${(err as Error).message}`);
+        }
       }
     }
   }

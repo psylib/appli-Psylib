@@ -390,8 +390,9 @@ model Appointment {
   scheduledAt     DateTime          @map("scheduled_at")
   duration        Int               // minutes
   status          AppointmentStatus @default(scheduled)
-  reminderSentAt  DateTime?         @map("reminder_sent_at")
-  reason          String?           // motif de consultation
+  reminderSentAt     DateTime?         @map("reminder_sent_at")
+  smsReminderSentAt  DateTime?         @map("sms_reminder_sent_at")
+  reason             String?           // motif de consultation
   source          String            @default("internal") // "internal" | "public"
   cancelToken     String?           @unique @map("cancel_token")
 

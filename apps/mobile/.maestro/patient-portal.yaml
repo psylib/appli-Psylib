@@ -1,0 +1,48 @@
+# Maestro E2E — Patient portal flow
+# Prerequisites: Patient invitation accepted, credentials available
+
+appId: eu.psylib.app
+
+---
+
+# Navigate to patient login
+# (assumes deep link or manual navigation to patient login)
+
+# Fill login form
+- tapOn: "Email"
+- inputText: ${PATIENT_EMAIL}
+
+- tapOn: "Code d'acces"
+- inputText: ${PATIENT_CODE}
+
+# Submit login
+- tapOn: "Se connecter"
+- waitForAnimationToEnd
+
+# Verify patient dashboard
+- extendedWaitUntil:
+    visible: "Bonjour"
+    timeout: 10000
+
+# Navigate to mood tracking
+- tapOn: "Humeur"
+- waitForAnimationToEnd
+- assertVisible: "Comment vous sentez-vous"
+
+# Submit a mood entry (tap mood level 4 = Bien)
+- tapOn: "😊"
+- tapOn: "Enregistrer"
+- waitForAnimationToEnd
+
+# Navigate to journal
+- tapOn: "Ecrire dans votre journal"
+- waitForAnimationToEnd
+
+# Go back to dashboard
+- back
+- waitForAnimationToEnd
+
+# Navigate to exercises
+- tapOn: "Exercices"
+- waitForAnimationToEnd
+- assertVisible: "Exercices"

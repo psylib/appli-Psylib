@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:4000",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "http://localhost:8080",
+        "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID": "psylib-mobile"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.psylib.eu",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "https://auth.psylib.eu",
+        "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID": "psylib-mobile"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.psylib.eu",
+        "EXPO_PUBLIC_KEYCLOAK_URL": "https://auth.psylib.eu",
+        "EXPO_PUBLIC_KEYCLOAK_CLIENT_ID": "psylib-mobile"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "psylib.eu@gmail.com",
+        "ascAppId": "APPLE_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-services.json",
+        "track": "internal"
+      }
+    }
+  }
+}

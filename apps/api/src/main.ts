@@ -24,7 +24,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
-import { getAllowedOrigins } from './common/cors.config';
+import { corsOriginCallback } from './common/cors.config';
 import { SentryExceptionFilter } from './common/sentry-exception.filter';
 
 async function bootstrap() {
@@ -60,9 +60,9 @@ async function bootstrap() {
   // Compression
   app.use(compression());
 
-  // CORS — restreint aux origines connues
+  // CORS — restreint aux origines connues + origin null (apps mobiles natives)
   app.enableCors({
-    origin: getAllowedOrigins(),
+    origin: corsOriginCallback,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],

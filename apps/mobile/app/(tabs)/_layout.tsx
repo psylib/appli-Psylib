@@ -1,23 +1,27 @@
 /**
- * Tabs Layout — Bottom tab navigator
- * 4 onglets : Dashboard | Patients | Séances | Calendrier
- * + FAB "+" en bas à droite pour nouvelle séance
+ * Tabs Layout — 5 tabs: Accueil | Patients | Agenda | Messages | Plus
  */
-
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/colors';
+import { useUnreadCount } from '@/hooks/useNotifications';
 
-function TabBarIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
+function TabIcon({ icon, focused, badge }: { icon: string; focused: boolean; badge?: number }) {
   return (
-    <Text
-      style={[styles.tabIcon, focused && styles.tabIconFocused]}
-      accessibilityElementsHidden
-    >
-      {emoji}
-    </Text>
+    <View style={styles.tabIconContainer}>
+      <Text
+        style={[styles.tabIcon, focused && styles.tabIconFocused]}
+        accessibilityElementsHidden
+      >
+        {icon}
+      </Text>
+      {badge != null && badge > 0 && (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -27,19 +31,18 @@ function FAB() {
     <TouchableOpacity
       style={styles.fab}
       onPress={() => router.push('/(tabs)/sessions/new')}
-      accessibilityLabel="Nouvelle séance"
+      accessibilityLabel="Nouvelle seance"
       accessibilityRole="button"
-      accessibilityHint="Ouvre le formulaire de création d'une nouvelle séance"
       activeOpacity={0.8}
     >
-      <Text style={styles.fabIcon} accessibilityElementsHidden>
-        +
-      </Text>
+      <Text style={styles.fabIcon} accessibilityElementsHidden>+</Text>
     </TouchableOpacity>
   );
 }
 
 export default function TabsLayout() {
+  const unreadCount = useUnreadCount();
+
   return (
     <View style={styles.container}>
       <Tabs
@@ -57,11 +60,9 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Dashboard',
-            tabBarLabel: 'Dashboard',
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon emoji="📊" focused={focused} />
-            ),
+            title: 'Accueil',
+            tabBarLabel: 'Accueil',
+            tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
           }}
         />
         <Tabs.Screen
@@ -69,69 +70,75 @@ export default function TabsLayout() {
           options={{
             title: 'Patients',
             tabBarLabel: 'Patients',
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon emoji="👥" focused={focused} />
-            ),
-            headerShown: false,
-          }}
-        />
-        <Tabs.Screen
-          name="sessions"
-          options={{
-            title: 'Séances',
-            tabBarLabel: 'Séances',
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon emoji="📋" focused={focused} />
-            ),
+            tabBarIcon: ({ focused }) => <TabIcon icon="👥" focused={focused} />,
             headerShown: false,
           }}
         />
         <Tabs.Screen
           name="calendar"
           options={{
-            title: 'Calendrier',
-            tabBarLabel: 'Calendrier',
+            title: 'Agenda',
+            tabBarLabel: 'Agenda',
+            tabBarIcon: ({ focused }) => <TabIcon icon="📅" focused={focused} />,
+          }}
+        />
+        <Tabs.Screen
+          name="sessions"
+          options={{
+            title: 'Seances',
+            tabBarLabel: 'Seances',
+            tabBarIcon: ({ focused }) => <TabIcon icon="💬" focused={focused} />,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="more"
+          options={{
+            title: 'Plus',
+            tabBarLabel: 'Plus',
             tabBarIcon: ({ focused }) => (
-              <TabBarIcon emoji="📅" focused={focused} />
+              <TabIcon icon="⋯" focused={focused} badge={unreadCount} />
             ),
           }}
         />
       </Tabs>
-
-      {/* FAB nouvelle séance */}
       <FAB />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   tabBar: {
     backgroundColor: Colors.tabBackground,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
-    height: 60,
-    paddingBottom: 6,
+    height: 64,
+    paddingBottom: 8,
     paddingTop: 6,
   },
   tabLabel: {
     fontSize: 10,
+    fontFamily: 'DMSans_500Medium',
     fontWeight: '600',
   },
-  tabIcon: {
-    fontSize: 20,
-    opacity: 0.5,
+  tabIconContainer: { position: 'relative' },
+  tabIcon: { fontSize: 22, opacity: 0.5 },
+  tabIconFocused: { opacity: 1 },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -10,
+    backgroundColor: Colors.error,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
-  tabIconFocused: {
-    opacity: 1,
-  },
-  headerTitle: {
-    fontWeight: '700',
-    fontSize: 17,
-    color: Colors.text,
-  },
+  badgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
+  headerTitle: { fontFamily: 'DMSans_700Bold', fontSize: 17, color: Colors.text },
   fab: {
     position: 'absolute',
     bottom: 80,
@@ -154,6 +161,5 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: '300',
     lineHeight: 32,
-    includeFontPadding: false,
   },
 });

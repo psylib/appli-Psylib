@@ -23,6 +23,10 @@
     },
     "clean": {
       "cache": false
+    },
+    "start:mobile": {
+      "cache": false,
+      "persistent": true
     }
   }
 }
