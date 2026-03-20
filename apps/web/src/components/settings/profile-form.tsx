@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSession } from 'next-auth/react';
-import { User, Phone, MapPin, FileText, Stethoscope, Hash, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, Phone, MapPin, FileText, Stethoscope, Hash, CheckCircle2, AlertCircle, Copy, Check, ExternalLink, Share2 } from 'lucide-react';
 import { psychologistApi } from '@/lib/api/psychologist';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -52,6 +52,8 @@ export function ProfileForm() {
   const { data: session } = useSession();
   const [feedback, setFeedback] = useState<FeedbackState>({ type: 'idle' });
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [profileSlug, setProfileSlug] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const {
     register,
@@ -78,6 +80,7 @@ export function ProfileForm() {
     psychologistApi
       .getProfile(session.accessToken)
       .then((profile) => {
+        setProfileSlug(profile.slug);
         reset({
           name: profile.name ?? '',
           specialization: profile.specialization ?? '',
@@ -129,6 +132,17 @@ export function ProfileForm() {
     }
   };
 
+  const profileUrl = profileSlug
+    ? `https://psylib.eu/psy/${profileSlug}`
+    : null;
+
+  const handleCopyLink = async () => {
+    if (!profileUrl) return;
+    await navigator.clipboard.writeText(profileUrl);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
+  };
+
   if (isLoadingProfile) {
     return (
       <div className="max-w-2xl mx-auto space-y-4" aria-busy="true" aria-label="Chargement du profil">
@@ -140,11 +154,153 @@ export function ProfileForm() {
   }
 
   return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* ----------------------------------------------------------------- */}
+      {/* Sharing instructions                                              */}
+      {/* ----------------------------------------------------------------- */}
+      {profileUrl && (
+        <section className="bg-white rounded-xl border border-border p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <Share2 size={14} aria-hidden />
+            Partager mon profil
+          </h2>
+
+          {/* Copyable link */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-foreground">
+              Lien de votre page de prise de rendez-vous
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-[#F8F7FF] text-sm text-foreground font-mono select-all overflow-x-auto">
+                {profileUrl}
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleCopyLink()}
+                className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                  linkCopied
+                    ? 'border-accent/40 bg-accent/10 text-accent'
+                    : 'border-border hover:border-primary/30 hover:bg-surface text-foreground'
+                }`}
+              >
+                {linkCopied ? (
+                  <>
+                    <Check size={14} aria-hidden />
+                    Copie !
+                  </>
+                ) : (
+                  <>
+                    <Copy size={14} aria-hidden />
+                    Copier
+                  </>
+                )}
+              </button>
+              <a
+                href={profileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg border border-border hover:border-primary/30 hover:bg-surface text-sm font-medium text-foreground transition-colors"
+                title="Voir mon profil public"
+              >
+                <ExternalLink size={14} aria-hidden />
+              </a>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Vos patients peuvent prendre rendez-vous directement depuis ce lien, sans compte.
+            </p>
+          </div>
+
+          {/* Instructions */}
+          <div className="space-y-4 pt-2">
+            <h3 className="text-sm font-semibold text-foreground">
+              Comment partager votre lien ?
+            </h3>
+
+            <div className="space-y-3">
+              {/* Doctolib */}
+              <div className="flex gap-3 p-3 rounded-lg bg-[#F8F7FF]">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#0596DE]/10 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#0596DE]">D</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Doctolib</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Ajoutez votre lien PsyLib dans le champ <strong>"Site web"</strong> de votre profil Doctolib.
+                    Vous pouvez aussi l&apos;ajouter dans votre <strong>description / présentation</strong> avec un texte du type :
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 italic bg-white rounded px-2 py-1.5 border border-border">
+                    &laquo; Prenez rendez-vous directement sur mon agenda : {profileUrl} &raquo;
+                  </p>
+                </div>
+              </div>
+
+              {/* Google Business */}
+              <div className="flex gap-3 p-3 rounded-lg bg-[#F8F7FF]">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#4285F4]/10 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#4285F4]">G</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Google My Business</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Dans votre fiche Google, ajoutez votre lien PsyLib comme <strong>"Lien de prise de rendez-vous"</strong> ou
+                    dans la section <strong>"Site web"</strong> de votre établissement.
+                  </p>
+                </div>
+              </div>
+
+              {/* Email signature */}
+              <div className="flex gap-3 p-3 rounded-lg bg-[#F8F7FF]">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="text-sm font-bold text-primary">@</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Signature email</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Ajoutez le lien dans votre signature email professionnelle :
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 italic bg-white rounded px-2 py-1.5 border border-border">
+                    Prendre rendez-vous : {profileUrl}
+                  </p>
+                </div>
+              </div>
+
+              {/* Social media */}
+              <div className="flex gap-3 p-3 rounded-lg bg-[#F8F7FF]">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#7C3AED]/10 flex items-center justify-center">
+                  <span className="text-sm font-bold text-[#7C3AED]">#</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Reseaux sociaux</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Collez votre lien dans la <strong>bio</strong> de vos profils Instagram, LinkedIn ou Facebook.
+                    Vous pouvez aussi le partager dans vos publications.
+                  </p>
+                </div>
+              </div>
+
+              {/* Carte de visite */}
+              <div className="flex gap-3 p-3 rounded-lg bg-[#F8F7FF]">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <span className="text-sm font-bold text-accent">QR</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Carte de visite / Salle d&apos;attente</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Imprimez votre lien sur vos cartes de visite ou affichez-le en salle d&apos;attente.
+                    Un patient peut scanner le QR code ou taper l&apos;adresse pour prendre son prochain rendez-vous.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
     <form
       onSubmit={(e) => void handleSubmit(onSubmit)(e)}
       onChange={handleFormChange}
       noValidate
-      className="max-w-2xl mx-auto space-y-6"
+      className="space-y-6"
       aria-label="Formulaire de profil"
     >
       {/* Identity card */}
@@ -325,5 +481,6 @@ export function ProfileForm() {
         </Button>
       </div>
     </form>
+    </div>
   );
 }

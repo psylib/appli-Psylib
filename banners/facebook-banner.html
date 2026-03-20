@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Facebook Banner — Psys Liberaux France</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    .banner {
+      width: 1640px;
+      height: 856px;
+      background: linear-gradient(135deg, #1E1B4B 0%, #2D2A6E 40%, #3D52A0 100%);
+      font-family: 'Inter', sans-serif;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      padding: 0 100px;
+    }
+
+    /* Decorative shapes */
+    .banner::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -100px;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(123, 156, 218, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .banner::after {
+      content: '';
+      position: absolute;
+      bottom: -150px;
+      left: -50px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .dot-pattern {
+      position: absolute;
+      top: 60px;
+      right: 80px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 20px;
+      opacity: 0.15;
+    }
+
+    .dot-pattern span {
+      width: 6px;
+      height: 6px;
+      background: #7B9CDA;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      max-width: 1000px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(13, 148, 136, 0.2);
+      border: 1px solid rgba(13, 148, 136, 0.4);
+      color: #5EEAD4;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 10px 24px;
+      border-radius: 40px;
+      margin-bottom: 36px;
+      letter-spacing: 0.5px;
+    }
+
+    .badge svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    h1 {
+      font-size: 82px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.05;
+      margin-bottom: 28px;
+      letter-spacing: -2px;
+    }
+
+    h1 .accent {
+      background: linear-gradient(135deg, #7B9CDA, #5EEAD4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 26px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.5;
+      max-width: 700px;
+      margin-bottom: 48px;
+    }
+
+    .tags {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.75);
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    /* Right side illustration */
+    .illustration {
+      position: absolute;
+      right: 80px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: flex-end;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 24px 28px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .card-icon.teal { background: rgba(13, 148, 136, 0.25); }
+    .card-icon.blue { background: rgba(61, 82, 160, 0.35); }
+    .card-icon.purple { background: rgba(124, 58, 237, 0.25); }
+
+    .card-text {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .card-sub {
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #3D52A0, #0D9488, #7C3AED, #3D52A0);
+    }
+
+    .logo-bottom {
+      position: absolute;
+      bottom: 32px;
+      right: 100px;
+      font-size: 22px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 1px;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <!-- Dot pattern decoration -->
+    <div class="dot-pattern">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="content">
+      <div class="badge">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        Groupe professionnel
+      </div>
+      <h1>Psys Lib&eacute;raux<br/><span class="accent">France</span></h1>
+      <p class="subtitle">
+        La communaut&eacute; d'entraide entre psychologues lib&eacute;raux.
+        Partagez, &eacute;changez, grandissez ensemble.
+      </p>
+      <div class="tags">
+        <span class="tag">Gestion de cabinet</span>
+        <span class="tag">Supervision</span>
+        <span class="tag">Outils num&eacute;riques</span>
+        <span class="tag">Facturation</span>
+      </div>
+    </div>
+
+    <div class="illustration">
+      <div class="card">
+        <div class="card-icon teal">&#128172;</div>
+        <div>
+          <div class="card-text">&Eacute;changes entre pairs</div>
+          <div class="card-sub">Supervision &amp; intervision</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon blue">&#128218;</div>
+        <div>
+          <div class="card-text">Ressources partag&eacute;es</div>
+          <div class="card-sub">Templates, guides, outils</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon purple">&#127793;</div>
+        <div>
+          <div class="card-text">D&eacute;veloppement</div>
+          <div class="card-sub">Faire grandir son activit&eacute;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar"></div>
+    <div class="logo-bottom">psylib.eu</div>
+  </div>
+</body>
+</html>
