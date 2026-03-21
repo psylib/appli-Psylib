@@ -5,6 +5,7 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
@@ -22,6 +23,7 @@ export class AdminController {
 
   @Get('funnel')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Métriques funnel activation (admin only)' })
   async getFunnel(): Promise<FunnelMetrics> {
     return this.adminService.getFunnelMetrics();

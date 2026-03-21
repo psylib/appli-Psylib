@@ -33,6 +33,17 @@ export const metadata: Metadata = {
     'La plateforme tout-en-un pour psychologues libéraux. Gestion cabinet, suivi patient, formations et assistant IA. Conforme HDS.',
   keywords: ['psychologue', 'gestion cabinet', 'suivi patient', 'formations', 'HDS'],
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: 'https://psylib.eu',
+    languages: {
+      'fr-FR': 'https://psylib.eu',
+    },
+  },
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/icon-192.png',
+  },
 };
 
 const organizationJsonLd = {

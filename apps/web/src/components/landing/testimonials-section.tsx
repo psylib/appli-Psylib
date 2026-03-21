@@ -1,7 +1,5 @@
-'use client';
-
 import { Star } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 const testimonials = [
   {
@@ -44,24 +42,20 @@ function Stars({ count }: { count: number }) {
 }
 
 export function TestimonialsSection() {
-  const { ref, isVisible } = useIntersectionObserver<HTMLDivElement>();
-
   return (
     <section className="bg-warm-white py-20 md:py-28">
-      <div className="max-w-7xl mx-auto px-6" ref={ref}>
+      <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div
-          className={`text-center mb-12 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-          }`}
-        >
-          <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">
-            Témoignages
-          </p>
-          <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal">
-            Ce qu'ils en disent
-          </h2>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12">
+            <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">
+              Témoignages
+            </p>
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal">
+              Ce qu'ils en disent
+            </h2>
+          </div>
+        </ScrollReveal>
 
         {/* Illustrative label */}
         <p className="text-center text-sm text-charcoal-400 italic mb-6">
@@ -75,30 +69,26 @@ export function TestimonialsSection() {
           aria-label="Témoignages illustratifs"
         >
           {testimonials.map(({ initials, name, role, quote, color, rating }, i) => (
-            <div
-              key={name}
-              className={`bg-white rounded-2xl border border-cream-200 p-6 hover:shadow-md transition-all duration-700 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-              }`}
-              style={{ transitionDelay: `${i * 120}ms` }}
-            >
-              <Stars count={rating} />
-              <blockquote className="mt-4 mb-5 text-charcoal-500 text-sm leading-relaxed italic">
-                "{quote}"
-              </blockquote>
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${color}`}
-                  aria-hidden="true"
-                >
-                  {initials}
-                </div>
-                <div>
-                  <p className="font-medium text-charcoal text-sm">{name}</p>
-                  <p className="text-xs text-charcoal-300">{role}</p>
+            <ScrollReveal key={name} delay={i * 120}>
+              <div className="bg-white rounded-2xl border border-cream-200 p-6 hover:shadow-md transition-shadow">
+                <Stars count={rating} />
+                <blockquote className="mt-4 mb-5 text-charcoal-500 text-sm leading-relaxed italic">
+                  "{quote}"
+                </blockquote>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${color}`}
+                    aria-hidden="true"
+                  >
+                    {initials}
+                  </div>
+                  <div>
+                    <p className="font-medium text-charcoal text-sm">{name}</p>
+                    <p className="text-xs text-charcoal-300">{role}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

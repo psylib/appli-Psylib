@@ -23,7 +23,7 @@ const PLAN_CONFIG = {
   },
   clinic: {
     badge: 'Clinic',
-    price: '197€/mois',
+    price: '149€/mois',
     highlights: [
       'IA illimitée',
       'Créer et vendre des formations en ligne',

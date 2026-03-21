@@ -26,16 +26,23 @@ export class PublicBookingController {
     @Query('monPsy') monPsy?: string,
     @Query('visio') visio?: string,
   ) {
-    const approachesArray = approaches
-      ? Array.isArray(approaches)
-        ? approaches
-        : [approaches]
-      : [];
+    // Sanitize inputs: cap string lengths + array size
+    const safeCity = city?.slice(0, 100);
+    const safeDept = department?.slice(0, 10);
+    const safeProb = problematics?.slice(0, 200);
+    const approachesArray = (
+      approaches
+        ? Array.isArray(approaches)
+          ? approaches
+          : [approaches]
+        : []
+    ).slice(0, 10).map((a) => a.slice(0, 100));
+
     return this.publicBookingService.matchPsychologists({
-      problematics,
+      problematics: safeProb,
       approaches: approachesArray,
-      city,
-      department,
+      city: safeCity,
+      department: safeDept,
       monPsy: monPsy === 'true',
       visio: visio === 'true',
     });

@@ -406,7 +406,7 @@ export class PatientsService {
         templateId: a.templateId,
         score: a.score,
         severity: a.severity,
-        answers: a.answers,
+        answers: decryptSafe(a.answers),
         completedAt: a.completedAt,
         date: a.createdAt,
       })),

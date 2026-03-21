@@ -31,7 +31,8 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       const value = await this.redis.get(PREFIX + key);
       if (!value) return null;
       return JSON.parse(value) as T;
-    } catch {
+    } catch (err) {
+      this.logger.warn(`Cache GET failed for "${key}": ${String(err)}`);
       return null;
     }
   }
@@ -39,16 +40,16 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   async set(key: string, value: unknown, ttlSeconds: number): Promise<void> {
     try {
       await this.redis.set(PREFIX + key, JSON.stringify(value), 'EX', ttlSeconds);
-    } catch {
-      // cache is non-critical — silently ignore write errors
+    } catch (err) {
+      this.logger.warn(`Cache SET failed for "${key}": ${String(err)}`);
     }
   }
 
   async del(key: string): Promise<void> {
     try {
       await this.redis.del(PREFIX + key);
-    } catch {
-      // ignore
+    } catch (err) {
+      this.logger.warn(`Cache DEL failed for "${key}": ${String(err)}`);
     }
   }
 
@@ -56,8 +57,8 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     try {
       const keys = await this.redis.keys(PREFIX + pattern);
       if (keys.length > 0) await this.redis.del(...keys);
-    } catch {
-      // ignore
+    } catch (err) {
+      this.logger.warn(`Cache DEL pattern failed for "${pattern}": ${String(err)}`);
     }
   }
 }

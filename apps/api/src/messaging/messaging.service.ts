@@ -115,17 +115,21 @@ export class MessagingService {
       });
     }
 
-    // Pour chaque conversation, compter les non-lus séparément
-    const unreadCounts = await Promise.all(
-      conversations.map((conv) =>
-        this.prisma.message.count({
+    // Compter les non-lus en une seule requête groupée (pas de N+1)
+    const conversationIds = conversations.map((c) => c.id);
+    const unreadGroups = conversationIds.length > 0
+      ? await this.prisma.message.groupBy({
+          by: ['conversationId'],
           where: {
-            conversationId: conv.id,
+            conversationId: { in: conversationIds },
             senderId: { not: userId },
             readAt: null,
           },
-        }),
-      ),
+          _count: { id: true },
+        })
+      : [];
+    const unreadMap = new Map(
+      unreadGroups.map((g) => [g.conversationId, g._count.id]),
     );
 
     return conversations.map((conv, index) => {
@@ -149,7 +153,7 @@ export class MessagingService {
         patientId: conv.patientId,
         createdAt: conv.createdAt,
         lastMessage,
-        unreadCount: unreadCounts[index] ?? 0,
+        unreadCount: unreadMap.get(conv.id) ?? 0,
         patient: conv.patient ?? undefined,
         psychologist: conv.psychologist ?? undefined,
       };

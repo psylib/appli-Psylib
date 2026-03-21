@@ -1,7 +1,5 @@
-'use client';
-
 import { Search, Send, BookOpen } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 const networkFeatures = [
   {
@@ -29,56 +27,44 @@ const mockPsys = [
 ];
 
 export function NetworkSection() {
-  const { ref, isVisible } = useIntersectionObserver<HTMLDivElement>();
-
   return (
     <section className="bg-sage-50/40 py-20 md:py-28">
-      <div className="max-w-7xl mx-auto px-6" ref={ref}>
+      <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left — Text */}
-          <div
-            className={`space-y-6 transition-all duration-700 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-            }`}
-          >
-            <p className="text-sage text-sm font-medium tracking-widest uppercase">
-              Réseau Pro
-            </p>
-            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal leading-tight">
-              Votre réseau professionnel{' '}
-              <em className="not-italic text-sage">sécurisé</em>
-            </h2>
-            <p className="text-charcoal-400 text-lg leading-relaxed">
-              Trouvez un collègue pour un adressage, rejoignez des groupes d'intervision, collaborez en toute confidentialité. Tout reste confidentiel et chiffré.
-            </p>
+          <ScrollReveal>
+            <div className="space-y-6">
+              <p className="text-sage text-sm font-medium tracking-widest uppercase">
+                Réseau Pro
+              </p>
+              <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal leading-tight">
+                Votre réseau professionnel{' '}
+                <em className="not-italic text-sage">sécurisé</em>
+              </h2>
+              <p className="text-charcoal-400 text-lg leading-relaxed">
+                Trouvez un collègue pour un adressage, rejoignez des groupes d'intervision, collaborez en toute confidentialité. Tout reste confidentiel et chiffré.
+              </p>
 
-            <div className="space-y-4">
-              {networkFeatures.map(({ icon: Icon, title, description }, i) => (
-                <div
-                  key={title}
-                  className={`flex gap-4 transition-all duration-700 ${
-                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-                  }`}
-                  style={{ transitionDelay: `${(i + 1) * 120}ms` }}
-                >
-                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-sage-100 flex items-center justify-center">
-                    <Icon size={18} className="text-sage-700" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-charcoal">{title}</h3>
-                    <p className="text-sm text-charcoal-400 mt-0.5">{description}</p>
-                  </div>
-                </div>
-              ))}
+              <div className="space-y-4">
+                {networkFeatures.map(({ icon: Icon, title, description }, i) => (
+                  <ScrollReveal key={title} delay={(i + 1) * 120}>
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-sage-100 flex items-center justify-center">
+                        <Icon size={18} className="text-sage-700" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-charcoal">{title}</h3>
+                        <p className="text-sm text-charcoal-400 mt-0.5">{description}</p>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right — Network mockup */}
-          <div
-            className={`transition-all duration-700 delay-300 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-            }`}
-          >
+          <ScrollReveal delay={300}>
             <div className="bg-white rounded-2xl border border-sage-200 shadow-sm p-5">
               {/* Search bar mockup */}
               <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cream-100 border border-cream-200 mb-5">
@@ -112,14 +98,14 @@ export function NetworkSection() {
                       <p className="text-sm font-medium text-charcoal">{name}</p>
                       <p className="text-xs text-charcoal-300">{spec} · {ville}</p>
                     </div>
-                    <button className="text-xs px-3 py-1.5 rounded-full bg-sage text-white hover:bg-sage-600 transition-colors">
+                    <span className="text-xs px-3 py-1.5 rounded-full bg-sage text-white">
                       Adresser
-                    </button>
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

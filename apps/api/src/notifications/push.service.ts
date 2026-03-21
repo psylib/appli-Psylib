@@ -3,7 +3,7 @@
  * HDS: NEVER include patient names in push payloads (visible on lock screen).
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../common/prisma.service';
 
 interface ExpoPushMessage {
   to: string;

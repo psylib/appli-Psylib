@@ -54,24 +54,22 @@ export class WebhookController {
       throw new BadRequestException('Signature Stripe invalide');
     }
 
-    // Idempotency — vérifier si l'event a déjà été traité
-    const existing = await this.prisma.stripeEvent.findUnique({
+    // Idempotency — upsert atomique pour éviter les race conditions
+    const record = await this.prisma.stripeEvent.upsert({
       where: { stripeEventId: event.id },
-    });
-
-    if (existing) {
-      this.logger.debug(`Stripe event déjà traité: ${event.id}`);
-      return { received: true };
-    }
-
-    // Enregistrer immédiatement pour garantir l'idempotency (avant traitement)
-    await this.prisma.stripeEvent.create({
-      data: {
+      update: {}, // no-op si déjà existant
+      create: {
         stripeEventId: event.id,
         type: event.type,
         processedAt: new Date(),
       },
     });
+
+    // Si l'event existait déjà (processedAt antérieur), on skip
+    if (record.processedAt < new Date(Date.now() - 1000)) {
+      this.logger.debug(`Stripe event déjà traité: ${event.id}`);
+      return { received: true };
+    }
 
     // Enqueuer pour traitement asynchrone
     await this.billingQueue.add(PROCESS_WEBHOOK_JOB, { event }, {

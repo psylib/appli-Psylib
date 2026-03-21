@@ -1,8 +1,6 @@
-'use client';
-
 import Link from 'next/link';
 import { Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 function DashboardMockup() {
   return (
@@ -96,8 +94,6 @@ function DashboardMockup() {
 }
 
 export function HeroSection() {
-  const { ref, isVisible } = useIntersectionObserver<HTMLDivElement>({ threshold: 0.1 });
-
   return (
     <section className="relative bg-warm-white pt-28 pb-20 md:pt-36 md:pb-28 overflow-hidden">
       {/* Background texture */}
@@ -112,61 +108,58 @@ export function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left — Text */}
-          <div
-            ref={ref}
-            className={`space-y-6 transition-all duration-700 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-            }`}
-          >
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sage-50 border border-sage-200 text-sage-700 text-sm font-medium">
-              <CheckCircle2 size={14} />
-              Plateforme 100% conforme HDS France
+          <ScrollReveal>
+            <div className="space-y-6">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sage-50 border border-sage-200 text-sage-700 text-sm font-medium">
+                <CheckCircle2 size={14} />
+                Plateforme 100% conforme HDS France
+              </div>
+
+              {/* H1 */}
+              <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight tracking-tight">
+                L'atelier numérique du{' '}
+                <em className="not-italic text-sage">psychologue libéral</em>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-lg md:text-xl text-charcoal-400 leading-relaxed max-w-lg">
+                Outcome tracking, réseau pro, notes structurées.{' '}
+                <strong className="text-charcoal font-medium">Tout ce que Doctolib n'offre pas.</strong>
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-sage text-white font-medium hover:bg-sage-600 transition-colors shadow-sm"
+                >
+                  Commencer gratuitement
+                  <ArrowRight size={16} />
+                </Link>
+                <a
+                  href="#features"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal text-charcoal font-medium hover:bg-charcoal hover:text-white transition-colors"
+                >
+                  Voir les fonctionnalités
+                </a>
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-6 pt-2">
+                {[
+                  { value: 'Bêta', label: 'accès anticipé' },
+                  { value: '14j', label: 'essai gratuit' },
+                  { value: 'HDS', label: 'certifié' },
+                ].map(({ value, label }) => (
+                  <div key={label} className="text-center">
+                    <div className="font-dm-mono font-medium text-xl text-charcoal">{value}</div>
+                    <div className="text-xs text-charcoal-300 mt-0.5">{label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-
-            {/* H1 */}
-            <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight tracking-tight">
-              L'atelier numérique du{' '}
-              <em className="not-italic text-sage">psychologue libéral</em>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-lg md:text-xl text-charcoal-400 leading-relaxed max-w-lg">
-              Outcome tracking, réseau pro, notes structurées.{' '}
-              <strong className="text-charcoal font-medium">Tout ce que Doctolib n'offre pas.</strong>
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-sage text-white font-medium hover:bg-sage-600 transition-colors shadow-sm"
-              >
-                Commencer gratuitement
-                <ArrowRight size={16} />
-              </Link>
-              <a
-                href="#features"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal text-charcoal font-medium hover:bg-charcoal hover:text-white transition-colors"
-              >
-                Voir les fonctionnalités
-              </a>
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center gap-6 pt-2">
-              {[
-                { value: 'Bêta', label: 'accès anticipé' },
-                { value: '14j', label: 'essai gratuit' },
-                { value: 'HDS', label: 'certifié' },
-              ].map(({ value, label }) => (
-                <div key={label} className="text-center">
-                  <div className="font-dm-mono font-medium text-xl text-charcoal">{value}</div>
-                  <div className="text-xs text-charcoal-300 mt-0.5">{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right — Mockup */}
           <div className="hidden lg:flex justify-center items-center py-8">

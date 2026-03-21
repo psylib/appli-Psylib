@@ -1,7 +1,5 @@
-'use client';
-
 import { TrendingUp, Award } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 function OutcomeChart() {
   const points: [number, number][] = [
@@ -90,55 +88,47 @@ function OutcomeChart() {
 }
 
 export function OutcomeSection() {
-  const { ref, isVisible } = useIntersectionObserver<HTMLDivElement>();
-
   return (
     <section className="bg-warm-white py-20 md:py-28">
-      <div className="max-w-7xl mx-auto px-6" ref={ref}>
+      <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left — Chart */}
-          <div
-            className={`transition-all duration-700 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-            }`}
-          >
+          <ScrollReveal>
             <OutcomeChart />
-          </div>
+          </ScrollReveal>
 
           {/* Right — Text */}
-          <div
-            className={`space-y-5 transition-all duration-700 delay-200 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-            }`}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-terracotta-50 border border-terracotta-200 text-terracotta text-sm font-medium">
-              <Award size={14} />
-              Première plateforme FR avec Outcome Tracking
+          <ScrollReveal delay={200}>
+            <div className="space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-terracotta-50 border border-terracotta-200 text-terracotta text-sm font-medium">
+                <Award size={14} />
+                Première plateforme FR avec Outcome Tracking
+              </div>
+
+              <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal leading-tight">
+                Mesurez les progrès,{' '}
+                <em className="not-italic text-sage">prouvez la valeur</em>
+              </h2>
+
+              <p className="text-charcoal-400 text-lg leading-relaxed">
+                Intégrez PHQ-9, GAD-7 et CORE-OM directement dans votre pratique. Visualisez l'évolution de chaque patient sur des graphiques cliniques clairs.
+              </p>
+
+              <ul className="space-y-3">
+                {[
+                  'Questionnaires validés scientifiquement',
+                  'Passation en salle ou envoyée au patient',
+                  'Graphiques d\'évolution automatiques',
+                  'Export PDF pour le dossier patient',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-charcoal-500">
+                    <TrendingUp size={16} className="text-sage flex-shrink-0" />
+                    <span className="text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-
-            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal leading-tight">
-              Mesurez les progrès,{' '}
-              <em className="not-italic text-sage">prouvez la valeur</em>
-            </h2>
-
-            <p className="text-charcoal-400 text-lg leading-relaxed">
-              Intégrez PHQ-9, GAD-7 et CORE-OM directement dans votre pratique. Visualisez l'évolution de chaque patient sur des graphiques cliniques clairs.
-            </p>
-
-            <ul className="space-y-3">
-              {[
-                'Questionnaires validés scientifiquement',
-                'Passation en salle ou envoyée au patient',
-                'Graphiques d\'évolution automatiques',
-                'Export PDF pour le dossier patient',
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-charcoal-500">
-                  <TrendingUp size={16} className="text-sage flex-shrink-0" />
-                  <span className="text-sm">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>

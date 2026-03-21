@@ -1,7 +1,5 @@
-'use client';
-
 import { Check, X, Minus } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 type CellValue = 'yes' | 'no' | 'partial';
 
@@ -40,56 +38,50 @@ function Cell({ value, highlight }: { value: CellValue; highlight?: boolean }) {
 }
 
 export function ComparisonSection() {
-  const { ref, isVisible } = useIntersectionObserver<HTMLDivElement>();
-
   return (
     <section className="bg-cream py-20 md:py-28">
-      <div className="max-w-4xl mx-auto px-6" ref={ref}>
+      <div className="max-w-4xl mx-auto px-6">
         {/* Header */}
-        <div
-          className={`text-center mb-12 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-          }`}
-        >
-          <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">
-            Comparatif
-          </p>
-          <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal mb-4">
-            Pourquoi PsyLib plutôt qu'un outil générique ?
-          </h2>
-          <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
-            Les agendas médicaux généralistes ne sont pas conçus pour la spécificité de la pratique
-            psychologique.
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12">
+            <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">
+              Comparatif
+            </p>
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal mb-4">
+              Pourquoi PsyLib plutôt qu'un outil générique ?
+            </h2>
+            <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
+              Les agendas médicaux généralistes ne sont pas conçus pour la spécificité de la pratique
+              psychologique.
+            </p>
+          </div>
+        </ScrollReveal>
 
         {/* Table */}
-        <div
-          className={`overflow-x-auto rounded-2xl border border-cream-200 shadow-sm transition-all duration-700 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-          }`}
-        >
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-charcoal text-white">
-                <th className="py-4 px-4 text-left font-medium w-[45%]">Fonctionnalité</th>
-                <th className="py-4 px-4 text-center font-medium text-sage-300">PsyLib</th>
-                <th className="py-4 px-4 text-center font-medium text-charcoal-200">Agenda médical générique</th>
-                <th className="py-4 px-4 text-center font-medium text-charcoal-200">Fichiers locaux</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-cream-100">
-              {rows.map(({ feature, psylib, generic, files }) => (
-                <tr key={feature} className="hover:bg-cream-50 transition-colors">
-                  <td className="py-3 px-4 text-charcoal-500 font-medium">{feature}</td>
-                  <Cell value={psylib} highlight />
-                  <Cell value={generic} />
-                  <Cell value={files} />
+        <ScrollReveal delay={200}>
+          <div className="overflow-x-auto rounded-2xl border border-cream-200 shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-charcoal text-white">
+                  <th className="py-4 px-4 text-left font-medium w-[45%]">Fonctionnalité</th>
+                  <th className="py-4 px-4 text-center font-medium text-sage-300">PsyLib</th>
+                  <th className="py-4 px-4 text-center font-medium text-charcoal-200">Agenda médical générique</th>
+                  <th className="py-4 px-4 text-center font-medium text-charcoal-200">Fichiers locaux</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-cream-100">
+                {rows.map(({ feature, psylib, generic, files }) => (
+                  <tr key={feature} className="hover:bg-cream-50 transition-colors">
+                    <td className="py-3 px-4 text-charcoal-500 font-medium">{feature}</td>
+                    <Cell value={psylib} highlight />
+                    <Cell value={generic} />
+                    <Cell value={files} />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </ScrollReveal>
 
         <p className="text-center text-xs text-charcoal-300 mt-4">
           Comparatif basé sur les fonctionnalités publiquement documentées à mars 2026.

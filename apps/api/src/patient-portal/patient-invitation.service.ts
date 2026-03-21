@@ -63,8 +63,8 @@ export class PatientInvitationService {
       entityId: invitation.id,
     });
 
-    const webUrl = this.config.get<string>('WEB_URL') ?? 'http://localhost:3000';
-    const invitationUrl = `${webUrl}/patient/accept-invitation?token=${token}`;
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    const invitationUrl = `${frontendUrl}/patient/accept-invitation?token=${token}`;
 
     this.logger.log(`Invitation créée pour ${patient.email}: ${invitationUrl}`);
 

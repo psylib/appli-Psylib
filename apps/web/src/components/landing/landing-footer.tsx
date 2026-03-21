@@ -1,23 +1,24 @@
 import Link from 'next/link';
 import { Shield } from 'lucide-react';
+import { NewsletterForm } from './newsletter-form';
 
 const footerLinks = {
   Produit: [
-    { label: 'Fonctionnalités', href: '#features' },
-    { label: 'Tarifs', href: '#pricing' },
-    { label: 'Outcome Tracking', href: '#features' },
-    { label: 'Réseau Pro', href: '#features' },
+    { label: 'Fonctionnalités', href: '/fonctionnalites' },
+    { label: 'Tarifs', href: '/tarifs' },
+    { label: 'Comparaison', href: '/comparaison' },
+    { label: 'FAQ', href: '/faq' },
     { label: 'Ressources gratuites', href: '/ressources' },
-    { label: 'Sécurité', href: '#trust' },
+    { label: 'Blog', href: '/blog' },
+    { label: 'Guides', href: '/guides' },
   ],
   Légal: [
     { label: 'Mentions légales', href: '/legal' },
     { label: 'CGU', href: '/terms' },
     { label: 'Politique RGPD', href: '/privacy' },
-    { label: 'Politique cookies', href: '/cookies' },
   ],
   Contact: [
-    { label: 'contact@psylib.eu', href: 'mailto:contact@psylib.eu' },
+    { label: 'Nous contacter', href: '/contact' },
     { label: 'Support', href: 'mailto:support@psylib.eu' },
     { label: 'Partenariats', href: 'mailto:partnerships@psylib.eu' },
   ],
@@ -60,6 +61,14 @@ export function LandingFooter() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* Newsletter */}
+        <div className="mb-12 pt-8 border-t border-charcoal-600">
+          <div className="max-w-md">
+            <h3 className="text-white text-sm font-medium mb-3">Newsletter</h3>
+            <NewsletterForm />
+          </div>
         </div>
 
         {/* Bottom bar */}

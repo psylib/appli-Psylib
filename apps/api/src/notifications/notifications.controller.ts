@@ -1,19 +1,24 @@
 import {
-  Controller, Get, Patch, Post, Delete, Param,
+  Controller, Get, Patch, Post, Delete, Param, Body,
   UseGuards, HttpCode, HttpStatus, ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
+import { PushService } from './push.service';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
+import { RegisterPushTokenDto } from './dto/register-push-token.dto';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
 @UseGuards(KeycloakGuard)
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly pushService: PushService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Liste des notifications (non lues d\'abord)' })
@@ -45,5 +50,16 @@ export class NotificationsController {
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.notificationsService.deleteNotification(id, user.sub);
+  }
+
+  @Post('push-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Enregistrer un token push (mobile)' })
+  async registerPushToken(
+    @Body() body: RegisterPushTokenDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    await this.pushService.registerToken(user.sub, body.token, body.platform);
+    return { success: true };
   }
 }

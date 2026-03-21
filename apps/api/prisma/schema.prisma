@@ -124,6 +124,8 @@ model User {
   locale       String    @default("fr")
   timezone     String    @default("Europe/Paris")
   lastSignInAt DateTime? @map("last_sign_in_at")
+  pushToken    String?   @map("push_token")
+  pushPlatform String?   @map("push_platform")
   createdAt    DateTime  @default(now()) @map("created_at")
 
   // Relations
@@ -401,6 +403,7 @@ model Appointment {
   session      Session?     @relation(fields: [sessionId], references: [id])
 
   @@index([psychologistId, scheduledAt], name: "idx_appointments_psy_date")
+  @@index([patientId], name: "idx_appointments_patient")
   @@map("appointments")
 }
 
@@ -678,6 +681,7 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, readAt], name: "idx_notifications_user_read")
   @@map("notifications")
 }
 

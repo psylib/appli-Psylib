@@ -10,8 +10,11 @@ import { TrustSection } from '@/components/landing/trust-section';
 import { PricingSection } from '@/components/landing/pricing-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FAQSection } from '@/components/landing/faq-section';
+import { BeforeAfterSection } from '@/components/landing/before-after-section';
+import { LeadNurtureCTA } from '@/components/landing/lead-nurture-cta';
 import { CTASection } from '@/components/landing/cta-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
+import { StickyCTA } from '@/components/landing/sticky-cta';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -158,13 +161,16 @@ export default function HomePage() {
         <OutcomeSection />
         <NetworkSection />
         <ComparisonSection />
+        <BeforeAfterSection />
         <TrustSection />
         <PricingSection />
+        <LeadNurtureCTA />
         <TestimonialsSection />
         <FAQSection />
         <CTASection />
       </main>
       <LandingFooter />
+      <StickyCTA />
     </>
   );
 }

@@ -92,6 +92,35 @@ const nextConfig = {
 
   // Packages transpilés du monorepo
   transpilePackages: ['@psyscale/shared-types'],
+
+  // Compression
+  compress: true,
+
+  // Optimisations expérimentales
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'posthog-js'],
+  },
+
+  // Redirects SEO
+  async redirects() {
+    return [
+      {
+        source: '/register',
+        destination: '/login',
+        permanent: true,
+      },
+      {
+        source: '/inscription',
+        destination: '/login',
+        permanent: true,
+      },
+      {
+        source: '/pricing',
+        destination: '/tarifs',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {

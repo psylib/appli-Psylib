@@ -389,6 +389,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    // Tarifs
+    {
+      url: `${BASE}/tarifs`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'monthly',
+      priority: 0.95,
+    },
+    // FAQ
+    {
+      url: `${BASE}/faq`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    // Contact
+    {
+      url: `${BASE}/contact`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    // Comparaison
+    {
+      url: `${BASE}/comparaison`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    // Legal
+    {
+      url: `${BASE}/privacy`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'yearly',
+      priority: 0.4,
+    },
+    {
+      url: `${BASE}/terms`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'yearly',
+      priority: 0.4,
+    },
+    {
+      url: `${BASE}/legal`,
+      lastModified: new Date('2026-03-20'),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
     // Profils psychologues dynamiques
     ...psyEntries,
   ];

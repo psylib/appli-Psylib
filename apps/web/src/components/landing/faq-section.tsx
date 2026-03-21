@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/use-intersection-observer';
+import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 const faqs = [
   {
@@ -33,54 +33,51 @@ const faqs = [
 
 export function FAQSection() {
   const [open, setOpen] = useState<number | null>(null);
-  const { ref, isVisible } = useIntersectionObserver<HTMLDivElement>();
 
   return (
     <section className="bg-white py-20 md:py-28">
-      <div className="max-w-3xl mx-auto px-6" ref={ref}>
+      <div className="max-w-3xl mx-auto px-6">
         {/* Header */}
-        <div
-          className={`text-center mb-12 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
-          }`}
-        >
-          <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">FAQ</p>
-          <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal">
-            Questions fréquentes
-          </h2>
-        </div>
+        <ScrollReveal>
+          <div className="text-center mb-12">
+            <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">FAQ</p>
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal">
+              Questions fréquentes
+            </h2>
+          </div>
+        </ScrollReveal>
 
         {/* Accordion */}
         <div className="space-y-2">
           {faqs.map(({ q, a }, i) => {
             const isOpen = open === i;
             return (
-              <div
-                key={i}
-                className={`rounded-2xl border transition-all duration-700 ${
-                  isOpen ? 'border-sage-200 bg-sage-50/30' : 'border-cream-200 bg-white hover:border-sage-200'
-                } ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
-                style={{ transitionDelay: `${i * 60}ms` }}
-              >
-                <button
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
-                  aria-expanded={isOpen}
+              <ScrollReveal key={i} delay={i * 60}>
+                <div
+                  className={`rounded-2xl border transition-colors ${
+                    isOpen ? 'border-sage-200 bg-sage-50/30' : 'border-cream-200 bg-white hover:border-sage-200'
+                  }`}
                 >
-                  <span className="font-medium text-charcoal text-sm">{q}</span>
-                  {isOpen ? (
-                    <Minus size={16} className="flex-shrink-0 text-sage" />
-                  ) : (
-                    <Plus size={16} className="flex-shrink-0 text-charcoal-300" />
-                  )}
-                </button>
+                  <button
+                    onClick={() => setOpen(isOpen ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="font-medium text-charcoal text-sm">{q}</span>
+                    {isOpen ? (
+                      <Minus size={16} className="flex-shrink-0 text-sage" />
+                    ) : (
+                      <Plus size={16} className="flex-shrink-0 text-charcoal-300" />
+                    )}
+                  </button>
 
-                {isOpen && (
-                  <div className="px-5 pb-4">
-                    <p className="text-sm text-charcoal-400 leading-relaxed">{a}</p>
-                  </div>
-                )}
-              </div>
+                  {isOpen && (
+                    <div className="px-5 pb-4">
+                      <p className="text-sm text-charcoal-400 leading-relaxed">{a}</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollReveal>
             );
           })}
         </div>

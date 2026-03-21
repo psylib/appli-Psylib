@@ -461,5 +461,5 @@ export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.FREE]: 0,
   [SubscriptionPlan.STARTER]: 49,
   [SubscriptionPlan.PRO]: 97,
-  [SubscriptionPlan.CLINIC]: 197,
+  [SubscriptionPlan.CLINIC]: 149,
 };

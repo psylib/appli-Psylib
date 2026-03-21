@@ -100,40 +100,33 @@ export class AnalyticsService {
       this.prisma.session.count({
         where: { psychologistId },
       }),
-      this.prisma.session.findMany({
+      this.prisma.session.count({
         where: {
           psychologistId,
           date: { gte: thisMonthStart, lte: thisMonthEnd },
         },
-        select: { rate: true },
       }),
-      this.prisma.session.findMany({
+      this.prisma.session.aggregate({
         where: {
           psychologistId,
           date: { gte: thisMonthStart, lte: thisMonthEnd },
           rate: { not: null },
         },
-        select: { rate: true },
+        _sum: { rate: true },
       }),
-      this.prisma.session.findMany({
+      this.prisma.session.aggregate({
         where: {
           psychologistId,
           date: { gte: lastMonthStart, lte: lastMonthEnd },
           rate: { not: null },
         },
-        select: { rate: true },
+        _sum: { rate: true },
       }),
     ]);
 
-    const sessionsThisMonth = sessionsThisMonthRaw.length;
-    const revenueThisMonth = revenueThisMonthRaw.reduce(
-      (sum, s) => sum + Number(s.rate ?? 0),
-      0,
-    );
-    const revenueLastMonth = revenueLastMonthRaw.reduce(
-      (sum, s) => sum + Number(s.rate ?? 0),
-      0,
-    );
+    const sessionsThisMonth = sessionsThisMonthRaw;
+    const revenueThisMonth = Number(revenueThisMonthRaw._sum.rate ?? 0);
+    const revenueLastMonth = Number(revenueLastMonthRaw._sum.rate ?? 0);
 
     const avgSessionsPerPatient =
       totalPatients > 0

@@ -70,7 +70,8 @@ export class EmailService {
     try {
       await this.resend.emails.send({ from: this.from, to, subject, html, attachments });
     } catch (error) {
-      this.logger.error(`[EmailService] ${method} failed for ${to}: ${(error as Error).message}`);
+      const masked = to.replace(/^(.{2}).*(@.*)$/, '$1***$2');
+      this.logger.error(`[EmailService] ${method} failed for ${masked}: ${(error as Error).message}`);
     }
   }
 

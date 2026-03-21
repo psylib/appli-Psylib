@@ -26,6 +26,7 @@ describe('WebhookController', () => {
     stripeEvent: {
       findUnique: ReturnType<typeof vi.fn>;
       create: ReturnType<typeof vi.fn>;
+      upsert: ReturnType<typeof vi.fn>;
     };
   };
   let billingQueue: { add: ReturnType<typeof vi.fn> };
@@ -38,8 +39,9 @@ describe('WebhookController', () => {
 
     prisma = {
       stripeEvent: {
-        findUnique: vi.fn().mockResolvedValue(null), // pas encore traité
+        findUnique: vi.fn().mockResolvedValue(null),
         create: vi.fn().mockResolvedValue({}),
+        upsert: vi.fn().mockResolvedValue({ processedAt: new Date() }),
       },
     };
 
@@ -97,21 +99,24 @@ describe('WebhookController', () => {
 
   describe('idempotency', () => {
     it('returns { received: true } immediately when event already processed', async () => {
-      prisma.stripeEvent.findUnique.mockResolvedValue({ stripeEventId: MOCK_EVENT.id! });
+      // upsert returns a record with old processedAt (> 1s ago) → already processed
+      prisma.stripeEvent.upsert.mockResolvedValue({
+        stripeEventId: MOCK_EVENT.id!,
+        processedAt: new Date(Date.now() - 10000),
+      });
 
       const req = buildRawRequest();
       const result = await controller.handleStripeWebhook(req as any, 'valid-sig');
 
       expect(result).toEqual({ received: true });
       expect(billingQueue.add).not.toHaveBeenCalled();
-      expect(prisma.stripeEvent.create).not.toHaveBeenCalled();
     });
 
     it('persists event BEFORE enqueuing (guarantees idempotency)', async () => {
       const callOrder: string[] = [];
-      prisma.stripeEvent.create.mockImplementation(async () => {
-        callOrder.push('create');
-        return {};
+      prisma.stripeEvent.upsert.mockImplementation(async () => {
+        callOrder.push('upsert');
+        return { processedAt: new Date() };
       });
       billingQueue.add.mockImplementation(async () => {
         callOrder.push('queue');
@@ -120,7 +125,7 @@ describe('WebhookController', () => {
 
       await controller.handleStripeWebhook(buildRawRequest() as any, 'valid-sig');
 
-      expect(callOrder).toEqual(['create', 'queue']);
+      expect(callOrder).toEqual(['upsert', 'queue']);
     });
   });
 
@@ -132,12 +137,13 @@ describe('WebhookController', () => {
       expect(result).toEqual({ received: true });
     });
 
-    it('records event with correct stripeEventId and type', async () => {
+    it('records event with correct stripeEventId and type via upsert', async () => {
       await controller.handleStripeWebhook(buildRawRequest() as any, 'valid-sig');
 
-      expect(prisma.stripeEvent.create).toHaveBeenCalledWith(
+      expect(prisma.stripeEvent.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
+          where: { stripeEventId: MOCK_EVENT.id },
+          create: expect.objectContaining({
             stripeEventId: MOCK_EVENT.id,
             type: MOCK_EVENT.type,
           }),
