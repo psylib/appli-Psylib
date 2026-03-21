@@ -1,21 +1,33 @@
 /**
- * Tabs Layout — 5 tabs: Accueil | Patients | Agenda | Messages | Plus
+ * Tabs Layout — 5 tabs: Accueil | Patients | Agenda | Seances | Plus
  */
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform, Text } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
 import { useUnreadCount } from '@/hooks/useNotifications';
 
-function TabIcon({ icon, focused, badge }: { icon: string; focused: boolean; badge?: number }) {
+type IoniconsName = keyof typeof Ionicons.glyphMap;
+
+function TabIcon({
+  name,
+  focusedName,
+  focused,
+  badge,
+}: {
+  name: IoniconsName;
+  focusedName: IoniconsName;
+  focused: boolean;
+  badge?: number;
+}) {
   return (
     <View style={styles.tabIconContainer}>
-      <Text
-        style={[styles.tabIcon, focused && styles.tabIconFocused]}
-        accessibilityElementsHidden
-      >
-        {icon}
-      </Text>
+      <Ionicons
+        name={focused ? focusedName : name}
+        size={26}
+        color={focused ? Colors.primary : Colors.tabInactive}
+      />
       {badge != null && badge > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
@@ -35,7 +47,7 @@ function FAB() {
       accessibilityRole="button"
       activeOpacity={0.8}
     >
-      <Text style={styles.fabIcon} accessibilityElementsHidden>+</Text>
+      <Ionicons name="add" size={30} color={Colors.white} />
     </TouchableOpacity>
   );
 }
@@ -47,10 +59,11 @@ export default function TabsLayout() {
     <View style={styles.container}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors.tabActive,
+          tabBarActiveTintColor: Colors.primary,
           tabBarInactiveTintColor: Colors.tabInactive,
           tabBarStyle: styles.tabBar,
           tabBarLabelStyle: styles.tabLabel,
+          tabBarItemStyle: styles.tabItem,
           headerStyle: { backgroundColor: Colors.bg },
           headerTintColor: Colors.text,
           headerTitleStyle: styles.headerTitle,
@@ -62,7 +75,9 @@ export default function TabsLayout() {
           options={{
             title: 'Accueil',
             tabBarLabel: 'Accueil',
-            tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon name="home-outline" focusedName="home" focused={focused} />
+            ),
           }}
         />
         <Tabs.Screen
@@ -70,7 +85,9 @@ export default function TabsLayout() {
           options={{
             title: 'Patients',
             tabBarLabel: 'Patients',
-            tabBarIcon: ({ focused }) => <TabIcon icon="👥" focused={focused} />,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon name="people-outline" focusedName="people" focused={focused} />
+            ),
             headerShown: false,
           }}
         />
@@ -79,7 +96,9 @@ export default function TabsLayout() {
           options={{
             title: 'Agenda',
             tabBarLabel: 'Agenda',
-            tabBarIcon: ({ focused }) => <TabIcon icon="📅" focused={focused} />,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon name="calendar-outline" focusedName="calendar" focused={focused} />
+            ),
           }}
         />
         <Tabs.Screen
@@ -87,7 +106,9 @@ export default function TabsLayout() {
           options={{
             title: 'Seances',
             tabBarLabel: 'Seances',
-            tabBarIcon: ({ focused }) => <TabIcon icon="💬" focused={focused} />,
+            tabBarIcon: ({ focused }) => (
+              <TabIcon name="document-text-outline" focusedName="document-text" focused={focused} />
+            ),
             headerShown: false,
           }}
         />
@@ -97,7 +118,12 @@ export default function TabsLayout() {
             title: 'Plus',
             tabBarLabel: 'Plus',
             tabBarIcon: ({ focused }) => (
-              <TabIcon icon="⋯" focused={focused} badge={unreadCount} />
+              <TabIcon
+                name="ellipsis-horizontal-outline"
+                focusedName="ellipsis-horizontal"
+                focused={focused}
+                badge={unreadCount}
+              />
             ),
           }}
         />
@@ -110,38 +136,52 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   tabBar: {
-    backgroundColor: Colors.tabBackground,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    height: 80,
-    paddingBottom: 12,
-    paddingTop: 8,
+    backgroundColor: Colors.white,
+    borderTopWidth: 0,
+    height: Platform.OS === 'ios' ? 92 : 72,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+    paddingTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 12,
+  },
+  tabItem: {
+    paddingVertical: 4,
   },
   tabLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'DMSans_500Medium',
     fontWeight: '600',
+    marginTop: 2,
   },
-  tabIconContainer: { position: 'relative' },
-  tabIcon: { fontSize: 28, opacity: 0.5 },
-  tabIconFocused: { opacity: 1 },
+  tabIconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 32,
+    height: 32,
+  },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -10,
+    top: -2,
+    right: -8,
     backgroundColor: Colors.error,
-    borderRadius: 9,
+    borderRadius: 10,
     minWidth: 18,
     height: 18,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: Colors.white,
   },
   badgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
   headerTitle: { fontFamily: 'DMSans_700Bold', fontSize: 17, color: Colors.text },
   fab: {
     position: 'absolute',
-    bottom: 96,
+    bottom: Platform.OS === 'ios' ? 104 : 84,
     right: 20,
     width: 56,
     height: 56,
@@ -151,15 +191,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     shadowColor: Colors.accent,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 8,
     zIndex: 100,
-  },
-  fabIcon: {
-    fontSize: 28,
-    color: Colors.white,
-    fontWeight: '300',
-    lineHeight: 32,
   },
 });
