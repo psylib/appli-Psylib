@@ -22,7 +22,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 const KEYCLOAK_URL =
   (Constants.expoConfig?.extra?.keycloakUrl as string | undefined) ??
-  'http://localhost:8080';
+  'https://auth.psylib.eu';
 const KEYCLOAK_REALM =
   (Constants.expoConfig?.extra?.keycloakRealm as string | undefined) ??
   'psyscale';

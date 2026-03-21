@@ -7,7 +7,7 @@ import { storage } from './storage';
 
 const API_BASE =
   (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ??
-  'http://localhost:4000';
+  'https://api.psylib.eu';
 
 let socket: Socket | null = null;
 

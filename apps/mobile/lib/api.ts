@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 
 const API_BASE =
   (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ??
-  'http://localhost:4000';
+  'https://api.psylib.eu';
 
 const DEFAULT_TIMEOUT = 30_000;
 
