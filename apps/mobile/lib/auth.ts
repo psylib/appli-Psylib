@@ -5,10 +5,10 @@
  */
 import {
   AuthRequest,
+  type DiscoveryDocument,
   exchangeCodeAsync,
   makeRedirectUri,
   useAuthRequest,
-  useAutoDiscovery,
   TokenResponse,
   refreshAsync,
   revokeAsync,
@@ -32,6 +32,20 @@ const CLIENT_ID =
 
 export const DISCOVERY_URL = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/.well-known/openid-configuration`;
 
+/**
+ * Hard-coded OIDC discovery document for Keycloak.
+ * expo-auth-session's useAutoDiscovery uses fetch() which is intercepted
+ * by SSL pinning — if the leaf cert pin changes the discovery will fail
+ * silently, leaving discovery=null and login broken. Hard-coding avoids this.
+ */
+export const KEYCLOAK_DISCOVERY = {
+  authorizationEndpoint: `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/auth`,
+  tokenEndpoint: `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`,
+  revocationEndpoint: `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/revoke`,
+  endSessionEndpoint: `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/logout`,
+  userInfoEndpoint: `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/userinfo`,
+};
+
 export const REDIRECT_URI = makeRedirectUri({
   scheme: 'psylib',
   path: 'auth/callback',
@@ -45,8 +59,6 @@ export interface TokenSet {
 }
 
 export function useKeycloakAuth() {
-  const discovery = useAutoDiscovery(DISCOVERY_URL);
-
   const [request, response, promptAsync] = useAuthRequest(
     {
       clientId: CLIENT_ID,
@@ -54,16 +66,16 @@ export function useKeycloakAuth() {
       scopes: ['openid', 'profile', 'email', 'offline_access'],
       usePKCE: true,
     },
-    discovery,
+    KEYCLOAK_DISCOVERY,
   );
 
-  return { request, response, promptAsync, discovery };
+  return { request, response, promptAsync, discovery: KEYCLOAK_DISCOVERY };
 }
 
 export async function exchangeCodeForTokens(
   code: string,
   request: AuthRequest,
-  discovery: NonNullable<ReturnType<typeof useAutoDiscovery>>,
+  discovery: DiscoveryDocument,
 ): Promise<TokenSet> {
   const tokenResponse = await exchangeCodeAsync(
     {
@@ -84,7 +96,7 @@ export async function exchangeCodeForTokens(
 
 export async function refreshAccessToken(
   refreshToken: string,
-  discovery: NonNullable<ReturnType<typeof useAutoDiscovery>>,
+  discovery: DiscoveryDocument,
 ): Promise<TokenSet | null> {
   try {
     const tokenResponse = await refreshAsync(
@@ -102,7 +114,7 @@ export async function refreshAccessToken(
 
 export async function revokeTokens(
   tokens: TokenSet,
-  discovery: NonNullable<ReturnType<typeof useAutoDiscovery>>,
+  discovery: DiscoveryDocument,
 ): Promise<void> {
   const config: RevokeTokenRequestConfig = {
     clientId: CLIENT_ID,

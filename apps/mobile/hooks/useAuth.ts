@@ -9,7 +9,6 @@
  */
 
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { useAutoDiscovery } from 'expo-auth-session';
 import {
   useKeycloakAuth,
   exchangeCodeForTokens,
@@ -17,7 +16,7 @@ import {
   revokeTokens,
   loadStoredTokens,
   isTokenExpired,
-  DISCOVERY_URL,
+  KEYCLOAK_DISCOVERY,
   type TokenSet,
 } from '@/lib/auth';
 import type { AuthRequest, AuthSessionResult } from 'expo-auth-session';
@@ -54,7 +53,7 @@ export function useAuthProvider(): AuthContextValue {
   const [state, setState] = useState<AuthState>(initialState);
   const [tokenSet, setTokenSet] = useState<TokenSet | null>(null);
 
-  const discovery = useAutoDiscovery(DISCOVERY_URL);
+  const discovery = KEYCLOAK_DISCOVERY;
   const { request, response, promptAsync } = useKeycloakAuth();
 
   // Chargement initial des tokens depuis SecureStore
@@ -135,6 +134,22 @@ export function useAuthProvider(): AuthContextValue {
   }, [response, request, discovery]);
 
   const login = useCallback(async () => {
+    if (!discovery) {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: 'Impossible de joindre le serveur d\'authentification. Vérifiez votre connexion.',
+      }));
+      return;
+    }
+    if (!request) {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: 'Préparation de l\'authentification en cours, réessayez dans quelques secondes.',
+      }));
+      return;
+    }
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       const result: AuthSessionResult = await promptAsync();
@@ -148,7 +163,7 @@ export function useAuthProvider(): AuthContextValue {
         error: err instanceof Error ? err.message : 'Erreur inattendue',
       }));
     }
-  }, [promptAsync]);
+  }, [promptAsync, discovery, request]);
 
   const logout = useCallback(async () => {
     if (tokenSet && discovery) {
