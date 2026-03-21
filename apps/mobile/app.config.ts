@@ -35,7 +35,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#3D52A0',
+      backgroundColor: '#E0F2EF',
     },
     package: 'eu.psylib.app',
     versionCode: 1,
