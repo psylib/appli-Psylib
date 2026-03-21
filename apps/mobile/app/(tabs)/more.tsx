@@ -2,7 +2,7 @@
  * More Screen — Menu grille des features secondaires
  */
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
@@ -56,6 +56,32 @@ export default function MoreScreen() {
           ))}
         </View>
 
+        {/* Legal */}
+        <View style={styles.legalSection}>
+          <Text style={styles.legalTitle}>Informations legales</Text>
+          <TouchableOpacity
+            onPress={() => void Linking.openURL('https://psylib.eu/privacy')}
+            accessibilityLabel="Politique de confidentialite"
+            accessibilityRole="link"
+          >
+            <Text style={styles.legalLink}>Politique de confidentialite (RGPD)</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => void Linking.openURL('https://psylib.eu/terms')}
+            accessibilityLabel="Conditions generales"
+            accessibilityRole="link"
+          >
+            <Text style={styles.legalLink}>{"Conditions generales d'utilisation"}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => void Linking.openURL('https://psylib.eu/legal')}
+            accessibilityLabel="Mentions legales"
+            accessibilityRole="link"
+          >
+            <Text style={styles.legalLink}>Mentions legales</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Version */}
         <Text style={styles.version}>PsyLib v1.0.0</Text>
       </ScrollView>
@@ -85,5 +111,8 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
   menuLabel: { fontSize: 13, fontFamily: 'DMSans_500Medium', color: Colors.text, textAlign: 'center' },
+  legalSection: { backgroundColor: Colors.surface, borderRadius: 12, padding: 16, gap: 12 },
+  legalTitle: { fontSize: 14, fontFamily: 'DMSans_600SemiBold', color: Colors.muted, marginBottom: 4 },
+  legalLink: { fontSize: 14, color: Colors.primary, fontFamily: 'DMSans_500Medium' },
   version: { fontSize: 12, color: Colors.mutedLight, textAlign: 'center', marginTop: 20 },
 });

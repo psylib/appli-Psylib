@@ -15,6 +15,7 @@ import { useAppFonts } from '@/lib/fonts';
 import { queryClient, queryPersister } from '@/lib/query-client';
 import { Colors } from '@/constants/colors';
 import { BiometricLock } from '@/components/BiometricLock';
+import { initSslPinning } from '@/lib/ssl-pinning';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,6 +26,11 @@ function SessionProvider({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout() {
   const { fontsLoaded, fontError } = useAppFonts();
+
+  // Initialize SSL certificate pinning as early as possible
+  useEffect(() => {
+    void initSslPinning();
+  }, []);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded || fontError) {

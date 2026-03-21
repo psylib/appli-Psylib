@@ -38,7 +38,7 @@ const PAYMENT_LABELS: Record<SessionPaymentStatus, string> = {
   [SessionPaymentStatus.FREE]: 'Gratuite',
 };
 
-export function SessionListItem({ session, patientName, onPress }: SessionListItemProps) {
+export const SessionListItem = React.memo(function SessionListItem({ session, patientName, onPress }: SessionListItemProps) {
   const sessionDate = new Date(session.date);
   const dateLabel = sessionDate.toLocaleDateString('fr-FR', {
     weekday: 'short',
@@ -96,7 +96,7 @@ export function SessionListItem({ session, patientName, onPress }: SessionListIt
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

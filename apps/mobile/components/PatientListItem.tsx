@@ -40,7 +40,7 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
-export function PatientListItem({ patient, onPress }: PatientListItemProps) {
+export const PatientListItem = React.memo(function PatientListItem({ patient, onPress }: PatientListItemProps) {
   const initials = getInitials(patient.name);
 
   return (
@@ -78,7 +78,7 @@ export function PatientListItem({ patient, onPress }: PatientListItemProps) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

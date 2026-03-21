@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/colors';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'accent' | 'destructive';
@@ -42,7 +43,10 @@ export function Button({
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
       disabled={isDisabled}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
