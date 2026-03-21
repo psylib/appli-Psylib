@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PsyLib — Store Assets Generator</title>
+<style>
+  body { margin: 0; padding: 20px; background: #1a1a2e; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+  .asset { margin: 30px 0; }
+  .asset h2 { color: #fff; font-size: 14px; margin-bottom: 8px; }
+  canvas { border: 1px solid #333; display: block; }
+</style>
+</head>
+<body>
+
+<div class="asset">
+  <h2>Feature Graphic (1024x500)</h2>
+  <canvas id="feature" width="1024" height="500"></canvas>
+</div>
+
+<div class="asset">
+  <h2>Screenshot 1 — Login (1080x1920)</h2>
+  <canvas id="screen1" width="1080" height="1920"></canvas>
+</div>
+
+<div class="asset">
+  <h2>Screenshot 2 — Dashboard (1080x1920)</h2>
+  <canvas id="screen2" width="1080" height="1920"></canvas>
+</div>
+
+<div class="asset">
+  <h2>Screenshot 3 — Patients (1080x1920)</h2>
+  <canvas id="screen3" width="1080" height="1920"></canvas>
+</div>
+
+<div class="asset">
+  <h2>Screenshot 4 — Notes (1080x1920)</h2>
+  <canvas id="screen4" width="1080" height="1920"></canvas>
+</div>
+
+<div class="asset">
+  <h2>Screenshot 5 — Sécurité (1080x1920)</h2>
+  <canvas id="screen5" width="1080" height="1920"></canvas>
+</div>
+
+<div style="padding: 20px;">
+  <button onclick="downloadAll()" style="padding: 16px 32px; font-size: 18px; background: #3D52A0; color: white; border: none; border-radius: 12px; cursor: pointer;">
+    Télécharger tous les assets
+  </button>
+</div>
+
+<script>
+// ============================================================
+// Shared drawing helpers
+// ============================================================
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawPsyLogo(ctx, x, y, size) {
+  roundRect(ctx, x, y, size, size, size * 0.25);
+  ctx.fillStyle = '#3D52A0';
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${size * 0.5}px "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Ψ', x + size/2, y + size/2 + 2);
+}
+
+function drawPhoneFrame(ctx, x, y, w, h) {
+  // Phone body
+  roundRect(ctx, x, y, w, h, 40);
+  ctx.fillStyle = '#1E1B4B';
+  ctx.fill();
+  ctx.strokeStyle = '#3D52A0';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  // Screen area
+  const pad = 12;
+  roundRect(ctx, x + pad, y + pad, w - pad*2, h - pad*2, 28);
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fill();
+  // Notch
+  roundRect(ctx, x + w/2 - 60, y + pad, 120, 28, 14);
+  ctx.fillStyle = '#1E1B4B';
+  ctx.fill();
+  return { sx: x + pad, sy: y + pad + 28, sw: w - pad*2, sh: h - pad*2 - 28 };
+}
+
+function drawStatusBar(ctx, x, y, w) {
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fillRect(x, y, w, 36);
+  ctx.fillStyle = '#6B7280';
+  ctx.font = '500 22px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('9:41', x + 16, y + 26);
+  ctx.textAlign = 'right';
+  ctx.fillText('4G  100%', x + w - 16, y + 26);
+  ctx.textAlign = 'left';
+}
+
+function gradient(ctx, x, y, w, h, c1, c2) {
+  const g = ctx.createLinearGradient(x, y, x, y + h);
+  g.addColorStop(0, c1);
+  g.addColorStop(1, c2);
+  return g;
+}
+
+// ============================================================
+// 1. Feature Graphic (1024x500)
+// ============================================================
+(function() {
+  const c = document.getElementById('feature');
+  const ctx = c.getContext('2d');
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, 1024, 500);
+  bg.addColorStop(0, '#1E1B4B');
+  bg.addColorStop(0.5, '#2D2A6E');
+  bg.addColorStop(1, '#3D52A0');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1024, 500);
+
+  // Decorative circles
+  ctx.globalAlpha = 0.08;
+  ctx.beginPath();
+  ctx.arc(900, 100, 300, 0, Math.PI * 2);
+  ctx.fillStyle = '#7B9CDA';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(150, 400, 200, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Logo
+  drawPsyLogo(ctx, 80, 150, 100);
+
+  // Title
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 72px "Segoe UI", system-ui, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('PsyLib', 200, 225);
+
+  // Subtitle
+  ctx.font = '300 32px "Segoe UI", system-ui, sans-serif';
+  ctx.fillStyle = '#B8C5E8';
+  ctx.fillText('Votre cabinet de psychologue', 80, 310);
+  ctx.fillText('dans la poche', 80, 350);
+
+  // Badges
+  const badges = ['HDS', 'RGPD', 'AES-256'];
+  let bx = 80;
+  badges.forEach(text => {
+    ctx.font = 'bold 18px "Segoe UI", system-ui';
+    const tw = ctx.measureText(text).width + 28;
+    roundRect(ctx, bx, 385, tw, 38, 19);
+    ctx.fillStyle = 'rgba(125, 211, 252, 0.15)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(125, 211, 252, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = '#7DD3FC';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, bx + tw/2, 410);
+    bx += tw + 12;
+  });
+
+  // Mini phone mockup on the right
+  const pw = 200, ph = 380;
+  const px = 750, py = 60;
+  roundRect(ctx, px, py, pw, ph, 24);
+  ctx.fillStyle = '#0f0e2a';
+  ctx.fill();
+  ctx.strokeStyle = '#4a5294';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Screen
+  roundRect(ctx, px+8, py+8, pw-16, ph-16, 18);
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fill();
+  // Screen content
+  ctx.font = 'bold 16px "Segoe UI", system-ui';
+  ctx.fillStyle = '#1E1B4B';
+  ctx.textAlign = 'center';
+  ctx.fillText('Dashboard', px + pw/2, py + 50);
+  // KPI cards
+  const kpis = [
+    { n: '24', l: 'Patients', color: '#3D52A0' },
+    { n: '48', l: 'Séances', color: '#0D9488' },
+    { n: '4.7k€', l: 'Revenus', color: '#7C3AED' },
+  ];
+  kpis.forEach((k, i) => {
+    const ky = py + 70 + i * 80;
+    roundRect(ctx, px + 20, ky, pw - 40, 65, 12);
+    ctx.fillStyle = k.color + '15';
+    ctx.fill();
+    ctx.strokeStyle = k.color + '30';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = k.color;
+    ctx.font = 'bold 26px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(k.n, px + 34, ky + 32);
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 14px "Segoe UI", system-ui';
+    ctx.fillText(k.l, px + 34, ky + 52);
+  });
+
+  // France flag
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '500 16px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('🇫🇷  Hébergé en France', 80, 458);
+})();
+
+// ============================================================
+// 2. Screenshot 1 — Login
+// ============================================================
+(function() {
+  const c = document.getElementById('screen1');
+  const ctx = c.getContext('2d');
+  const W = 1080, H = 1920;
+
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fillRect(0, 0, W, H);
+  drawStatusBar(ctx, 0, 0, W);
+
+  // Logo
+  drawPsyLogo(ctx, W/2 - 60, 200, 120);
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 56px "Segoe UI", system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('PsyLib', W/2, 380);
+  ctx.fillStyle = '#6B7280';
+  ctx.font = '300 28px "Segoe UI", system-ui';
+  ctx.fillText('La plateforme dédiée aux', W/2, 430);
+  ctx.fillText('psychologues libéraux', W/2, 465);
+
+  // Login card
+  const cx = 60, cy = 540, cw = W - 120, ch = 400;
+  roundRect(ctx, cx, cy, cw, ch, 32);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.shadowColor = 'rgba(30, 27, 75, 0.08)';
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 8;
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 36px "Segoe UI", system-ui';
+  ctx.fillText('Connexion sécurisée', W/2, cy + 60);
+  ctx.fillStyle = '#6B7280';
+  ctx.font = '400 24px "Segoe UI", system-ui';
+  ctx.fillText('Authentification via Keycloak —', W/2, cy + 110);
+  ctx.fillText('serveurs certifiés HDS France', W/2, cy + 142);
+
+  // Button
+  roundRect(ctx, cx + 40, cy + 200, cw - 80, 72, 16);
+  ctx.fillStyle = '#3D52A0';
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 28px "Segoe UI", system-ui';
+  ctx.fillText('Se connecter', W/2, cy + 244);
+
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '400 20px "Segoe UI", system-ui';
+  ctx.fillText('MFA requis pour les comptes psychologue', W/2, cy + 330);
+
+  // Features
+  const features = [
+    { emoji: '📊', title: 'Dashboard KPIs', desc: 'Suivez vos patients et séances en temps réel' },
+    { emoji: '📋', title: 'Notes chiffrées', desc: 'Vos notes chiffrées AES-256-GCM' },
+    { emoji: '🔒', title: 'Sécurité HDS', desc: 'Infrastructure certifiée HDS' },
+  ];
+  features.forEach((f, i) => {
+    const fy = 1020 + i * 120;
+    ctx.font = '400 48px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(f.emoji, 100, fy + 40);
+    ctx.fillStyle = '#1E1B4B';
+    ctx.font = 'bold 28px "Segoe UI", system-ui';
+    ctx.fillText(f.title, 180, fy + 25);
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 24px "Segoe UI", system-ui';
+    ctx.fillText(f.desc, 180, fy + 60);
+  });
+
+  // Footer
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '400 22px "Segoe UI", system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('Données hébergées en France · Certifié HDS · Conforme RGPD', W/2, H - 100);
+})();
+
+// ============================================================
+// 3. Screenshot 2 — Dashboard
+// ============================================================
+(function() {
+  const c = document.getElementById('screen2');
+  const ctx = c.getContext('2d');
+  const W = 1080, H = 1920;
+
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fillRect(0, 0, W, H);
+  drawStatusBar(ctx, 0, 0, W);
+
+  // Header
+  ctx.fillStyle = gradient(ctx, 0, 36, W, 100, '#3D52A0', '#4A63B8');
+  ctx.fillRect(0, 36, W, 100);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('Bonjour, Dr. Martin 👋', 40, 98);
+
+  // KPI Cards row 1
+  const kpis = [
+    { n: '24', l: 'Patients actifs', color: '#3D52A0', bg: '#EEF0F8' },
+    { n: '12', l: 'Séances ce mois', color: '#0D9488', bg: '#E6F7F5' },
+  ];
+  kpis.forEach((k, i) => {
+    const kx = 40 + i * (W/2 - 30), ky = 180;
+    roundRect(ctx, kx, ky, W/2 - 60, 160, 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = k.color;
+    ctx.font = 'bold 52px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(k.n, kx + 28, ky + 70);
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 22px "Segoe UI", system-ui';
+    ctx.fillText(k.l, kx + 28, ky + 110);
+    // colored bar
+    roundRect(ctx, kx, ky, 6, 160, 3);
+    ctx.fillStyle = k.color;
+    ctx.fill();
+  });
+
+  // KPI Cards row 2
+  const kpis2 = [
+    { n: '3 240€', l: 'Revenus du mois', color: '#7C3AED', bg: '#F3EEFE' },
+    { n: '3', l: 'RDV à venir', color: '#F59E0B', bg: '#FEF3C7' },
+  ];
+  kpis2.forEach((k, i) => {
+    const kx = 40 + i * (W/2 - 30), ky = 370;
+    roundRect(ctx, kx, ky, W/2 - 60, 160, 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = k.color;
+    ctx.font = 'bold 48px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(k.n, kx + 28, ky + 70);
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 22px "Segoe UI", system-ui';
+    ctx.fillText(k.l, kx + 28, ky + 110);
+    roundRect(ctx, kx, ky, 6, 160, 3);
+    ctx.fillStyle = k.color;
+    ctx.fill();
+  });
+
+  // Chart section
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 28px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('Évolution des séances', 40, 600);
+
+  // Fake chart
+  roundRect(ctx, 40, 620, W - 80, 280, 20);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const data = [6, 8, 7, 10, 9, 12, 11, 14, 12, 15, 13, 12];
+  const months = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  const chartX = 80, chartY = 640, chartW = W - 160, chartH = 220;
+
+  ctx.beginPath();
+  ctx.moveTo(chartX, chartY + chartH);
+  data.forEach((d, i) => {
+    const x = chartX + (i / (data.length - 1)) * chartW;
+    const y = chartY + chartH - (d / 16) * chartH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  // Fill area
+  const lastX = chartX + chartW;
+  const lastY = chartY + chartH - (data[data.length-1] / 16) * chartH;
+  ctx.lineTo(lastX, chartY + chartH);
+  ctx.lineTo(chartX, chartY + chartH);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(61, 82, 160, 0.1)';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  data.forEach((d, i) => {
+    const x = chartX + (i / (data.length - 1)) * chartW;
+    const y = chartY + chartH - (d / 16) * chartH;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#3D52A0';
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Month labels
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '400 18px "Segoe UI", system-ui';
+  ctx.textAlign = 'center';
+  months.forEach((m, i) => {
+    const x = chartX + (i / (months.length - 1)) * chartW;
+    ctx.fillText(m, x, chartY + chartH + 25);
+  });
+
+  // Upcoming appointments
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 28px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('Prochains rendez-vous', 40, 980);
+
+  const appointments = [
+    { time: '14:00', name: 'Marie D.', type: 'Individuel', color: '#3D52A0' },
+    { time: '15:30', name: 'Thomas R.', type: 'En ligne', color: '#0D9488' },
+    { time: '17:00', name: 'Sophie L.', type: 'Individuel', color: '#3D52A0' },
+  ];
+  appointments.forEach((a, i) => {
+    const ay = 1010 + i * 120;
+    roundRect(ctx, 40, ay, W - 80, 100, 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Color bar
+    roundRect(ctx, 40, ay, 6, 100, 3);
+    ctx.fillStyle = a.color;
+    ctx.fill();
+    // Time
+    ctx.fillStyle = a.color;
+    ctx.font = 'bold 28px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(a.time, 70, ay + 45);
+    // Name
+    ctx.fillStyle = '#1E1B4B';
+    ctx.font = '600 26px "Segoe UI", system-ui';
+    ctx.fillText(a.name, 220, ay + 40);
+    // Type badge
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 20px "Segoe UI", system-ui';
+    ctx.fillText(a.type, 220, ay + 72);
+  });
+
+  // Bottom nav
+  const navY = H - 120;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, navY, W, 120);
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, navY); ctx.lineTo(W, navY); ctx.stroke();
+
+  const navItems = ['🏠', '👥', '📋', '📅', '⚙️'];
+  const navLabels = ['Accueil', 'Patients', 'Séances', 'Agenda', 'Plus'];
+  navItems.forEach((icon, i) => {
+    const nx = (W / navItems.length) * i + (W / navItems.length) / 2;
+    ctx.font = '400 32px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(icon, nx, navY + 45);
+    ctx.fillStyle = i === 0 ? '#3D52A0' : '#9CA3AF';
+    ctx.font = `${i === 0 ? '600' : '400'} 18px "Segoe UI", system-ui`;
+    ctx.fillText(navLabels[i], nx, navY + 80);
+    ctx.fillStyle = '#1E1B4B';
+  });
+})();
+
+// ============================================================
+// 4. Screenshot 3 — Patients
+// ============================================================
+(function() {
+  const c = document.getElementById('screen3');
+  const ctx = c.getContext('2d');
+  const W = 1080, H = 1920;
+
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fillRect(0, 0, W, H);
+  drawStatusBar(ctx, 0, 0, W);
+
+  // Header
+  ctx.fillStyle = gradient(ctx, 0, 36, W, 100, '#3D52A0', '#4A63B8');
+  ctx.fillRect(0, 36, W, 100);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('Mes patients', 40, 98);
+  ctx.font = '400 24px "Segoe UI", system-ui';
+  ctx.textAlign = 'right';
+  ctx.fillText('24 patients', W - 40, 98);
+
+  // Search bar
+  roundRect(ctx, 40, 160, W - 80, 64, 16);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = '#9CA3AF';
+  ctx.font = '400 24px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('🔍  Rechercher un patient...', 70, 200);
+
+  // Patient list
+  const patients = [
+    { name: 'Marie Dupont', status: 'active', sessions: 12, last: 'Il y a 2 jours', initials: 'MD', color: '#3D52A0' },
+    { name: 'Thomas Robert', status: 'active', sessions: 8, last: 'Il y a 5 jours', initials: 'TR', color: '#0D9488' },
+    { name: 'Sophie Laurent', status: 'active', sessions: 15, last: 'Hier', initials: 'SL', color: '#7C3AED' },
+    { name: 'Lucas Moreau', status: 'active', sessions: 3, last: 'Il y a 1 semaine', initials: 'LM', color: '#F59E0B' },
+    { name: 'Emma Petit', status: 'active', sessions: 22, last: 'Aujourd\'hui', initials: 'EP', color: '#EF4444' },
+    { name: 'Hugo Bernard', status: 'inactif', sessions: 6, last: 'Il y a 3 semaines', initials: 'HB', color: '#6B7280' },
+    { name: 'Léa Dubois', status: 'active', sessions: 9, last: 'Il y a 3 jours', initials: 'LD', color: '#3D52A0' },
+    { name: 'Nathan Garcia', status: 'active', sessions: 5, last: 'Il y a 4 jours', initials: 'NG', color: '#0D9488' },
+  ];
+
+  patients.forEach((p, i) => {
+    const py = 260 + i * 130;
+    if (py > H - 200) return;
+
+    roundRect(ctx, 40, py, W - 80, 110, 16);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Avatar
+    ctx.beginPath();
+    ctx.arc(110, py + 55, 32, 0, Math.PI * 2);
+    ctx.fillStyle = p.color + '20';
+    ctx.fill();
+    ctx.fillStyle = p.color;
+    ctx.font = 'bold 22px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.initials, 110, py + 63);
+
+    // Name
+    ctx.fillStyle = '#1E1B4B';
+    ctx.font = '600 28px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(p.name, 165, py + 45);
+
+    // Details
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 20px "Segoe UI", system-ui';
+    ctx.fillText(`${p.sessions} séances · ${p.last}`, 165, py + 78);
+
+    // Status badge
+    const isActive = p.status === 'active';
+    const badgeText = isActive ? 'Actif' : 'Inactif';
+    const badgeW = ctx.measureText(badgeText).width + 24;
+    roundRect(ctx, W - 80 - badgeW - 20, py + 38, badgeW, 32, 16);
+    ctx.fillStyle = isActive ? '#D1FAE5' : '#F3F4F6';
+    ctx.fill();
+    ctx.fillStyle = isActive ? '#059669' : '#6B7280';
+    ctx.font = '500 18px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(badgeText, W - 80 - badgeW/2 - 20, py + 60);
+  });
+
+  // FAB
+  ctx.beginPath();
+  ctx.arc(W - 100, H - 220, 40, 0, Math.PI * 2);
+  ctx.fillStyle = '#3D52A0';
+  ctx.fill();
+  ctx.shadowColor = 'rgba(61, 82, 160, 0.3)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 4;
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 40px "Segoe UI", system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('+', W - 100, H - 208);
+
+  // Bottom nav
+  const navY = H - 120;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, navY, W, 120);
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, navY); ctx.lineTo(W, navY); ctx.stroke();
+  const navItems = ['🏠', '👥', '📋', '📅', '⚙️'];
+  const navLabels = ['Accueil', 'Patients', 'Séances', 'Agenda', 'Plus'];
+  navItems.forEach((icon, i) => {
+    const nx = (W / navItems.length) * i + (W / navItems.length) / 2;
+    ctx.font = '400 32px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(icon, nx, navY + 45);
+    ctx.fillStyle = i === 1 ? '#3D52A0' : '#9CA3AF';
+    ctx.font = `${i === 1 ? '600' : '400'} 18px "Segoe UI", system-ui`;
+    ctx.fillText(navLabels[i], nx, navY + 80);
+    ctx.fillStyle = '#1E1B4B';
+  });
+})();
+
+// ============================================================
+// 5. Screenshot 4 — Notes de séance
+// ============================================================
+(function() {
+  const c = document.getElementById('screen4');
+  const ctx = c.getContext('2d');
+  const W = 1080, H = 1920;
+
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fillRect(0, 0, W, H);
+  drawStatusBar(ctx, 0, 0, W);
+
+  // Header
+  ctx.fillStyle = gradient(ctx, 0, 36, W, 100, '#3D52A0', '#4A63B8');
+  ctx.fillRect(0, 36, W, 100);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('← Séance — Marie D.', 40, 98);
+
+  // Date/time
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = '600 26px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('21 mars 2026 · 14:00 - 15:00', 40, 190);
+  ctx.fillStyle = '#6B7280';
+  ctx.font = '400 22px "Segoe UI", system-ui';
+  ctx.fillText('Séance individuelle · 1h', 40, 225);
+
+  // Mood selector
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 24px "Segoe UI", system-ui';
+  ctx.fillText('Humeur du patient', 40, 300);
+
+  const moods = ['😢', '😔', '😐', '🙂', '😊'];
+  const moodColors = ['#EF4444', '#F97316', '#F59E0B', '#84CC16', '#10B981'];
+  moods.forEach((m, i) => {
+    const mx = 60 + i * 200;
+    ctx.beginPath();
+    ctx.arc(mx, 370, 42, 0, Math.PI * 2);
+    ctx.fillStyle = i === 3 ? moodColors[i] + '30' : '#F3F4F6';
+    ctx.fill();
+    if (i === 3) {
+      ctx.strokeStyle = moodColors[i];
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    ctx.font = '400 36px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(m, mx, 382);
+  });
+
+  // Tags
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 24px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('Thèmes abordés', 40, 470);
+
+  const tags = ['Anxiété', 'Travail', 'Sommeil', 'Relations'];
+  let tx = 40;
+  tags.forEach((t, i) => {
+    const tw = ctx.measureText(t).width + 32;
+    roundRect(ctx, tx, 490, tw, 44, 22);
+    ctx.fillStyle = i < 2 ? '#3D52A0' + '15' : '#F3F4F6';
+    ctx.fill();
+    ctx.strokeStyle = i < 2 ? '#3D52A0' + '40' : '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = i < 2 ? '#3D52A0' : '#6B7280';
+    ctx.font = '500 20px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(t, tx + tw/2, 518);
+    tx += tw + 12;
+  });
+
+  // Notes
+  ctx.fillStyle = '#1E1B4B';
+  ctx.font = 'bold 24px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('Notes de séance', 40, 600);
+
+  // Lock icon
+  ctx.fillStyle = '#0D9488';
+  ctx.font = '400 20px "Segoe UI", system-ui';
+  ctx.textAlign = 'right';
+  ctx.fillText('🔒 Chiffré AES-256', W - 40, 600);
+
+  roundRect(ctx, 40, 620, W - 80, 500, 20);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const noteLines = [
+    'La patiente rapporte une amélioration de',
+    'son sommeil depuis la dernière séance. Elle',
+    'a appliqué les techniques de relaxation',
+    'progressive discutées précédemment.',
+    '',
+    'Points abordés :',
+    '• Gestion de l\'anxiété au travail',
+    '• Exercices de respiration (4-7-8)',
+    '• Restructuration cognitive : pensées',
+    '  automatiques liées au perfectionnisme',
+    '',
+    'Objectifs pour la prochaine séance :',
+    '• Continuer le journal de pensées',
+    '• Pratiquer la pleine conscience 10min/jour',
+  ];
+
+  ctx.fillStyle = '#374151';
+  ctx.font = '400 24px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  noteLines.forEach((line, i) => {
+    ctx.fillText(line, 70, 660 + i * 32);
+  });
+
+  // Autosave indicator
+  ctx.fillStyle = '#10B981';
+  ctx.font = '500 20px "Segoe UI", system-ui';
+  ctx.textAlign = 'left';
+  ctx.fillText('✓ Sauvegardé automatiquement', 70, 1140);
+
+  // AI button
+  roundRect(ctx, 40, 1200, W - 80, 72, 16);
+  ctx.fillStyle = '#0D9488' + '15';
+  ctx.fill();
+  ctx.strokeStyle = '#0D9488' + '40';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.fillStyle = '#0D9488';
+  ctx.font = '600 26px "Segoe UI", system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('🤖  Générer un résumé IA', W/2, 1244);
+
+  // Bottom nav
+  const navY = H - 120;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, navY, W, 120);
+  ctx.strokeStyle = '#E5E7EB';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, navY); ctx.lineTo(W, navY); ctx.stroke();
+  const navItems = ['🏠', '👥', '📋', '📅', '⚙️'];
+  const navLabels = ['Accueil', 'Patients', 'Séances', 'Agenda', 'Plus'];
+  navItems.forEach((icon, i) => {
+    const nx = (W / navItems.length) * i + (W / navItems.length) / 2;
+    ctx.font = '400 32px "Segoe UI", system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(icon, nx, navY + 45);
+    ctx.fillStyle = i === 2 ? '#3D52A0' : '#9CA3AF';
+    ctx.font = `${i === 2 ? '600' : '400'} 18px "Segoe UI", system-ui`;
+    ctx.fillText(navLabels[i], nx, navY + 80);
+    ctx.fillStyle = '#1E1B4B';
+  });
+})();
+
+// ============================================================
+// 6. Screenshot 5 — Sécurité & HDS
+// ============================================================
+(function() {
+  const c = document.getElementById('screen5');
+  const ctx = c.getContext('2d');
+  const W = 1080, H = 1920;
+
+  ctx.fillStyle = '#F8F7FF';
+  ctx.fillRect(0, 0, W, H);
+  drawStatusBar(ctx, 0, 0, W);
+
+  // Dark header
+  const hdrH = 400;
+  ctx.fillStyle = gradient(ctx, 0, 36, W, hdrH, '#1E1B4B', '#2D2A6E');
+  ctx.fillRect(0, 36, W, hdrH);
+
+  // Shield icon
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '400 100px "Segoe UI", system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('🛡️', W/2, 200);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 40px "Segoe UI", system-ui';
+  ctx.fillText('Sécurité HDS', W/2, 290);
+
+  ctx.fillStyle = '#B8C5E8';
+  ctx.font = '400 24px "Segoe UI", system-ui';
+  ctx.fillText('Vos données patients sont protégées', W/2, 340);
+  ctx.fillText('par les plus hauts standards de sécurité', W/2, 372);
+
+  // Security features
+  const features = [
+    { icon: '🔐', title: 'Chiffrement AES-256-GCM', desc: 'Toutes les notes de séance et données sensibles sont chiffrées avec un algorithme de grade militaire.' },
+    { icon: '🏥', title: 'Hébergement certifié HDS', desc: 'Serveurs en France, certifiés Hébergeur de Données de Santé conformément à la loi.' },
+    { icon: '🔑', title: 'Authentification MFA', desc: 'Double authentification obligatoire via TOTP (Google Authenticator, Authy).' },
+    { icon: '📋', title: 'Conformité RGPD', desc: 'Droit à l\'effacement, export des données, consentements versionnés et auditables.' },
+    { icon: '👁️', title: 'Audit des accès', desc: 'Chaque accès aux données patients est loggé avec horodatage et adresse IP.' },
+    { icon: '🔄', title: 'Rotation des clés', desc: 'Les clés de chiffrement sont versionnées et peuvent être rotées sans perte de données.' },
+  ];
+
+  features.forEach((f, i) => {
+    const fy = 480 + i * 190;
+    if (fy > H - 200) return;
+
+    roundRect(ctx, 40, fy, W - 80, 170, 20);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#E5E7EB';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.font = '400 48px "Segoe UI", system-ui';
+    ctx.textAlign = 'left';
+    ctx.fillText(f.icon, 70, fy + 55);
+
+    ctx.fillStyle = '#1E1B4B';
+    ctx.font = 'bold 26px "Segoe UI", system-ui';
+    ctx.fillText(f.title, 140, fy + 48);
+
+    ctx.fillStyle = '#6B7280';
+    ctx.font = '400 22px "Segoe UI", system-ui';
+    // Word wrap
+    const words = f.desc.split(' ');
+    let line = '', ly = fy + 85;
+    words.forEach(word => {
+      const test = line + word + ' ';
+      if (ctx.measureText(test).width > W - 200) {
+        ctx.fillText(line.trim(), 140, ly);
+        ly += 30;
+        line = word + ' ';
+      } else {
+        line = test;
+      }
+    });
+    if (line.trim()) ctx.fillText(line.trim(), 140, ly);
+  });
+})();
+
+// ============================================================
+// Download all
+// ============================================================
+function downloadAll() {
+  const assets = [
+    { id: 'feature', name: 'feature-graphic-1024x500.png' },
+    { id: 'screen1', name: 'screenshot-01-login.png' },
+    { id: 'screen2', name: 'screenshot-02-dashboard.png' },
+    { id: 'screen3', name: 'screenshot-03-patients.png' },
+    { id: 'screen4', name: 'screenshot-04-notes.png' },
+    { id: 'screen5', name: 'screenshot-05-securite.png' },
+  ];
+  assets.forEach(a => {
+    const canvas = document.getElementById(a.id);
+    const link = document.createElement('a');
+    link.download = a.name;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+</script>
+</body>
+</html>
