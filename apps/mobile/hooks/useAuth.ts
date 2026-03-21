@@ -19,7 +19,57 @@ import {
   KEYCLOAK_DISCOVERY,
   type TokenSet,
 } from '@/lib/auth';
+import { useAuthStore } from '@/store/auth.store';
 import type { AuthRequest, AuthSessionResult } from 'expo-auth-session';
+
+/**
+ * Decode JWT payload (no verification — server validates the token).
+ * Returns null if the token is malformed.
+ */
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split('.');
+    const payload = parts[1];
+    if (!payload) return null;
+    // Base64url → Base64 → decode
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(base64);
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Extract user info from JWT and populate the auth store.
+ */
+function syncStoreFromToken(accessToken: string): void {
+  const payload = decodeJwtPayload(accessToken);
+  if (!payload) return;
+
+  const sub = payload.sub as string | undefined;
+  const name = (payload.name ?? payload.preferred_username ?? null) as string | null;
+  const email = (payload.email ?? null) as string | null;
+  const roles = (payload.realm_access as { roles?: string[] } | undefined)?.roles;
+  const role = roles?.includes('admin') ? 'admin' : roles?.includes('psychologist') ? 'psychologist' : 'psychologist';
+
+  if (sub && name && email) {
+    useAuthStore.getState().setPsychologist({
+      psychologistId: sub,
+      name,
+      email,
+      role,
+    });
+  } else if (sub) {
+    // Minimal info — at least set the ID
+    useAuthStore.getState().setPsychologist({
+      psychologistId: sub,
+      name: name ?? email ?? 'Utilisateur',
+      email: email ?? '',
+      role,
+    });
+  }
+}
 
 export interface AuthState {
   accessToken: string | null;
@@ -71,6 +121,7 @@ export function useAuthProvider(): AuthContextValue {
           const refreshed = await refreshAccessToken(stored.refreshToken, discovery);
           if (refreshed) {
             setTokenSet(refreshed);
+            syncStoreFromToken(refreshed.accessToken);
             setState({
               accessToken: refreshed.accessToken,
               isAuthenticated: true,
@@ -84,6 +135,9 @@ export function useAuthProvider(): AuthContextValue {
         }
 
         setTokenSet(stored);
+        if (!isTokenExpired(stored.expiresAt)) {
+          syncStoreFromToken(stored.accessToken);
+        }
         setState({
           accessToken: stored.accessToken,
           isAuthenticated: !isTokenExpired(stored.expiresAt),
@@ -110,6 +164,7 @@ export function useAuthProvider(): AuthContextValue {
             discovery,
           );
           setTokenSet(tokens);
+          syncStoreFromToken(tokens.accessToken);
           setState({
             accessToken: tokens.accessToken,
             isAuthenticated: true,
@@ -170,6 +225,7 @@ export function useAuthProvider(): AuthContextValue {
       await revokeTokens(tokenSet, discovery);
     }
     setTokenSet(null);
+    useAuthStore.getState().clear();
     setState({ accessToken: null, isAuthenticated: false, isLoading: false, error: null });
   }, [tokenSet, discovery]);
 
@@ -190,11 +246,13 @@ export function useAuthProvider(): AuthContextValue {
     const refreshed = await refreshAccessToken(tokenSet.refreshToken, discovery);
     if (!refreshed) {
       setTokenSet(null);
+      useAuthStore.getState().clear();
       setState({ accessToken: null, isAuthenticated: false, isLoading: false, error: null });
       return null;
     }
 
     setTokenSet(refreshed);
+    syncStoreFromToken(refreshed.accessToken);
     setState((prev) => ({ ...prev, accessToken: refreshed.accessToken, isAuthenticated: true }));
     return refreshed.accessToken;
   }, [tokenSet, discovery]);
