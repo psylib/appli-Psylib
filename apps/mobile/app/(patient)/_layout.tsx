@@ -1,30 +1,25 @@
 /**
  * Patient Portal Layout — 3 tabs: Accueil | Bien-etre | Journal
- * Ionicons instead of emojis, accent teal, consistent tab bar height
+ * Custom flat illustrated SVG icons, accent teal, consistent tab bar height
  */
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
 import { PatientAuthContext, usePatientAuthProvider, usePatientAuth } from '@/hooks/usePatientAuth';
-
-type IoniconsName = keyof typeof Ionicons.glyphMap;
+import { IconPatientHome, IconPatientHeart, IconPatientBook } from '@/components/icons/PatientIcons';
 
 function TabIcon({
-  name,
-  focusedName,
+  Icon,
   focused,
 }: {
-  name: IoniconsName;
-  focusedName: IoniconsName;
+  Icon: React.FC<{ size?: number; color?: string }>;
   focused: boolean;
 }) {
   return (
     <View style={styles.tabIconContainer}>
       {focused && <View style={styles.activeIndicator} />}
-      <Ionicons
-        name={focused ? focusedName : name}
+      <Icon
         size={24}
         color={focused ? Colors.accent : Colors.tabInactive}
       />
@@ -57,7 +52,7 @@ function PatientTabsInner() {
         options={{
           title: 'Accueil',
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="home-outline" focusedName="home" focused={focused} />
+            <TabIcon Icon={IconPatientHome} focused={focused} />
           ),
         }}
       />
@@ -66,7 +61,7 @@ function PatientTabsInner() {
         options={{
           title: 'Bien-etre',
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="heart-outline" focusedName="heart" focused={focused} />
+            <TabIcon Icon={IconPatientHeart} focused={focused} />
           ),
         }}
       />
@@ -75,7 +70,7 @@ function PatientTabsInner() {
         options={{
           title: 'Journal',
           tabBarIcon: ({ focused }) => (
-            <TabIcon name="book-outline" focusedName="book" focused={focused} />
+            <TabIcon Icon={IconPatientBook} focused={focused} />
           ),
           headerShown: false,
         }}
@@ -113,7 +108,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   tabLabel: {
-    fontSize: 12, // Fixed WCAG: was 10pt, now 12pt minimum
+    fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
     fontWeight: '600',
     marginTop: 4,

@@ -1,5 +1,6 @@
 /**
  * ProfileSheet — Bottom sheet with links to Settings, Analytics, Invoices, Legal, Logout
+ * Uses custom flat illustrated SVG icons.
  */
 import React from 'react';
 import {
@@ -13,11 +14,17 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  IconChart,
+  IconReceipt,
+  IconChat,
+  IconSparkle,
+  IconSettings,
+  IconLogout,
+  IconChevronRight,
+} from '@/components/icons/AppIcons';
 import { Colors } from '@/constants/colors';
 import { useAuthStore } from '@/store/auth.store';
-
-type IoniconsName = keyof typeof Ionicons.glyphMap;
 
 interface ProfileSheetProps {
   visible: boolean;
@@ -25,11 +32,10 @@ interface ProfileSheetProps {
 }
 
 interface SheetItem {
-  icon: IoniconsName;
+  Icon: React.FC<{ size?: number; color?: string }>;
   label: string;
   onPress: () => void;
   color?: string;
-  destructive?: boolean;
 }
 
 export function ProfileSheet({ visible, onClose }: ProfileSheetProps) {
@@ -49,11 +55,11 @@ export function ProfileSheet({ visible, onClose }: ProfileSheetProps) {
   };
 
   const menuItems: SheetItem[] = [
-    { icon: 'bar-chart-outline', label: 'Analytics', onPress: () => navigate('/analytics'), color: Colors.warm },
-    { icon: 'receipt-outline', label: 'Factures', onPress: () => navigate('/invoices'), color: Colors.primary },
-    { icon: 'chatbubbles-outline', label: 'Messages', onPress: () => navigate('/messages'), color: Colors.accent },
-    { icon: 'sparkles-outline', label: 'Assistant IA', onPress: () => navigate('/ai-summary'), color: Colors.accent },
-    { icon: 'settings-outline', label: 'Parametres', onPress: () => navigate('/settings') },
+    { Icon: IconChart, label: 'Analytics', onPress: () => navigate('/analytics'), color: Colors.warm },
+    { Icon: IconReceipt, label: 'Factures', onPress: () => navigate('/invoices'), color: Colors.primary },
+    { Icon: IconChat, label: 'Messages', onPress: () => navigate('/messages'), color: Colors.accent },
+    { Icon: IconSparkle, label: 'Assistant IA', onPress: () => navigate('/ai-summary'), color: Colors.accent },
+    { Icon: IconSettings, label: 'Parametres', onPress: () => navigate('/settings') },
   ];
 
   const legalItems = [
@@ -94,22 +100,25 @@ export function ProfileSheet({ visible, onClose }: ProfileSheetProps) {
 
           {/* Menu items */}
           <View style={styles.menuSection}>
-            {menuItems.map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                style={styles.menuItem}
-                onPress={item.onPress}
-                accessibilityLabel={item.label}
-                accessibilityRole="button"
-                activeOpacity={0.7}
-              >
-                <View style={[styles.menuIcon, item.color ? { backgroundColor: `${item.color}15` } : { backgroundColor: Colors.surface }]}>
-                  <Ionicons name={item.icon} size={20} color={item.color ?? Colors.muted} />
-                </View>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={16} color={Colors.mutedLight} />
-              </TouchableOpacity>
-            ))}
+            {menuItems.map((item) => {
+              const { Icon } = item;
+              return (
+                <TouchableOpacity
+                  key={item.label}
+                  style={styles.menuItem}
+                  onPress={item.onPress}
+                  accessibilityLabel={item.label}
+                  accessibilityRole="button"
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.menuIcon, item.color ? { backgroundColor: `${item.color}15` } : { backgroundColor: Colors.surface }]}>
+                    <Icon size={20} color={item.color ?? Colors.muted} />
+                  </View>
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <IconChevronRight size={16} color={Colors.mutedLight} />
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* Legal */}
@@ -133,7 +142,7 @@ export function ProfileSheet({ visible, onClose }: ProfileSheetProps) {
             accessibilityLabel="Se deconnecter"
             accessibilityRole="button"
           >
-            <Ionicons name="log-out-outline" size={20} color={Colors.error} />
+            <IconLogout size={20} color={Colors.error} />
             <Text style={styles.logoutText}>Se deconnecter</Text>
           </TouchableOpacity>
 

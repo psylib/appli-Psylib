@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { SessionListItem } from '@/components/SessionListItem';
+import { IconDocument } from '@/components/icons/AppIcons';
 import { Colors } from '@/constants/colors';
 import { useSessions } from '@/hooks/useSessions';
 import type { Session } from '@psyscale/shared-types';
@@ -142,7 +142,7 @@ export default function SessionsScreen() {
             }
             ListEmptyComponent={
               <View style={styles.empty}>
-                <Ionicons name="document-text-outline" size={64} color={Colors.mutedLight} />
+                <IconDocument size={64} color={Colors.mutedLight} />
                 <Text style={styles.emptyTitle}>Aucune seance</Text>
                 <Text style={styles.emptySubtitle}>
                   {activeFilter !== 'all'

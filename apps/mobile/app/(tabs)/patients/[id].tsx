@@ -14,8 +14,19 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
+import {
+  IconPersonOutline,
+  IconMore,
+  IconDocument,
+  IconAddCircle,
+  IconChat,
+  IconMail,
+  IconPhone,
+  IconCalendar,
+  IconCompass,
+  IconClock,
+} from '@/components/icons/AppIcons';
 import { Badge } from '@/components/ui/Badge';
 import { SegmentedTabs } from '@/components/SegmentedTabs';
 import { SessionListItem } from '@/components/SessionListItem';
@@ -78,7 +89,7 @@ export default function PatientDetailScreen() {
       <>
         <Stack.Screen options={{ title: 'Introuvable' }} />
         <View style={styles.loading}>
-          <Ionicons name="person-outline" size={48} color={Colors.mutedLight} />
+          <IconPersonOutline size={48} color={Colors.mutedLight} />
           <Text style={styles.notFound}>Patient introuvable</Text>
         </View>
       </>
@@ -111,7 +122,7 @@ export default function PatientDetailScreen() {
               accessibilityLabel="Plus d'options"
               accessibilityRole="button"
             >
-              <Ionicons name="ellipsis-horizontal" size={22} color={Colors.text} />
+              <IconMore size={22} color={Colors.text} />
             </TouchableOpacity>
           ),
         }}
@@ -190,23 +201,23 @@ function ProfileTab({ patient }: { patient: any }) {
     <Card elevated style={styles.profileCard}>
       <View style={styles.details}>
         {patient.email != null && patient.email.length > 0 && (
-          <InfoRow icon="mail-outline" label="Email" value={patient.email} />
+          <InfoRow icon="mail" label="Email" value={patient.email} />
         )}
         {patient.phone != null && patient.phone.length > 0 && (
-          <InfoRow icon="call-outline" label="Telephone" value={patient.phone} />
+          <InfoRow icon="phone" label="Telephone" value={patient.phone} />
         )}
         {patient.birthDate != null && (
           <InfoRow
-            icon="calendar-outline"
+            icon="calendar"
             label="Date de naissance"
             value={new Date(patient.birthDate).toLocaleDateString('fr-FR')}
           />
         )}
         {patient.source != null && patient.source.length > 0 && (
-          <InfoRow icon="navigate-outline" label="Source" value={patient.source} />
+          <InfoRow icon="compass" label="Source" value={patient.source} />
         )}
         <InfoRow
-          icon="time-outline"
+          icon="clock"
           label="Cree le"
           value={new Date(patient.createdAt).toLocaleDateString('fr-FR', {
             day: 'numeric',
@@ -240,7 +251,7 @@ function SessionsTab({
         </View>
       ) : sessionsData == null || sessionsData.data.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="document-text-outline" size={48} color={Colors.mutedLight} />
+          <IconDocument size={48} color={Colors.mutedLight} />
           <Text style={styles.emptyTitle}>Aucune seance</Text>
           <Text style={styles.emptyText}>Commencez le suivi de ce patient</Text>
         </View>
@@ -264,7 +275,7 @@ function SessionsTab({
         accessibilityRole="button"
         activeOpacity={0.75}
       >
-        <Ionicons name="add-circle-outline" size={20} color={Colors.white} />
+        <IconAddCircle size={20} color={Colors.white} />
         <Text style={styles.newSessionText}>Nouvelle seance</Text>
       </TouchableOpacity>
     </View>
@@ -274,25 +285,38 @@ function SessionsTab({
 function MessagesTab() {
   return (
     <View style={styles.emptyState}>
-      <Ionicons name="chatbubbles-outline" size={48} color={Colors.mutedLight} />
+      <IconChat size={48} color={Colors.mutedLight} />
       <Text style={styles.emptyTitle}>Messages</Text>
       <Text style={styles.emptyText}>La messagerie sera bientot disponible</Text>
     </View>
   );
 }
 
+type InfoIconName = 'mail' | 'phone' | 'calendar' | 'compass' | 'clock';
+
+const INFO_ICON_MAP: Record<InfoIconName, React.FC<{ size?: number; color?: string }>> = {
+  mail: IconMail,
+  phone: IconPhone,
+  calendar: IconCalendar,
+  compass: IconCompass,
+  clock: IconClock,
+};
+
 function InfoRow({
   icon,
   label,
   value,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: InfoIconName;
   label: string;
   value: string;
 }) {
+  const IconComp = INFO_ICON_MAP[icon];
   return (
     <View style={infoStyles.row} accessibilityLabel={`${label}: ${value}`}>
-      <Ionicons name={icon} size={16} color={Colors.muted} style={infoStyles.icon} />
+      <View style={infoStyles.icon}>
+        <IconComp size={16} color={Colors.muted} />
+      </View>
       <Text style={infoStyles.label}>{label}</Text>
       <Text style={infoStyles.value}>{value}</Text>
     </View>

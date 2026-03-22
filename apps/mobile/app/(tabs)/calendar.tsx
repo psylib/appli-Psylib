@@ -15,12 +15,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
+import { IconCalendar as IconCalendarEmpty } from '@/components/icons/AppIcons';
 import { Badge } from '@/components/ui/Badge';
 import { Colors } from '@/constants/colors';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
+import { NavPills } from '@/components/NavPills';
 import { AppointmentStatus } from '@psyscale/shared-types';
 import type { Appointment, PaginatedResponse } from '@psyscale/shared-types';
 
@@ -117,6 +118,9 @@ export default function CalendarScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      {/* Navigation Pills */}
+      <NavPills />
+
       {/* En-tête mois */}
       <View style={styles.monthHeader}>
         <TouchableOpacity
@@ -264,7 +268,7 @@ export default function CalendarScreen() {
           }}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="calendar-outline" size={64} color={Colors.mutedLight} />
+              <IconCalendarEmpty size={64} color={Colors.mutedLight} />
               <Text style={styles.emptyTitle}>Aucun rendez-vous</Text>
               <Text style={styles.emptySubtitle}>
                 Pas de RDV prevu pour ce jour

@@ -1,13 +1,18 @@
 /**
- * KpiCard — KPI card with icon circle for the dashboard
+ * KpiCard — KPI card with custom SVG icon for the dashboard
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
+import { IconPeople, IconDocument } from '@/components/icons/AppIcons';
 
-type IoniconsName = keyof typeof Ionicons.glyphMap;
+type IconName = 'people' | 'document-text';
+
+const ICON_MAP: Record<IconName, React.FC<{ size?: number; color?: string }>> = {
+  'people': IconPeople,
+  'document-text': IconDocument,
+};
 
 interface KpiCardProps {
   title: string;
@@ -18,7 +23,7 @@ interface KpiCardProps {
     isPositive: boolean;
   };
   accentColor?: string;
-  icon?: IoniconsName;
+  icon?: IconName;
 }
 
 export function KpiCard({
@@ -29,11 +34,13 @@ export function KpiCard({
   accentColor = Colors.primary,
   icon,
 }: KpiCardProps) {
+  const IconComponent = icon != null ? ICON_MAP[icon] : null;
+
   return (
     <View style={styles.card}>
-      {icon != null ? (
+      {IconComponent != null ? (
         <View style={[styles.iconCircle, { backgroundColor: `${accentColor}15` }]}>
-          <Ionicons name={icon} size={18} color={accentColor} />
+          <IconComponent size={18} color={accentColor} />
         </View>
       ) : (
         <View style={[styles.indicator, { backgroundColor: accentColor }]} />
@@ -58,7 +65,7 @@ export function KpiCard({
             ]}
             accessibilityLabel={`Tendance: ${trend.isPositive ? '+' : '-'}${Math.abs(trend.value)}%`}
           >
-            {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
+            {trend.isPositive ? '\u2191' : '\u2193'} {Math.abs(trend.value)}%
           </Text>
         </View>
       )}

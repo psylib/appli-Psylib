@@ -1,5 +1,6 @@
 /**
  * NotificationDrawer — Modal sheet from header bell icon
+ * Uses custom flat illustrated SVG icons.
  */
 import React from 'react';
 import {
@@ -12,7 +13,14 @@ import {
   FlatList,
   Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import {
+  IconCalendar,
+  IconHeart,
+  IconCard,
+  IconSparkle,
+  IconBell,
+  IconBellOff,
+} from '@/components/icons/AppIcons';
 import { Colors } from '@/constants/colors';
 
 interface Notification {
@@ -42,11 +50,11 @@ function timeAgo(dateStr: string): string {
   return `Il y a ${days}j`;
 }
 
-const TYPE_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  session_reminder: 'calendar-outline',
-  mood_alert: 'heart-outline',
-  payment: 'card-outline',
-  ai_complete: 'sparkles-outline',
+const TYPE_ICONS: Record<string, React.FC<{ size?: number; color?: string }>> = {
+  session_reminder: IconCalendar,
+  mood_alert: IconHeart,
+  payment: IconCard,
+  ai_complete: IconSparkle,
 };
 
 export function NotificationDrawer({
@@ -83,30 +91,32 @@ export function NotificationDrawer({
           <FlatList
             data={notifications.slice(0, 20)}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={[styles.notifItem, item.readAt == null && styles.notifUnread]}>
-                <View style={styles.notifIcon}>
-                  <Ionicons
-                    name={TYPE_ICONS[item.type] ?? 'notifications-outline'}
-                    size={20}
-                    color={item.readAt == null ? Colors.primary : Colors.muted}
-                  />
+            renderItem={({ item }) => {
+              const IconComponent = TYPE_ICONS[item.type] ?? IconBell;
+              return (
+                <View style={[styles.notifItem, item.readAt == null && styles.notifUnread]}>
+                  <View style={styles.notifIcon}>
+                    <IconComponent
+                      size={20}
+                      color={item.readAt == null ? Colors.primary : Colors.muted}
+                    />
+                  </View>
+                  <View style={styles.notifContent}>
+                    <Text style={[styles.notifTitle, item.readAt == null && styles.notifTitleUnread]} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.notifBody} numberOfLines={2}>
+                      {item.body}
+                    </Text>
+                    <Text style={styles.notifTime}>{timeAgo(item.createdAt)}</Text>
+                  </View>
+                  {item.readAt == null && <View style={styles.unreadDot} />}
                 </View>
-                <View style={styles.notifContent}>
-                  <Text style={[styles.notifTitle, item.readAt == null && styles.notifTitleUnread]} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.notifBody} numberOfLines={2}>
-                    {item.body}
-                  </Text>
-                  <Text style={styles.notifTime}>{timeAgo(item.createdAt)}</Text>
-                </View>
-                {item.readAt == null && <View style={styles.unreadDot} />}
-              </View>
-            )}
+              );
+            }}
             ListEmptyComponent={
               <View style={styles.empty}>
-                <Ionicons name="notifications-off-outline" size={48} color={Colors.mutedLight} />
+                <IconBellOff size={48} color={Colors.mutedLight} />
                 <Text style={styles.emptyText}>Aucune notification</Text>
               </View>
             }

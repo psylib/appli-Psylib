@@ -4,7 +4,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { IconCalendar, IconSun } from '@/components/icons/AppIcons';
 import { Colors } from '@/constants/colors';
 
 interface TodayAppointment {
@@ -41,7 +41,7 @@ export function HeroTodayCard({ appointments, onAppointmentPress }: HeroTodayCar
           </Text>
         </View>
         <View style={styles.iconCircle}>
-          <Ionicons name="calendar" size={20} color={Colors.white} />
+          <IconCalendar size={20} color={Colors.white} />
         </View>
       </View>
 
@@ -73,7 +73,7 @@ export function HeroTodayCard({ appointments, onAppointmentPress }: HeroTodayCar
         </View>
       ) : (
         <View style={styles.emptyContainer}>
-          <Ionicons name="sunny-outline" size={24} color="rgba(255,255,255,0.6)" />
+          <IconSun size={24} color="rgba(255,255,255,0.6)" />
           <Text style={styles.emptyText}>Journee libre</Text>
         </View>
       )}

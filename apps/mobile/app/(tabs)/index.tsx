@@ -13,8 +13,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
+import {
+  IconAdd,
+  IconBell,
+  IconPersonAdd,
+  IconCreate,
+  IconCircleOutline,
+} from '@/components/icons/AppIcons';
 import { KpiCard } from '@/components/KpiCard';
 import { HeroTodayCard } from '@/components/HeroTodayCard';
 import { WeekStrip } from '@/components/WeekStrip';
@@ -24,6 +30,7 @@ import { NotificationDrawer } from '@/components/NotificationDrawer';
 import { useAuthStore } from '@/store/auth.store';
 import { useDashboardStats, useTodayAppointments, useDashboardChecklist } from '@/hooks/useDashboard';
 import { useUnreadCount } from '@/hooks/useNotifications';
+import { NavPills } from '@/components/NavPills';
 
 function formatDateFR(): string {
   const now = new Date();
@@ -107,7 +114,7 @@ export default function DashboardScreen() {
               accessibilityLabel="Nouvelle seance"
               accessibilityRole="button"
             >
-              <Ionicons name="add" size={22} color={Colors.text} />
+              <IconAdd size={22} color={Colors.text} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.headerIconButton}
@@ -115,7 +122,7 @@ export default function DashboardScreen() {
               accessibilityLabel={`Notifications, ${unreadCount} non lues`}
               accessibilityRole="button"
             >
-              <Ionicons name="notifications-outline" size={22} color={Colors.text} />
+              <IconBell size={22} color={Colors.text} />
               {unreadCount > 0 && (
                 <View style={styles.notifBadge}>
                   <Text style={styles.notifBadgeText}>
@@ -126,6 +133,9 @@ export default function DashboardScreen() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Navigation Pills */}
+        <NavPills />
 
         {/* Hero Today Card */}
         <HeroTodayCard
@@ -160,7 +170,7 @@ export default function DashboardScreen() {
             <View style={styles.checklistContainer}>
               {incompleteChecklist.map((item) => (
                 <View key={item.key} style={styles.checklistItem}>
-                  <Ionicons name="ellipse-outline" size={16} color={Colors.muted} />
+                  <IconCircleOutline size={16} color={Colors.muted} />
                   <Text style={styles.checklistLabel}>{item.label}</Text>
                 </View>
               ))}
@@ -176,7 +186,7 @@ export default function DashboardScreen() {
             accessibilityLabel="Ajouter un patient"
           >
             <View style={[styles.quickActionIconCircle, { backgroundColor: `${Colors.primary}20` }]}>
-              <Ionicons name="person-add-outline" size={20} color={Colors.primary} />
+              <IconPersonAdd size={20} color={Colors.primary} />
             </View>
             <Text style={styles.quickActionLabel}>+ Patient</Text>
           </TouchableOpacity>
@@ -186,7 +196,7 @@ export default function DashboardScreen() {
             accessibilityLabel="Nouvelle seance"
           >
             <View style={[styles.quickActionIconCircle, { backgroundColor: `${Colors.accent}20` }]}>
-              <Ionicons name="create-outline" size={20} color={Colors.accent} />
+              <IconCreate size={20} color={Colors.accent} />
             </View>
             <Text style={styles.quickActionLabel}>+ Seance</Text>
           </TouchableOpacity>
@@ -216,7 +226,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.bg },
   scroll: { flex: 1 },
-  content: { padding: 20, gap: 24, paddingBottom: 100 },
+  content: { padding: 20, gap: 24, paddingBottom: 40 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,5 +1,5 @@
 /**
- * Patients List Screen — Search + list with Ionicons
+ * Patients List Screen — Search + list with custom SVG icons
  */
 
 import React, { useState } from 'react';
@@ -14,11 +14,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { PatientListItem } from '@/components/PatientListItem';
+import { IconAdd, IconSearch, IconPeople } from '@/components/icons/AppIcons';
 import { SkeletonListItem } from '@/components/SkeletonCard';
 import { Colors } from '@/constants/colors';
 import { usePatients } from '@/hooks/usePatients';
+import { NavPills } from '@/components/NavPills';
 import type { Patient } from '@psyscale/shared-types';
 
 export default function PatientsScreen() {
@@ -53,16 +54,19 @@ export default function PatientsScreen() {
               accessibilityLabel="Ajouter un patient"
               accessibilityRole="button"
             >
-              <Ionicons name="add" size={24} color={Colors.primary} />
+              <IconAdd size={24} color={Colors.primary} />
             </TouchableOpacity>
           ),
         }}
       />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        {/* Navigation Pills */}
+        <NavPills />
+
         {/* Search bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchRow}>
-            <Ionicons name="search-outline" size={18} color={Colors.muted} />
+            <IconSearch size={18} color={Colors.muted} />
             <TextInput
               style={styles.searchInput}
               value={searchQuery}
@@ -103,7 +107,7 @@ export default function PatientsScreen() {
             }
             ListEmptyComponent={
               <View style={styles.empty}>
-                <Ionicons name="people-outline" size={64} color={Colors.mutedLight} />
+                <IconPeople size={64} color={Colors.mutedLight} />
                 <Text style={styles.emptyTitle}>
                   {searchQuery.length > 0 ? 'Aucun resultat' : 'Aucun patient'}
                 </Text>
@@ -118,7 +122,7 @@ export default function PatientsScreen() {
                     onPress={() => router.push('/(tabs)/patients/new')}
                     accessibilityLabel="Ajouter un patient"
                   >
-                    <Ionicons name="add" size={18} color={Colors.white} />
+                    <IconAdd size={18} color={Colors.white} />
                     <Text style={styles.emptyCtaText}>Ajouter un patient</Text>
                   </TouchableOpacity>
                 )}
@@ -176,7 +180,7 @@ const styles = StyleSheet.create({
     color: Colors.muted,
   },
   list: {
-    paddingBottom: 100,
+    paddingBottom: 40,
   },
   listEmpty: {
     flex: 1,
