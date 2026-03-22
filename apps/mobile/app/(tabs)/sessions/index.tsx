@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { SessionListItem } from '@/components/SessionListItem';
 import { Colors } from '@/constants/colors';
 import { useSessions } from '@/hooks/useSessions';
@@ -141,14 +142,12 @@ export default function SessionsScreen() {
             }
             ListEmptyComponent={
               <View style={styles.empty}>
-                <Text style={styles.emptyEmoji} accessibilityElementsHidden>
-                  📋
-                </Text>
-                <Text style={styles.emptyTitle}>Aucune séance</Text>
+                <Ionicons name="document-text-outline" size={64} color={Colors.mutedLight} />
+                <Text style={styles.emptyTitle}>Aucune seance</Text>
                 <Text style={styles.emptySubtitle}>
                   {activeFilter !== 'all'
                     ? 'Essayez de changer le filtre de date'
-                    : 'Créez votre première séance avec le bouton +'}
+                    : 'Creez votre premiere seance avec le bouton +'}
                 </Text>
               </View>
             }
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 12, // Fixed WCAG: was 7pt, now 12pt for 44pt min touch target
     borderRadius: 99,
     backgroundColor: Colors.surface,
     borderWidth: 1,
@@ -234,10 +233,6 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
     paddingHorizontal: 32,
     gap: 8,
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 8,
   },
   emptyTitle: {
     fontSize: 18,

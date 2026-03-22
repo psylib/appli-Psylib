@@ -1,8 +1,8 @@
 /**
  * Dashboard — Accueil
- * Salutation + 4 KPI cards + timeline RDV du jour + quick actions + activation checklist
+ * Header greeting (no "Dr.") + [+] [bell] + hero today card + 2 KPI + checklist + quick actions + week strip
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,17 @@ import {
   TouchableOpacity,
   RefreshControl,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
 import { KpiCard } from '@/components/KpiCard';
+import { HeroTodayCard } from '@/components/HeroTodayCard';
+import { WeekStrip } from '@/components/WeekStrip';
+import { SkeletonKpiRow } from '@/components/SkeletonCard';
+import { ProfileSheet } from '@/components/ProfileSheet';
+import { NotificationDrawer } from '@/components/NotificationDrawer';
 import { useAuthStore } from '@/store/auth.store';
 import { useDashboardStats, useTodayAppointments, useDashboardChecklist } from '@/hooks/useDashboard';
 import { useUnreadCount } from '@/hooks/useNotifications';
@@ -30,11 +35,6 @@ function formatDateFR(): string {
   return `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 }
 
-function formatTime(dateStr: string): string {
-  const d = new Date(dateStr);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
 export default function DashboardScreen() {
   const router = useRouter();
   const { name } = useAuthStore();
@@ -45,14 +45,34 @@ export default function DashboardScreen() {
   const { data: checklist } = useDashboardChecklist();
 
   const [refreshing, setRefreshing] = React.useState(false);
+  const [profileVisible, setProfileVisible] = React.useState(false);
+  const [notifVisible, setNotifVisible] = React.useState(false);
+
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([refetchStats(), refetchAppts()]);
     setRefreshing(false);
   };
 
-  const displayName = name ? `Dr. ${name.split(' ').pop()}` : 'Docteur';
+  // Extract first name — psychologues are NOT doctors, no "Dr." prefix
+  const displayName = name
+    ? name.split(' ')[0]
+    : 'Psychologue';
+
+  const initials = (name ?? 'U')
+    .split(' ')
+    .map((p) => p[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
   const incompleteChecklist = checklist?.filter((c) => !c.completed) ?? [];
+
+  // Week strip appointment dates
+  const weekAppointmentDates = useMemo(() => {
+    if (!appointments) return new Set<string>();
+    return new Set(appointments.map((a) => new Date(a.scheduledAt).toDateString()));
+  }, [appointments]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -66,88 +86,72 @@ export default function DashboardScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.avatarButton}
+            onPress={() => setProfileVisible(true)}
+            accessibilityLabel="Ouvrir le profil"
+            accessibilityRole="button"
+          >
+            <View style={styles.avatarSmall}>
+              <Text style={styles.avatarSmallText}>{initials}</Text>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.headerCenter}>
             <Text style={styles.greeting}>Bonjour {displayName}</Text>
             <Text style={styles.date}>{formatDateFR()}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.notifButton}
-            onPress={() => router.push('/notifications')}
-            accessibilityLabel={`Notifications, ${unreadCount} non lues`}
-          >
-            <Text style={styles.notifIcon}>🔔</Text>
-            {unreadCount > 0 && (
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>{unreadCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.headerIconButton}
+              onPress={() => router.push('/(tabs)/sessions/new')}
+              accessibilityLabel="Nouvelle seance"
+              accessibilityRole="button"
+            >
+              <Ionicons name="add" size={22} color={Colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerIconButton}
+              onPress={() => setNotifVisible(true)}
+              accessibilityLabel={`Notifications, ${unreadCount} non lues`}
+              accessibilityRole="button"
+            >
+              <Ionicons name="notifications-outline" size={22} color={Colors.text} />
+              {unreadCount > 0 && (
+                <View style={styles.notifBadge}>
+                  <Text style={styles.notifBadgeText}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* KPI Cards 2x2 */}
+        {/* Hero Today Card */}
+        <HeroTodayCard
+          appointments={appointments ?? []}
+          onAppointmentPress={(patientId) => router.push(`/(tabs)/patients/${patientId}`)}
+        />
+
+        {/* KPI Cards — 2 cards only (Revenus moved to Analytics) */}
         {statsLoading ? (
-          <ActivityIndicator size="small" color={Colors.primary} style={{ paddingVertical: 40 }} />
+          <SkeletonKpiRow />
         ) : (
-          <View style={styles.kpiGrid}>
-            <View style={styles.kpiRow}>
-              <KpiCard
-                title="Patients actifs"
-                value={String(stats?.activePatients ?? 0)}
-                accentColor={Colors.primary}
-              />
-              <KpiCard
-                title="Seances ce mois"
-                value={String(stats?.sessionsThisMonth ?? 0)}
-                accentColor={Colors.accent}
-              />
-            </View>
-            <View style={styles.kpiRow}>
-              <KpiCard
-                title="Revenus"
-                value={`${stats?.revenueThisMonth ?? 0} €`}
-                accentColor={Colors.warm}
-              />
-              <KpiCard
-                title="RDV a venir"
-                value={String(stats?.upcomingAppointments ?? 0)}
-                accentColor={Colors.info}
-              />
-            </View>
+          <View style={styles.kpiRow}>
+            <KpiCard
+              title="Patients actifs"
+              value={String(stats?.activePatients ?? 0)}
+              accentColor={Colors.primary}
+              icon="people"
+            />
+            <KpiCard
+              title="Seances ce mois"
+              value={String(stats?.sessionsThisMonth ?? 0)}
+              accentColor={Colors.accent}
+              icon="document-text"
+            />
           </View>
         )}
-
-        {/* Today's appointments */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Aujourd'hui</Text>
-          {appointments && appointments.length > 0 ? (
-            <View style={styles.appointmentsList}>
-              {appointments.map((appt) => (
-                <TouchableOpacity
-                  key={appt.id}
-                  style={styles.appointmentItem}
-                  onPress={() => router.push(`/(tabs)/patients/${appt.patient.id}`)}
-                  accessibilityLabel={`${formatTime(appt.scheduledAt)} ${appt.patient.name}`}
-                >
-                  <Text style={styles.appointmentTime}>{formatTime(appt.scheduledAt)}</Text>
-                  <View style={styles.appointmentInfo}>
-                    <Text style={styles.appointmentPatient}>{appt.patient.name}</Text>
-                    {appt.type && <Text style={styles.appointmentType}>{appt.type}</Text>}
-                  </View>
-                  <View
-                    style={[
-                      styles.statusDot,
-                      { backgroundColor: appt.status === 'confirmed' ? Colors.success : Colors.warning },
-                    ]}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Aucun RDV prevu aujourd'hui</Text>
-            </View>
-          )}
-        </View>
 
         {/* Activation checklist for new users */}
         {incompleteChecklist.length > 0 && (
@@ -156,7 +160,7 @@ export default function DashboardScreen() {
             <View style={styles.checklistContainer}>
               {incompleteChecklist.map((item) => (
                 <View key={item.key} style={styles.checklistItem}>
-                  <Text style={styles.checklistCircle}>○</Text>
+                  <Ionicons name="ellipse-outline" size={16} color={Colors.muted} />
                   <Text style={styles.checklistLabel}>{item.label}</Text>
                 </View>
               ))}
@@ -164,34 +168,47 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Quick Actions */}
+        {/* Quick Actions — 2 buttons only (RDV via Agenda tab) */}
         <View style={styles.quickActions}>
           <TouchableOpacity
-            style={[styles.quickAction, { backgroundColor: `${Colors.primary}15` }]}
+            style={[styles.quickAction, { backgroundColor: `${Colors.primary}10` }]}
             onPress={() => router.push('/(tabs)/patients/new')}
             accessibilityLabel="Ajouter un patient"
           >
-            <Text style={styles.quickActionIcon}>👤</Text>
+            <View style={[styles.quickActionIconCircle, { backgroundColor: `${Colors.primary}20` }]}>
+              <Ionicons name="person-add-outline" size={20} color={Colors.primary} />
+            </View>
             <Text style={styles.quickActionLabel}>+ Patient</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.quickAction, { backgroundColor: `${Colors.accent}15` }]}
+            style={[styles.quickAction, { backgroundColor: `${Colors.accent}10` }]}
             onPress={() => router.push('/(tabs)/sessions/new')}
             accessibilityLabel="Nouvelle seance"
           >
-            <Text style={styles.quickActionIcon}>📝</Text>
+            <View style={[styles.quickActionIconCircle, { backgroundColor: `${Colors.accent}20` }]}>
+              <Ionicons name="create-outline" size={20} color={Colors.accent} />
+            </View>
             <Text style={styles.quickActionLabel}>+ Seance</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.quickAction, { backgroundColor: `${Colors.warm}15` }]}
-            onPress={() => router.push('/(tabs)/calendar')}
-            accessibilityLabel="Voir le calendrier"
-          >
-            <Text style={styles.quickActionIcon}>📅</Text>
-            <Text style={styles.quickActionLabel}>+ RDV</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* Week Strip */}
+        <WeekStrip
+          appointmentDates={weekAppointmentDates}
+          onDayPress={() => router.push('/(tabs)/calendar')}
+        />
       </ScrollView>
+
+      {/* Profile Sheet */}
+      <ProfileSheet visible={profileVisible} onClose={() => setProfileVisible(false)} />
+
+      {/* Notification Drawer */}
+      <NotificationDrawer
+        visible={notifVisible}
+        onClose={() => setNotifVisible(false)}
+        notifications={[]}
+        onMarkAllRead={() => {}}
+      />
     </SafeAreaView>
   );
 }
@@ -200,49 +217,97 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.bg },
   scroll: { flex: 1 },
   content: { padding: 20, gap: 24, paddingBottom: 100 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  headerLeft: { flex: 1 },
-  greeting: { fontSize: 24, fontFamily: 'DMSans_700Bold', color: Colors.text, letterSpacing: -0.5 },
-  date: { fontSize: 14, fontFamily: 'DMSans_400Regular', color: Colors.muted, marginTop: 2 },
-  notifButton: { position: 'relative', padding: 8 },
-  notifIcon: { fontSize: 24 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatarButton: {
+    flexShrink: 0,
+  },
+  avatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: `${Colors.primary}1A`,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarSmallText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  headerCenter: { flex: 1 },
+  greeting: {
+    fontSize: 22,
+    fontFamily: 'DMSans_700Bold',
+    color: Colors.text,
+    letterSpacing: -0.3,
+  },
+  date: {
+    fontSize: 14,
+    fontFamily: 'DMSans_400Regular',
+    color: Colors.muted,
+    marginTop: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
   notifBadge: {
-    position: 'absolute', top: 2, right: 2,
-    backgroundColor: Colors.error, borderRadius: 9, minWidth: 18, height: 18,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: Colors.error,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: Colors.bg,
   },
   notifBadgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
-  kpiGrid: { gap: 12 },
   kpiRow: { flexDirection: 'row', gap: 12 },
   section: { gap: 12 },
   sectionTitle: { fontSize: 17, fontFamily: 'DMSans_700Bold', color: Colors.text },
-  appointmentsList: {
-    backgroundColor: Colors.surfaceElevated, borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border, overflow: 'hidden',
-  },
-  appointmentItem: {
-    flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12,
-    borderBottomWidth: 1, borderBottomColor: Colors.border,
-  },
-  appointmentTime: { fontSize: 15, fontFamily: 'DMMono_400Regular', color: Colors.primary, width: 50 },
-  appointmentInfo: { flex: 1, gap: 2 },
-  appointmentPatient: { fontSize: 15, fontFamily: 'DMSans_500Medium', color: Colors.text },
-  appointmentType: { fontSize: 12, color: Colors.muted },
-  statusDot: { width: 10, height: 10, borderRadius: 5 },
-  emptyState: {
-    padding: 24, alignItems: 'center', backgroundColor: Colors.surfaceElevated,
-    borderRadius: 14, borderWidth: 1, borderColor: Colors.border,
-  },
-  emptyText: { fontSize: 14, color: Colors.muted },
   checklistContainer: {
-    backgroundColor: Colors.surfaceElevated, borderRadius: 14, padding: 16,
+    backgroundColor: Colors.surfaceElevated, borderRadius: 16, padding: 16,
     borderWidth: 1, borderColor: Colors.border, gap: 12,
   },
   checklistItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  checklistCircle: { fontSize: 16, color: Colors.muted },
   checklistLabel: { fontSize: 14, fontFamily: 'DMSans_400Regular', color: Colors.text },
   quickActions: { flexDirection: 'row', gap: 12 },
-  quickAction: { flex: 1, alignItems: 'center', paddingVertical: 16, borderRadius: 14, gap: 6 },
-  quickActionIcon: { fontSize: 24 },
-  quickActionLabel: { fontSize: 12, fontFamily: 'DMSans_500Medium', color: Colors.text },
+  quickAction: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 20,
+    borderRadius: 16,
+    gap: 10,
+  },
+  quickActionIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickActionLabel: {
+    fontSize: 13,
+    fontFamily: 'DMSans_600SemiBold',
+    color: Colors.text,
+  },
 });

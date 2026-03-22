@@ -198,6 +198,9 @@ importers:
       '@expo/metro-runtime':
         specifier: ~55.0.6
         version: 55.0.6(@expo/dom-webview@55.0.3)(expo@55.0.8)(react-dom@18.3.1(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      '@expo/vector-icons':
+        specifier: ^15.0.2
+        version: 15.1.1(expo-font@55.0.4)(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       '@hookform/resolvers':
         specifier: ^3.9.0
         version: 3.9.1(react-hook-form@7.71.2(react@19.2.0))
@@ -252,6 +255,9 @@ importers:
       expo-image:
         specifier: ~55.0.6
         version: 55.0.6(expo@55.0.8)(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      expo-linear-gradient:
+        specifier: ^55.0.9
+        version: 55.0.9(expo@55.0.8)(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
       expo-linking:
         specifier: ~55.0.8
         version: 55.0.8(expo@55.0.8)(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
@@ -4843,6 +4849,13 @@ packages:
     peerDependencies:
       expo: '*'
       react: '*'
+
+  expo-linear-gradient@55.0.9:
+    resolution: {integrity: sha512-S82iF+CVoSBVHdwusLQGh6Th/kcWLHU47jZhBPwyTrYWnsHZtb0oCqU96YvhDYvhbTdsuOaKEi+Xu+r/I2R8ow==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
 
   expo-linking@55.0.8:
     resolution: {integrity: sha512-O9QgKAfEqKfsjL6IKs5p7pFAjo/3/TQwjMzzNPl8BCndbxWMPQfMeViXPYYNS9bA2ujUqrtF1OYhO6woI7GNQQ==}
@@ -11353,9 +11366,7 @@ snapshots:
       metro-runtime: 0.83.3
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
     optional: true
 
   '@react-native/normalize-colors@0.83.2': {}
@@ -14071,6 +14082,12 @@ snapshots:
     dependencies:
       expo: 55.0.8(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.6)(expo-router@55.0.7)(react-dom@18.3.1(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
       react: 19.2.0
+
+  expo-linear-gradient@55.0.9(expo@55.0.8)(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0):
+    dependencies:
+      expo: 55.0.8(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.6)(expo-router@55.0.7)(react-dom@18.3.1(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
+      react: 19.2.0
+      react-native: 0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0)
 
   expo-linking@55.0.8(expo@55.0.8)(react-native@0.83.2(@babel/core@7.29.0)(@react-native-community/cli@13.6.8)(@react-native/metro-config@0.84.1(@babel/core@7.29.0))(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3):
     dependencies:

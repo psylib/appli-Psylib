@@ -1,16 +1,34 @@
 /**
- * Patient Portal Layout — 4 tabs: Accueil | Humeur | Exercices | Journal
+ * Patient Portal Layout — 3 tabs: Accueil | Bien-etre | Journal
+ * Ionicons instead of emojis, accent teal, consistent tab bar height
  */
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Tabs, Redirect } from 'expo-router';
-import { Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/colors';
 import { PatientAuthContext, usePatientAuthProvider, usePatientAuth } from '@/hooks/usePatientAuth';
 
-function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
+type IoniconsName = keyof typeof Ionicons.glyphMap;
+
+function TabIcon({
+  name,
+  focusedName,
+  focused,
+}: {
+  name: IoniconsName;
+  focusedName: IoniconsName;
+  focused: boolean;
+}) {
   return (
-    <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>{icon}</Text>
+    <View style={styles.tabIconContainer}>
+      {focused && <View style={styles.activeIndicator} />}
+      <Ionicons
+        name={focused ? focusedName : name}
+        size={24}
+        color={focused ? Colors.accent : Colors.tabInactive}
+      />
+    </View>
   );
 }
 
@@ -27,6 +45,7 @@ function PatientTabsInner() {
         tabBarInactiveTintColor: Colors.tabInactive,
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabItem,
         headerStyle: { backgroundColor: Colors.bg },
         headerTintColor: Colors.text,
         headerTitleStyle: { fontFamily: 'DMSans_700Bold', fontSize: 17 },
@@ -37,32 +56,32 @@ function PatientTabsInner() {
         name="dashboard"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="home-outline" focusedName="home" focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="mood"
         options={{
-          title: 'Humeur',
-          tabBarIcon: ({ focused }) => <TabIcon icon="😊" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="exercises"
-        options={{
-          title: 'Exercices',
-          tabBarIcon: ({ focused }) => <TabIcon icon="🧘" focused={focused} />,
-          headerShown: false,
+          title: 'Bien-etre',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="heart-outline" focusedName="heart" focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="journal"
         options={{
           title: 'Journal',
-          tabBarIcon: ({ focused }) => <TabIcon icon="📔" focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="book-outline" focusedName="book" focused={focused} />
+          ),
           headerShown: false,
         }}
       />
+      {/* Exercises merged into Bien-etre tab, hidden from nav */}
+      <Tabs.Screen name="exercises" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="login" options={{ href: null }} />
       <Tabs.Screen name="messages" options={{ href: null }} />
     </Tabs>
@@ -81,8 +100,36 @@ export default function PatientLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: Colors.tabBackground, borderTopWidth: 1,
-    borderTopColor: Colors.border, height: 64, paddingBottom: 8, paddingTop: 6,
+    backgroundColor: Colors.white,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    height: Platform.OS === 'ios' ? 83 : 60,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+    paddingTop: 8,
+    elevation: 0,
+    shadowOpacity: 0,
   },
-  tabLabel: { fontSize: 10, fontFamily: 'DMSans_500Medium', fontWeight: '600' },
+  tabItem: {
+    paddingVertical: 4,
+  },
+  tabLabel: {
+    fontSize: 12, // Fixed WCAG: was 10pt, now 12pt minimum
+    fontFamily: 'DMSans_600SemiBold',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  tabIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 32,
+    height: 32,
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: -6,
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: Colors.accent,
+  },
 });

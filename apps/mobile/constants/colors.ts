@@ -50,8 +50,26 @@ export const Colors = {
 
   // Tab bar
   tabActive: '#3D52A0',
-  tabInactive: '#9CA3AF',
+  tabInactive: '#6B7280', // Fixed WCAG: 5.74:1 contrast on white (was #9CA3AF = 2.85:1 FAIL)
   tabBackground: '#FFFFFF',
+  tabIndicator: '#3D52A0',
+
+  // Hero gradient
+  heroGradientStart: '#3D52A0',
+  heroGradientEnd: '#2A3A70',
+
+  // Patient-specific
+  patientPrimary: '#0D9488',
+  patientSurface: '#F0FDFA',
+
+  // AI
+  aiAccent: '#0D9488',
+  aiBg: '#F0FDFA',
+
+  // Save states
+  savePending: '#F59E0B',
+  saveSuccess: '#10B981',
+  saveError: '#EF4444',
 } as const;
 
 export type ColorKey = keyof typeof Colors;

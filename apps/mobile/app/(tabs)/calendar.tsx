@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { Ionicons } from '@expo/vector-icons';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Colors } from '@/constants/colors';
@@ -263,12 +264,10 @@ export default function CalendarScreen() {
           }}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyEmoji} accessibilityElementsHidden>
-                📅
-              </Text>
+              <Ionicons name="calendar-outline" size={64} color={Colors.mutedLight} />
               <Text style={styles.emptyTitle}>Aucun rendez-vous</Text>
               <Text style={styles.emptySubtitle}>
-                Pas de RDV prévu pour ce jour
+                Pas de RDV prevu pour ce jour
               </Text>
             </View>
           }
@@ -328,7 +327,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   dayName: {
-    fontSize: 10,
+    fontSize: 11, // Fixed WCAG: was 10pt, minimum 11pt
     fontWeight: '600',
     color: Colors.muted,
     textTransform: 'uppercase',
@@ -433,10 +432,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 32,
     gap: 8,
-  },
-  emptyEmoji: {
-    fontSize: 40,
-    marginBottom: 4,
   },
   emptyTitle: {
     fontSize: 17,

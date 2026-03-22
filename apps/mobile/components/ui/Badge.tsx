@@ -29,11 +29,15 @@ const styles = StyleSheet.create({
   badge: {
     borderRadius: 99,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     alignSelf: 'flex-start',
+    minWidth: 20,
+    minHeight: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text: {
-    fontSize: 11,
+    fontSize: 11, // WCAG minimum 11pt
     fontWeight: '600',
     letterSpacing: 0.2,
   },
