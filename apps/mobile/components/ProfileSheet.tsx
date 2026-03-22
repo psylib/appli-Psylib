@@ -34,7 +34,7 @@ interface SheetItem {
 
 export function ProfileSheet({ visible, onClose }: ProfileSheetProps) {
   const router = useRouter();
-  const { name, logout } = useAuthStore();
+  const { name, clear } = useAuthStore();
 
   const initials = (name ?? 'U')
     .split(' ')
@@ -64,7 +64,7 @@ export function ProfileSheet({ visible, onClose }: ProfileSheetProps) {
 
   const handleLogout = () => {
     onClose();
-    logout();
+    clear();
   };
 
   return (
