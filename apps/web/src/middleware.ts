@@ -24,6 +24,11 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     return NextResponse.next();
   }
 
+  // /forgot-password — toujours accessible
+  if (pathname === '/forgot-password') {
+    return NextResponse.next();
+  }
+
   // /login — redirect vers dashboard si déjà authentifié
   if (pathname === '/login' || pathname === '/register') {
     if (isAuthenticated) {

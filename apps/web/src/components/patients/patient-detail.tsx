@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Phone, Mail, Calendar, Plus } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, Calendar, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PatientAvatar } from '@/components/shared/patient-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExportButton } from '@/components/shared/export-button';
+import { EditPatientDialog } from './edit-patient-dialog';
 import { usePatient, useSessions } from '@/hooks/use-dashboard';
 import { formatDate } from '@/lib/utils';
 import { PatientPortalSection } from './patient-portal-section';
@@ -19,6 +21,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
   const router = useRouter();
   const { data: patient, isLoading } = usePatient(patientId);
   const { data: sessions } = useSessions({ patientId });
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -52,11 +55,17 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
           </Button>
           <h1 className="text-xl font-bold text-foreground">Fiche patient</h1>
         </div>
-        <ExportButton
-          path={`/patients/${patientId}/export`}
-          filename={`patient-rgpd-${patientId.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.json`}
-          label="Export RGPD"
-        />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+            <Pencil size={14} />
+            Modifier
+          </Button>
+          <ExportButton
+            path={`/patients/${patientId}/export`}
+            filename={`patient-rgpd-${patientId.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.json`}
+            label="Export RGPD"
+          />
+        </div>
       </div>
 
       {/* Patient card */}
@@ -164,6 +173,14 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
           </ul>
         )}
       </section>
+
+      {patient && (
+        <EditPatientDialog
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          patient={patient}
+        />
+      )}
     </div>
   );
 }

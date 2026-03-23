@@ -31,6 +31,9 @@ export const sessionsApi = {
   autosave: (id: string, notes: string, token: string) =>
     apiClient.patch<{ saved: boolean; at: string }>(`/sessions/${id}/autosave`, { notes }, token),
 
+  delete: (id: string, token: string) =>
+    apiClient.delete<{ deleted: boolean }>(`/sessions/${id}`, token),
+
   stats: (token: string) =>
     apiClient.get<{ totalThisMonth: number; revenueThisMonth: number }>('/sessions/stats', token),
 };

@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -113,6 +114,17 @@ export class SessionsController {
     @Req() req: Request,
   ) {
     return this.sessionsService.update(user.sub, id, dto, user.sub, req);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Supprimer une séance' })
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: KeycloakUser,
+    @Req() req: Request,
+  ) {
+    return this.sessionsService.remove(user.sub, id, user.sub, req);
   }
 
   @Patch(':id/autosave')

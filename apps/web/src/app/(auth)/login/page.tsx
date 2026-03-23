@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { signIn } from '@/lib/auth/auth';
 import { RefParamHandler } from '@/components/referral/ref-param-handler';
 
@@ -53,10 +54,22 @@ export default function LoginPage({
             </button>
           </form>
 
-          <p className="text-center text-xs text-muted-foreground">
-            MFA (authentification à deux facteurs) requise pour les psychologues
-          </p>
+          <div className="flex items-center justify-between text-xs">
+            <Link href="/forgot-password" className="text-primary hover:underline">
+              Mot de passe oublié ?
+            </Link>
+            <span className="text-muted-foreground">
+              MFA requise pour les psychologues
+            </span>
+          </div>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Pas de compte ?{' '}
+          <Link href="/register" className="text-primary font-medium hover:underline">
+            S&apos;inscrire
+          </Link>
+        </p>
 
         <p className="text-center text-xs text-muted-foreground">
           Plateforme sécurisée conforme HDS — Données de santé protégées

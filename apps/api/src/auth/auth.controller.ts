@@ -1,8 +1,10 @@
-import { Controller, Post, Req, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Post, Req, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { KeycloakGuard } from './guards/keycloak.guard';
 import { CacheService } from '../common/cache.service';
+import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 function decodeJwtPayload(token: string): { jti?: string; exp?: number } | null {
   const parts = token.split('.');
@@ -18,7 +20,10 @@ function decodeJwtPayload(token: string): { jti?: string; exp?: number } | null 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly cache: CacheService) {}
+  constructor(
+    private readonly cache: CacheService,
+    private readonly authService: AuthService,
+  ) {}
 
   /**
    * POST /auth/revoke
@@ -43,5 +48,18 @@ export class AuthController {
     }
 
     return { revoked: true };
+  }
+
+  /**
+   * POST /auth/forgot-password
+   * Triggers Keycloak password reset email via Admin API.
+   * Always returns 200 to avoid leaking whether the email exists.
+   */
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Demande de réinitialisation de mot de passe' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ sent: boolean }> {
+    await this.authService.requestPasswordReset(dto.email);
+    return { sent: true };
   }
 }

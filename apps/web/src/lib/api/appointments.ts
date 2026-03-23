@@ -23,4 +23,10 @@ export const appointmentsApi = {
 
   decline: (id: string, token: string) =>
     apiClient.put<{ id: string; status: string }>(`/appointments/${id}/decline`, {}, token),
+
+  cancel: (id: string, token: string) =>
+    apiClient.delete<{ id: string; status: string }>(`/appointments/${id}`, token),
+
+  update: (id: string, data: { scheduledAt?: string; duration?: number; status?: string }, token: string) =>
+    apiClient.put<{ id: string; status: string }>(`/appointments/${id}`, data, token),
 };

@@ -206,6 +206,33 @@ export class SessionsService {
     return updated;
   }
 
+  async remove(
+    psychologistUserId: string,
+    sessionId: string,
+    actorId: string,
+    req?: Request,
+  ): Promise<{ deleted: boolean }> {
+    const psy = await this.getPsychologist(psychologistUserId);
+
+    const existing = await this.prisma.session.findFirst({
+      where: { id: sessionId, psychologistId: psy.id },
+    });
+    if (!existing) throw new NotFoundException('Séance introuvable');
+
+    await this.prisma.session.delete({ where: { id: sessionId } });
+
+    await this.audit.log({
+      actorId,
+      actorType: 'psychologist',
+      action: 'DELETE',
+      entityType: 'session',
+      entityId: sessionId,
+      req,
+    });
+
+    return { deleted: true };
+  }
+
   /**
    * Sauvegarde automatique des notes (autosave 30s)
    * Endpoint optimisé — ne touche que le champ notes

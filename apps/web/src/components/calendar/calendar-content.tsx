@@ -15,6 +15,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { appointmentsApi } from '@/lib/api/appointments';
@@ -112,6 +113,16 @@ export function CalendarContent() {
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
     },
   });
+
+  const cancelMutation = useMutation({
+    mutationFn: (id: string) => appointmentsApi.cancel(id, session?.accessToken ?? ''),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      setCancelTarget(null);
+    },
+  });
+
+  const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
 
   const appointments = appointmentsData?.data ?? [];
 
@@ -381,12 +392,22 @@ export function CalendarContent() {
                           {config.label}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock size={11} />
-                          {time}
-                        </span>
-                        <span>{appt.duration} min</span>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Clock size={11} />
+                            {time}
+                          </span>
+                          <span>{appt.duration} min</span>
+                        </div>
+                        {(appt.status === 'scheduled' || appt.status === 'confirmed') && (
+                          <button
+                            onClick={() => setCancelTarget(appt)}
+                            className="text-xs text-destructive hover:underline"
+                          >
+                            Annuler
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -414,6 +435,24 @@ export function CalendarContent() {
           </div>
         </div>
       </div>
+
+      {/* Cancel appointment dialog */}
+      <ConfirmDialog
+        open={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={() => {
+          if (cancelTarget) cancelMutation.mutate(cancelTarget.id);
+        }}
+        title="Annuler ce rendez-vous ?"
+        description={
+          cancelTarget
+            ? `Le rendez-vous avec ${cancelTarget.patient.name} sera annulé.`
+            : ''
+        }
+        confirmLabel="Annuler le RDV"
+        variant="destructive"
+        loading={cancelMutation.isPending}
+      />
     </div>
   );
 }
