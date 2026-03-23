@@ -46,7 +46,7 @@ export function KpiCard({
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
         {Icon && (
-          <div className={cn('rounded-lg p-2', colorMap[color])}>
+          <div className={cn('rounded-lg p-2 flex items-center justify-center', colorMap[color])}>
             <Icon size={18} aria-hidden="true" />
           </div>
         )}

@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Building2, Shield } from 'lucide-react';
+import { User, CreditCard, Building2, Shield, Bell, Lock, Scale } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -32,6 +32,24 @@ const settingsLinks = [
     label: 'Confidentialité & RGPD',
     description: 'Consentements, export de données',
     icon: Shield,
+  },
+  {
+    href: '/dashboard/settings/notifications',
+    label: 'Notifications',
+    description: 'Préférences email et push',
+    icon: Bell,
+  },
+  {
+    href: '/dashboard/settings/security',
+    label: 'Sécurité',
+    description: 'MFA, chiffrement, sessions',
+    icon: Lock,
+  },
+  {
+    href: '/dashboard/settings/legal',
+    label: 'Mentions légales',
+    description: 'Éditeur, hébergement, cookies',
+    icon: Scale,
   },
 ];
 
