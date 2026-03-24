@@ -58,9 +58,9 @@ PsyLib est un logiciel de gestion de cabinet pour psychologues liberaux, conform
 
 | Plan | Prix | Description |
 |------|------|-------------|
-| Starter | 49 EUR/mois | 20 patients, 40 seances/mois, 10 resumes IA |
-| Pro | 97 EUR/mois | Patients illimites, seances illimitees, 100 resumes IA, 5 formations |
-| Scale | 149 EUR/mois | Tout illimite, multi-praticiens |
+| Starter | 29,99 EUR/mois | 20 patients, 40 seances/mois, 10 resumes IA |
+| Pro | 69,99 EUR/mois | Patients illimites, seances illimitees, 100 resumes IA, 5 formations |
+| Scale | 119,99 EUR/mois | Tout illimite, multi-praticiens |
 
 Essai gratuit de 14 jours sans carte bancaire sur tous les plans.
 

@@ -292,17 +292,17 @@ export default function TermsPage() {
               <tbody className="text-gray-700">
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Starter</td>
-                  <td className="py-3 pr-4">49 euros HT</td>
+                  <td className="py-3 pr-4">29,99 euros HT</td>
                   <td className="py-3">20 patients, 40 seances/mois, 10 resumes IA</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Pro</td>
-                  <td className="py-3 pr-4">97 euros HT</td>
+                  <td className="py-3 pr-4">69,99 euros HT</td>
                   <td className="py-3">Patients et seances illimites, 100 resumes IA, 5 formations</td>
                 </tr>
                 <tr>
                   <td className="py-3 pr-4 font-medium">Scale</td>
-                  <td className="py-3 pr-4">149 euros HT</td>
+                  <td className="py-3 pr-4">119,99 euros HT</td>
                   <td className="py-3">Tout illimite, multi-praticiens, support prioritaire</td>
                 </tr>
               </tbody>

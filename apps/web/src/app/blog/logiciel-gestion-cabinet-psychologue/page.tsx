@@ -321,7 +321,7 @@ export default function ArticleLogicielGestionCabinet() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-[#3D52A0]">PsyLib</td>
-                  <td className="px-4 py-3 text-[#3D52A0] font-medium">Dès 49 €/mois</td>
+                  <td className="px-4 py-3 text-[#3D52A0] font-medium">Dès 29,99 €/mois</td>
                   <td className="px-4 py-3">PHQ-9/GAD-7, templates TCC/ACT/psychodynamique, réseau pro, assistant IA, HDS</td>
                   <td className="px-4 py-3">Solution plus récente — base utilisateurs en croissance</td>
                 </tr>
@@ -393,9 +393,9 @@ export default function ArticleLogicielGestionCabinet() {
             patients sans consentement explicite.
           </p>
           <p className="mb-4 leading-relaxed">
-            Les formules disponibles démarrent à 49 euros par mois pour le plan Starter
+            Les formules disponibles démarrent à 29,99 euros par mois pour le plan Starter
             (20 patients, 40 séances mensuelles, 10 résumés IA), et s'étendent jusqu'à
-            149 euros par mois pour le plan Scale (patients et séances illimités, IA
+            119,99 euros par mois pour le plan Scale (patients et séances illimités, IA
             illimitée, gestion multi-praticiens). Un essai gratuit de 14 jours sur le
             plan Pro est disponible sans carte bancaire.
           </p>

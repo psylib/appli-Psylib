@@ -96,7 +96,7 @@ const faqCategories = [
     questions: [
       {
         q: "Quels sont les plans disponibles ?",
-        a: "PsyLib propose trois plans : Starter (49 euros/mois ou 39 euros/mois en annuel) pour les jeunes praticiens, Pro (97 euros/mois ou 79 euros/mois en annuel) pour les praticiens etablis avec patients illimites, et Scale (149 euros/mois ou 119 euros/mois en annuel) pour les cabinets multi-praticiens. Tous les plans incluent 14 jours d\"essai gratuit.",
+        a: "PsyLib propose trois plans : Starter (29,99 euros/mois ou 23,99 euros/mois en annuel) pour les jeunes praticiens, Pro (69,99 euros/mois ou 55,99 euros/mois en annuel) pour les praticiens etablis avec patients illimites, et Scale (119,99 euros/mois ou 95,99 euros/mois en annuel) pour les cabinets multi-praticiens. Tous les plans incluent 14 jours d\"essai gratuit.",
       },
       {
         q: "Que se passe-t-il a la fin de l\"essai gratuit ?",
