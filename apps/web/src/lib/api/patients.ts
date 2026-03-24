@@ -1,7 +1,9 @@
 import { apiClient } from './client';
 import type { Patient, PaginatedResponse } from '@psyscale/shared-types';
 
-export interface PatientListItem extends Omit<Patient, 'notes'> {}
+export interface PatientListItem extends Omit<Patient, 'notes'> {
+  portalStatus: 'none' | 'pending' | 'active';
+}
 
 export const patientsApi = {
   list: (params: { page?: number; limit?: number; search?: string; status?: string }, token: string) => {

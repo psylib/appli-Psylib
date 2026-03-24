@@ -2,16 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Search, Plus, Filter } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Users, Search, Plus, Mail, CheckCircle2, Clock, MoreVertical, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { PatientAvatar } from '@/components/shared/patient-avatar';
 import { EmptyState } from '@/components/shared/empty-state';
 import { PatientRowSkeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/toast';
 import { CreatePatientDialog } from './create-patient-dialog';
 import { ExportButton } from '@/components/shared/export-button';
 import { usePatients } from '@/hooks/use-dashboard';
+import { patientsApi } from '@/lib/api/patients';
 import { formatDate } from '@/lib/utils';
 import type { PatientStatus } from '@psyscale/shared-types';
 
@@ -21,18 +24,54 @@ const STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'succe
   archived: { label: 'Archivé', variant: 'outline' },
 };
 
+function PortalBadge({ status }: { status: 'none' | 'pending' | 'active' }) {
+  if (status === 'none') return null;
+  if (status === 'pending') {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-amber-600" title="Invitation en attente">
+        <Clock size={13} aria-hidden />
+        <span className="hidden sm:inline">En attente</span>
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-accent" title="Portail actif">
+      <CheckCircle2 size={13} aria-hidden />
+      <span className="hidden sm:inline">Portail</span>
+    </span>
+  );
+}
+
 export function PatientsPageContent() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const { success, error: showError } = useToast();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<PatientStatus | ''>('');
   const [showCreate, setShowCreate] = useState(false);
   const [page, setPage] = useState(1);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [inviting, setInviting] = useState<string | null>(null);
 
   const { data, isLoading, isError, refetch } = usePatients({
     search: search || undefined,
     status: statusFilter || undefined,
     page,
   });
+
+  const handleInvite = async (patientId: string, patientName: string) => {
+    setInviting(patientId);
+    setOpenMenu(null);
+    try {
+      await patientsApi.invite(patientId, session?.accessToken ?? '');
+      success(`Invitation envoyée à ${patientName}`);
+      void refetch();
+    } catch {
+      showError("L'invitation n'a pas pu être envoyée");
+    } finally {
+      setInviting(null);
+    }
+  };
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
@@ -110,26 +149,74 @@ export function PatientsPageContent() {
           <ul role="list">
             {data.data.map((patient, i) => {
               const status = STATUS_LABELS[patient.status];
+              const canInvite = !!patient.email && patient.portalStatus === 'none';
               return (
-                <li key={patient.id}>
-                  <button
-                    onClick={() => router.push(`/dashboard/patients/${patient.id}`)}
-                    className={`w-full flex items-center gap-4 p-4 text-left hover:bg-surface transition-colors ${
-                      i < data.data.length - 1 ? 'border-b border-border' : ''
-                    }`}
-                  >
-                    <PatientAvatar name={patient.name} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{patient.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {patient.email ?? 'Pas d\'email'} •{' '}
-                        {patient.createdAt ? `Depuis ${formatDate(patient.createdAt)}` : ''}
-                      </p>
+                <li key={patient.id} className={i < data.data.length - 1 ? 'border-b border-border' : ''}>
+                  <div className="flex items-center gap-4 p-4 hover:bg-surface transition-colors">
+                    <button
+                      onClick={() => router.push(`/dashboard/patients/${patient.id}`)}
+                      className="flex items-center gap-4 flex-1 min-w-0 text-left"
+                    >
+                      <PatientAvatar name={patient.name} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-foreground truncate">{patient.name}</p>
+                          <PortalBadge status={patient.portalStatus ?? 'none'} />
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {patient.email ?? 'Pas d\'email'} •{' '}
+                          {patient.createdAt ? `Depuis ${formatDate(patient.createdAt)}` : ''}
+                        </p>
+                      </div>
+                      {status && (
+                        <Badge variant={status.variant}>{status.label}</Badge>
+                      )}
+                    </button>
+
+                    {/* Actions menu */}
+                    <div className="relative flex-shrink-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === patient.id ? null : patient.id); }}
+                        className="p-2 rounded-lg text-muted-foreground hover:bg-border/50 transition-colors"
+                        aria-label="Actions"
+                      >
+                        <MoreVertical size={16} aria-hidden />
+                      </button>
+                      {openMenu === patient.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
+                          <div className="absolute right-0 top-full mt-1 z-20 w-52 rounded-lg border border-border bg-white shadow-lg py-1">
+                            <button
+                              onClick={() => { setOpenMenu(null); router.push(`/dashboard/patients/${patient.id}`); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface transition-colors"
+                            >
+                              Voir la fiche
+                            </button>
+                            {canInvite && (
+                              <button
+                                onClick={() => handleInvite(patient.id, patient.name)}
+                                disabled={inviting === patient.id}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface transition-colors disabled:opacity-50"
+                              >
+                                <Send size={14} className="text-primary" aria-hidden />
+                                {inviting === patient.id ? 'Envoi...' : 'Inviter au portail'}
+                              </button>
+                            )}
+                            {patient.portalStatus === 'pending' && (
+                              <button
+                                onClick={() => handleInvite(patient.id, patient.name)}
+                                disabled={inviting === patient.id}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface transition-colors disabled:opacity-50"
+                              >
+                                <Mail size={14} className="text-amber-600" aria-hidden />
+                                {inviting === patient.id ? 'Envoi...' : 'Renvoyer l\'invitation'}
+                              </button>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
-                    {status && (
-                      <Badge variant={status.variant}>{status.label}</Badge>
-                    )}
-                  </button>
+                  </div>
                 </li>
               );
             })}

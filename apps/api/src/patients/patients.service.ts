@@ -63,7 +63,7 @@ export class PatientsService {
     query: PatientQueryDto,
     actorId: string,
     req?: Request,
-  ): Promise<PaginatedResponse<Omit<Patient, 'notes'>>> {
+  ): Promise<PaginatedResponse<Omit<Patient, 'notes'> & { portalStatus: 'none' | 'pending' | 'active' }>> {
     const psy = await this.getPsychologist(psychologistId);
 
     const page = Math.max(1, query.page ?? 1);
@@ -99,6 +99,11 @@ export class PatientsService {
           status: true,
           source: true,
           createdAt: true,
+          invitations: {
+            where: { status: 'pending' },
+            select: { status: true },
+            take: 1,
+          },
         },
       }),
       this.prisma.patient.count({ where }),
@@ -106,8 +111,17 @@ export class PatientsService {
 
     await this.audit.logRead(actorId, 'psychologist', 'patients', 'list', req);
 
+    const data = patients.map(({ invitations, ...patient }) => ({
+      ...patient,
+      portalStatus: patient.userId
+        ? 'active' as const
+        : invitations.length > 0
+          ? 'pending' as const
+          : 'none' as const,
+    }));
+
     return {
-      data: patients,
+      data,
       total,
       page,
       limit,

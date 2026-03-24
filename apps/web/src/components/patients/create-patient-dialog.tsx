@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { Mail } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/toast';
 import { patientsApi } from '@/lib/api/patients';
 
 interface CreatePatientDialogProps {
@@ -16,14 +18,18 @@ interface CreatePatientDialogProps {
 
 export function CreatePatientDialog({ open, onClose, onCreated }: CreatePatientDialogProps) {
   const { data: session } = useSession();
+  const { success, error: showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sendInvite, setSendInvite] = useState(false);
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
     notes: '',
   });
+
+  const hasEmail = form.email.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,16 +39,31 @@ export function CreatePatientDialog({ open, onClose, onCreated }: CreatePatientD
     setError(null);
 
     try {
-      await patientsApi.create(
+      const token = session?.accessToken ?? '';
+      const patient = await patientsApi.create(
         {
           name: form.name,
           email: form.email || undefined,
           phone: form.phone || undefined,
           notes: form.notes || undefined,
         },
-        session?.accessToken ?? '',
+        token,
       );
+
+      if (sendInvite && hasEmail) {
+        try {
+          await patientsApi.invite(patient.id, token);
+          success(`${form.name} créé(e) — invitation envoyée`);
+        } catch {
+          success(`${form.name} créé(e)`);
+          showError("L'invitation n'a pas pu être envoyée");
+        }
+      } else {
+        success(`${form.name} créé(e)`);
+      }
+
       setForm({ name: '', email: '', phone: '', notes: '' });
+      setSendInvite(false);
       onCreated();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur lors de la création');
@@ -90,6 +111,21 @@ export function CreatePatientDialog({ open, onClose, onCreated }: CreatePatientD
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
         />
 
+        {hasEmail && (
+          <label className="flex items-center gap-3 p-3 rounded-lg bg-surface cursor-pointer select-none transition-colors hover:bg-border/50">
+            <input
+              type="checkbox"
+              checked={sendInvite}
+              onChange={(e) => setSendInvite(e.target.checked)}
+              className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+            />
+            <Mail size={16} className="text-muted-foreground flex-shrink-0" aria-hidden />
+            <span className="text-sm text-foreground">
+              Envoyer une invitation au portail patient
+            </span>
+          </label>
+        )}
+
         {error && (
           <p className="text-sm text-destructive" role="alert">{error}</p>
         )}
@@ -99,7 +135,7 @@ export function CreatePatientDialog({ open, onClose, onCreated }: CreatePatientD
             Annuler
           </Button>
           <Button type="submit" loading={loading}>
-            Créer le patient
+            {sendInvite && hasEmail ? 'Créer et inviter' : 'Créer le patient'}
           </Button>
         </div>
       </form>
