@@ -60,19 +60,10 @@ export function TrustSection() {
           ))}
         </div>
 
-        {/* Testimonial quote */}
+        {/* Provider logos */}
         <ScrollReveal delay={400}>
           <div className="max-w-2xl mx-auto text-center">
-            <blockquote className="font-playfair text-xl text-charcoal italic leading-relaxed mb-4">
-              "Enfin un outil qui prend la conformité HDS au sérieux. En tant que psychologue, je ne peux pas me permettre de prendre des risques avec les données de mes patients."
-            </blockquote>
-            <cite className="not-italic">
-              <span className="font-medium text-charcoal">Dr. Isabelle M.</span>
-              <span className="text-charcoal-300 text-sm"> — Psychologue clinicienne, Paris</span>
-            </cite>
-
-            {/* Provider logos */}
-            <div className="flex items-center justify-center gap-8 mt-8 pt-8 border-t border-cream-200">
+            <div className="flex items-center justify-center gap-8">
               <div className="text-center">
                 <div className="text-xs text-charcoal-300 mb-1">Hébergement certifié</div>
                 <div className="flex items-center gap-3">

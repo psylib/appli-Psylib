@@ -1,45 +1,32 @@
-import { Star } from 'lucide-react';
+import { FileText, BarChart3, ShieldCheck } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
-const testimonials = [
+const useCases = [
   {
-    initials: 'MD',
-    name: 'Marie D.',
-    role: 'Psychologue TCC · Paris',
-    quote:
-      'J\'ai enfin un outil qui parle le langage clinique. Les templates TCC et l\'outcome tracking ont transformé ma façon de documenter mes séances.',
-    color: 'bg-sage-100 text-sage-700',
-    rating: 5,
+    icon: FileText,
+    title: 'Notes cliniques simplifiées',
+    description:
+      'Rédigez vos comptes-rendus de séance avec un éditeur pensé pour la pratique clinique. Autosave, templates TCC/ACT/systémique, et résumé IA optionnel.',
+    color: 'bg-sage-50 border-sage-200 text-sage-700',
+    iconColor: 'text-sage',
   },
   {
-    initials: 'TL',
-    name: 'Thomas L.',
-    role: 'Psychologue systémique · Lyon',
-    quote:
-      'L\'outcome tracking a changé ma façon de suivre mes patients. Je peux maintenant montrer objectivement l\'évolution thérapeutique — c\'est précieux.',
-    color: 'bg-terracotta-100 text-terracotta-700',
-    rating: 5,
+    icon: BarChart3,
+    title: 'Suivi thérapeutique objectif',
+    description:
+      'Visualisez l\'évolution de vos patients grâce au mood tracking et aux indicateurs de progression. Des données concrètes pour guider vos décisions cliniques.',
+    color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700',
+    iconColor: 'text-terracotta',
   },
   {
-    initials: 'SR',
-    name: 'Sophie R.',
-    role: 'Psychologue ACT · Bordeaux',
-    quote:
-      'Le réseau pro m\'a permis de trouver un superviseur spécialisé ACT en 2 jours. Ce n\'était pas possible avant avec n\'importe quel autre outil.',
-    color: 'bg-cream-200 text-charcoal-600',
-    rating: 5,
+    icon: ShieldCheck,
+    title: 'Zéro compromis sur la sécurité',
+    description:
+      'Hébergement HDS, chiffrement AES-256, authentification forte — vos données patients sont protégées selon les standards les plus exigeants du secteur santé.',
+    color: 'bg-cream-100 border-cream-200 text-charcoal-600',
+    iconColor: 'text-charcoal-500',
   },
 ];
-
-function Stars({ count }: { count: number }) {
-  return (
-    <div className="flex gap-0.5" aria-label={`${count} étoiles sur 5`}>
-      {Array.from({ length: count }).map((_, i) => (
-        <Star key={i} size={14} className="text-terracotta fill-terracotta" aria-hidden="true" />
-      ))}
-    </div>
-  );
-}
 
 export function TestimonialsSection() {
   return (
@@ -49,44 +36,27 @@ export function TestimonialsSection() {
         <ScrollReveal>
           <div className="text-center mb-12">
             <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">
-              Témoignages
+              Pourquoi PsyLib
             </p>
-            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal">
-              Ce qu'ils en disent
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal mb-4">
+              Conçu par et pour les psychologues
             </h2>
+            <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
+              Chaque fonctionnalité a été pensée pour répondre aux réalités du cabinet libéral — documentation clinique, suivi patient et conformité légale.
+            </p>
           </div>
         </ScrollReveal>
 
-        {/* Illustrative label */}
-        <p className="text-center text-sm text-charcoal-400 italic mb-6">
-          * Exemples illustratifs de cas d'usage
-        </p>
-
-        {/* Testimonials grid */}
-        <div
-          className="grid md:grid-cols-3 gap-6"
-          data-nosnippet
-          aria-label="Témoignages illustratifs"
-        >
-          {testimonials.map(({ initials, name, role, quote, color, rating }, i) => (
-            <ScrollReveal key={name} delay={i * 120}>
-              <div className="bg-white rounded-2xl border border-cream-200 p-6 hover:shadow-md transition-shadow">
-                <Stars count={rating} />
-                <blockquote className="mt-4 mb-5 text-charcoal-500 text-sm leading-relaxed italic">
-                  "{quote}"
-                </blockquote>
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${color}`}
-                    aria-hidden="true"
-                  >
-                    {initials}
-                  </div>
-                  <div>
-                    <p className="font-medium text-charcoal text-sm">{name}</p>
-                    <p className="text-xs text-charcoal-300">{role}</p>
-                  </div>
-                </div>
+        {/* Use cases grid */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {useCases.map(({ icon: Icon, title, description, color, iconColor }, i) => (
+            <ScrollReveal key={title} delay={i * 120}>
+              <div className={`rounded-2xl border p-6 ${color} hover:shadow-md transition-shadow`}>
+                <Icon size={28} className={`${iconColor} mb-4`} aria-hidden="true" />
+                <h3 className="font-semibold text-charcoal text-base mb-2">{title}</h3>
+                <p className="text-charcoal-500 text-sm leading-relaxed">
+                  {description}
+                </p>
               </div>
             </ScrollReveal>
           ))}
