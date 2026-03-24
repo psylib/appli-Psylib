@@ -40,9 +40,9 @@ declare module 'next-auth/jwt' {
 export const authConfig: NextAuthConfig = {
   providers: [
     KeycloakProvider({
-      clientId: process.env['KEYCLOAK_CLIENT_ID'] ?? (() => { throw new Error('KEYCLOAK_CLIENT_ID requis'); })(),
-      clientSecret: process.env['KEYCLOAK_CLIENT_SECRET'] ?? (() => { throw new Error('KEYCLOAK_CLIENT_SECRET requis'); })(),
-      issuer: `${process.env['KEYCLOAK_URL'] ?? (() => { throw new Error('KEYCLOAK_URL requis'); })()}/realms/${process.env['KEYCLOAK_REALM'] ?? 'psyscale'}`,
+      clientId: process.env['KEYCLOAK_CLIENT_ID'] ?? 'psyscale-app',
+      clientSecret: process.env['KEYCLOAK_CLIENT_SECRET'] ?? '',
+      issuer: `${process.env['KEYCLOAK_URL'] ?? 'https://auth.psylib.eu'}/realms/${process.env['KEYCLOAK_REALM'] ?? 'psyscale'}`,
     }),
 
     // Auth patient — email/password via notre API NestJS (pas Keycloak)
