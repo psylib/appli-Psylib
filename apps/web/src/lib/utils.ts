@@ -23,6 +23,22 @@ export function formatDateTime(date: Date | string, locale = 'fr-FR'): string {
   }).format(new Date(date));
 }
 
+export function formatDateShort(date: Date | string, locale = 'fr-FR'): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(date));
+}
+
+export function formatDateUnix(unix: number, locale = 'fr-FR'): string {
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(unix * 1000));
+}
+
 export function formatCurrency(amount: number, currency = 'EUR', locale = 'fr-FR'): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',

@@ -4,7 +4,7 @@ import { CreditCard, Calendar, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { SubscriptionPlan, SubscriptionStatus } from '@psyscale/shared-types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { useCreatePortal } from '@/hooks/use-billing';
 import type { SubscriptionDetails } from '@/lib/api/billing';
 
@@ -31,14 +31,7 @@ export function CurrentSubscriptionCard({ subscription }: CurrentSubscriptionCar
   const statusConfig = STATUS_CONFIG[subscription.status] ?? STATUS_CONFIG[SubscriptionStatus.ACTIVE]!;
   const StatusIcon = statusConfig.icon;
 
-  const formatDate = (isoDate: string | null) => {
-    if (!isoDate) return null;
-    return new Date(isoDate).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+  const fmtDate = (isoDate: string | null) => isoDate ? formatDate(isoDate) : null;
 
   return (
     <div className="rounded-xl border border-border bg-white p-6 space-y-4">
@@ -95,14 +88,14 @@ export function CurrentSubscriptionCard({ subscription }: CurrentSubscriptionCar
             <span>
               Annulation le{' '}
               <strong className="text-destructive">
-                {formatDate(subscription.currentPeriodEnd)}
+                {fmtDate(subscription.currentPeriodEnd)}
               </strong>
             </span>
           ) : (
             <span>
               Prochain renouvellement le{' '}
               <strong className="text-foreground">
-                {formatDate(subscription.currentPeriodEnd)}
+                {fmtDate(subscription.currentPeriodEnd)}
               </strong>
             </span>
           )}
@@ -113,7 +106,7 @@ export function CurrentSubscriptionCard({ subscription }: CurrentSubscriptionCar
       {subscription.trialEndsAt && subscription.status === SubscriptionStatus.TRIALING && (
         <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 text-sm">
           <p className="font-medium text-primary">
-            Période d&apos;essai jusqu&apos;au {formatDate(subscription.trialEndsAt)}
+            Période d&apos;essai jusqu&apos;au {fmtDate(subscription.trialEndsAt)}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
             Aucun débit avant la fin de l&apos;essai. Annulation possible à tout moment.

@@ -42,6 +42,34 @@ export class NotificationsService {
     return { deleted: true };
   }
 
+  // ─── Notification Preferences ─────────────────────────────────────────────
+
+  async getPreferences(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationPreferences: true },
+    });
+    return user?.notificationPreferences ?? this.defaultPreferences();
+  }
+
+  async savePreferences(userId: string, preferences: Record<string, { email: boolean; push: boolean }>) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { notificationPreferences: preferences },
+    });
+    return { success: true };
+  }
+
+  private defaultPreferences() {
+    return {
+      session_reminder: { email: true, push: true },
+      patient_message: { email: true, push: true },
+      mood_alert: { email: true, push: true },
+      ai_complete: { email: false, push: true },
+      payment: { email: true, push: false },
+    };
+  }
+
   async createNotification(
     userId: string,
     type: string,

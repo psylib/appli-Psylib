@@ -308,8 +308,10 @@ export class SessionsService {
       include: { patient: { select: { name: true } } },
     });
 
+    const sanitize = (v: string) =>
+      /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
     const escape = (v: string | null | undefined) =>
-      v ? `"${v.replace(/"/g, '""')}"` : '';
+      v ? `"${sanitize(v).replace(/"/g, '""')}"` : '';
 
     const header = 'id,date,patient,durée_min,type,statut_paiement,montant_eur,tags';
     const rows = sessions.map((s) =>

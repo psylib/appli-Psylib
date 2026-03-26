@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useAnalytics } from '@/hooks/use-analytics';
+import { formatDateShort, formatDateTime } from '@/lib/utils';
 import {
   Users,
   CalendarCheck,
@@ -120,13 +121,7 @@ function formatDateFr(iso: string): string {
   }).format(new Date(iso));
 }
 
-function formatDateShortFr(iso: string): string {
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(iso));
-}
+const formatDateShortFr = (iso: string) => formatDateShort(iso);
 
 function todayFr(): string {
   return new Intl.DateTimeFormat('fr-FR', {

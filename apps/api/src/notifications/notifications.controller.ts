@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Patch, Post, Delete, Param, Body,
+  Controller, Get, Put, Patch, Post, Delete, Param, Body,
   UseGuards, HttpCode, HttpStatus, ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -50,6 +50,22 @@ export class NotificationsController {
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.notificationsService.deleteNotification(id, user.sub);
+  }
+
+  @Get('preferences')
+  @ApiOperation({ summary: 'Récupérer les préférences de notification' })
+  getPreferences(@CurrentUser() user: KeycloakUser) {
+    return this.notificationsService.getPreferences(user.sub);
+  }
+
+  @Put('preferences')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sauvegarder les préférences de notification' })
+  savePreferences(
+    @Body() body: Record<string, { email: boolean; push: boolean }>,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.notificationsService.savePreferences(user.sub, body);
   }
 
   @Post('push-token')

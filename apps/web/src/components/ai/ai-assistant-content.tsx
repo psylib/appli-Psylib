@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
+import { cn, formatDateShort } from '@/lib/utils';
 
 type ContentType = 'linkedin' | 'newsletter' | 'blog';
 type ExerciseType = 'breathing' | 'journaling' | 'exposure' | 'mindfulness' | 'cognitive';
@@ -274,13 +274,7 @@ export function AiAssistantContent() {
     setTimeout(() => setCopiedLibraryId(null), 2000);
   };
 
-  const formatDate = (iso: string) => {
-    return new Date(iso).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
+  const formatDate = (iso: string) => formatDateShort(iso);
 
   return (
     <div className="p-6 lg:p-8 space-y-8 max-w-4xl mx-auto">

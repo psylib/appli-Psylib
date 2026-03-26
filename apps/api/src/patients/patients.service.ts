@@ -330,8 +330,10 @@ export class PatientsService {
       orderBy: { createdAt: 'asc' },
     });
 
+    const sanitize = (v: string) =>
+      /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
     const escape = (v: string | null | undefined) =>
-      v ? `"${v.replace(/"/g, '""')}"` : '';
+      v ? `"${sanitize(v).replace(/"/g, '""')}"` : '';
 
     const header = 'id,nom,email,téléphone,statut,source,date_naissance,date_création';
     const rows = patients.map((p) =>

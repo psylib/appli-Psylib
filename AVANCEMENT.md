@@ -182,13 +182,17 @@ apps/web/src/
 - [ ] Installer crons backup PostgreSQL + Keycloak
 - [ ] Vérifier/changer client secret Keycloak
 
+### Corrections polish (2026-03-26, session 2)
+- [x] **Notifications settings** — GET/PUT `/notifications/preferences` + JSON field User + page frontend branchée
+- [x] **Sessions page retry** — bouton "Réessayer" sur erreur de chargement (comme patients-page)
+- [x] **CSV injection protection** — `sanitize()` sur exports patients/sessions (=, +, -, @, tab, CR)
+- [x] **Gitignore .aab/.apk** — ajouté dans `apps/mobile/.gitignore`
+- [x] **Cleanup formatters** — `formatDateShort`, `formatDateUnix` centralisés dans `lib/utils.ts`, 5 fichiers refactorisés
+- [x] **Cleanup EmptyState** — `courses-content.tsx` utilise maintenant le composant shared
+- [x] **Séquence emails post-trial** — 5 emails (J-7, J-5, J-3, J-1, J0) + cron `@Cron('30 9 * * *')` + dedup audit_logs
+
 ### Reste à faire
-- [ ] Notifications settings : brancher sauvegarde sur l'API
-- [ ] Sessions page : bouton retry sur erreur de chargement
-- [ ] CSV injection protection (exports patients/sessions)
-- [ ] Gitignore le `.aab` mobile
-- [ ] Cleanup : console.error, EmptyState dupliqué, formatters date dupliqués
-- [ ] Séquence emails post-trial (5 emails sur 14j)
+- [ ] Migration Prisma `notification_preferences` (champ JSON sur users)
 - [ ] Recruter 3-5 beta-testeurs psys pour témoignages réels
 
 ---

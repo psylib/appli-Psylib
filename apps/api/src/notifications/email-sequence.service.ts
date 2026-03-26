@@ -10,6 +10,11 @@ const SEQUENCE_ACTIONS = {
   day3: 'EMAIL_SEQUENCE_DAY_3',
   day7: 'EMAIL_SEQUENCE_DAY_7',
   reEngagement: 'RE_ENGAGEMENT_EMAIL',
+  postTrialDay1: 'POST_TRIAL_DAY_1',
+  postTrialDay3: 'POST_TRIAL_DAY_3',
+  postTrialDay5: 'POST_TRIAL_DAY_5',
+  postTrialDay10: 'POST_TRIAL_DAY_10',
+  postTrialDay14: 'POST_TRIAL_DAY_14',
 } as const;
 
 @Injectable()
@@ -241,6 +246,86 @@ export class EmailSequenceService {
         this.logger.log(`[ReEngagement] Email envoyé → ${psy.user.email} (${daysSinceLastSession}j sans séance)`);
       } catch (err) {
         this.logger.error(`[ReEngagement] Échec pour ${psy.user.email}: ${(err as Error).message}`);
+      }
+    }
+  }
+
+  // ─── Séquence post-trial — tourne à 9h30 chaque jour ─────────────────────────
+
+  @Cron('30 9 * * *', { timeZone: 'Europe/Paris' })
+  async runPostTrialSequence(): Promise<void> {
+    this.logger.log('[PostTrial] Démarrage séquence post-trial quotidienne');
+
+    const now = new Date();
+    const billingUrl = `${this.frontendUrl}/dashboard/settings/billing`;
+
+    // Psys en trial avec trialEndsAt défini
+    const trialPsys = await this.prisma.psychologist.findMany({
+      where: {
+        subscription: {
+          status: { in: ['trialing', 'active'] },
+          trialEndsAt: { not: null },
+        },
+      },
+      include: {
+        user: { select: { id: true, email: true } },
+        subscription: { select: { status: true, trialEndsAt: true } },
+      },
+    });
+
+    if (trialPsys.length === 0) return;
+
+    // Prefetch audit logs post-trial pour éviter N+1
+    const auditLogs = await this.prisma.auditLog.findMany({
+      where: {
+        actorId: { in: trialPsys.map(p => p.user.id) },
+        action: { startsWith: 'POST_TRIAL_' },
+        entityType: 'post_trial_sequence',
+      },
+      select: { actorId: true, action: true },
+    });
+    const sentSet = new Set(auditLogs.map(l => `${l.actorId}:${l.action}`));
+
+    // Mapping: jours avant fin d'essai → action + méthode
+    const schedule: { daysBeforeEnd: number; action: string; send: (to: string, psy: { name: string }, daysLeft: number) => Promise<void> }[] = [
+      { daysBeforeEnd: 7, action: SEQUENCE_ACTIONS.postTrialDay1, send: (to, psy, d) => this.email.sendPostTrialDay1(to, { psychologistName: psy.name, daysLeft: d, billingUrl }) },
+      { daysBeforeEnd: 5, action: SEQUENCE_ACTIONS.postTrialDay3, send: (to, psy) => this.email.sendPostTrialDay3(to, { psychologistName: psy.name, billingUrl }) },
+      { daysBeforeEnd: 3, action: SEQUENCE_ACTIONS.postTrialDay5, send: (to, psy) => this.email.sendPostTrialDay5(to, { psychologistName: psy.name, billingUrl }) },
+      { daysBeforeEnd: 1, action: SEQUENCE_ACTIONS.postTrialDay10, send: (to, psy) => this.email.sendPostTrialDay10(to, { psychologistName: psy.name, billingUrl }) },
+      { daysBeforeEnd: 0, action: SEQUENCE_ACTIONS.postTrialDay14, send: (to, psy) => this.email.sendPostTrialDay14(to, { psychologistName: psy.name, billingUrl }) },
+    ];
+
+    for (const psy of trialPsys) {
+      if (!psy.subscription?.trialEndsAt) continue;
+
+      const daysLeft = Math.ceil(
+        (psy.subscription.trialEndsAt.getTime() - now.getTime()) / 86400000,
+      );
+
+      for (const step of schedule) {
+        if (daysLeft !== step.daysBeforeEnd) continue;
+
+        const key = `${psy.user.id}:${step.action}`;
+        if (sentSet.has(key)) continue;
+
+        try {
+          await step.send(psy.user.email, psy, daysLeft);
+
+          await this.prisma.auditLog.create({
+            data: {
+              actorId: psy.user.id,
+              actorType: 'system',
+              action: step.action,
+              entityType: 'post_trial_sequence',
+              entityId: psy.id,
+              ipAddress: '0.0.0.0',
+            },
+          });
+
+          this.logger.log(`[PostTrial] ${step.action} envoyé → ${psy.user.email} (${daysLeft}j restants)`);
+        } catch (err) {
+          this.logger.error(`[PostTrial] Échec ${step.action} pour ${psy.user.email}: ${(err as Error).message}`);
+        }
       }
     }
   }

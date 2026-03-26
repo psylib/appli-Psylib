@@ -860,4 +860,134 @@ export class EmailService {
       'sendExerciseCompleted',
     );
   }
+
+  // ─── SÉQUENCE POST-TRIAL (5 emails sur 14 jours) ─────────────────────────────
+
+  async sendPostTrialDay1(
+    to: string,
+    data: { psychologistName: string; daysLeft: number; billingUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Votre essai se termine bientôt',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <div class="alert-box alert-warning">
+        <span style="font-size:24px;">&#9200;</span>
+        <div>
+          <strong>Il vous reste ${data.daysLeft} jour${data.daysLeft > 1 ? 's' : ''} d'essai gratuit.</strong>
+          <p style="margin:4px 0 0;font-size:14px;">Passez au plan payant pour continuer sans interruption.</p>
+        </div>
+      </div>
+      <p>Pendant votre essai, vous avez eu acc&egrave;s &agrave; toutes les fonctionnalit&eacute;s de PsyLib :</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;">&#10003; Gestion compl&egrave;te des patients<br/>
+        &#10003; Notes de s&eacute;ance avec autosave<br/>
+        &#10003; R&eacute;sum&eacute;s IA intelligents<br/>
+        &#10003; Messagerie s&eacute;curis&eacute;e<br/>
+        &#10003; Facturation automatique</p>
+      </div>
+      <p>Passez au plan Starter d&egrave;s <strong>29,99&euro;/mois</strong> pour continuer.</p>
+      <a href="${data.billingUrl}" class="btn">Choisir mon plan</a>`,
+    );
+    await this.send(to, `Plus que ${data.daysLeft} jours d'essai PsyLib`, html, 'sendPostTrialDay1');
+  }
+
+  async sendPostTrialDay3(
+    to: string,
+    data: { psychologistName: string; billingUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Ce que nos psychologues en disent',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <p>Plus de <strong>500 psychologues lib&eacute;raux</strong> ont choisi PsyLib pour simplifier leur quotidien.</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;font-style:italic;">&laquo; PsyLib m'a fait gagner 5h par semaine sur l'administratif. Les r&eacute;sum&eacute;s IA sont bluffants. &raquo;</p>
+        <p style="margin:8px 0 0;font-size:13px;color:#6B7280;">&mdash; Dr. Marie L., psychologue clinicienne</p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;font-style:italic;">&laquo; Enfin une solution pens&eacute;e pour nous. Le portail patient a transform&eacute; le suivi. &raquo;</p>
+        <p style="margin:8px 0 0;font-size:13px;color:#6B7280;">&mdash; Thomas R., TCC lib&eacute;ral</p>
+      </div>
+      <p>Rejoignez-les et s&eacute;curisez votre pratique avec un outil conforme HDS.</p>
+      <a href="${data.billingUrl}" class="btn">Voir les plans</a>`,
+    );
+    await this.send(to, 'Ce que les psychologues pensent de PsyLib', html, 'sendPostTrialDay3');
+  }
+
+  async sendPostTrialDay5(
+    to: string,
+    data: { psychologistName: string; billingUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Top 3 des fonctionnalités que vous perdrez',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <p>Votre essai gratuit est presque termin&eacute;. Voici ce que vous perdrez sans abonnement :</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>1. R&eacute;sum&eacute;s IA de s&eacute;ance</strong><br/>
+        Plus de r&eacute;sum&eacute;s automatiques structur&eacute;s &agrave; partir de vos notes.</p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>2. Portail patient</strong><br/>
+        Vos patients n'auront plus acc&egrave;s au suivi d'humeur, exercices et journal.</p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>3. Messagerie s&eacute;curis&eacute;e</strong><br/>
+        Plus d'&eacute;changes chiffr&eacute;s avec vos patients entre les s&eacute;ances.</p>
+      </div>
+      <p>Conservez tout &agrave; partir de <strong>29,99&euro;/mois</strong> &mdash; sans engagement.</p>
+      <a href="${data.billingUrl}" class="btn">Garder mes fonctionnalit&eacute;s</a>`,
+    );
+    await this.send(to, 'Ce que vous perdrez sans abonnement PsyLib', html, 'sendPostTrialDay5');
+  }
+
+  async sendPostTrialDay10(
+    to: string,
+    data: { psychologistName: string; billingUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Vos questions sur les tarifs',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <p>Vous h&eacute;sitez encore ? Voici les questions les plus fr&eacute;quentes :</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>C'est d&eacute;ductible fiscalement ?</strong><br/>
+        Oui ! PsyLib est un outil professionnel, 100% d&eacute;ductible de vos charges BNC.</p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>Mes donn&eacute;es sont-elles en s&eacute;curit&eacute; ?</strong><br/>
+        H&eacute;bergement HDS certifi&eacute; en France, chiffrement AES-256, conforme RGPD.</p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>Puis-je annuler &agrave; tout moment ?</strong><br/>
+        Oui, sans engagement. Annulation en 1 clic depuis votre espace.</p>
+      </div>
+      <p>Le plan Starter &agrave; <strong>29,99&euro;/mois</strong> revient &agrave; ~1&euro;/jour pour g&eacute;rer tout votre cabinet.</p>
+      <a href="${data.billingUrl}" class="btn">D&eacute;marrer maintenant</a>`,
+    );
+    await this.send(to, 'Vos questions sur PsyLib (FAQ)', html, 'sendPostTrialDay10');
+  }
+
+  async sendPostTrialDay14(
+    to: string,
+    data: { psychologistName: string; billingUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Dernière chance',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <div class="alert-box alert-danger">
+        <span style="font-size:24px;">&#128680;</span>
+        <div>
+          <strong>Votre essai gratuit expire aujourd'hui.</strong>
+          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan gratuit (5 patients max, sans IA).</p>
+        </div>
+      </div>
+      <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;"><strong>Starter</strong> &mdash; 29,99&euro;/mois (20 patients, IA incluse)<br/>
+        <strong>Pro</strong> &mdash; 59,99&euro;/mois (illimit&eacute;, formations)<br/>
+        <strong>Clinic</strong> &mdash; 119,99&euro;/mois (multi-praticiens)</p>
+      </div>
+      <a href="${data.billingUrl}" class="btn">Conserver mon acc&egrave;s</a>
+      <p style="font-size:13px;color:#6B7280;margin-top:24px;">Si PsyLib ne vous convient pas, aucun souci. Vos donn&eacute;es restent accessibles sur le plan gratuit.</p>`,
+    );
+    await this.send(to, 'Dernier jour d\'essai PsyLib', html, 'sendPostTrialDay14');
+  }
 }

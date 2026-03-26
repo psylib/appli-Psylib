@@ -15,7 +15,7 @@ export function LeadNurtureCTA() {
 
     setStatus('loading');
     try {
-      const res = await fetch('/api/lead-magnets/download', {
+      const res = await fetch('/api/lead-magnets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, slug: 'kit-demarrage-cabinet' }),

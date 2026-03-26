@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, ExternalLink, Download } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDateUnix } from '@/lib/utils';
 import type { InvoiceItem } from '@/lib/api/billing';
 
 interface InvoicesTableProps {
@@ -44,13 +44,7 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
     }).format(cents / 100);
   };
 
-  const formatDate = (unix: number) => {
-    return new Date(unix * 1000).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
+  const formatDate = (unix: number) => formatDateUnix(unix);
 
   return (
     <div className="rounded-xl border border-border bg-white overflow-hidden">

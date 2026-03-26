@@ -13,7 +13,7 @@ import { formatDateTime } from '@/lib/utils';
 export function SessionsPageContent() {
   const router = useRouter();
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useSessions({ page });
+  const { data, isLoading, isError, refetch } = useSessions({ page });
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
@@ -41,7 +41,12 @@ export function SessionsPageContent() {
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => <PatientRowSkeleton key={i} />)
         ) : isError ? (
-          <div className="p-8 text-center text-sm text-destructive">Erreur de chargement</div>
+          <div className="p-8 text-center">
+            <p className="text-sm text-destructive">Erreur de chargement</p>
+            <button onClick={() => refetch()} className="text-sm text-primary hover:underline mt-2">
+              Réessayer
+            </button>
+          </div>
         ) : !data?.data.length ? (
           <EmptyState
             icon={CalendarCheck}
