@@ -8,11 +8,11 @@ import { ScrollReveal } from '@/components/ui/scroll-reveal';
 const plans = [
   {
     name: 'Starter',
-    monthly: 29.99,
-    annual: 23.99,
+    monthly: 43,
+    annual: 34.99,
     description: 'Idéal pour démarrer',
     features: [
-      '20 patients',
+      '40 patients',
       '40 séances / mois',
       '10 résumés IA / mois',
       'Notes structurées',

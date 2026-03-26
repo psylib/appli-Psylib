@@ -32,7 +32,7 @@ const jsonLd = {
         'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF conforme, Prise de rendez-vous en ligne, Reseau professionnel entre psychologues, Espace patient securise, Supervision et intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
-        lowPrice: '29.99',
+        lowPrice: '43',
         highPrice: '119.99',
         priceCurrency: 'EUR',
         offerCount: '3',
@@ -88,7 +88,7 @@ const jsonLd = {
           name: "Combien coute PsyLib ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "PsyLib propose trois formules : Starter a 29,99 EUR/mois, Pro a 69,99 EUR/mois et Scale a 119,99 EUR/mois. Un essai gratuit de 14 jours est disponible sans carte bancaire.",
+            text: "PsyLib propose trois formules : Starter a 43 EUR/mois, Pro a 69,99 EUR/mois et Scale a 119,99 EUR/mois. Un essai gratuit de 14 jours est disponible sans carte bancaire.",
           },
         },
         {

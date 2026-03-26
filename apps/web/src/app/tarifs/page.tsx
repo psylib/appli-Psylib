@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Tarifs | PsyLib — Logiciel pour psychologues",
   description:
-    "Decouvrez les tarifs PsyLib : a partir de 29,99 euros/mois pour gerer votre cabinet de psychologue liberal. Essai gratuit 14 jours sans carte bancaire. Plans Starter, Pro et Scale.",
+    "Decouvrez les tarifs PsyLib : a partir de 43 euros/mois pour gerer votre cabinet de psychologue liberal. Essai gratuit 14 jours sans carte bancaire. Plans Starter, Pro et Scale.",
   keywords: [
     "tarifs psychologue",
     "prix logiciel psychologue",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tarifs PsyLib — Logiciel pour psychologues liberaux",
     description:
-      "Plans a partir de 29,99 euros/mois. Dossiers patients, notes cliniques, facturation, IA. 14 jours d\"essai gratuit.",
+      "Plans a partir de 43 euros/mois. Dossiers patients, notes cliniques, facturation, IA. 14 jours d\"essai gratuit.",
     url: "https://psylib.eu/tarifs",
     type: "website",
     locale: "fr_FR",
@@ -41,16 +41,16 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Starter",
-          price: "29.99",
+          price: "43",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "29.99",
+            price: "43",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
           description:
-            "20 patients, 40 sessions/mois, 10 resumes IA, profil public",
+            "40 patients, 40 sessions/mois, 10 resumes IA, profil public",
         },
         {
           "@type": "Offer",
@@ -134,11 +134,11 @@ const plans = [
   {
     name: "Starter",
     description: "Pour demarrer votre pratique",
-    priceMonthly: 29.99,
-    priceAnnual: 23.99,
+    priceMonthly: 43,
+    priceAnnual: 34.99,
     highlighted: false,
     features: [
-      "20 patients maximum",
+      "40 patients maximum",
       "40 sessions par mois",
       "10 resumes IA par mois",
       "Profil public psylib.eu/psy/votre-nom",
@@ -194,7 +194,7 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { name: "Patients", starter: "20", pro: "Illimite", scale: "Illimite" },
+  { name: "Patients", starter: "40", pro: "Illimite", scale: "Illimite" },
   { name: "Sessions / mois", starter: "40", pro: "Illimite", scale: "Illimite" },
   { name: "Resumes IA / mois", starter: "10", pro: "100", scale: "Illimite" },
   { name: "Notes cliniques SOAP / DAP", starter: true, pro: true, scale: true },

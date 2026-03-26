@@ -15,7 +15,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Support email',
   ],
   [SubscriptionPlan.STARTER]: [
-    '20 patients',
+    '40 patients',
     '40 séances / mois',
     '10 résumés IA / mois',
     'Support email',

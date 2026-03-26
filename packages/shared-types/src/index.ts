@@ -452,7 +452,7 @@ export interface HealthCheckResponse {
 // Plan limits
 export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number }> = {
   [SubscriptionPlan.FREE]: { patients: 5, sessions: 10, aiSummaries: 0 },
-  [SubscriptionPlan.STARTER]: { patients: 20, sessions: 40, aiSummaries: 10 },
+  [SubscriptionPlan.STARTER]: { patients: 40, sessions: 40, aiSummaries: 10 },
   [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: 100 },
   [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1 }, // -1 = illimité
 };

@@ -30,7 +30,7 @@ const fonctionnalitesJsonLd = {
         'Dossiers patients securises HDS, Notes cliniques SOAP DAP narratif, Resume de seance IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF, Prise de RDV en ligne, Reseau professionnel, Espace patient, Supervision intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
-        lowPrice: '29.99',
+        lowPrice: '43',
         highPrice: '119.99',
         priceCurrency: 'EUR',
         offerCount: '3',

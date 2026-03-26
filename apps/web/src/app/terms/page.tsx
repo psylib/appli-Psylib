@@ -292,8 +292,8 @@ export default function TermsPage() {
               <tbody className="text-gray-700">
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Starter</td>
-                  <td className="py-3 pr-4">29,99 euros HT</td>
-                  <td className="py-3">20 patients, 40 seances/mois, 10 resumes IA</td>
+                  <td className="py-3 pr-4">43 euros HT</td>
+                  <td className="py-3">40 patients, 40 seances/mois, 10 resumes IA</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Pro</td>

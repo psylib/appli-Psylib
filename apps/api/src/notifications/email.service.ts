@@ -885,7 +885,7 @@ export class EmailService {
         &#10003; Messagerie s&eacute;curis&eacute;e<br/>
         &#10003; Facturation automatique</p>
       </div>
-      <p>Passez au plan Starter d&egrave;s <strong>29,99&euro;/mois</strong> pour continuer.</p>
+      <p>Passez au plan Starter d&egrave;s <strong>43&euro;/mois</strong> pour continuer.</p>
       <a href="${data.billingUrl}" class="btn">Choisir mon plan</a>`,
     );
     await this.send(to, `Plus que ${data.daysLeft} jours d'essai PsyLib`, html, 'sendPostTrialDay1');
@@ -933,7 +933,7 @@ export class EmailService {
         <p style="margin:0;font-size:15px;"><strong>3. Messagerie s&eacute;curis&eacute;e</strong><br/>
         Plus d'&eacute;changes chiffr&eacute;s avec vos patients entre les s&eacute;ances.</p>
       </div>
-      <p>Conservez tout &agrave; partir de <strong>29,99&euro;/mois</strong> &mdash; sans engagement.</p>
+      <p>Conservez tout &agrave; partir de <strong>43&euro;/mois</strong> &mdash; sans engagement.</p>
       <a href="${data.billingUrl}" class="btn">Garder mes fonctionnalit&eacute;s</a>`,
     );
     await this.send(to, 'Ce que vous perdrez sans abonnement PsyLib', html, 'sendPostTrialDay5');
@@ -959,7 +959,7 @@ export class EmailService {
         <p style="margin:0;font-size:15px;"><strong>Puis-je annuler &agrave; tout moment ?</strong><br/>
         Oui, sans engagement. Annulation en 1 clic depuis votre espace.</p>
       </div>
-      <p>Le plan Starter &agrave; <strong>29,99&euro;/mois</strong> revient &agrave; ~1&euro;/jour pour g&eacute;rer tout votre cabinet.</p>
+      <p>Le plan Starter &agrave; <strong>43&euro;/mois</strong> revient &agrave; ~1&euro;/jour pour g&eacute;rer tout votre cabinet.</p>
       <a href="${data.billingUrl}" class="btn">D&eacute;marrer maintenant</a>`,
     );
     await this.send(to, 'Vos questions sur PsyLib (FAQ)', html, 'sendPostTrialDay10');
@@ -981,7 +981,7 @@ export class EmailService {
       </div>
       <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>
       <div class="info-box">
-        <p style="margin:0;font-size:15px;"><strong>Starter</strong> &mdash; 29,99&euro;/mois (20 patients, IA incluse)<br/>
+        <p style="margin:0;font-size:15px;"><strong>Starter</strong> &mdash; 43&euro;/mois (40 patients, IA incluse)<br/>
         <strong>Pro</strong> &mdash; 59,99&euro;/mois (illimit&eacute;, formations)<br/>
         <strong>Clinic</strong> &mdash; 119,99&euro;/mois (multi-praticiens)</p>
       </div>

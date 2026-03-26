@@ -37,7 +37,7 @@ const faqCategories = [
       },
       {
         q: "A qui s\"adresse PsyLib ?",
-        a: "PsyLib s\"adresse a tous les psychologues liberaux en France, qu\"ils soient en debut de carriere ou praticiens etablis. Le plan Starter convient aux jeunes installes (jusqu\"a 20 patients), le plan Pro aux praticiens avec une patientele etablie, et le plan Scale aux cabinets multi-praticiens.",
+        a: "PsyLib s\"adresse a tous les psychologues liberaux en France, qu\"ils soient en debut de carriere ou praticiens etablis. Le plan Starter convient aux jeunes installes (jusqu\"a 40 patients), le plan Pro aux praticiens avec une patientele etablie, et le plan Scale aux cabinets multi-praticiens.",
       },
       {
         q: "Puis-je essayer PsyLib gratuitement ?",
@@ -96,7 +96,7 @@ const faqCategories = [
     questions: [
       {
         q: "Quels sont les plans disponibles ?",
-        a: "PsyLib propose trois plans : Starter (29,99 euros/mois ou 23,99 euros/mois en annuel) pour les jeunes praticiens, Pro (69,99 euros/mois ou 55,99 euros/mois en annuel) pour les praticiens etablis avec patients illimites, et Scale (119,99 euros/mois ou 95,99 euros/mois en annuel) pour les cabinets multi-praticiens. Tous les plans incluent 14 jours d\"essai gratuit.",
+        a: "PsyLib propose trois plans : Starter (43 euros/mois ou 34,99 euros/mois en annuel) pour les jeunes praticiens, Pro (69,99 euros/mois ou 55,99 euros/mois en annuel) pour les praticiens etablis avec patients illimites, et Scale (119,99 euros/mois ou 95,99 euros/mois en annuel) pour les cabinets multi-praticiens. Tous les plans incluent 14 jours d\"essai gratuit.",
       },
       {
         q: "Que se passe-t-il a la fin de l\"essai gratuit ?",
