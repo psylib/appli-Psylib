@@ -57,10 +57,12 @@
       "secret": "change-me-in-production",
       "redirectUris": [
         "http://localhost:3000/*",
+        "https://psylib.eu/*",
         "https://app.psylib.eu/*"
       ],
       "webOrigins": [
         "http://localhost:3000",
+        "https://psylib.eu",
         "https://app.psylib.eu"
       ],
       "protocol": "openid-connect",
@@ -76,7 +78,7 @@
       "attributes": {
         "access.token.lifespan": "900",
         "client.session.idle.timeout": "28800",
-        "post.logout.redirect.uris": "http://localhost:3000/*##https://app.psylib.eu/*"
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://psylib.eu/*##https://app.psylib.eu/*"
       }
     },
     {
@@ -135,13 +137,15 @@
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
   "smtpServer": {
-    "host": "mailhog",
-    "port": "1025",
+    "host": "smtp.resend.com",
+    "port": "465",
     "from": "noreply@psylib.eu",
-    "fromDisplayName": "PsyScale",
-    "ssl": "false",
+    "fromDisplayName": "PsyLib",
+    "ssl": "true",
     "starttls": "false",
-    "auth": "false"
+    "auth": "true",
+    "user": "resend",
+    "password": "CHANGE_ME_RESEND_API_KEY"
   },
   "eventsEnabled": true,
   "eventsExpiration": 2592000,

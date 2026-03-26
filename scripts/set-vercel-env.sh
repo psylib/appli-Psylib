@@ -1,6 +1,13 @@
 #!/bin/bash
-TOKEN="vca_46LonRNqhEoI83OoLQhNHZ8rzCC00udQgWzZlhwWNDgTF7up0b2udsyF"
-TEAM="team_Oxj8h4wbyW5iAxskacqRYBKH"
+set -euo pipefail
+
+# PsyScale — Set Vercel environment variables
+# Usage: VERCEL_TOKEN=xxx VERCEL_TEAM_ID=xxx ./scripts/set-vercel-env.sh
+#
+# NEVER hardcode secrets in this file. Use environment variables.
+
+TOKEN="${VERCEL_TOKEN:?Variable VERCEL_TOKEN requise}"
+TEAM="${VERCEL_TEAM_ID:?Variable VERCEL_TEAM_ID requise}"
 URL="https://api.vercel.com/v10/projects/psyscale-web/env?teamId=${TEAM}"
 HDR="Authorization: Bearer ${TOKEN}"
 
@@ -11,7 +18,8 @@ post() {
   echo "$result" | grep -o '"key":"[^"]*"' | head -1
 }
 
-post "NEXTAUTH_SECRET"     "0oTlP7ON17upINdxphQKDK0EgUdwUFbMNmAhcls5zIY="
+# Secrets are passed as env vars — never hardcoded
+post "NEXTAUTH_SECRET"     "${NEXTAUTH_SECRET:?Variable NEXTAUTH_SECRET requise}"
 post "NEXT_PUBLIC_API_URL" "https://api.psylib.eu"  "plain"
 post "NEXT_PUBLIC_WS_URL"  "wss://api.psylib.eu"    "plain"
 post "KEYCLOAK_REALM"      "psyscale"                 "plain"

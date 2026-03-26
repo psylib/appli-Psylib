@@ -57,10 +57,12 @@
       "secret": "change-me-in-production",
       "redirectUris": [
         "http://localhost:3000/*",
+        "https://psylib.eu/*",
         "https://app.psylib.eu/*"
       ],
       "webOrigins": [
         "http://localhost:3000",
+        "https://psylib.eu",
         "https://app.psylib.eu"
       ],
       "protocol": "openid-connect",
@@ -76,7 +78,7 @@
       "attributes": {
         "access.token.lifespan": "900",
         "client.session.idle.timeout": "28800",
-        "post.logout.redirect.uris": "http://localhost:3000/*##https://app.psylib.eu/*"
+        "post.logout.redirect.uris": "http://localhost:3000/*##https://psylib.eu/*##https://app.psylib.eu/*"
       }
     },
     {

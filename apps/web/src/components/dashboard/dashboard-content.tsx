@@ -21,6 +21,7 @@ import { KpiCard } from '@/components/shared/kpi-card';
 import { KpiCardSkeleton } from '@/components/ui/skeleton';
 import { ActivationChecklist } from '@/components/dashboard/activation-checklist';
 import { TrialBanner } from '@/components/dashboard/trial-banner';
+import { ClinicalAlerts } from '@/components/dashboard/clinical-alerts';
 import {
   useDashboardKpis,
   useUpcomingAppointments,
@@ -471,7 +472,12 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       </section>
 
       {/* ----------------------------------------------------------------- */}
-      {/* Row 3 — Quick Actions                                            */}
+      {/* Row 3 — Clinical Alerts                                          */}
+      {/* ----------------------------------------------------------------- */}
+      <ClinicalAlerts />
+
+      {/* ----------------------------------------------------------------- */}
+      {/* Row 4 — Quick Actions                                            */}
       {/* ----------------------------------------------------------------- */}
       <section>
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">

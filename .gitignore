@@ -54,6 +54,8 @@ docker/keycloak/data/
 *.cert
 google-services.json
 GoogleService-Info.plist
+docker/keycloak-prod/.env
+docker/api-prod/.env
 
 # Production env (jamais committer les vraies valeurs)
 .env.production
