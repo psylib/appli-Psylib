@@ -24,8 +24,8 @@ const plans = [
   },
   {
     name: 'Pro',
-    monthly: 69.99,
-    annual: 55.99,
+    monthly: 69,
+    annual: 55,
     description: 'Pour une pratique complète',
     features: [
       'Patients illimités',
@@ -43,8 +43,8 @@ const plans = [
   },
   {
     name: 'Scale',
-    monthly: 119.99,
-    annual: 95.99,
+    monthly: 119,
+    annual: 95,
     description: 'Cabinet multi-praticiens',
     features: [
       'Tout le plan Pro',

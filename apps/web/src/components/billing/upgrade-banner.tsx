@@ -42,7 +42,7 @@ export function UpgradeBanner({ reason, currentPlan }: UpgradeBannerProps) {
         <p className="text-sm font-medium text-amber-900">{MESSAGES[reason]}</p>
         <p className="text-xs text-amber-700 mt-0.5">
           Passez au plan{' '}
-          {targetPlan === SubscriptionPlan.STARTER ? 'Starter (43€/mois)' : 'Pro (69,99€/mois)'}{' '}
+          {targetPlan === SubscriptionPlan.STARTER ? 'Starter (43€/mois)' : 'Pro (69€/mois)'}{' '}
           pour continuer.
         </p>
       </div>

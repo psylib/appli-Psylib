@@ -29,8 +29,8 @@ export default function OgImage() {
         <div style={{ display: 'flex', gap: '24px' }}>
           {[
             { name: 'Starter', price: '43€' },
-            { name: 'Pro', price: '69,99€' },
-            { name: 'Scale', price: '119,99€' },
+            { name: 'Pro', price: '69€' },
+            { name: 'Scale', price: '119€' },
           ].map((plan) => (
             <div
               key={plan.name}

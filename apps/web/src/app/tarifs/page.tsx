@@ -55,11 +55,11 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Pro",
-          price: "69.99",
+          price: "69",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "69.99",
+            price: "69",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
@@ -69,11 +69,11 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Scale",
-          price: "119.99",
+          price: "119",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "119.99",
+            price: "119",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
@@ -153,8 +153,8 @@ const plans = [
   {
     name: "Pro",
     description: "Pour les praticiens etablis",
-    priceMonthly: 69.99,
-    priceAnnual: 55.99,
+    priceMonthly: 69,
+    priceAnnual: 55,
     highlighted: true,
     badge: "Le plus populaire",
     features: [
@@ -175,8 +175,8 @@ const plans = [
   {
     name: "Scale",
     description: "Pour les cabinets multi-praticiens",
-    priceMonthly: 119.99,
-    priceAnnual: 95.99,
+    priceMonthly: 119,
+    priceAnnual: 95,
     highlighted: false,
     features: [
       "Tout le plan Pro inclus",

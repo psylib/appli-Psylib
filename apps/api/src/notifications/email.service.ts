@@ -982,8 +982,8 @@ export class EmailService {
       <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>
       <div class="info-box">
         <p style="margin:0;font-size:15px;"><strong>Starter</strong> &mdash; 43&euro;/mois (40 patients, IA incluse)<br/>
-        <strong>Pro</strong> &mdash; 59,99&euro;/mois (illimit&eacute;, formations)<br/>
-        <strong>Clinic</strong> &mdash; 119,99&euro;/mois (multi-praticiens)</p>
+        <strong>Pro</strong> &mdash; 69&euro;/mois (illimit&eacute;, formations)<br/>
+        <strong>Clinic</strong> &mdash; 119&euro;/mois (multi-praticiens)</p>
       </div>
       <a href="${data.billingUrl}" class="btn">Conserver mon acc&egrave;s</a>
       <p style="font-size:13px;color:#6B7280;margin-top:24px;">Si PsyLib ne vous convient pas, aucun souci. Vos donn&eacute;es restent accessibles sur le plan gratuit.</p>`,

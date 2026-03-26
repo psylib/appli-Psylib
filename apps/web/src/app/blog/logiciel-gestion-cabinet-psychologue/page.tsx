@@ -395,7 +395,7 @@ export default function ArticleLogicielGestionCabinet() {
           <p className="mb-4 leading-relaxed">
             Les formules disponibles démarrent à 43 euros par mois pour le plan Starter
             (40 patients, 40 séances mensuelles, 10 résumés IA), et s'étendent jusqu'à
-            119,99 euros par mois pour le plan Scale (patients et séances illimités, IA
+            119 euros par mois pour le plan Scale (patients et séances illimités, IA
             illimitée, gestion multi-praticiens). Un essai gratuit de 14 jours sur le
             plan Pro est disponible sans carte bancaire.
           </p>
