@@ -161,7 +161,7 @@ apps/web/src/
 
 ### Corrections conversion (`fcf7b38`)
 - [x] **CTAs `/login` → `/register`** — 10 boutons d'acquisition corrigés (hero, nav, pricing, sticky, tarifs, fonctionnalités, FAQ, contact)
-- [x] **JSON-LD prix** — `lowPrice: 49→29.99`, `highPrice: 149→119.99` (home + fonctionnalités)
+- [x] **JSON-LD prix** — `lowPrice: 43`, `highPrice: 119` (home + fonctionnalités)
 - [x] **WCAG contraste** — `text-charcoal-300→400` sur 10 composants landing (ratio 2.8:1 → 5.9:1)
 
 ### Corrections infra (`3d89733`)
@@ -191,9 +191,26 @@ apps/web/src/
 - [x] **Cleanup EmptyState** — `courses-content.tsx` utilise maintenant le composant shared
 - [x] **Séquence emails post-trial** — 5 emails (J-7, J-5, J-3, J-1, J0) + cron `@Cron('30 9 * * *')` + dedup audit_logs
 
+### Corrections pricing (2026-03-26, session 3)
+- [x] **Starter 43€/mois** — prix arrondi (était 29,99€), 40 patients (était 20), Stripe Price ID mis à jour
+- [x] **Pro 69€/mois** — prix arrondi (était 69,99€), Stripe Price ID mis à jour
+- [x] **Scale 119€/mois** — prix arrondi (était 119,99€), Stripe Price ID mis à jour
+- [x] **Stripe** — 3 nouveaux Price IDs créés, anciens désactivés, VPS `.env` mis à jour, API redémarrée
+- [x] **14 fichiers** mis à jour : landing, tarifs, FAQ, CGV, blog, comparaison, fonctionnalités, OG images, JSON-LD, llms.txt, emails post-trial, billing components, shared-types
+- [x] **Vercel** — déployé en production sur psylib.eu
+- [x] **Fix lead magnet** — URL corrigée `/api/lead-magnets/download` → `/api/lead-magnets`
+
+### Keycloak admin (2026-03-26, session 3)
+- [x] **Post logout redirect URIs** — ajouté `psylib.eu/*` et `www.psylib.eu/*`
+- [x] **Client secret vérifié** — WPYygR1A5zMm1LsQn8PbP0KUCFuQkDZP
+- [x] **MFA TOTP obligatoire** — Configure OTP activé comme default action, browser flow vérifié
+- [x] **SMTP Resend configuré** — smtp.resend.com dans Keycloak prod realm
+- [x] **Crons backup installés** — PostgreSQL (2h) + Keycloak DB (3h) quotidiens
+
 ### Reste à faire
 - [ ] Migration Prisma `notification_preferences` (champ JSON sur users)
 - [ ] Recruter 3-5 beta-testeurs psys pour témoignages réels
+- [ ] Débloquer port SMTP OVH (contacter support)
 
 ---
 
