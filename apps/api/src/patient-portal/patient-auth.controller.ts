@@ -30,4 +30,12 @@ export class PatientAuthController {
   login(@Body() dto: PatientLoginDto) {
     return this.authService.login(dto);
   }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
+  @ApiOperation({ summary: 'Rafraîchir le token patient' })
+  refreshToken(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
+  }
 }

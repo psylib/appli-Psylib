@@ -59,7 +59,7 @@ test.describe('Sessions — Create', () => {
         return route.fulfill({
           status: 201,
           contentType: 'application/json',
-          body: JSON.stringify({ id: 's-new', ...fixtures.session }),
+          body: JSON.stringify({ ...fixtures.session, id: 's-new' }),
         });
       }
       return route.continue();

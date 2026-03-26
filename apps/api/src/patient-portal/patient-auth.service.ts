@@ -75,13 +75,25 @@ export class PatientAuthService {
         data: { status: 'accepted' },
       });
 
-      // Consentement RGPD initial
-      await tx.gdprConsent.create({
-        data: {
-          patientId: invitation.patientId,
-          type: 'portal_access',
-          version: '1.0',
-        },
+      // Consentements RGPD initiaux
+      await tx.gdprConsent.createMany({
+        data: [
+          {
+            patientId: invitation.patientId,
+            type: 'portal_access',
+            version: '1.0',
+          },
+          {
+            patientId: invitation.patientId,
+            type: 'data_processing',
+            version: '1.0',
+          },
+          {
+            patientId: invitation.patientId,
+            type: 'ai_processing',
+            version: '1.0',
+          },
+        ],
       });
 
       return { user, patient };
@@ -153,10 +165,51 @@ export class PatientAuthService {
 
     const accessToken = this.jwt.sign(payload, {
       secret,
-      expiresIn: '7d',
+      expiresIn: '1h',
       algorithm: 'HS256',
     });
 
-    return { accessToken, userId, patientId, email };
+    const refreshToken = this.jwt.sign(
+      { sub: userId, patientId, type: 'refresh' },
+      {
+        secret,
+        expiresIn: '7d',
+        algorithm: 'HS256',
+      },
+    );
+
+    return { accessToken, refreshToken, userId, patientId, email };
+  }
+
+  /**
+   * Rafraîchit le token patient via refresh token
+   */
+  async refreshToken(refreshTokenValue: string) {
+    const secret = this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
+
+    try {
+      const decoded = this.jwt.verify(refreshTokenValue, { secret }) as {
+        sub: string;
+        patientId: string;
+        type?: string;
+      };
+
+      if (decoded.type !== 'refresh') {
+        throw new UnauthorizedException('Token invalide');
+      }
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: decoded.sub },
+        select: { id: true, email: true, role: true },
+      });
+
+      if (!user || user.role !== 'patient') {
+        throw new UnauthorizedException('Compte introuvable');
+      }
+
+      return this.generateTokens(user.id, decoded.patientId, user.email);
+    } catch {
+      throw new UnauthorizedException('Refresh token invalide ou expiré');
+    }
   }
 }

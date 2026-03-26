@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Playfair_Display, DM_Sans, DM_Mono } from 'next/font/google';
 import { Providers } from '@/components/providers';
+import { CookieConsentBanner } from '@/components/cookie-consent';
 import './globals.css';
 
 const playfair = Playfair_Display({
@@ -102,6 +103,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
         <Providers>{children}</Providers>
+        <CookieConsentBanner />
       </body>
     </html>
   );

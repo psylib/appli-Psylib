@@ -104,9 +104,34 @@ export class AiService {
   }
 
   /**
+   * Vérifie que le patient a donné son consentement pour le traitement IA
+   */
+  private async checkAiConsent(sessionId: string): Promise<void> {
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+      select: { patientId: true },
+    });
+    if (!session) return;
+
+    const consent = await this.prisma.gdprConsent.findFirst({
+      where: {
+        patientId: session.patientId,
+        type: 'ai_processing',
+        withdrawnAt: null,
+      },
+    });
+
+    if (!consent) {
+      throw new ForbiddenException(
+        'Le patient n\'a pas donné son consentement pour le traitement IA. '
+        + 'Demandez-lui d\'accepter le consentement "Traitement IA" dans son espace patient.',
+      );
+    }
+  }
+
+  /**
    * Résumé de séance — Streaming SSE
-   * CRITIQUE : Les notes ne quittent le serveur qu'avec consentement implicite
-   * (le psy a explicitement cliqué "Résumer")
+   * CRITIQUE : Les notes ne quittent le serveur qu'avec consentement explicite du patient
    */
   async streamSessionSummary(
     psychologistUserId: string,
@@ -118,6 +143,9 @@ export class AiService {
     if (!dto.rawNotes || dto.rawNotes.trim().length < 20) {
       throw new BadRequestException('Notes trop courtes pour générer un résumé');
     }
+
+    // Vérifier le consentement IA du patient avant envoi au LLM
+    await this.checkAiConsent(dto.sessionId);
 
     this.requireAiKey();
 
@@ -343,9 +371,25 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
 
   async generateExercise(
     psychologistUserId: string,
-    dto: GenerateExerciseDto,
+    dto: GenerateExerciseDto & { patientId?: string },
   ): Promise<object> {
     await this.getPsychologist(psychologistUserId);
+
+    // Vérifier le consentement IA si un patient est associé
+    if (dto.patientId) {
+      const consent = await this.prisma.gdprConsent.findFirst({
+        where: {
+          patientId: dto.patientId,
+          type: 'ai_processing',
+          withdrawnAt: null,
+        },
+      });
+      if (!consent) {
+        throw new ForbiddenException(
+          'Le patient n\'a pas donné son consentement pour le traitement IA.',
+        );
+      }
+    }
 
     this.requireAiKey();
 
