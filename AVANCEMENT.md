@@ -1,6 +1,6 @@
 # PsyScale — Avancement du projet
 
-**Dernière mise à jour :** 2026-03-13 (Phase 4 — COMPLÈTE ✅)
+**Dernière mise à jour :** 2026-03-26
 
 ---
 
@@ -12,6 +12,7 @@
 | Phase 2 — MVP Core | ✅ Terminée |
 | Phase 3 — Monétisation | ✅ Terminée |
 | Phase 4 — Croissance | ✅ Terminée |
+| Audit & Hardening | ✅ 2026-03-26 |
 
 ---
 
@@ -139,6 +140,56 @@ apps/web/src/
 - **scripts/deploy-api.sh** : déploiement manuel
 - **scripts/setup-aws-params.sh** : injection secrets SSM
 - **.env.production.example** : template complet des variables
+
+---
+
+## Audit & Hardening — 2026-03-26 ✅
+
+### Audit complet (4 agents spécialisés)
+- Audit codebase : 100+ pages web, 25+ modules backend, app mobile Android
+- Audit sécurité & conformité HDS
+- Audit UX/UI design & accessibilité WCAG
+- Audit marketing & stratégie de conversion
+
+### Corrections sécurité (`395e684`)
+- [x] **MFA TOTP obligatoire** — `defaultAction: true` dans les realm JSON Keycloak (dev + prod)
+- [x] **Mots de passe Keycloak prod** — régénérés (fichier `.env` gitignored)
+- [x] **JWT patient** — réduit de 7j à 1h + refresh token 7j + endpoint `POST /patient-portal/auth/refresh`
+- [x] **Consentement IA** — `checkAiConsent()` vérifie `gdpr_consents.ai_processing` avant envoi au LLM
+- [x] **Consentements RGPD complets** — 3 consentements créés à l'inscription patient (`portal_access`, `data_processing`, `ai_processing`)
+- [x] **Bandeau cookies CNIL** — `cookie-consent.tsx`, PostHog ne s'initialise qu'après acceptation explicite
+
+### Corrections conversion (`fcf7b38`)
+- [x] **CTAs `/login` → `/register`** — 10 boutons d'acquisition corrigés (hero, nav, pricing, sticky, tarifs, fonctionnalités, FAQ, contact)
+- [x] **JSON-LD prix** — `lowPrice: 49→29.99`, `highPrice: 149→119.99` (home + fonctionnalités)
+- [x] **WCAG contraste** — `text-charcoal-300→400` sur 10 composants landing (ratio 2.8:1 → 5.9:1)
+
+### Corrections infra (`3d89733`)
+- [x] Login page redesign split-screen
+- [x] Dashboard alertes cliniques (score en baisse, inactivité, exercice en retard)
+- [x] Pagination patients/sessions dans la card blanche
+- [x] CI : retiré `|| true` du lint, ajouté job test avec Prisma generate
+- [x] Keycloak : redirectUri psylib.eu + SMTP Resend en prod
+- [x] Docker/Terraform : domaines psyscale.fr → psylib.eu
+- [x] Scripts backup PostgreSQL + Keycloak DB
+- [x] Secrets retirés de `set-vercel-env.sh`
+- [x] API cold-email + page unsubscribe
+
+### Actions manuelles restantes (VPS prod)
+- [ ] Mettre à jour mots de passe Keycloak en prod
+- [ ] Réimporter realm JSON avec MFA TOTP obligatoire
+- [ ] Configurer SMTP Resend dans Keycloak admin
+- [ ] Installer crons backup PostgreSQL + Keycloak
+- [ ] Vérifier/changer client secret Keycloak
+
+### Reste à faire
+- [ ] Notifications settings : brancher sauvegarde sur l'API
+- [ ] Sessions page : bouton retry sur erreur de chargement
+- [ ] CSV injection protection (exports patients/sessions)
+- [ ] Gitignore le `.aab` mobile
+- [ ] Cleanup : console.error, EmptyState dupliqué, formatters date dupliqués
+- [ ] Séquence emails post-trial (5 emails sur 14j)
+- [ ] Recruter 3-5 beta-testeurs psys pour témoignages réels
 
 ---
 
