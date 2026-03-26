@@ -19,11 +19,11 @@ function OutcomeChart() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm font-medium text-charcoal">PHQ-9 — Marie B.</p>
-          <p className="text-xs text-charcoal-300">Dépression — 6 mois de suivi</p>
+          <p className="text-xs text-charcoal-400">Dépression — 6 mois de suivi</p>
         </div>
         <div className="text-right">
           <p className="text-2xl font-dm-mono font-medium text-sage">-60%</p>
-          <p className="text-xs text-charcoal-300">score dépression</p>
+          <p className="text-xs text-charcoal-400">score dépression</p>
         </div>
       </div>
 

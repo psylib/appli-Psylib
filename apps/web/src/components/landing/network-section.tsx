@@ -96,7 +96,7 @@ export function NetworkSection() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-charcoal">{name}</p>
-                      <p className="text-xs text-charcoal-300">{spec} · {ville}</p>
+                      <p className="text-xs text-charcoal-400">{spec} · {ville}</p>
                     </div>
                     <span className="text-xs px-3 py-1.5 rounded-full bg-sage text-white">
                       Adresser

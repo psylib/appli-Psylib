@@ -344,7 +344,7 @@ export default function TarifsPage() {
               </ul>
 
               <Link
-                href="/login"
+                href="/register"
                 className={`mt-8 block w-full rounded-lg py-3 text-center font-semibold transition ${
                   plan.highlighted
                     ? "bg-[#3D52A0] text-white hover:bg-[#2D3F80]"
@@ -529,7 +529,7 @@ export default function TarifsPage() {
         </p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/login"
+            href="/register"
             className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
           >
             Commencer l&apos;essai gratuit

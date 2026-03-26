@@ -139,7 +139,7 @@ export function PricingSection() {
                       </span>
                     </div>
                     {annual && (
-                      <p className={`text-xs mt-1 ${highlighted ? 'text-charcoal-200' : 'text-charcoal-300'}`}>
+                      <p className={`text-xs mt-1 ${highlighted ? 'text-charcoal-200' : 'text-charcoal-400'}`}>
                         Facturé {price * 12}€ / an
                       </p>
                     )}
@@ -160,7 +160,7 @@ export function PricingSection() {
                   </ul>
 
                   <Link
-                    href="/login"
+                    href="/register"
                     className={`block w-full text-center py-3 rounded-full font-medium text-sm transition-colors ${
                       highlighted
                         ? 'bg-terracotta text-white hover:bg-terracotta-600'
@@ -176,7 +176,7 @@ export function PricingSection() {
         </div>
 
         <ScrollReveal delay={400}>
-          <p className="text-center text-sm text-charcoal-300 mt-6">
+          <p className="text-center text-sm text-charcoal-400 mt-6">
             Annulez à tout moment. Sans engagement.
           </p>
         </ScrollReveal>

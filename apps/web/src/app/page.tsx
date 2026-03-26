@@ -32,8 +32,8 @@ const jsonLd = {
         'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF conforme, Prise de rendez-vous en ligne, Reseau professionnel entre psychologues, Espace patient securise, Supervision et intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
-        lowPrice: '49',
-        highPrice: '149',
+        lowPrice: '29.99',
+        highPrice: '119.99',
         priceCurrency: 'EUR',
         offerCount: '3',
       },

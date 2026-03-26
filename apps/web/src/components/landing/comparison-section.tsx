@@ -83,7 +83,7 @@ export function ComparisonSection() {
           </div>
         </ScrollReveal>
 
-        <p className="text-center text-xs text-charcoal-300 mt-4">
+        <p className="text-center text-xs text-charcoal-400 mt-4">
           Comparatif basé sur les fonctionnalités publiquement documentées à mars 2026.
         </p>
       </div>

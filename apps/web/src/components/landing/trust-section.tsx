@@ -65,7 +65,7 @@ export function TrustSection() {
           <div className="max-w-2xl mx-auto text-center">
             <div className="flex items-center justify-center gap-8">
               <div className="text-center">
-                <div className="text-xs text-charcoal-300 mb-1">Hébergement certifié</div>
+                <div className="text-xs text-charcoal-400 mb-1">Hébergement certifié</div>
                 <div className="flex items-center gap-3">
                   <span className="font-dm-mono text-sm font-medium text-charcoal-400 px-3 py-1 rounded-lg border border-charcoal-200">OVH HDS</span>
                 </div>

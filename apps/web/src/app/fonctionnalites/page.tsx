@@ -30,8 +30,8 @@ const fonctionnalitesJsonLd = {
         'Dossiers patients securises HDS, Notes cliniques SOAP DAP narratif, Resume de seance IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF, Prise de RDV en ligne, Reseau professionnel, Espace patient, Supervision intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
-        lowPrice: '49',
-        highPrice: '149',
+        lowPrice: '29.99',
+        highPrice: '119.99',
         priceCurrency: 'EUR',
         offerCount: '3',
       },
@@ -143,7 +143,7 @@ export default function FonctionnalitesPage() {
           HDS — tout en un, sans carte bancaire.
         </p>
         <Link
-          href="/login"
+          href="/register"
           className="mt-6 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
         >
           Commencer l&apos;essai gratuit

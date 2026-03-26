@@ -83,7 +83,7 @@ export function LeadNurtureCTA() {
                   {status === 'error' && (
                     <p className="text-red-500 text-xs">Erreur. Réessayez.</p>
                   )}
-                  <p className="text-xs text-charcoal-300 text-center">
+                  <p className="text-xs text-charcoal-400 text-center">
                     <Link href="/privacy" className="underline hover:text-charcoal-400">
                       Conforme RGPD
                     </Link>

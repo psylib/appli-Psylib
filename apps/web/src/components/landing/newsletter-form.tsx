@@ -40,7 +40,7 @@ export function NewsletterForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <p className="text-sm text-charcoal-300">
+      <p className="text-sm text-charcoal-400">
         Recevez nos conseils pour psychologues, 1x/mois. Pas de spam.
       </p>
       <div className="flex gap-2">

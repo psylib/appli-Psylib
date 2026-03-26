@@ -131,7 +131,7 @@ export function HeroSection() {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Link
-                  href="/login"
+                  href="/register"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-sage text-white font-medium hover:bg-sage-600 transition-colors shadow-sm"
                 >
                   Commencer gratuitement
@@ -154,7 +154,7 @@ export function HeroSection() {
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">
                     <div className="font-dm-mono font-medium text-xl text-charcoal">{value}</div>
-                    <div className="text-xs text-charcoal-300 mt-0.5">{label}</div>
+                    <div className="text-xs text-charcoal-400 mt-0.5">{label}</div>
                   </div>
                 ))}
               </div>
