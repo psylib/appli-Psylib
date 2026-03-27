@@ -78,6 +78,15 @@ const RESOURCES = [
     ctaDescription:
       'Recevez le guide complet tarifs et facturation pour psychologues liberaux (PDF gratuit).',
   },
+  {
+    slug: 'guide-rgpd-hds' as const,
+    icon: '🔒',
+    title: 'Guide RGPD & HDS pour psychologues',
+    description:
+      'Obligations legales, certification HDS, outils interdits, checklist de conformite, modeles de documents RGPD et plan de migration en 5 etapes.',
+    ctaDescription:
+      'Recevez le guide complet RGPD et hebergement de donnees de sante pour psychologues liberaux (PDF gratuit, 12 pages).',
+  },
 ];
 
 export default function RessourcesPage() {

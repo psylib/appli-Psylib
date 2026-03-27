@@ -5,6 +5,6 @@ export class RequestLeadMagnetDto {
   email!: string;
 
   @IsString()
-  @IsIn(['kit-demarrage-cabinet', 'templates-notes-tcc', 'guide-tarifs-facturation'])
+  @IsIn(['kit-demarrage-cabinet', 'templates-notes-tcc', 'guide-tarifs-facturation', 'guide-rgpd-hds'])
   slug!: string;
 }

@@ -63,12 +63,12 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // 1. Save lead to NestJS API
+    // 1. Save lead + trigger nurturing via NestJS API
     const apiUrl = process.env['NEXT_PUBLIC_API_URL'] ?? 'https://api.psylib.eu';
-    await fetch(`${apiUrl}/api/v1/leads`, {
+    await fetch(`${apiUrl}/api/v1/leads/beta`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name, adeli, message, source: 'beta_founders', ip }),
+      body: JSON.stringify({ email, name, adeli, message, ip }),
     }).catch((err) => {
       console.warn('[beta] API unavailable:', err);
     });
