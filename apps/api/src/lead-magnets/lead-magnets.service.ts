@@ -8,6 +8,7 @@ const LEAD_MAGNET_TITLES: Record<string, string> = {
   'kit-demarrage-cabinet': 'Kit de demarrage cabinet psy',
   'templates-notes-tcc': 'Templates notes cliniques TCC',
   'guide-tarifs-facturation': 'Guide tarifs et facturation psychologue',
+  'guide-rgpd-hds': 'Guide RGPD et HDS pour psychologues liberaux',
 };
 
 @Injectable()
