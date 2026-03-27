@@ -965,6 +965,244 @@ export class EmailService {
     await this.send(to, 'Vos questions sur PsyLib (FAQ)', html, 'sendPostTrialDay10');
   }
 
+  // ─── SÉQUENCE NURTURING LEADS (5 emails pour prospects /beta) ─────────────────
+
+  /** J+0 — Bienvenue + histoire du fondateur */
+  async sendNurtureWelcome(
+    to: string,
+    data: { name: string; betaUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Bienvenue dans l\'aventure PsyLib',
+      `<h1>Bienvenue ${data.name} !</h1>
+      <div class="badge badge-success">Candidature Fondateur reçue</div>
+      <p>
+        Merci d'avoir postulé pour rejoindre les <strong>15 Fondateurs PsyLib</strong>.
+        Je suis Tony, le créateur de PsyLib, et je voulais vous expliquer pourquoi j'ai lancé ce projet.
+      </p>
+      <p>
+        L'idée est née d'un constat simple : les psychologues libéraux passent
+        <strong>8 à 10 heures par semaine</strong> sur l'administratif.
+        Notes sur Word, agenda sur Google Calendar, facturation sur Excel, données patients
+        sur des outils non sécurisés.
+      </p>
+      <p>
+        Et surtout : <strong>rien n'est conforme HDS</strong> (Hébergement de Données de Santé),
+        alors que c'est obligatoire dès qu'on manipule des données patients.
+      </p>
+      <p>
+        PsyLib, c'est une plateforme unique : gestion patients, notes structurées,
+        suivi thérapeutique, assistant IA, facturation. Le tout hébergé en France,
+        chiffré de bout en bout, conforme.
+      </p>
+      <p>
+        Dans les prochains jours, je vous montrerai concrètement comment PsyLib
+        peut transformer votre quotidien.
+      </p>
+      <div class="info-box" style="font-size:14px;color:#6B7280;">
+        <strong style="color:#1E1B4B;">En attendant :</strong><br />
+        Répondez à cet email avec votre plus grande galère administrative.
+        Je lis tout personnellement.
+      </div>
+      <p style="font-size:14px;color:#6B7280;margin-top:24px;">
+        À très vite,<br /><strong>Tony</strong> — Fondateur de PsyLib
+      </p>`,
+    );
+
+    await this.send(to, 'Bienvenue dans l\'aventure PsyLib — voici pourquoi j\'ai créé cet outil', html, 'sendNurtureWelcome');
+  }
+
+  /** J+2 — Le problème n°1 que PsyLib résout */
+  async sendNurtureProblem(
+    to: string,
+    data: { name: string; betaUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Le problème n°1 des psys libéraux',
+      `<h1>${data.name}, savez-vous que vos données patients sont probablement illégales ?</h1>
+      <p>
+        Ce n'est pas une exagération. Si vous utilisez Google Drive, Notion, Dropbox
+        ou n'importe quel outil américain pour stocker des notes de séance ou des
+        informations patients, <strong>vous êtes en infraction</strong>.
+      </p>
+      <div class="alert-box alert-danger">
+        <div>
+          <strong style="color:#991B1B;">Article L.1111-8 du Code de la santé publique</strong><br />
+          <span style="font-size:14px;color:#7F1D1D;">
+            Toute donnée de santé doit être hébergée sur une infrastructure certifiée HDS.
+            Amende CNIL : jusqu'à 20M€ ou 4% du CA.
+          </span>
+        </div>
+      </div>
+      <p>
+        Doctolib ne gère pas vos notes de séance. Les logiciels de gestion de cabinet
+        existants sont soit pensés pour les médecins généralistes, soit pas conformes HDS.
+      </p>
+      <p>
+        <strong>PsyLib est la seule solution qui combine :</strong>
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;line-height:1.8;color:#374151;">
+          ✅ Notes de séance structurées (5 templates : TCC, psychodynamique, systémique…)<br />
+          ✅ Chiffrement AES-256-GCM sur tous les champs sensibles<br />
+          ✅ Hébergement HDS certifié en France<br />
+          ✅ Résumé IA de séance en 1 clic<br />
+          ✅ Facturation PDF conforme
+        </p>
+      </div>
+      <p>
+        Dans mon prochain email, je vous partagerai ce que disent nos premiers utilisateurs.
+      </p>
+      <p style="font-size:14px;color:#6B7280;">
+        Tony — Fondateur de PsyLib
+      </p>`,
+    );
+
+    await this.send(to, 'Vos données patients sont-elles conformes ? (la réponse va vous surprendre)', html, 'sendNurtureProblem');
+  }
+
+  /** J+4 — Preuve sociale : premiers utilisateurs */
+  async sendNurtureProof(
+    to: string,
+    data: { name: string; betaUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Ce que disent nos premiers utilisateurs',
+      `<h1>${data.name}, voici ce que changent nos Fondateurs</h1>
+      <p>
+        PsyLib est encore jeune, mais les premiers retours sont encourageants.
+        Voici ce que nous entendons le plus souvent :
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;font-style:italic;">
+          « J'ai gagné 3 heures par semaine rien qu'avec la facturation automatique
+          et les notes structurées. »
+        </p>
+        <p style="margin:8px 0 0;font-size:13px;color:#6B7280;">
+          — Psychologue clinicienne, libérale depuis 4 ans
+        </p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;font-style:italic;">
+          « Enfin un outil où je n'ai plus peur que mes données soient
+          sur un serveur américain. La conformité HDS, c'est non négociable. »
+        </p>
+        <p style="margin:8px 0 0;font-size:13px;color:#6B7280;">
+          — Psychologue TCC, installé depuis 2 ans
+        </p>
+      </div>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;font-style:italic;">
+          « Le résumé IA est bluffant. Je dicte mes notes après la séance,
+          et j'ai un compte-rendu structuré en 30 secondes. »
+        </p>
+        <p style="margin:8px 0 0;font-size:13px;color:#6B7280;">
+          — Psychologue du développement, en libéral
+        </p>
+      </div>
+      <p>
+        <strong>Il reste des places Fondateurs</strong> à 43€/mois (tarif gelé à vie).
+      </p>
+      <div style="text-align:center;">
+        <a href="${data.betaUrl}" class="btn">Voir l'offre Fondateurs</a>
+      </div>
+      <p style="font-size:14px;color:#6B7280;margin-top:24px;">
+        Tony — Fondateur de PsyLib
+      </p>`,
+    );
+
+    await this.send(to, 'Ce que disent nos premiers psychologues (retours terrain)', html, 'sendNurtureProof');
+  }
+
+  /** J+7 — Tour produit en 3 minutes */
+  async sendNurtureDemo(
+    to: string,
+    data: { name: string; betaUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Découvrez PsyLib en 3 minutes',
+      `<h1>${data.name}, un aperçu concret de PsyLib</h1>
+      <p>
+        Plutôt que de vous décrire PsyLib, laissez-moi vous montrer
+        <strong>une journée type</strong> avec l'outil :
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;line-height:2;color:#374151;">
+          <strong>8h30</strong> — Vous ouvrez votre dashboard. Vos RDV du jour s'affichent avec les fiches patients.<br />
+          <strong>9h00</strong> — Première séance. Vous prenez vos notes dans l'éditeur structuré.<br />
+          <strong>9h50</strong> — Clic sur « Résumer avec IA ». Compte-rendu structuré en 20 secondes.<br />
+          <strong>10h00</strong> — Le patient suivant arrive. Sa fiche est déjà ouverte, avec l'historique complet.<br />
+          <strong>12h00</strong> — Pause. PsyLib a auto-sauvegardé toutes vos notes.<br />
+          <strong>17h30</strong> — Dernière séance. Vous générez 3 factures PDF en 1 clic.<br />
+          <strong>17h35</strong> — Fini. Zéro admin ce soir.
+        </p>
+      </div>
+      <p>
+        Comparez avec votre quotidien actuel : Word + Google Calendar + Excel + emails…
+      </p>
+      <p>
+        <strong>Tout ça pour 43€/mois</strong> (tarif Fondateur gelé à vie).
+        C'est ~1€/jour. Moins que le café d'une salle d'attente.
+      </p>
+      <div style="text-align:center;">
+        <a href="${data.betaUrl}" class="btn">Devenir Fondateur</a>
+      </div>
+      <p style="font-size:14px;color:#6B7280;margin-top:24px;">
+        Des questions ? Répondez directement à cet email.<br />
+        Tony — Fondateur de PsyLib
+      </p>`,
+    );
+
+    await this.send(to, 'Une journée type avec PsyLib (vous allez gagner 2h)', html, 'sendNurtureDemo');
+  }
+
+  /** J+10 — Dernière chance offre Fondateurs */
+  async sendNurtureOffer(
+    to: string,
+    data: { name: string; betaUrl: string; spotsLeft: number },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Dernière chance — Offre Fondateurs',
+      `<h1>${data.name}, il reste ${data.spotsLeft} places Fondateurs</h1>
+      <div class="alert-box alert-warning">
+        <div>
+          <strong style="color:#92400E;">Les places partent vite</strong><br />
+          <span style="font-size:14px;color:#78350F;">
+            Sur les 15 places Fondateurs, il n'en reste que ${data.spotsLeft}.
+            Une fois complètes, le tarif passera à 69€/mois.
+          </span>
+        </div>
+      </div>
+      <p>
+        Pour rappel, l'offre Fondateurs vous donne :
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;line-height:1.8;color:#374151;">
+          🔒 <strong>43€/mois à vie</strong> (au lieu de 69€ — économie de 312€/an)<br />
+          ⚡ <strong>Accès prioritaire</strong> aux nouvelles fonctionnalités<br />
+          💬 <strong>Ligne directe</strong> avec moi pour façonner le produit<br />
+          🏆 <strong>Badge Fondateur</strong> sur votre profil public
+        </p>
+      </div>
+      <p>
+        En résumé : vous payez moins, vous avez plus, et vous contribuez
+        à construire l'outil qui va simplifier le quotidien de milliers de psys.
+      </p>
+      <div style="text-align:center;">
+        <a href="${data.betaUrl}" class="btn" style="background:#C45D3E;">Devenir Fondateur — 43€/mois à vie</a>
+      </div>
+      <p style="font-size:14px;color:#6B7280;margin-top:24px;">
+        Si PsyLib ne correspond pas à vos besoins, aucun souci.
+        Mais si vous hésitez, ne laissez pas passer cette offre — elle ne reviendra pas.
+      </p>
+      <p style="font-size:14px;color:#6B7280;">
+        Tony — Fondateur de PsyLib
+      </p>`,
+    );
+
+    await this.send(to, `Dernière chance — plus que ${data.spotsLeft} places Fondateurs PsyLib`, html, 'sendNurtureOffer');
+  }
+
   async sendPostTrialDay14(
     to: string,
     data: { psychologistName: string; billingUrl: string },

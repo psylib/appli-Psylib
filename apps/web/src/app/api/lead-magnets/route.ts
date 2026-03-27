@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const rateLimitMap = new Map<string, number>();
 const RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
 
-const VALID_SLUGS = ['kit-demarrage-cabinet', 'templates-notes-tcc', 'guide-tarifs-facturation'];
+const VALID_SLUGS = ['kit-demarrage-cabinet', 'templates-notes-tcc', 'guide-tarifs-facturation', 'guide-rgpd-hds'];
 
 function getClientIp(req: NextRequest): string {
   return (

@@ -84,10 +84,10 @@ function DashboardMockup() {
         <span className="text-xs font-medium text-sage-700">Conformité HDS</span>
       </div>
 
-      {/* Floating stat */}
+      {/* Floating stat — Founders urgency */}
       <div className="absolute -top-4 -left-4 bg-terracotta text-white rounded-xl shadow-lg px-3 py-2">
-        <div className="font-dm-mono font-medium text-lg leading-none">Bêta</div>
-        <div className="text-xs opacity-80">en cours</div>
+        <div className="font-dm-mono font-medium text-lg leading-none">13/15</div>
+        <div className="text-xs opacity-80">places restantes</div>
       </div>
     </div>
   );
@@ -110,10 +110,10 @@ export function HeroSection() {
           {/* Left — Text */}
           <ScrollReveal>
             <div className="space-y-6">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sage-50 border border-sage-200 text-sage-700 text-sm font-medium">
+              {/* Badge — Founders urgency */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-terracotta/10 border border-terracotta/20 text-terracotta text-sm font-medium">
                 <CheckCircle2 size={14} />
-                Plateforme 100% conforme HDS France
+                Offre Fondateurs — 15 places à tarif gelé à vie
               </div>
 
               {/* H1 */}
@@ -124,33 +124,33 @@ export function HeroSection() {
 
               {/* Subtitle */}
               <p className="text-lg md:text-xl text-charcoal-400 leading-relaxed max-w-lg">
-                Outcome tracking, réseau pro, notes structurées.{' '}
-                <strong className="text-charcoal font-medium">Tout ce que Doctolib n'offre pas.</strong>
+                Gérez votre cabinet sans la paperasse.{' '}
+                <strong className="text-charcoal font-medium">Notes, patients, facturation, IA — tout en un, conforme HDS.</strong>
               </p>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-sage text-white font-medium hover:bg-sage-600 transition-colors shadow-sm"
+                  href="/beta"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-terracotta text-white font-medium hover:bg-terracotta-600 transition-colors shadow-sm"
                 >
-                  Commencer gratuitement
+                  Devenir Fondateur — 43€/mois à vie
                   <ArrowRight size={16} />
                 </Link>
-                <a
-                  href="#features"
+                <Link
+                  href="/register"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal text-charcoal font-medium hover:bg-charcoal hover:text-white transition-colors"
                 >
-                  Voir les fonctionnalités
-                </a>
+                  Essai gratuit 14 jours
+                </Link>
               </div>
 
               {/* Stats */}
               <div className="flex items-center gap-6 pt-2">
                 {[
-                  { value: 'Bêta', label: 'accès anticipé' },
+                  { value: '15', label: 'places Fondateurs' },
                   { value: '14j', label: 'essai gratuit' },
-                  { value: 'HDS', label: 'certifié' },
+                  { value: 'HDS', label: 'certifié France' },
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">
                     <div className="font-dm-mono font-medium text-xl text-charcoal">{value}</div>
