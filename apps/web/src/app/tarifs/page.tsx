@@ -135,7 +135,7 @@ const plans = [
     name: "Starter",
     description: "Pour demarrer votre pratique",
     priceMonthly: 43,
-    priceAnnual: 34.99,
+    priceAnnual: 40,
     highlighted: false,
     features: [
       "40 patients maximum",
@@ -154,7 +154,7 @@ const plans = [
     name: "Pro",
     description: "Pour les praticiens etablis",
     priceMonthly: 69,
-    priceAnnual: 55,
+    priceAnnual: 65,
     highlighted: true,
     badge: "Le plus populaire",
     features: [
@@ -176,7 +176,7 @@ const plans = [
     name: "Scale",
     description: "Pour les cabinets multi-praticiens",
     priceMonthly: 119,
-    priceAnnual: 95,
+    priceAnnual: 110,
     highlighted: false,
     features: [
       "Tout le plan Pro inclus",

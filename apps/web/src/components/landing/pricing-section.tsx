@@ -9,7 +9,7 @@ const plans = [
   {
     name: 'Starter',
     monthly: 43,
-    annual: 34.99,
+    annual: 40,
     description: 'Idéal pour démarrer',
     features: [
       '40 patients',
@@ -25,7 +25,7 @@ const plans = [
   {
     name: 'Pro',
     monthly: 69,
-    annual: 55,
+    annual: 65,
     description: 'Pour une pratique complète',
     features: [
       'Patients illimités',
@@ -44,7 +44,7 @@ const plans = [
   {
     name: 'Scale',
     monthly: 119,
-    annual: 95,
+    annual: 110,
     description: 'Cabinet multi-praticiens',
     features: [
       'Tout le plan Pro',
@@ -97,7 +97,7 @@ export function PricingSection() {
               >
                 Annuel
                 <span className="text-xs px-1.5 py-0.5 rounded-full bg-sage text-white font-medium">
-                  -20%
+                  Économisez
                 </span>
               </button>
             </div>
