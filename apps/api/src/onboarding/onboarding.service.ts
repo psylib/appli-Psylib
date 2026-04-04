@@ -3,7 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-import { IsString, IsOptional, MinLength, IsInt, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, MinLength, IsInt, IsNumber, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { PrismaService } from '../common/prisma.service';
@@ -56,6 +56,46 @@ export class UpdatePsychologistProfileDto {
   @IsOptional()
   @Type(() => Number)
   defaultSessionRate?: number;
+
+  // Reminder settings
+  @ApiPropertyOptional()
+  @IsInt()
+  @Min(1)
+  @Max(72)
+  @IsOptional()
+  @Type(() => Number)
+  reminderDelay?: number;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  reminderEmailEnabled?: boolean;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  reminderSmsEnabled?: boolean;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  reminderTemplate?: string;
+
+  // Online payment settings
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  allowOnlinePayment?: boolean;
+
+  // Mon Soutien Psy
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  acceptsMonSoutienPsy?: boolean;
 }
 
 export type OnboardingStep =
@@ -133,6 +173,12 @@ export class OnboardingService {
         ...(dto.adeliNumber !== undefined && { adeliNumber: dto.adeliNumber }),
         ...(dto.defaultSessionDuration !== undefined && { defaultSessionDuration: dto.defaultSessionDuration }),
         ...(dto.defaultSessionRate !== undefined && { defaultSessionRate: dto.defaultSessionRate }),
+        ...(dto.reminderDelay !== undefined && { reminderDelay: dto.reminderDelay }),
+        ...(dto.reminderEmailEnabled !== undefined && { reminderEmailEnabled: dto.reminderEmailEnabled }),
+        ...(dto.reminderSmsEnabled !== undefined && { reminderSmsEnabled: dto.reminderSmsEnabled }),
+        ...(dto.reminderTemplate !== undefined && { reminderTemplate: dto.reminderTemplate }),
+        ...(dto.allowOnlinePayment !== undefined && { allowOnlinePayment: dto.allowOnlinePayment }),
+        ...(dto.acceptsMonSoutienPsy !== undefined && { acceptsMonSoutienPsy: dto.acceptsMonSoutienPsy }),
       },
     });
 

@@ -2,6 +2,10 @@ import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { AvailabilityManager } from '@/components/settings/availability-manager';
+import { ConsultationTypesSettings } from '@/components/settings/consultation-types-settings';
+import { MspSettings } from '@/components/settings/msp-settings';
+import { ReminderSettings } from '@/components/settings/reminder-settings';
+import { PaymentSettings } from '@/components/settings/payment-settings';
 
 export const metadata: Metadata = {
   title: 'Cabinet',
@@ -63,7 +67,7 @@ export default async function PracticePage() {
         <div className="grid gap-4">
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Tarif de consultation (€)
+              Tarif de consultation (EUR)
             </label>
             <input
               type="number"
@@ -74,7 +78,7 @@ export default async function PracticePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Durée de séance par défaut (minutes)
+              Duree de seance par defaut (minutes)
             </label>
             <input
               type="number"
@@ -87,12 +91,18 @@ export default async function PracticePage() {
         </div>
       </div>
 
+      {/* Motifs de consultation */}
+      <ConsultationTypesSettings />
+
+      {/* Mon Soutien Psy */}
+      <MspSettings />
+
       <div className="rounded-xl border border-border bg-white p-6 space-y-4">
         <h2 className="text-base font-medium text-foreground">Informations de contact</h2>
         <div className="grid gap-4">
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Téléphone
+              Telephone
             </label>
             <input
               type="tel"
@@ -103,11 +113,17 @@ export default async function PracticePage() {
         </div>
       </div>
 
-      {/* Disponibilités — prise de RDV en ligne */}
+      {/* Disponibilites — prise de RDV en ligne */}
       <AvailabilityManager />
 
+      {/* Rappels de rendez-vous */}
+      <ReminderSettings />
+
+      {/* Paiement en ligne */}
+      <PaymentSettings />
+
       <p className="text-xs text-muted-foreground text-center">
-        La gestion complète du cabinet est disponible depuis votre profil.
+        La gestion complete du cabinet est disponible depuis votre profil.
       </p>
     </div>
   );

@@ -11,15 +11,35 @@ export interface PsychologistProfile {
   adeliNumber: string | null;
   isOnboarded: boolean;
   createdAt: string;
+  // Reminder settings
+  reminderDelay: number;
+  reminderEmailEnabled: boolean;
+  reminderSmsEnabled: boolean;
+  reminderTemplate: string | null;
+  // Payment settings
+  allowOnlinePayment: boolean;
+  stripeAccountId: string | null;
+  stripeOnboardingComplete: boolean;
+  // MSP
+  acceptsMonSoutienPsy: boolean;
 }
 
 export interface UpdateProfileData {
-  name: string;
+  name?: string;
   specialization?: string;
   bio?: string;
   phone?: string;
   address?: string;
   adeliNumber?: string;
+  // Reminder settings
+  reminderDelay?: number;
+  reminderEmailEnabled?: boolean;
+  reminderSmsEnabled?: boolean;
+  reminderTemplate?: string;
+  // Payment settings
+  allowOnlinePayment?: boolean;
+  // MSP
+  acceptsMonSoutienPsy?: boolean;
 }
 
 export const psychologistApi = {
