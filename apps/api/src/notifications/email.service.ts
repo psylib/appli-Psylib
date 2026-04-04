@@ -1229,6 +1229,46 @@ export class EmailService {
     await this.send(to, 'Dernier jour d\'essai PsyLib', html, 'sendPostTrialDay14');
   }
 
+  // ─── RAPPEL DE RENDEZ-VOUS ──────────────────────────────────────────────────
+
+  async sendAppointmentReminder(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      scheduledAt: Date;
+      duration: number;
+      motif: string;
+      customMessage?: string;
+    },
+  ): Promise<void> {
+    const dateStr = data.scheduledAt.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const timeStr = data.scheduledAt.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const body = data.customMessage
+      ? `<p>Bonjour ${data.patientName},</p><p>${data.customMessage}</p>`
+      : `<h1>Rappel de rendez-vous</h1>
+         <p>Bonjour ${data.patientName},</p>
+         <p>Nous vous rappelons votre rendez-vous avec <strong>${data.psychologistName}</strong> :</p>
+         <div class="info-box">
+           <p style="margin:0"><strong>${dateStr}</strong></p>
+           <p style="margin:4px 0 0"><strong>${timeStr}</strong> &mdash; ${data.duration} min</p>
+           <p style="margin:4px 0 0"><strong>${data.motif}</strong></p>
+         </div>
+         <p style="font-size:14px;color:#6B7280">En cas d'emp&ecirc;chement, veuillez pr&eacute;venir votre praticien le plus t&ocirc;t possible.</p>`;
+
+    const html = emailLayout('Rappel de rendez-vous', body);
+    await this.send(to, `Rappel — RDV ${dateStr} a ${timeStr}`, html, 'sendAppointmentReminder');
+  }
+
   // ─── LISTE D'ATTENTE — PROPOSITION DE CRÉNEAU ─────────────────────────────
 
   async sendWaitlistProposal(
