@@ -31,6 +31,7 @@ import { AvailabilityModule } from './availability/availability.module';
 import { PublicBookingModule } from './public-booking/public-booking.module';
 import { ReferralModule } from './referral/referral.module';
 import { AdminModule } from './admin/admin.module';
+import { ConsultationTypesModule } from './consultation-types/consultation-types.module';
 
 @Module({
   imports: [
@@ -90,6 +91,7 @@ import { AdminModule } from './admin/admin.module';
     PublicBookingModule,
     ReferralModule,
     AdminModule,
+    ConsultationTypesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
