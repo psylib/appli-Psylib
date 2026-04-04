@@ -17,7 +17,7 @@ interface MatchResult {
   specialties: string[];
   languages: string[];
   acceptsReferrals: boolean;
-  acceptsMonPsy: boolean;
+  acceptsMonSoutienPsy: boolean;
   offersVisio: boolean;
   bio?: string;
   matchScore: number;
@@ -205,7 +205,7 @@ function ResultCard({ result }: { result: MatchResult }) {
           )}
           {/* Badges MonPsy / Visio */}
           <div className="flex flex-wrap gap-1.5 mt-1.5">
-            {result.acceptsMonPsy && (
+            {result.acceptsMonSoutienPsy && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-medium">
                 <ShieldCheck size={11} aria-hidden />
                 Remboursé SS — MonPsy

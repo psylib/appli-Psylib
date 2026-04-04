@@ -13,10 +13,10 @@ export class CreateWaitlistEntryDto {
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  patientName: string;
+  patientName!: string;
 
   @IsEmail()
-  patientEmail: string;
+  patientEmail!: string;
 
   @IsOptional()
   @IsString()

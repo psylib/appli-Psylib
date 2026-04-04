@@ -153,50 +153,6 @@ export class EmailService {
     );
   }
 
-  // ─── RAPPEL RENDEZ-VOUS (J-1) ────────────────────────────────────────────────
-
-  async sendAppointmentReminder(
-    to: string,
-    data: {
-      patientName: string;
-      psychologistName: string;
-      scheduledAt: Date;
-      duration: number;
-    },
-  ): Promise<void> {
-    const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    });
-    const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    const html = emailLayout(
-      'Rappel de rendez-vous',
-      `<h1>Rappel — demain à ${timeFormatted}</h1>
-      <p>
-        Bonjour ${data.patientName},<br />
-        Votre rendez-vous avec <strong>${data.psychologistName}</strong> a lieu demain.
-      </p>
-      <div class="info-box">
-        <p style="margin:0;font-size:15px;">
-          <strong>📅 ${dateFormatted}</strong><br />
-          <span style="color:#6B7280;">à ${timeFormatted} · durée ${data.duration} min</span>
-        </p>
-      </div>`,
-    );
-
-    await this.send(
-      to,
-      `Rappel RDV demain à ${timeFormatted} avec ${data.psychologistName}`,
-      html,
-      'sendAppointmentReminder',
-    );
-  }
-
   // ─── ABONNEMENT ACTIVÉ ───────────────────────────────────────────────────────
 
   async sendSubscriptionActivated(
@@ -1238,7 +1194,7 @@ export class EmailService {
       psychologistName: string;
       scheduledAt: Date;
       duration: number;
-      motif: string;
+      motif?: string;
       customMessage?: string;
     },
   ): Promise<void> {
@@ -1253,6 +1209,10 @@ export class EmailService {
       minute: '2-digit',
     });
 
+    const motifLine = data.motif
+      ? `<p style="margin:4px 0 0"><strong>${data.motif}</strong></p>`
+      : '';
+
     const body = data.customMessage
       ? `<p>Bonjour ${data.patientName},</p><p>${data.customMessage}</p>`
       : `<h1>Rappel de rendez-vous</h1>
@@ -1261,7 +1221,7 @@ export class EmailService {
          <div class="info-box">
            <p style="margin:0"><strong>${dateStr}</strong></p>
            <p style="margin:4px 0 0"><strong>${timeStr}</strong> &mdash; ${data.duration} min</p>
-           <p style="margin:4px 0 0"><strong>${data.motif}</strong></p>
+           ${motifLine}
          </div>
          <p style="font-size:14px;color:#6B7280">En cas d'emp&ecirc;chement, veuillez pr&eacute;venir votre praticien le plus t&ocirc;t possible.</p>`;
 
