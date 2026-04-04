@@ -115,7 +115,7 @@ export class PatientsService {
       ...patient,
       portalStatus: patient.userId
         ? 'active' as const
-        : invitations.length > 0
+        : (invitations?.length ?? 0) > 0
           ? 'pending' as const
           : 'none' as const,
     }));

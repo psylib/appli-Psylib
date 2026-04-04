@@ -273,7 +273,7 @@ describe('SubscriptionService', () => {
 
   describe('checkPatientLimit()', () => {
     it('ne lève pas d\'erreur si sous la limite du plan', async () => {
-      // STARTER: 20 patients max — 5 patients actuels
+      // STARTER: 40 patients max — 5 patients actuels
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.STARTER }));
       mockPrisma.patient.count.mockResolvedValue(5);
 
@@ -281,9 +281,9 @@ describe('SubscriptionService', () => {
     });
 
     it('lève ForbiddenException si la limite est atteinte', async () => {
-      // STARTER: 20 patients max — 20 patients actuels
+      // STARTER: 40 patients max — 40 patients actuels
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.STARTER }));
-      mockPrisma.patient.count.mockResolvedValue(20);
+      mockPrisma.patient.count.mockResolvedValue(40);
 
       await expect(service.checkPatientLimit('psy-1')).rejects.toThrow(ForbiddenException);
     });
