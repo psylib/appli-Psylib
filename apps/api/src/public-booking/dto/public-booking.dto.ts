@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsDateString, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsDateString, IsBoolean, IsUUID, MinLength, MaxLength } from 'class-validator';
 
 export class PublicBookingDto {
   @IsString()
@@ -20,4 +20,12 @@ export class PublicBookingDto {
   @IsOptional()
   @MaxLength(500)
   reason?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  payOnline?: boolean;
+
+  @IsOptional()
+  @IsUUID()
+  consultationTypeId?: string;
 }

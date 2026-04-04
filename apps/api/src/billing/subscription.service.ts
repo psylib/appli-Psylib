@@ -120,6 +120,69 @@ export class SubscriptionService {
     }));
   }
 
+  // --- Stripe Connect ---
+
+  async startConnectOnboarding(userId: string): Promise<{ url: string }> {
+    const psy = await this.getPsychologist(userId);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    let stripeAccountId = psy.stripeAccountId;
+
+    // Create Connect account if it doesn't exist yet
+    if (!stripeAccountId) {
+      const account = await this.stripe.createConnectedAccount(user.email, psy.name);
+      stripeAccountId = account.id;
+      await this.prisma.psychologist.update({
+        where: { id: psy.id },
+        data: { stripeAccountId: account.id },
+      });
+    }
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    const url = await this.stripe.createAccountLink(
+      stripeAccountId,
+      `${frontendUrl}/dashboard/settings/billing?connect=return`,
+      `${frontendUrl}/dashboard/settings/billing?connect=refresh`,
+    );
+
+    return { url };
+  }
+
+  async getConnectStatus(userId: string) {
+    const psy = await this.getPsychologist(userId);
+
+    if (!psy.stripeAccountId) {
+      return {
+        hasAccount: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+        allowOnlinePayment: psy.allowOnlinePayment,
+        stripeOnboardingComplete: psy.stripeOnboardingComplete,
+      };
+    }
+
+    const status = await this.stripe.getAccountStatus(psy.stripeAccountId);
+
+    // Auto-update onboarding status if charges are now enabled
+    if (status.chargesEnabled && status.detailsSubmitted && !psy.stripeOnboardingComplete) {
+      await this.prisma.psychologist.update({
+        where: { id: psy.id },
+        data: { stripeOnboardingComplete: true, allowOnlinePayment: true },
+      });
+    }
+
+    return {
+      hasAccount: true,
+      chargesEnabled: status.chargesEnabled,
+      payoutsEnabled: status.payoutsEnabled,
+      detailsSubmitted: status.detailsSubmitted,
+      allowOnlinePayment: psy.allowOnlinePayment,
+      stripeOnboardingComplete: status.chargesEnabled && status.detailsSubmitted,
+    };
+  }
+
   // --- Feature gates ---
 
   async checkPatientLimit(psychologistId: string): Promise<void> {
@@ -221,12 +284,22 @@ export class SubscriptionService {
       case 'invoice.payment_failed':
         await this.handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
+      case 'account.updated':
+        await this.handleAccountUpdated(event.data.object as Stripe.Account);
+        break;
       default:
         this.logger.debug(`Unhandled Stripe event: ${event.type}`);
     }
   }
 
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    // Booking payment (one-time, via Connect)
+    if (session.metadata?.['type'] === 'booking_payment') {
+      await this.handleBookingPaymentCompleted(session);
+      return;
+    }
+
+    // Subscription checkout (existing logic)
     if (!session.subscription || !session.customer) return;
 
     const stripeSub = await this.stripe.retrieveSubscription(session.subscription as string);
@@ -369,6 +442,63 @@ export class SubscriptionService {
     }
 
     this.logger.warn(`Payment failed for subscription: ${String(invoice.subscription)}`);
+  }
+
+  private async handleBookingPaymentCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    const appointmentId = session.metadata?.['appointment_id'];
+    if (!appointmentId) {
+      this.logger.warn('booking_payment checkout.session.completed: missing appointment_id');
+      return;
+    }
+
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      this.logger.warn(`booking_payment: appointment ${appointmentId} not found`);
+      return;
+    }
+
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        bookingPaymentStatus: 'paid',
+        paidOnline: true,
+        paymentIntentId: (session.payment_intent as string) ?? null,
+        status: 'scheduled',
+      },
+    });
+
+    this.logger.log(`Booking payment completed for appointment ${appointmentId}`);
+  }
+
+  async handleAccountUpdated(account: Stripe.Account): Promise<void> {
+    if (!account.id) return;
+
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { stripeAccountId: account.id },
+    });
+
+    if (!psy) {
+      this.logger.debug(`account.updated: no psychologist for Stripe account ${account.id}`);
+      return;
+    }
+
+    const chargesEnabled = account.charges_enabled ?? false;
+    const detailsSubmitted = account.details_submitted ?? false;
+    const onboardingComplete = chargesEnabled && detailsSubmitted;
+
+    if (onboardingComplete !== psy.stripeOnboardingComplete) {
+      await this.prisma.psychologist.update({
+        where: { id: psy.id },
+        data: {
+          stripeOnboardingComplete: onboardingComplete,
+          allowOnlinePayment: onboardingComplete,
+        },
+      });
+      this.logger.log(`Stripe Connect onboarding ${onboardingComplete ? 'completed' : 'incomplete'} for psy ${psy.id}`);
+    }
   }
 
   private stripePlanFromSubscription(subscription: Stripe.Subscription): SubscriptionPlan {

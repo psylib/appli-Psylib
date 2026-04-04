@@ -463,3 +463,79 @@ export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.PRO]: 69,
   [SubscriptionPlan.CLINIC]: 119,
 };
+
+// =============================================================================
+// Lot 1: Consultation Types, Mon Soutien Psy, Waitlist
+// =============================================================================
+
+export enum ConsultationCategory {
+  STANDARD = 'standard',
+  MON_SOUTIEN_PSY = 'mon_soutien_psy',
+}
+
+export enum BookingPaymentStatus {
+  NONE = 'none',
+  PENDING_PAYMENT = 'pending_payment',
+  PAID = 'paid',
+  PAYMENT_FAILED = 'payment_failed',
+}
+
+export enum WaitlistUrgency {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
+export enum WaitlistStatus {
+  WAITING = 'waiting',
+  CONTACTED = 'contacted',
+  SCHEDULED = 'scheduled',
+  REMOVED = 'removed',
+}
+
+export interface ConsultationType {
+  id: string;
+  psychologistId: string;
+  name: string;
+  duration: number;
+  rate: number;
+  color: string;
+  category: ConsultationCategory;
+  isPublic: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface MonSoutienPsyTracking {
+  id: string;
+  patientId: string;
+  year: number;
+  sessionsUsed: number;
+  maxSessions: number;
+  firstSessionAt: string | null;
+  lastSessionAt: string | null;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  patientName: string;
+  patientEmail: string;
+  patientPhone: string | null;
+  consultationTypeId: string | null;
+  consultationType?: ConsultationType;
+  urgency: WaitlistUrgency;
+  preferredSlots: PreferredSlots | null;
+  note: string | null;
+  status: WaitlistStatus;
+  contactedAt: string | null;
+  createdAt: string;
+}
+
+export interface PreferredSlots {
+  mornings: boolean;
+  afternoons: boolean;
+  preferredDays: number[];
+}
+
+export const MON_SOUTIEN_PSY_RATE = 50.00;
+export const MON_SOUTIEN_PSY_MAX_SESSIONS = 12;

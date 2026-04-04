@@ -17,6 +17,6 @@ import { ReferralModule } from '../referral/referral.module';
   ],
   controllers: [BillingController, WebhookController],
   providers: [StripeService, SubscriptionService, BillingQueueProcessor, SubscriptionGuard],
-  exports: [SubscriptionService, SubscriptionGuard],
+  exports: [StripeService, SubscriptionService, SubscriptionGuard],
 })
 export class BillingModule {}

@@ -100,4 +100,96 @@ export class StripeService implements OnModuleInit {
   constructWebhookEvent(payload: Buffer, signature: string, secret: string): Stripe.Event {
     return this.stripe.webhooks.constructEvent(payload, signature, secret);
   }
+
+  // ---------------------------------------------------------------------------
+  // Stripe Connect Express
+  // ---------------------------------------------------------------------------
+
+  async createConnectedAccount(email: string, businessName: string): Promise<Stripe.Account> {
+    return this.stripe.accounts.create({
+      type: 'express',
+      country: 'FR',
+      email,
+      business_type: 'individual',
+      business_profile: {
+        mcc: '8049', // Psychologists
+        name: businessName,
+      },
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+    });
+  }
+
+  async createAccountLink(
+    accountId: string,
+    returnUrl: string,
+    refreshUrl: string,
+  ): Promise<string> {
+    const link = await this.stripe.accountLinks.create({
+      account: accountId,
+      return_url: returnUrl,
+      refresh_url: refreshUrl,
+      type: 'account_onboarding',
+    });
+    return link.url;
+  }
+
+  async getAccountStatus(accountId: string): Promise<{
+    chargesEnabled: boolean;
+    payoutsEnabled: boolean;
+    detailsSubmitted: boolean;
+  }> {
+    const account = await this.stripe.accounts.retrieve(accountId);
+    return {
+      chargesEnabled: account.charges_enabled ?? false,
+      payoutsEnabled: account.payouts_enabled ?? false,
+      detailsSubmitted: account.details_submitted ?? false,
+    };
+  }
+
+  async createBookingCheckoutSession(params: {
+    psyStripeAccountId: string;
+    amount: number; // in cents
+    patientEmail: string;
+    psyName: string;
+    appointmentId: string;
+    motif: string;
+    successUrl: string;
+    cancelUrl: string;
+  }): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      customer_email: params.patientEmail,
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: params.motif,
+              description: `Consultation avec ${params.psyName}`,
+            },
+            unit_amount: params.amount,
+          },
+          quantity: 1,
+        },
+      ],
+      payment_intent_data: {
+        transfer_data: {
+          destination: params.psyStripeAccountId,
+        },
+        metadata: {
+          appointment_id: params.appointmentId,
+        },
+      },
+      success_url: params.successUrl,
+      cancel_url: params.cancelUrl,
+      metadata: {
+        appointment_id: params.appointmentId,
+        type: 'booking_payment',
+      },
+      expires_at: Math.floor(Date.now() / 1000) + 35 * 60, // 35 minutes from now
+    });
+  }
 }

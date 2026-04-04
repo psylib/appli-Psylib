@@ -42,4 +42,16 @@ export class BillingController {
   async getInvoices(@CurrentUser() user: KeycloakUser) {
     return this.subscriptionService.getInvoices(user.sub);
   }
+
+  @Post('connect/onboard')
+  @ApiOperation({ summary: 'Démarrer onboarding Stripe Connect Express' })
+  async startConnectOnboarding(@CurrentUser() user: KeycloakUser): Promise<{ url: string }> {
+    return this.subscriptionService.startConnectOnboarding(user.sub);
+  }
+
+  @Get('connect/status')
+  @ApiOperation({ summary: 'Statut du compte Stripe Connect' })
+  async getConnectStatus(@CurrentUser() user: KeycloakUser) {
+    return this.subscriptionService.getConnectStatus(user.sub);
+  }
 }

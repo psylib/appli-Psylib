@@ -9,6 +9,10 @@ const mockPsy = {
   name: 'Dr. Martin',
   slug: 'dr-martin',
   defaultSessionDuration: 50,
+  defaultSessionRate: null,
+  allowOnlinePayment: false,
+  stripeOnboardingComplete: false,
+  stripeAccountId: null,
   user: { email: 'dr.martin@test.fr' },
 };
 
@@ -46,6 +50,9 @@ function createPrismaMock() {
     psyNetworkProfile: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    consultationType: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
   };
 }
 
@@ -71,6 +78,16 @@ function createCacheMock() {
   };
 }
 
+function createStripeMock() {
+  return {
+    createBookingCheckoutSession: vi.fn().mockResolvedValue({
+      id: 'cs_test_001',
+      url: 'https://checkout.stripe.com/pay/cs_test_001',
+      payment_intent: 'pi_test_001',
+    }),
+  };
+}
+
 // ─── Suite ────────────────────────────────────────────────────────────────────
 
 describe('PublicBookingService', () => {
@@ -79,13 +96,15 @@ describe('PublicBookingService', () => {
   let cacheService: ReturnType<typeof createCacheMock>;
   let availabilityService: ReturnType<typeof createAvailabilityMock>;
   let emailService: ReturnType<typeof createEmailMock>;
+  let stripeMock: ReturnType<typeof createStripeMock>;
 
   beforeEach(() => {
     prisma = createPrismaMock();
     cacheService = createCacheMock();
     availabilityService = createAvailabilityMock();
     emailService = createEmailMock();
-    service = new PublicBookingService(prisma as any, cacheService as any, availabilityService as any, emailService as any);
+    stripeMock = createStripeMock();
+    service = new PublicBookingService(prisma as any, cacheService as any, availabilityService as any, emailService as any, stripeMock as any);
   });
 
   // ─── getPublicProfile ────────────────────────────────────────────────────
@@ -108,6 +127,8 @@ describe('PublicBookingService', () => {
         adeliNumber: '12345678',
         defaultSessionDuration: 50,
         defaultSessionRate: 80,
+        allowOnlinePayment: false,
+        stripeOnboardingComplete: false,
         networkProfile: {
           city: 'Nancy',
           department: '54',
@@ -117,15 +138,16 @@ describe('PublicBookingService', () => {
           isVisible: true,
           avatarUrl: null,
           websiteUrl: null,
-          acceptsMonPsy: true,
+          acceptsMonSoutienPsy: true,
           offersVisio: false,
         },
         user: { avatarUrl: null },
+        consultationTypes: [],
       });
 
       const profile = await service.getPublicProfile('dr-martin');
 
-      expect(profile).toMatchObject({ name: 'Dr. Martin', slug: 'dr-martin', city: 'Nancy', acceptsMonPsy: true });
+      expect(profile).toMatchObject({ name: 'Dr. Martin', slug: 'dr-martin', city: 'Nancy', acceptsMonSoutienPsy: true });
     });
 
     it('does not expose psy email in public profile', async () => {
@@ -133,7 +155,9 @@ describe('PublicBookingService', () => {
         id: 'psy-id', name: 'Dr. Martin', slug: 'dr-martin',
         specialization: null, bio: null, phone: null, address: null,
         adeliNumber: null, defaultSessionDuration: 50, defaultSessionRate: null,
+        allowOnlinePayment: false, stripeOnboardingComplete: false,
         networkProfile: null, user: { avatarUrl: null },
+        consultationTypes: [],
       });
 
       const profile = await service.getPublicProfile('dr-martin');
@@ -231,6 +255,7 @@ describe('PublicBookingService', () => {
             status: 'scheduled',
             source: 'public',
             duration: mockPsy.defaultSessionDuration,
+            bookingPaymentStatus: 'none',
           }),
         }),
       );
@@ -266,7 +291,7 @@ describe('PublicBookingService', () => {
         specialties: [],
         languages: ['fr'],
         acceptsReferrals: true,
-        acceptsMonPsy: false,
+        acceptsMonSoutienPsy: false,
         offersVisio: false,
         bio: null,
         psychologist: { id: 'psy-1', name: 'Dr. Test', slug: 'dr-test', specialization: 'TCC' },
