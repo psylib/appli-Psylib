@@ -132,8 +132,8 @@ jobs:
 
           echo "🗄️  Migrations Prisma..."
           cd ${DEPLOY_DIR}
-          IMAGE_TAG="${IMAGE_TAG}" docker compose run --rm --no-deps api \
-            sh -c "npx prisma migrate deploy"
+          IMAGE_TAG="${IMAGE_TAG}" docker compose run --rm --no-deps --user root api \
+            sh -c "node_modules/.bin/prisma migrate deploy"
 
           echo "🔄 Restart API..."
           IMAGE_TAG="${IMAGE_TAG}" docker compose up -d --no-deps --pull never api
@@ -152,24 +152,16 @@ jobs:
           docker logout ghcr.io
           ENDSSH
 
-  # ─── Deploy Web → Vercel (inchangé) ─────────────────────────────────────────
+  # ─── Deploy Web → Vercel ─────────────────────────────────────────────────────
+  # Disabled: Vercel Git integration handles auto-deploy on push to main.
+  # To re-enable, generate a new Vercel token and uncomment the job below.
   deploy-web:
-    name: Deploy Web → Vercel
+    name: Deploy Web (handled by Vercel Git integration)
     runs-on: ubuntu-latest
     needs: changes
-    # Always deploy Web
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./
-          vercel-args: '--prod'
+      - name: Info
+        run: echo "Web deploy is handled by Vercel's Git integration (auto-deploy on push to main)."
 
   # ─── Notification ────────────────────────────────────────────────────────────
   notify:
