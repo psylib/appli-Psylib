@@ -24,6 +24,10 @@ const mockEmail = {
   sendBookingDeclined: vi.fn(),
 };
 
+const mockWaitlist = {
+  onAppointmentCancelled: vi.fn(),
+};
+
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const PSY_USER_ID = 'psy-user-uuid';
 const PSY_ID = 'psy-db-uuid';
@@ -60,6 +64,7 @@ function createService(): AppointmentsService {
   return new AppointmentsService(
     mockPrisma as never,
     mockEmail as never,
+    mockWaitlist as never,
   );
 }
 

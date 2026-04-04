@@ -1228,4 +1228,38 @@ export class EmailService {
     );
     await this.send(to, 'Dernier jour d\'essai PsyLib', html, 'sendPostTrialDay14');
   }
+
+  // ─── LISTE D'ATTENTE — PROPOSITION DE CRÉNEAU ─────────────────────────────
+
+  async sendWaitlistProposal(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      slotDate: Date;
+      bookingUrl: string;
+    },
+  ): Promise<void> {
+    const dateStr = data.slotDate.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const html = emailLayout(
+      'Créneau disponible',
+      `<h1>Un créneau s'est libéré !</h1>
+      <p>Bonjour ${data.patientName},</p>
+      <p>${data.psychologistName} vous propose un créneau le <strong>${dateStr}</strong>.</p>
+      <div style="text-align:center;">
+        <a href="${data.bookingUrl}" class="btn">Réserver ce créneau</a>
+      </div>
+      <p style="font-size: 14px; color: #6B7280;">Si ce créneau ne vous convient pas, vous restez sur la liste d'attente.</p>`,
+    );
+
+    await this.send(to, `Créneau disponible — ${data.psychologistName}`, html, 'sendWaitlistProposal');
+  }
 }

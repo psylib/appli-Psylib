@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { WaitlistService } from '../waitlist/waitlist.service';
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
@@ -13,6 +14,8 @@ export class AppointmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
+    @Inject(forwardRef(() => WaitlistService))
+    private readonly waitlistService: WaitlistService,
   ) {}
 
   async create(userId: string, dto: CreateAppointmentDto): Promise<Appointment> {
@@ -92,10 +95,15 @@ export class AppointmentsService {
     });
     if (!existing) throw new NotFoundException('RDV introuvable');
 
-    return this.prisma.appointment.update({
+    const cancelled = await this.prisma.appointment.update({
       where: { id },
       data: { status: 'cancelled' },
     });
+
+    // Notify psy about waitlist candidates when a slot is freed
+    void this.waitlistService.onAppointmentCancelled(psy.id, existing.scheduledAt);
+
+    return cancelled;
   }
 
   async getPending(userId: string) {
