@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CheckCircle2, CalendarPlus, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, CalendarPlus, ArrowLeft, CreditCard } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Demande envoyée — PsyLib',
@@ -8,12 +8,16 @@ export const metadata: Metadata = {
 };
 
 interface Props {
-  params: { slug: string };
-  searchParams: { id?: string };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ id?: string; paid?: string }>;
 }
 
-export default function ConfirmationPage({ params, searchParams }: Props) {
-  const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rendez-vous psychologue')}&details=${encodeURIComponent(`Rendez-vous pris via PsyLib. Profil : https://psylib.eu/psy/${params.slug}`)}`;
+export default async function ConfirmationPage({ params, searchParams }: Props) {
+  const { slug } = await params;
+  const { id, paid } = await searchParams;
+  const isPaid = paid === 'true';
+
+  const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rendez-vous psychologue')}&details=${encodeURIComponent(`Rendez-vous pris via PsyLib. Profil : https://psylib.eu/psy/${slug}`)}`;
 
   return (
     <div className="min-h-screen bg-[#F8F7FF] flex flex-col">
@@ -33,23 +37,43 @@ export default function ConfirmationPage({ params, searchParams }: Props) {
               <CheckCircle2 size={36} className="text-[#3D52A0]" aria-hidden />
             </div>
             <h1 className="font-playfair text-2xl md:text-3xl font-bold text-[#1E1B4B] leading-snug">
-              Vous avez franchi<br />le premier pas.
+              {isPaid ? (
+                <>Rendez-vous<br />confirmé et payé.</>
+              ) : (
+                <>Vous avez franchi<br />le premier pas.</>
+              )}
             </h1>
             <p className="mt-3 text-base text-gray-500">
-              Votre demande de rendez-vous a bien été envoyée au praticien.
+              {isPaid
+                ? 'Votre paiement a été accepté et votre rendez-vous est confirmé.'
+                : 'Votre demande de rendez-vous a bien été envoyée au praticien.'}
             </p>
           </div>
+
+          {/* Payment confirmation */}
+          {isPaid && (
+            <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-5 mb-6 flex items-start gap-3">
+              <CreditCard className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800 mb-1">Paiement confirmé</p>
+                <p className="text-sm text-emerald-700 leading-relaxed">
+                  Un reçu vous a été envoyé par email. Aucune autre action n'est requise de votre part.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Card prochaine étape */}
           <div className="bg-white rounded-2xl border-l-4 border-l-[#3D52A0] border border-[#E5E7EB] p-6 mb-6 shadow-sm">
             <p className="text-sm font-semibold text-[#1E1B4B] mb-1">Prochaine étape</p>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Le praticien va confirmer votre rendez-vous dans les <strong>24 à 48 heures</strong>.
-              Vous recevrez un email de confirmation avec toutes les informations pratiques.
+              {isPaid
+                ? 'Vous recevrez un email de confirmation avec les informations pratiques pour votre rendez-vous.'
+                : <>Le praticien va confirmer votre rendez-vous dans les <strong>24 à 48 heures</strong>. Vous recevrez un email de confirmation avec toutes les informations pratiques.</>}
             </p>
-            {searchParams.id && (
+            {id && (
               <p className="text-xs text-gray-400 mt-3">
-                Référence : <span className="font-mono">{searchParams.id.slice(0, 8).toUpperCase()}</span>
+                Référence : <span className="font-mono">{id.slice(0, 8).toUpperCase()}</span>
               </p>
             )}
           </div>
@@ -88,7 +112,7 @@ export default function ConfirmationPage({ params, searchParams }: Props) {
               Ajouter à mon agenda
             </a>
             <Link
-              href={`/psy/${params.slug}`}
+              href={`/psy/${slug}`}
               className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-[#F1F0F9] text-[#1E1B4B] text-sm font-semibold hover:bg-[#E8E6F8] transition-colors"
             >
               <ArrowLeft size={16} aria-hidden />

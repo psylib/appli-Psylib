@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock } from 'lucide-react';
 import { publicBookingApi } from '@/lib/api/public-booking';
-import type { PublicPsyProfile } from '@/lib/api/public-booking';
+import type { PublicPsyProfile, ConsultationType } from '@/lib/api/public-booking';
+import { ConsultationTypePicker } from '@/components/booking/consultation-type-picker';
+import { PaymentChoice } from '@/components/booking/payment-choice';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -34,9 +36,11 @@ function addDays(date: Date, n: number) {
 
 function SlotPicker({
   slug,
+  consultationTypeId,
   onSelect,
 }: {
   slug: string;
+  consultationTypeId?: string;
   onSelect: (slot: Date) => void;
 }) {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -53,12 +57,12 @@ function SlotPicker({
   useEffect(() => {
     setLoading(true);
     publicBookingApi
-      .getSlots(slug, weekStart.toISOString(), weekEnd.toISOString())
+      .getSlots(slug, weekStart.toISOString(), weekEnd.toISOString(), consultationTypeId)
       .then((data) => setSlots(data.slots.map((s) => new Date(s))))
       .catch(() => setSlots([]))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, weekOffset]);
+  }, [slug, weekOffset, consultationTypeId]);
 
   // Group by day
   const byDay: Record<string, Date[]> = {};
@@ -148,14 +152,18 @@ function BookingModal({
   slot,
   slug,
   duration,
+  consultationType,
+  acceptsOnlinePayment,
   onClose,
   onSuccess,
 }: {
   slot: Date;
   slug: string;
   duration: number;
+  consultationType?: ConsultationType;
+  acceptsOnlinePayment?: boolean;
   onClose: () => void;
-  onSuccess: (appointmentId: string) => void;
+  onSuccess: (appointmentId: string, checkoutUrl?: string) => void;
 }) {
   const [form, setForm] = useState({
     patientName: '',
@@ -163,8 +171,12 @@ function BookingModal({
     patientPhone: '',
     reason: '',
   });
+  const [payOnline, setPayOnline] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const rate = consultationType?.rate ?? 0;
+  const showPaymentChoice = acceptsOnlinePayment && rate > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,8 +189,10 @@ function BookingModal({
         patientPhone: form.patientPhone || undefined,
         scheduledAt: slot.toISOString(),
         reason: form.reason || undefined,
+        consultationTypeId: consultationType?.id,
+        payOnline: showPaymentChoice ? payOnline : undefined,
       });
-      onSuccess(result.appointmentId);
+      onSuccess(result.appointmentId, result.checkoutUrl);
     } catch (err) {
       setError((err as Error).message ?? 'Une erreur est survenue');
     } finally {
@@ -188,7 +202,7 @@ function BookingModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-surface transition"
@@ -197,6 +211,26 @@ function BookingModal({
         </button>
 
         <h2 className="text-lg font-semibold text-foreground mb-1">Confirmer la demande</h2>
+
+        {/* Consultation type info */}
+        {consultationType ? (
+          <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+            <span
+              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+              style={{ backgroundColor: consultationType.color || '#3D52A0' }}
+            />
+            <span className="font-medium text-foreground">{consultationType.name}</span>
+            <span className="text-muted-foreground">·</span>
+            <span>{consultationType.duration} min</span>
+            {consultationType.rate > 0 && (
+              <>
+                <span className="text-muted-foreground">·</span>
+                <span>{consultationType.rate}€</span>
+              </>
+            )}
+          </div>
+        ) : null}
+
         <p className="text-sm text-muted-foreground mb-5">
           {slot.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à{' '}
           {formatTime(slot)} · {duration} min
@@ -257,6 +291,15 @@ function BookingModal({
             />
           </div>
 
+          {/* Payment choice */}
+          {showPaymentChoice && (
+            <PaymentChoice
+              payOnline={payOnline}
+              onToggle={setPayOnline}
+              rate={rate}
+            />
+          )}
+
           {error && (
             <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
           )}
@@ -267,11 +310,15 @@ function BookingModal({
             className="w-full bg-primary text-white py-2.5 rounded-lg font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Envoyer ma demande
+            {showPaymentChoice && payOnline
+              ? `Payer ${rate}€ et réserver`
+              : 'Envoyer ma demande'}
           </button>
 
           <p className="text-xs text-muted-foreground text-center">
-            Aucun compte requis · Votre demande sera confirmée par le praticien
+            {showPaymentChoice && payOnline
+              ? 'Paiement sécurisé par Stripe · Vous serez redirigé(e) pour finaliser'
+              : 'Aucun compte requis · Votre demande sera confirmée par le praticien'}
           </p>
         </form>
       </div>
@@ -284,9 +331,23 @@ function BookingModal({
 export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) {
   const router = useRouter();
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
+  const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
 
-  const handleSuccess = (appointmentId: string) => {
-    router.push(`/psy/${profile.slug}/confirmation?id=${appointmentId}`);
+  const hasConsultationTypes = profile.consultationTypes && profile.consultationTypes.length > 0;
+  const selectedType = hasConsultationTypes
+    ? profile.consultationTypes!.find((t) => t.id === selectedTypeId) ?? null
+    : null;
+
+  // Determine effective duration: from selected consultation type, or default
+  const effectiveDuration = selectedType?.duration ?? profile.defaultSessionDuration;
+
+  const handleSuccess = (appointmentId: string, checkoutUrl?: string) => {
+    if (checkoutUrl) {
+      // Redirect to Stripe Checkout
+      window.location.href = checkoutUrl;
+    } else {
+      router.push(`/psy/${profile.slug}/confirmation?id=${appointmentId}`);
+    }
   };
 
   const initials = profile.name
@@ -295,6 +356,9 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  // Whether slot selection should be shown (either no consultation types, or one is selected)
+  const showSlotPicker = !hasConsultationTypes || selectedTypeId !== null;
 
   return (
     <div className="min-h-screen bg-[#F8F7FF]">
@@ -366,13 +430,13 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
                 </p>
               )}
 
-              {/* Badges MonPsy / Visio */}
-              {(profile.acceptsMonPsy || profile.offersVisio) && (
+              {/* Badges Mon Soutien Psy / Visio */}
+              {(profile.acceptsMonSoutienPsy || profile.offersVisio) && (
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {profile.acceptsMonPsy && (
+                  {profile.acceptsMonSoutienPsy && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      Conventionné MonPsy (SS)
+                      Mon Soutien Psy (SS)
                     </span>
                   )}
                   {profile.offersVisio && (
@@ -386,13 +450,13 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
             </div>
           </div>
 
-          {/* MonPsy info block */}
-          {profile.acceptsMonPsy && (
+          {/* Mon Soutien Psy info block */}
+          {profile.acceptsMonSoutienPsy && (
             <div className="mt-4 pt-4 border-t border-border">
               <div className="flex items-start gap-2 text-xs text-emerald-700 bg-emerald-50 rounded-xl p-3">
                 <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <p>
-                  <strong>Dispositif MonPsy</strong> — 8 séances remboursées par la Sécurité sociale, sur prescription de votre médecin généraliste. Accessible dès 3 ans, sans avance de frais.
+                  <strong>Dispositif Mon Soutien Psy</strong> — 12 séances remboursées par la Sécurité sociale, sur prescription de votre médecin généraliste. Accessible dès 3 ans, sans avance de frais.
                 </p>
               </div>
             </div>
@@ -453,14 +517,64 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
             Prendre rendez-vous
           </h2>
           <p className="text-sm text-muted-foreground mb-3">
-            Sélectionnez un créneau · Aucun compte requis
+            {hasConsultationTypes
+              ? 'Choisissez un type de consultation, puis sélectionnez un créneau'
+              : 'Sélectionnez un créneau · Aucun compte requis'}
           </p>
+
           {/* Confidentialité */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground bg-[#F8F7FF] rounded-lg px-3 py-2 mb-5">
             <Lock className="w-3.5 h-3.5 flex-shrink-0" />
             <span>Vos données sont confidentielles et hébergées en France (HDS). Aucune information ne sera partagée sans votre consentement.</span>
           </div>
-          <SlotPicker slug={profile.slug} onSelect={setSelectedSlot} />
+
+          {/* Step 1: Consultation type picker */}
+          {hasConsultationTypes && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-[#3D52A0] text-white text-xs font-bold flex items-center justify-center">1</span>
+                Type de consultation
+              </h3>
+              <ConsultationTypePicker
+                types={profile.consultationTypes!}
+                selected={selectedTypeId}
+                onSelect={(id) => {
+                  setSelectedTypeId(id);
+                  // Reset slot when changing type (duration may differ)
+                  setSelectedSlot(null);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Step 2: Slot picker */}
+          {showSlotPicker && (
+            <div>
+              {hasConsultationTypes && (
+                <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#3D52A0] text-white text-xs font-bold flex items-center justify-center">2</span>
+                  Choisissez un créneau
+                  {selectedType && (
+                    <span className="text-xs text-muted-foreground font-normal">
+                      ({selectedType.duration} min)
+                    </span>
+                  )}
+                </h3>
+              )}
+              <SlotPicker
+                slug={profile.slug}
+                consultationTypeId={selectedTypeId ?? undefined}
+                onSelect={setSelectedSlot}
+              />
+            </div>
+          )}
+
+          {/* Hint when type not yet selected */}
+          {hasConsultationTypes && !selectedTypeId && (
+            <div className="text-center py-6 text-sm text-muted-foreground">
+              Sélectionnez un type de consultation pour voir les créneaux disponibles.
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -480,7 +594,9 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
         <BookingModal
           slot={selectedSlot}
           slug={profile.slug}
-          duration={profile.defaultSessionDuration}
+          duration={effectiveDuration}
+          consultationType={selectedType ?? undefined}
+          acceptsOnlinePayment={profile.acceptsOnlinePayment}
           onClose={() => setSelectedSlot(null)}
           onSuccess={handleSuccess}
         />
