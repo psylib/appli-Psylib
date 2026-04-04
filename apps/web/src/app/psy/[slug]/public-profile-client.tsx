@@ -7,6 +7,7 @@ import { publicBookingApi } from '@/lib/api/public-booking';
 import type { PublicPsyProfile, ConsultationType } from '@/lib/api/public-booking';
 import { ConsultationTypePicker } from '@/components/booking/consultation-type-picker';
 import { PaymentChoice } from '@/components/booking/payment-choice';
+import { WaitlistSignup } from '@/components/booking/waitlist-signup';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -573,6 +574,16 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
           {hasConsultationTypes && !selectedTypeId && (
             <div className="text-center py-6 text-sm text-muted-foreground">
               Sélectionnez un type de consultation pour voir les créneaux disponibles.
+            </div>
+          )}
+
+          {/* Waitlist signup — fallback for when no slot fits */}
+          {showSlotPicker && (
+            <div className="mt-5">
+              <WaitlistSignup
+                slug={profile.slug}
+                consultationTypeId={selectedTypeId ?? undefined}
+              />
             </div>
           )}
         </div>
