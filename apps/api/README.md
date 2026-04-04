@@ -2,6 +2,8 @@
 
 Backend NestJS pour la plateforme PsyLib — gestion de cabinet pour psychologues libéraux. Conforme HDS, chiffrement AES-256-GCM des données de santé, authentification Keycloak OIDC avec MFA obligatoire.
 
+> Lot 1 deployed: consultation types, Mon Soutien Psy, waitlist, reminders, Stripe Connect.
+
 ## Stack
 
 | Composant | Version |
