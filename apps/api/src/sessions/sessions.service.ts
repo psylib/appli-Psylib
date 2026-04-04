@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
+import { MonSoutienPsyService } from '../mon-soutien-psy/mon-soutien-psy.service';
 import {
   CreateSessionDto,
   UpdateSessionDto,
@@ -24,6 +25,7 @@ export class SessionsService {
     private readonly prisma: PrismaService,
     private readonly encryption: EncryptionService,
     private readonly audit: AuditService,
+    private readonly monSoutienPsy: MonSoutienPsyService,
   ) {}
 
   async create(
@@ -64,6 +66,9 @@ export class SessionsService {
       entityId: session.id,
       req,
     });
+
+    // Mon Soutien Psy tracking — check if an appointment with MSP consultation type exists
+    await this.trackMspIfApplicable(psy.id, dto.patientId, session.date);
 
     return session;
   }
@@ -219,6 +224,9 @@ export class SessionsService {
     });
     if (!existing) throw new NotFoundException('Séance introuvable');
 
+    // Mon Soutien Psy — decrement before deletion if applicable
+    await this.decrementMspIfApplicable(psy.id, existing.patientId, existing.date);
+
     await this.prisma.session.delete({ where: { id: sessionId } });
 
     await this.audit.log({
@@ -334,5 +342,65 @@ export class SessionsService {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
     return psy;
+  }
+
+  /**
+   * Check if a session is linked to a Mon Soutien Psy appointment and track it.
+   * Looks for an appointment with an MSP consultation type for this psy+patient
+   * within 24 hours of the session date.
+   */
+  private async trackMspIfApplicable(
+    psychologistId: string,
+    patientId: string,
+    sessionDate: Date,
+  ): Promise<void> {
+    try {
+      const dayBefore = new Date(sessionDate.getTime() - 24 * 60 * 60 * 1000);
+      const dayAfter = new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000);
+
+      const mspAppointment = await this.prisma.appointment.findFirst({
+        where: {
+          psychologistId,
+          patientId,
+          scheduledAt: { gte: dayBefore, lte: dayAfter },
+          consultationType: { category: 'mon_soutien_psy' },
+        },
+      });
+
+      if (mspAppointment) {
+        await this.monSoutienPsy.incrementSessionCount(psychologistId, patientId);
+      }
+    } catch (error) {
+      this.logger.warn('Failed to track MSP session', error);
+    }
+  }
+
+  /**
+   * Decrement MSP counter if the session being deleted was linked to an MSP appointment.
+   */
+  private async decrementMspIfApplicable(
+    psychologistId: string,
+    patientId: string,
+    sessionDate: Date,
+  ): Promise<void> {
+    try {
+      const dayBefore = new Date(sessionDate.getTime() - 24 * 60 * 60 * 1000);
+      const dayAfter = new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000);
+
+      const mspAppointment = await this.prisma.appointment.findFirst({
+        where: {
+          psychologistId,
+          patientId,
+          scheduledAt: { gte: dayBefore, lte: dayAfter },
+          consultationType: { category: 'mon_soutien_psy' },
+        },
+      });
+
+      if (mspAppointment) {
+        await this.monSoutienPsy.decrementSessionCount(psychologistId, patientId);
+      }
+    } catch (error) {
+      this.logger.warn('Failed to decrement MSP session', error);
+    }
   }
 }

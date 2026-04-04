@@ -32,6 +32,7 @@ import { PublicBookingModule } from './public-booking/public-booking.module';
 import { ReferralModule } from './referral/referral.module';
 import { AdminModule } from './admin/admin.module';
 import { ConsultationTypesModule } from './consultation-types/consultation-types.module';
+import { MonSoutienPsyModule } from './mon-soutien-psy/mon-soutien-psy.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { ConsultationTypesModule } from './consultation-types/consultation-types
     ReferralModule,
     AdminModule,
     ConsultationTypesModule,
+    MonSoutienPsyModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
