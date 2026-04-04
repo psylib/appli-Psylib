@@ -65,6 +65,7 @@ export class AppointmentsService {
       orderBy: { scheduledAt: 'asc' },
       include: {
         patient: { select: { name: true, email: true } },
+        consultationType: { select: { id: true, name: true, color: true } },
       },
     });
   }

@@ -23,6 +23,7 @@ import { KpiCardSkeleton } from '@/components/ui/skeleton';
 import { ActivationChecklist } from '@/components/dashboard/activation-checklist';
 import { TrialBanner } from '@/components/dashboard/trial-banner';
 import { ClinicalAlerts } from '@/components/dashboard/clinical-alerts';
+import { MspOverviewWidget } from '@/components/dashboard/msp-overview-widget';
 import {
   useDashboardKpis,
   useUpcomingAppointments,
@@ -470,6 +471,11 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       {/* Row 3 — Clinical Alerts                                          */}
       {/* ----------------------------------------------------------------- */}
       <ClinicalAlerts />
+
+      {/* ----------------------------------------------------------------- */}
+      {/* Row 3b — MSP Overview (hidden if no MSP patients)                 */}
+      {/* ----------------------------------------------------------------- */}
+      <MspOverviewWidget />
 
       {/* ----------------------------------------------------------------- */}
       {/* Row 4 — Quick Actions                                            */}

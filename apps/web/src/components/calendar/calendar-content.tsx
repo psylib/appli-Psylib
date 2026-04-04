@@ -27,10 +27,17 @@ interface Appointment {
   scheduledAt: string;
   duration: number;
   status: 'scheduled' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+  paidOnline?: boolean;
+  bookingPaymentStatus?: 'none' | 'pending_payment' | 'paid' | 'payment_failed';
   patient: {
     id: string;
     name: string;
   };
+  consultationType?: {
+    id: string;
+    name: string;
+    color: string;
+  } | null;
 }
 
 interface AppointmentsResponse {
@@ -392,6 +399,40 @@ export function CalendarContent() {
                           {config.label}
                         </span>
                       </div>
+
+                      {/* Consultation type + payment badges */}
+                      {(appt.consultationType || appt.bookingPaymentStatus) && (
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          {appt.consultationType && (
+                            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                              <span
+                                className="w-2 h-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: appt.consultationType.color || '#3D52A0' }}
+                                aria-hidden
+                              />
+                              {appt.consultationType.name}
+                            </span>
+                          )}
+                          {appt.paidOnline ? (
+                            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                              Payé en ligne
+                            </span>
+                          ) : appt.bookingPaymentStatus === 'pending_payment' ? (
+                            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                              Paiement en attente
+                            </span>
+                          ) : appt.bookingPaymentStatus === 'payment_failed' ? (
+                            <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-700">
+                              Paiement échoué
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              Cabinet
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">

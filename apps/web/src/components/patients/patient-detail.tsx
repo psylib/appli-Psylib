@@ -12,6 +12,7 @@ import { EditPatientDialog } from './edit-patient-dialog';
 import { usePatient, useSessions } from '@/hooks/use-dashboard';
 import { formatDate } from '@/lib/utils';
 import { PatientPortalSection } from './patient-portal-section';
+import { MspTracker } from './msp-tracker';
 
 interface PatientDetailContentProps {
   patientId: string;
@@ -118,6 +119,9 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
           </div>
         )}
       </div>
+
+      {/* MSP Tracker (only shown if patient has MSP tracking) */}
+      <MspTracker patientId={patientId} />
 
       {/* Portal patient */}
       <PatientPortalSection patientId={patientId} />
