@@ -28,6 +28,8 @@ jobs:
       - uses: dorny/paths-filter@v3
         id: changes
         with:
+          base: ${{ github.event.before }}
+          ref: ${{ github.sha }}
           filters: |
             api:
               - 'apps/api/**'
@@ -36,6 +38,13 @@ jobs:
             web:
               - 'apps/web/**'
               - 'packages/**'
+
+      - name: Debug changes
+        run: |
+          echo "API changes: ${{ steps.changes.outputs.api }}"
+          echo "Web changes: ${{ steps.changes.outputs.web }}"
+          echo "Before: ${{ github.event.before }}"
+          echo "SHA: ${{ github.sha }}"
 
   # ─── Build & push image Docker → GitHub Container Registry ──────────────────
   build-api:
