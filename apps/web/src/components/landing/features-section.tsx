@@ -3,7 +3,7 @@ import {
   TrendingUp,
   Users,
   Sparkles,
-  CalendarDays,
+  CreditCard,
   Shield,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
@@ -38,9 +38,9 @@ const features = [
     border: 'border-terracotta-200',
   },
   {
-    icon: CalendarDays,
-    title: 'Agenda & Facturation',
-    description: 'Rendez-vous, rappels automatiques, factures PDF, paiements en ligne. Tout en un seul endroit.',
+    icon: CreditCard,
+    title: 'Paiements & zéro no-show',
+    description: 'Paiement Stripe à la réservation, rappels SMS/email automatiques, liste d\'attente qui fait tourner les annulations. Vos séances se remplissent toutes seules.',
     color: 'text-sage bg-sage-50',
     border: 'border-sage-200',
   },

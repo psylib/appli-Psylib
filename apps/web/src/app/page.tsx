@@ -29,7 +29,7 @@ const jsonLd = {
         'Logiciel de gestion de cabinet tout-en-un pour psychologues liberaux. Dossiers patients securises, notes cliniques structurees, outcome tracking (PHQ-9/GAD-7), reseau professionnel, facturation. Conforme HDS France.',
       url: 'https://psylib.eu',
       featureList:
-        'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF conforme, Prise de rendez-vous en ligne, Reseau professionnel entre psychologues, Espace patient securise, Supervision et intervision, Chiffrement AES-256-GCM',
+        'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF conforme, Prise de rendez-vous en ligne, Paiement Stripe a la reservation, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Motifs de consultation configurables, Reseau professionnel entre psychologues, Espace patient securise, Supervision et intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
         lowPrice: '43',

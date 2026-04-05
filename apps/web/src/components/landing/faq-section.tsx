@@ -18,6 +18,14 @@ const faqs = [
     a: 'L\'Outcome Tracking permet de mesurer objectivement l\'évolution thérapeutique via des questionnaires validés scientifiquement : PHQ-9 (dépression), GAD-7 (anxiété), CORE-OM (bien-être général). Les résultats sont visualisés sous forme de graphiques d\'évolution.',
   },
   {
+    q: 'Comment fonctionne le paiement en ligne ?',
+    a: 'PsyLib est intégré avec Stripe Connect. Vous activez le paiement en ligne en 3 minutes depuis vos paramètres, et vos patients peuvent régler leur consultation directement lors de la réservation sur votre page publique. Les fonds arrivent sur votre compte bancaire sous 2 jours ouvrés. Divise les no-show par 3.',
+  },
+  {
+    q: 'PsyLib gère-t-il Mon Soutien Psy ?',
+    a: 'Oui. PsyLib suit automatiquement les 12 séances annuelles du dispositif Mon Soutien Psy par patient, avec alerte lorsque le quota approche (10/12). Vous configurez le tarif conventionné (50€) et le motif dédié en 1 clic depuis les motifs de consultation.',
+  },
+  {
     q: 'Comment fonctionne l\'essai gratuit ?',
     a: '14 jours d\'accès complet au plan Pro — sans carte bancaire. À la fin de l\'essai, vous choisissez votre plan ou votre compte est simplement désactivé. Vos données restent exportables pendant 30 jours.',
   },
