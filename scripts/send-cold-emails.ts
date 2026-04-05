@@ -218,9 +218,15 @@ function makeUnsubToken(email: string): string {
     .slice(0, 16);
 }
 
-function unsubscribeUrl(email: string): string {
+function unsubscribePageUrl(email: string): string {
   const token = makeUnsubToken(email);
   return `https://psylib.eu/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+}
+
+// API endpoint used by Gmail/Apple One-Click POST (must return 2xx without auth prompt)
+function unsubscribeApiUrl(email: string): string {
+  const token = makeUnsubToken(email);
+  return `https://psylib.eu/api/cold-email/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
 }
 
 // ============================================================================
@@ -247,7 +253,7 @@ function footerText(unsubUrl: string): string {
 
 function template1(lead: Lead): { subject: string; html: string; text: string } {
   const fn = lead.firstName || 'Docteur';
-  const unsub = unsubscribeUrl(lead.email);
+  const unsub = unsubscribePageUrl(lead.email);
   const subject = `${fn}, petite question sur votre logiciel de cabinet`;
 
   const html = `<div style="${baseStyle()}">
@@ -291,7 +297,7 @@ P.S. Si ce n'est pas le bon moment, dans 4 jours je vous envoie un guide gratuit
 
 function template2(lead: Lead): { subject: string; html: string; text: string } {
   const fn = lead.firstName || 'Docteur';
-  const unsub = unsubscribeUrl(lead.email);
+  const unsub = unsubscribePageUrl(lead.email);
   const subject = `${fn}, le guide RGPD/HDS que je vous avais promis`;
   const guideUrl =
     'https://psylib.eu/ressources/guide-rgpd-hds?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email2';
@@ -345,7 +351,7 @@ https://psylib.eu${footerText(unsub)}`;
 
 function template3(lead: Lead): { subject: string; html: string; text: string } {
   const fn = lead.firstName || 'Docteur';
-  const unsub = unsubscribeUrl(lead.email);
+  const unsub = unsubscribePageUrl(lead.email);
   const subject = `${fn}, je ne vous écrirai plus après ça`;
   const betaUrl =
     'https://psylib.eu/beta?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email3';
@@ -410,11 +416,11 @@ async function sendViaResend(
   subject: string,
   html: string,
   text: string,
-  unsubUrl: string,
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
   if (!RESEND_API_KEY) {
     return { ok: false, error: 'RESEND_API_KEY not set' };
   }
+  const oneClickUrl = unsubscribeApiUrl(to);
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -430,7 +436,7 @@ async function sendViaResend(
         text,
         reply_to: REPLY_TO,
         headers: {
-          'List-Unsubscribe': `<${unsubUrl}>, <mailto:unsubscribe@psylib.eu?subject=unsubscribe>`,
+          'List-Unsubscribe': `<${oneClickUrl}>, <mailto:unsubscribe@psylib.eu?subject=unsubscribe>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
           'X-Campaign': 'cold-2026-q2',
         },
@@ -632,7 +638,7 @@ async function main() {
 
   for (const lead of queue) {
     const { subject, html, text } = getTemplate(args.touch, lead);
-    const unsub = unsubscribeUrl(lead.email);
+    const unsub = unsubscribePageUrl(lead.email);
 
     if (args.dryRun) {
       console.log(`[DRY] → ${lead.email} (${lead.firstName} ${lead.lastName}, ${lead.departement})`);
@@ -644,7 +650,7 @@ async function main() {
     }
 
     process.stdout.write(`→ ${lead.email.padEnd(45)} `);
-    const result = await sendViaResend(lead.email, subject, html, text, unsub);
+    const result = await sendViaResend(lead.email, subject, html, text);
 
     const now = new Date().toISOString();
     const prev = state[lead.email] || { touches: [], updatedAt: now };

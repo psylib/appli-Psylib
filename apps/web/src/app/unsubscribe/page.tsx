@@ -7,30 +7,34 @@ import Link from "next/link";
 function UnsubscribeContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
+  const token = searchParams.get("token");
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading"
   );
 
-  const processUnsubscribe = useCallback(async (emailAddr: string) => {
-    try {
-      const res = await fetch("/api/cold-email/unsubscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailAddr }),
-      });
-      setStatus(res.ok ? "success" : "error");
-    } catch {
-      setStatus("error");
-    }
-  }, []);
+  const processUnsubscribe = useCallback(
+    async (emailAddr: string, tok: string | null) => {
+      try {
+        const res = await fetch("/api/cold-email/unsubscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: emailAddr, token: tok ?? "" }),
+        });
+        setStatus(res.ok ? "success" : "error");
+      } catch {
+        setStatus("error");
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!email) {
       setStatus("error");
       return;
     }
-    processUnsubscribe(email);
-  }, [email, processUnsubscribe]);
+    processUnsubscribe(email, token);
+  }, [email, token, processUnsubscribe]);
 
   if (status === "loading") {
     return (
@@ -41,7 +45,7 @@ function UnsubscribeContent() {
     );
   }
 
-  if (status === "error" && !email) {
+  if (status === "error") {
     return (
       <div className="text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
@@ -60,10 +64,10 @@ function UnsubscribeContent() {
           </svg>
         </div>
         <h2 className="mt-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-          Lien invalide
+          Lien invalide ou expire
         </h2>
         <p className="mt-2 text-gray-600">
-          Ce lien de desinscription semble incomplet. Contactez-nous a{" "}
+          Ce lien de desinscription n&apos;est pas valide. Contactez-nous a{" "}
           <a
             href="mailto:Psylib.eu@gmail.com"
             className="font-medium text-[#3D52A0] underline"
@@ -99,19 +103,6 @@ function UnsubscribeContent() {
       <p className="mt-2 text-gray-600">
         Vous ne recevrez plus d&apos;emails de notre part.
       </p>
-      {status === "error" && (
-        <p className="mt-2 text-sm text-amber-600">
-          Nous avons note votre demande. Si vous continuez a recevoir des
-          emails, contactez{" "}
-          <a
-            href="mailto:Psylib.eu@gmail.com"
-            className="font-medium underline"
-          >
-            Psylib.eu@gmail.com
-          </a>
-          .
-        </p>
-      )}
     </div>
   );
 }
