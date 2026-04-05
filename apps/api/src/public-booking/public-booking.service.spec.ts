@@ -52,6 +52,7 @@ function createPrismaMock() {
     },
     consultationType: {
       findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
     },
   };
 }
@@ -201,6 +202,64 @@ describe('PublicBookingService', () => {
 
       expect(result.slots).toHaveLength(2);
       expect(result.slots[0]).toBe(slot1.toISOString());
+    });
+
+    it('uses consultation type duration when consultationTypeId provided', async () => {
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50 });
+      prisma.consultationType.findFirst.mockResolvedValue({ duration: 90 });
+      availabilityService.getAvailableTimeslots.mockResolvedValue([]);
+
+      await service.getAvailableSlots(
+        'dr-martin',
+        '2026-04-01T00:00:00Z',
+        '2026-04-07T00:00:00Z',
+        'ct-id-90min',
+      );
+
+      const [, , , duration] = availabilityService.getAvailableTimeslots.mock.calls[0] as [
+        string, Date, Date, number,
+      ];
+      expect(duration).toBe(90);
+    });
+
+    it('falls back to default duration if consultationTypeId invalid', async () => {
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50 });
+      prisma.consultationType.findFirst.mockResolvedValue(null);
+      availabilityService.getAvailableTimeslots.mockResolvedValue([]);
+
+      await service.getAvailableSlots(
+        'dr-martin',
+        '2026-04-01T00:00:00Z',
+        '2026-04-07T00:00:00Z',
+        'bogus-id',
+      );
+
+      const [, , , duration] = availabilityService.getAvailableTimeslots.mock.calls[0] as [
+        string, Date, Date, number,
+      ];
+      expect(duration).toBe(50);
+    });
+  });
+
+  // ─── getPublicConsultationTypes ──────────────────────────────────────────
+
+  describe('getPublicConsultationTypes', () => {
+    it('throws NotFoundException when slug unknown', async () => {
+      prisma.psychologist.findUnique.mockResolvedValue(null);
+      await expect(service.getPublicConsultationTypes('inconnu')).rejects.toThrow(NotFoundException);
+    });
+
+    it('returns public consultation types with rate as number', async () => {
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id' });
+      prisma.consultationType.findMany.mockResolvedValue([
+        { id: 'ct-1', name: 'Standard', duration: 50, rate: 70, color: '#3D52A0', category: 'standard' },
+        { id: 'ct-2', name: 'MSP', duration: 45, rate: 50, color: '#0D9488', category: 'mon_soutien_psy' },
+      ]);
+
+      const result = await service.getPublicConsultationTypes('dr-martin');
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({ id: 'ct-1', name: 'Standard', duration: 50, rate: 70 });
+      expect(typeof result[0]!.rate).toBe('number');
     });
   });
 

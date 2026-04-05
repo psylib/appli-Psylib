@@ -115,8 +115,8 @@ export class PublicBookingService {
     return profile;
   }
 
-  async getAvailableSlots(slug: string, from: string, to: string) {
-    const cacheKey = `slots:${slug}:${from}:${to}`;
+  async getAvailableSlots(slug: string, from: string, to: string, consultationTypeId?: string) {
+    const cacheKey = `slots:${slug}:${from}:${to}:${consultationTypeId ?? 'default'}`;
     const cached = await this.cache.get<{ slots: string[] }>(cacheKey);
     if (cached) return cached;
 
@@ -125,6 +125,21 @@ export class PublicBookingService {
       select: { id: true, defaultSessionDuration: true },
     });
     if (!psy) throw new NotFoundException('Psychologue introuvable');
+
+    // Résoudre la durée depuis le type de consultation si fourni
+    let duration = psy.defaultSessionDuration;
+    if (consultationTypeId) {
+      const ct = await this.prisma.consultationType.findFirst({
+        where: {
+          id: consultationTypeId,
+          psychologistId: psy.id,
+          isActive: true,
+          isPublic: true,
+        },
+        select: { duration: true },
+      });
+      if (ct) duration = ct.duration;
+    }
 
     const fromDate = new Date(from);
     const toDate = new Date(to);
@@ -138,11 +153,52 @@ export class PublicBookingService {
       psy.id,
       fromDate,
       effectiveTo,
-      psy.defaultSessionDuration,
+      duration,
     );
 
     const result = { slots: slots.map((s) => s.toISOString()) };
     void this.cache.set(cacheKey, result, TTL_SLOTS);
+    return result;
+  }
+
+  async getPublicConsultationTypes(slug: string) {
+    const cacheKey = `consultation-types:${slug}`;
+    const cached = await this.cache.get<unknown>(cacheKey);
+    if (cached) return cached;
+
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
+
+    const types = await this.prisma.consultationType.findMany({
+      where: {
+        psychologistId: psy.id,
+        isActive: true,
+        isPublic: true,
+      },
+      orderBy: { sortOrder: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        duration: true,
+        rate: true,
+        color: true,
+        category: true,
+      },
+    });
+
+    const result = types.map((t) => ({
+      id: t.id,
+      name: t.name,
+      duration: t.duration,
+      rate: Number(t.rate),
+      color: t.color,
+      category: t.category,
+    }));
+
+    void this.cache.set(cacheKey, result, TTL_PROFILE);
     return result;
   }
 

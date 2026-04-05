@@ -61,8 +61,15 @@ export class PublicBookingController {
     @Param('slug') slug: string,
     @Query('from') from: string,
     @Query('to') to: string,
+    @Query('consultationTypeId') consultationTypeId?: string,
   ) {
-    return this.publicBookingService.getAvailableSlots(slug, from, to);
+    return this.publicBookingService.getAvailableSlots(slug, from, to, consultationTypeId);
+  }
+
+  @Get(':slug/consultation-types')
+  @ApiOperation({ summary: 'Types de consultation publics du psychologue' })
+  async getConsultationTypes(@Param('slug') slug: string) {
+    return this.publicBookingService.getPublicConsultationTypes(slug);
   }
 
   @Post(':slug/book')
