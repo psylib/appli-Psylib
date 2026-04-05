@@ -66,7 +66,7 @@ import * as readline from 'node:readline';
 // ============================================================================
 
 const PROFESSION_CODE_PSYCHOLOGUE = '93';
-const MODE_EXERCICE_LIBERAL_KEYWORDS = ['libéral', 'liberal', 'libérale'];
+const MODE_EXERCICE_LIBERAL_KEYWORDS = ['libéral', 'liberal', 'libérale', 'lib,', 'lib.', 'indép'];
 
 interface Psychologue {
   identifiant: string;
@@ -119,8 +119,16 @@ function detectFieldIndices(headerLine: string): {
   const headers = headerLine.split('|').map((h) => h.trim().toLowerCase());
 
   const find = (patterns: string[]): number => {
+    // First pass : exact match
     for (const pattern of patterns) {
-      const idx = headers.findIndex((h) => h.includes(pattern.toLowerCase()));
+      const idx = headers.findIndex((h) => h === pattern.toLowerCase());
+      if (idx >= 0) return idx;
+    }
+    // Second pass : includes (but skip if header starts with "type d'")
+    for (const pattern of patterns) {
+      const idx = headers.findIndex(
+        (h) => h.includes(pattern.toLowerCase()) && !h.startsWith("type d'"),
+      );
       if (idx >= 0) return idx;
     }
     return -1;
@@ -137,7 +145,7 @@ function detectFieldIndices(headerLine: string): {
     codePostalActivite: find(["code postal (coord. structure)", 'code postal structure', 'code postal']),
     communeActivite: find(['libellé commune', 'libelle commune', 'commune']),
     telephoneActivite: find(['téléphone', 'telephone']),
-    emailActivite: find(['adresse bal', 'email', 'courriel']),
+    emailActivite: find(['adresse e-mail', 'adresse bal', 'e-mail', 'email', 'courriel']),
   };
 }
 

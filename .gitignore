@@ -67,3 +67,6 @@ docker/api-prod/.env
 terraform.tfstate
 terraform.tfstate.backup
 .vercel
+
+# RPPS extraction data (non versionné)
+tmp/
