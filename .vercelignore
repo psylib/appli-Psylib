@@ -1,0 +1,19 @@
+# Exclude big local files from Vercel upload
+tmp/
+/BOOKING/
+/Nouveau dossier/
+docker/
+apps/mobile/
+.playwright-mcp/
+playwright-report/
+apps/web/playwright-report/
+*.png
+*.jpg
+*.jpeg
+*.mp4
+node_modules/
+.turbo/
+.next/
+.git/
+coverage/
+test-results/
