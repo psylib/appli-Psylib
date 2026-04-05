@@ -51,6 +51,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${BASE}/blog/alternative-doctolib-psychologue`,
+      lastModified: new Date('2026-04-05'),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
       url: `${BASE}/blog/logiciel-gestion-cabinet-psychologue`,
       lastModified: new Date('2026-03-15'),
       changeFrequency: 'monthly',
@@ -381,6 +387,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date('2026-03-19'),
       changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    // Webinaires
+    {
+      url: `${BASE}/webinaires/rgpd-hds`,
+      lastModified: new Date('2026-04-05'),
+      changeFrequency: 'weekly',
+      priority: 0.85,
     },
     // Ambassadeurs
     {

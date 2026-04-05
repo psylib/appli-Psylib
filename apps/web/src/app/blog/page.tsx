@@ -43,6 +43,15 @@ export const metadata: Metadata = {
 
 const articles = [
   {
+    slug: 'alternative-doctolib-psychologue',
+    title: 'Alternative à Doctolib pour psychologue : le comparatif 2026',
+    excerpt:
+      "Doctolib est-il vraiment le meilleur choix pour un psychologue libéral ? Prix, limites et comparatif des 6 meilleures alternatives françaises en 2026.",
+    category: 'Comparatif',
+    date: '5 avril 2026',
+    readTime: '12 min',
+  },
+  {
     slug: 'logiciel-gestion-cabinet-psychologue',
     title: 'Logiciel gestion cabinet psychologue : comparatif 2026',
     excerpt:
