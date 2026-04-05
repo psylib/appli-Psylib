@@ -1,0 +1,70 @@
+post_id,title,content,hashtags,type,status,published_at,linkedin_post_id,facebook_status,facebook_post_id
+POST_001,Post 1 - Lancement,"Un psychologue libéral passe en moyenne 8 à 10 heures par semaine sur de l'administratif.
+
+Huit heures.
+
+C'est l'équivalent de 8 séances patients qui ne sont jamais réalisées.
+
+J'ai découvert ça en échangeant avec des psys libéraux ces derniers mois. Et plus je creusais, plus le tableau s'assombrissait.
+
+Les notes de séance ? Sur Word ou un carnet papier.
+L'agenda ? Google Calendar, parfois partagé avec le compte perso.
+La facturation ? Un fichier Excel bricolé un dimanche soir.
+Le suivi patient entre deux séances ? Quasi inexistant.
+La conformité données de santé ? ""On verra plus tard.""
+
+Sauf que ""plus tard"", c'est maintenant. La réglementation HDS impose que toute donnée patient soit hébergée sur une infrastructure certifiée. Pas sur Google Drive. Pas sur Notion. Pas sur un outil américain sans garantie.
+
+Et les solutions qui existent ? Soit elles sont pensées pour les médecins généralistes et pas adaptées à la pratique psy. Soit elles ignorent complètement la conformité.
+
+Alors j'ai commencé à construire PsyLib.
+
+Un outil unique qui regroupe tout : gestion patients, notes structurées, suivi thérapeutique, facturation. Hébergé en France, chiffré, conforme.
+
+Je ne vais pas vous faire un pitch commercial. Le produit n'est pas encore entre toutes les mains. Mais l'aventure est lancée, et je la construis en échangeant directement avec des praticiens.
+
+Si vous êtes psy libéral, j'ai une vraie question :
+
+Qu'est-ce qui vous prend le plus de temps chaque semaine en dehors des séances ?","#psychologue #liberal #HDS #santé #cabinet",text,pending,,,
+POST_002,Post 2 - Caroussel 5 galères,"J'ai parlé avec des dizaines de psys libéraux ces dernières semaines.
+5 galères revenaient à chaque conversation. Les voici dans ce carrousel.
+Laquelle vous parle le plus ? Je lis tous les commentaires.","#psychologue #liberal #gestioncabinet #HDS #santé",carousel,pending,,,
+POST_003,Post 3 - Sondage outils,"Question aux psys libéraux :
+
+Quel outil utilisez-vous principalement pour vos notes de séance ?
+
+- Word / Google Docs
+- Un carnet papier
+- Un logiciel métier (lequel ? dites-le en commentaire)
+- Autre (je suis curieux)
+
+Je développe un outil de gestion de cabinet spécifiquement pour les psychologues, et je veux partir de vos usages réels, pas de mes suppositions.
+
+Chaque réponse m'aide à construire quelque chose d'utile. Merci de jouer le jeu !","#psychologue #liberal #sondage #outilspsy",text,pending,,,
+POST_004,Post 4 - Apprentissages 10 appels,"J'ai passé les deux dernières semaines au téléphone avec des psychologues libéraux.
+
+10 appels. Entre 30 et 60 minutes chacun.
+
+Voici ce que j'ai appris :
+
+1. Le temps administratif est le premier facteur de frustration.
+2. La plupart savent que leurs données ne sont pas en sécurité. Mais pas d'alternative simple.
+3. Le suivi entre les séances est un angle mort.
+4. Personne ne veut ""un Doctolib pour psys"". Ils veulent un outil qui comprend leur métier.
+5. L'IA intéresse, mais ""où vont mes données ?"" revient à chaque fois.
+
+Si vous êtes psy et voulez partager votre quotidien, mes DM sont ouverts. 30 minutes, sans engagement.","#psychologue #liberal #découverte #produit #santé",text,pending,,,
+POST_005,Post 5 - Offre Fondateurs,"PsyLib ouvre ses portes à ses 15 premiers utilisateurs.
+
+Aujourd'hui, je lance l'offre Fondateurs.
+
+— Tarif bloqué à vie (43€/mois, même quand le prix augmente)
+— Accès prioritaire aux nouvelles fonctionnalités
+— Ligne directe avec moi pour façonner le produit
+— 15 places, pas une de plus
+
+Pourquoi 15 ? Pour accompagner chaque fondateur personnellement.
+
+Si vous êtes psy libéral et que vous en avez assez de jongler entre 6 outils non sécurisés, c'est le moment.
+
+Le lien est en commentaire. Les 15 places partiront vite.","#psychologue #liberal #PsyLib #fondateurs #HDS",text,pending,,,

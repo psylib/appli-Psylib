@@ -1,0 +1,484 @@
+{
+  "name": "PsyLib - LinkedIn + Facebook AutoPoster",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 8 * * 2,4"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Mardi Jeudi 8h30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $vars.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "options": {
+          "returnAllMatches": true
+        }
+      },
+      "id": "sheets-read-posts",
+      "name": "Sheets Lire Tous Les Posts",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [460, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets PsyLib"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filtrer les posts en attente et prendre le premier\nconst allPosts = $input.all();\n\n// Chercher le premier post avec status = 'pending'\nconst pendingPosts = allPosts.filter(item => {\n  const status = (item.json.status || '').trim().toLowerCase();\n  return status === 'pending';\n});\n\nif (pendingPosts.length === 0) {\n  // Aucun post en attente — retourner un item vide avec flag\n  return [{ json: { found: false, message: 'Aucun post en attente' } }];\n}\n\n// Prendre le premier post en attente (ordre du sheet)\nconst nextPost = pendingPosts[0];\n\nreturn [{\n  json: {\n    found: true,\n    row_number: nextPost.json.row_number || nextPost.json.__index || 2,\n    post_id: nextPost.json.post_id,\n    title: nextPost.json.title,\n    content: nextPost.json.content,\n    type: nextPost.json.type || 'text',\n    hashtags: nextPost.json.hashtags || '',\n    status: nextPost.json.status\n  }\n}];"
+      },
+      "id": "code-filter-pending",
+      "name": "Code Filtrer Post Suivant",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-found",
+              "leftValue": "={{ $json.found }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-post-found",
+      "name": "IF Post Trouve",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Construire le payload LinkedIn Share API v2\nconst post = $input.first().json;\n\n// Concatener contenu + hashtags\nlet fullText = post.content;\nif (post.hashtags && post.hashtags.trim() !== '') {\n  fullText = fullText + String.fromCharCode(10) + String.fromCharCode(10) + post.hashtags;\n}\n\n// Payload LinkedIn UGC Post API\nconst payload = {\n  author: 'urn:li:person:REPLACE_WITH_LINKEDIN_PERSON_URN',\n  lifecycleState: 'PUBLISHED',\n  specificContent: {\n    'com.linkedin.ugc.ShareContent': {\n      shareCommentary: {\n        text: fullText\n      },\n      shareMediaCategory: 'NONE'\n    }\n  },\n  visibility: {\n    'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'\n  }\n};\n\nreturn [{\n  json: {\n    payload: payload,\n    post_id: post.post_id,\n    title: post.title,\n    content_preview: fullText.substring(0, 100) + '...'\n  }\n}];"
+      },
+      "id": "code-build-linkedin-payload",
+      "name": "Code Construire Payload LinkedIn",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Construire le payload pour l'API Facebook Graph\n// POST https://graph.facebook.com/v19.0/{page-id}/feed\nconst post = $input.first().json;\n\n// Concatener contenu + hashtags (meme texte que LinkedIn)\nlet fullText = post.content;\nif (post.hashtags && post.hashtags.trim() !== '') {\n  fullText = fullText + String.fromCharCode(10) + String.fromCharCode(10) + post.hashtags;\n}\n\nreturn [{\n  json: {\n    message: fullText,\n    post_id: post.post_id,\n    title: post.title,\n    content_preview: fullText.substring(0, 100) + '...'\n  }\n}];"
+      },
+      "id": "code-build-facebook-payload",
+      "name": "Code Construire Payload Facebook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 440]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "authentication": "oAuth2",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            },
+            {
+              "name": "LinkedIn-Version",
+              "value": "202304"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-linkedin-publish",
+      "name": "HTTP LinkedIn Publier Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 160],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_WITH_LINKEDIN_CREDENTIAL_ID",
+          "name": "LinkedIn PsyLib OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $vars.FACEBOOK_PAGE_ID }}/feed",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FACEBOOK_PAGE_ACCESS_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $json.message }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-facebook-publish",
+      "name": "HTTP Facebook Publier Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 440],
+      "notes": "Requiert FACEBOOK_PAGE_ID et FACEBOOK_PAGE_ACCESS_TOKEN dans n8n Variables (Settings > Variables). Voir guide de setup section Facebook."
+    },
+    {
+      "parameters": {
+        "mode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-linkedin-facebook",
+      "name": "Merge LinkedIn et Facebook",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Consolider les resultats LinkedIn et Facebook\n// Le Merge passe les items dans l'ordre : [0] = LinkedIn response, [1] = Facebook response\nconst allItems = $input.all();\n\nconst linkedinResponse = allItems[0] ? allItems[0].json : {};\nconst facebookResponse = allItems[1] ? allItems[1].json : {};\n\n// Recuperer les donnees du post original\nconst originalPost = $('Code Filtrer Post Suivant').first().json;\nconst linkedinPayloadData = $('Code Construire Payload LinkedIn').first().json;\n\n// Formater la date de publication\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('fr-FR', {\n  day: '2-digit',\n  month: '2-digit',\n  year: 'numeric',\n  hour: '2-digit',\n  minute: '2-digit'\n});\n\n// Extraire l'ID du post LinkedIn depuis la response\nlet linkedinPostId = '';\nif (linkedinResponse.id) {\n  linkedinPostId = linkedinResponse.id;\n} else if (linkedinResponse.headers && linkedinResponse.headers['x-restli-id']) {\n  linkedinPostId = linkedinResponse.headers['x-restli-id'];\n}\n\n// Extraire l'ID du post Facebook depuis la response\n// Format retourne par Graph API : { id: \"PAGE_ID_POST_ID\" }\nlet facebookPostId = '';\nif (facebookResponse.id) {\n  facebookPostId = facebookResponse.id;\n}\n\n// Determiner les statuts\nconst linkedinOk = linkedinPostId !== '';\nconst facebookOk = facebookPostId !== '';\n\nlet publishStatus = 'published';\nif (linkedinOk && !facebookOk) publishStatus = 'published_linkedin_only';\nif (!linkedinOk && facebookOk) publishStatus = 'published_facebook_only';\nif (!linkedinOk && !facebookOk) publishStatus = 'error';\n\nreturn [{\n  json: {\n    post_id: originalPost.post_id,\n    row_number: originalPost.row_number,\n    title: originalPost.title,\n    content_preview: linkedinPayloadData.content_preview,\n    linkedin_post_id: linkedinPostId,\n    facebook_post_id: facebookPostId,\n    linkedin_ok: linkedinOk,\n    facebook_ok: facebookOk,\n    publish_status: publishStatus,\n    published_at: dateStr\n  }\n}];"
+      },
+      "id": "code-prepare-update",
+      "name": "Code Preparer Mise a Jour",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $vars.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Posts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_id": "={{ $json.post_id }}",
+            "status": "published",
+            "published_at": "={{ $json.published_at }}",
+            "linkedin_post_id": "={{ $json.linkedin_post_id }}",
+            "facebook_status": "={{ $json.facebook_ok ? 'published' : 'error' }}",
+            "facebook_post_id": "={{ $json.facebook_post_id }}"
+          },
+          "matchingColumns": ["post_id"],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets-update-status",
+      "name": "Sheets Marquer Publie",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2000, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_WITH_GOOGLE_CREDENTIAL_ID",
+          "name": "Google Sheets PsyLib"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "REPLACE_WITH_YOUR_EMAIL",
+        "subject": "=PsyLib AutoPoster - Post publie : {{ $('Code Preparer Mise a Jour').first().json.title }}",
+        "message": "=Publication automatique PsyLib{{ String.fromCharCode(10) }}{{ String.fromCharCode(10) }}Post : {{ $('Code Preparer Mise a Jour').first().json.title }}{{ String.fromCharCode(10) }}Date : {{ $('Code Preparer Mise a Jour').first().json.published_at }}{{ String.fromCharCode(10) }}Apercu : {{ $('Code Preparer Mise a Jour').first().json.content_preview }}{{ String.fromCharCode(10) }}{{ String.fromCharCode(10) }}--- LinkedIn ---{{ String.fromCharCode(10) }}Statut : {{ $('Code Preparer Mise a Jour').first().json.linkedin_ok ? 'Publie' : 'ERREUR' }}{{ String.fromCharCode(10) }}ID LinkedIn : {{ $('Code Preparer Mise a Jour').first().json.linkedin_post_id || 'non disponible' }}{{ String.fromCharCode(10) }}{{ String.fromCharCode(10) }}--- Facebook Page ---{{ String.fromCharCode(10) }}Statut : {{ $('Code Preparer Mise a Jour').first().json.facebook_ok ? 'Publie' : 'ERREUR' }}{{ String.fromCharCode(10) }}ID Facebook : {{ $('Code Preparer Mise a Jour').first().json.facebook_post_id || 'non disponible' }}",
+        "options": {}
+      },
+      "id": "gmail-notify-success",
+      "name": "Gmail Notification Succes",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [2220, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail PsyLib"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "REPLACE_WITH_YOUR_EMAIL",
+        "subject": "PsyLib AutoPoster - Aucun post en attente",
+        "message": "=Le workflow AutoPoster s'est declenche mais il n'y a plus de posts en attente de publication.{{ String.fromCharCode(10) }}{{ String.fromCharCode(10) }}Pensez a ajouter de nouveaux posts dans le Google Sheet :{{ String.fromCharCode(10) }}https://docs.google.com/spreadsheets/d/{{ $vars.GOOGLE_SHEET_ID }}",
+        "options": {}
+      },
+      "id": "gmail-notify-empty",
+      "name": "Gmail Notification Vide",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1120, 640],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail PsyLib"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.linkedin.com/v2/me",
+        "authentication": "oAuth2",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-linkedin-get-me",
+      "name": "HTTP LinkedIn Get Profile URN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 60],
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_WITH_LINKEDIN_CREDENTIAL_ID",
+          "name": "LinkedIn PsyLib OAuth2"
+        }
+      },
+      "notes": "Executer manuellement une seule fois pour obtenir votre person URN (ex: urn:li:person:abc123). Copier l'id retourne et remplacer REPLACE_WITH_LINKEDIN_PERSON_URN dans le Code node."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/me/accounts?access_token={{ $vars.FACEBOOK_PAGE_ACCESS_TOKEN }}",
+        "options": {}
+      },
+      "id": "http-facebook-get-pages",
+      "name": "HTTP Facebook Get Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, -100],
+      "notes": "Executer manuellement une seule fois pour recuperer l'ID de votre page Facebook. Chercher le champ 'id' correspondant a votre page PsyLib et definir FACEBOOK_PAGE_ID dans les Variables n8n."
+    },
+    {
+      "parameters": {
+        "content": "## PsyLib — LinkedIn + Facebook AutoPoster\n\n### Fonctionnement\n- Declenchement : mardi + jeudi a 8h30\n- Lit les posts dans Google Sheets (tab 'Posts')\n- Publie en PARALLELE sur LinkedIn ET sur la page Facebook PsyLib\n- Attend les deux reponses (Merge node)\n- Met a jour le statut avec les IDs des deux posts\n- Envoie une notification Gmail recapitulant les deux publications\n\n### Configuration requise\n1. Credential Google Sheets OAuth2\n2. Credential LinkedIn OAuth2 (scope: w_member_social, r_liteprofile)\n3. Credential Gmail OAuth2\n4. Variables n8n (Settings > Variables) :\n   - GOOGLE_SHEET_ID\n   - FACEBOOK_PAGE_ID\n   - FACEBOOK_PAGE_ACCESS_TOKEN\n5. Remplacer REPLACE_WITH_LINKEDIN_PERSON_URN dans le Code LinkedIn node\n\n### Structure Google Sheet\nColonnes (tab 'Posts'):\npost_id | title | content | hashtags | type | status | published_at | linkedin_post_id | facebook_status | facebook_post_id\n\n### Statuts valides\n- pending : en attente\n- published : publie sur les deux\n- draft : brouillon (ignore)\n- skip : passer ce post",
+        "height": 420,
+        "width": 520
+      },
+      "id": "sticky-note-instructions",
+      "name": "Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [240, -300]
+    }
+  ],
+  "connections": {
+    "schedule-trigger": {
+      "main": [
+        [
+          {
+            "node": "sheets-read-posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sheets-read-posts": {
+      "main": [
+        [
+          {
+            "node": "code-filter-pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code-filter-pending": {
+      "main": [
+        [
+          {
+            "node": "if-post-found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-post-found": {
+      "main": [
+        [
+          {
+            "node": "code-build-linkedin-payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "code-build-facebook-payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "gmail-notify-empty",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code-build-linkedin-payload": {
+      "main": [
+        [
+          {
+            "node": "http-linkedin-publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code-build-facebook-payload": {
+      "main": [
+        [
+          {
+            "node": "http-facebook-publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "http-linkedin-publish": {
+      "main": [
+        [
+          {
+            "node": "merge-linkedin-facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "http-facebook-publish": {
+      "main": [
+        [
+          {
+            "node": "merge-linkedin-facebook",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "merge-linkedin-facebook": {
+      "main": [
+        [
+          {
+            "node": "code-prepare-update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code-prepare-update": {
+      "main": [
+        [
+          {
+            "node": "sheets-update-status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sheets-update-status": {
+      "main": [
+        [
+          {
+            "node": "gmail-notify-success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "tags": ["marketing", "linkedin", "facebook", "psylib"],
+  "triggerCount": 1,
+  "updatedAt": "2026-03-29T00:00:00.000Z",
+  "versionId": "2"
+}

@@ -31,12 +31,13 @@
 | PSYen Mouvement | Collectif militant | ~2 000 actifs | Haute | Twitter/Facebook |
 
 ### Podcasts
-| Nom | Écoutes estimées | Pertinence | Notes |
+| Nom | Plateformes | Pertinence | Notes |
 |---|---|---|---|
-| Dans la tête d'un psy | ~5 000-10 000/ep | Très haute | Par et pour praticiens |
-| Les Ateliers du Praticien | ~2 000-5 000/ep | Très haute | Cible exacte : libéraux |
-| Psychologik | ~3 000-8 000/ep | Haute | Pratique clinique |
-| Meta de Choc | ~50 000/ep | Moyenne | Large audience, pas purement pro |
+| **Meta de Choc** (Élisabeth Feytit) | [Apple Podcasts](https://podcasts.apple.com/), [Spotify](https://open.spotify.com/), [Site officiel](https://metadechoc.fr/) | Moyenne | ~50k écoutes/ep. Large audience, pas purement pro. Primé aux Podcastéo Awards 2021. |
+| **Mon Psy Part En Live** (Julien Borloz) | [Spotify](https://open.spotify.com/show/1BR2IAMLCMK3u1EitPQzt3), [Apple Podcasts](https://podcasts.apple.com/fr/podcast/mon-psy-part-en-live/id1588912671), [Deezer](https://www.deezer.com/us/show/3044402), [Audible](https://www.audible.fr/podcast/Mon-Psy-Part-En-Live/B0DQYBTKRS) | Très haute | Psy coach/hypnose. Émotions, développement personnel, quotidien psy. |
+| **Catherine la Psy** | [Spotify](https://open.spotify.com/show/2IrqGCu6W3JFyaJvKNwlrB) | Haute | Vulgarisation psychothérapie par une psy clinicienne. |
+| **Le comptoir de la psychologie** (Jo) | [Spotify](https://open.spotify.com/show/1BfbyMHaNCcPrKVeeKZBo8) | Haute | Psy clinicienne, rend la psychologie accessible. |
+| **Psychologie et Bien-être** (Psychologue.net) | [Spotify](https://open.spotify.com/show/5a0zPZIpuMg2oTRxqdZy35), [Apple Podcasts](https://podcasts.apple.com/ca/podcast/psychologie-et-bien-%C3%AAtre-le-podcast-de-psychologue-net/id1513532213) | Haute | Portail de référence en psychologie FR. |
 
 ### Presse spécialisée
 | Nom | Type | Pertinence |
