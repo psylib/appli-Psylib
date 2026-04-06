@@ -123,7 +123,7 @@ export class AiService {
   private async collectPatientHistory(
     sessionId: string,
     psychologistId: string,
-  ): Promise<{ dossier: string; orientation: string | null; date: Date | null; duration: number | null }> {
+  ): Promise<{ dossier: string; orientation: import('@prisma/client').TherapyOrientation | null; date: Date | null; duration: number | null }> {
     const currentSession = await this.prisma.session.findFirst({
       where: { id: sessionId, psychologistId },
       select: { patientId: true, orientation: true, date: true, duration: true },
@@ -307,9 +307,7 @@ export class AiService {
     const durationStr = duration ? `${duration}` : '?';
     const userMessage = `=== Notes de la séance du ${dateStr} ===\nOrientation: ${orientationLabel}\nDurée: ${durationStr} min\n\n${dto.rawNotes}\n\n${dossier}`;
 
-    const systemPrompt = getSessionSummaryPrompt(
-      orientation as import('@prisma/client').TherapyOrientation | null,
-    );
+    const systemPrompt = getSessionSummaryPrompt(orientation);
 
     // SSE headers (set AFTER Phase 1)
     res.setHeader('Content-Type', 'text/event-stream');
@@ -520,6 +518,7 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
         model: 'gpt-4o',
         max_tokens: 2000,
         stream: true,
+        stream_options: { include_usage: true },
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },

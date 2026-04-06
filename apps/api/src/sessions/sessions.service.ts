@@ -14,7 +14,8 @@ import {
   SessionQueryDto,
 } from './dto/session.dto';
 import type { PaginatedResponse } from '@psyscale/shared-types';
-import type { Session, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import type { Session } from '@prisma/client';
 import type { Request } from 'express';
 
 @Injectable()
@@ -201,7 +202,9 @@ export class SessionsService {
           summaryAi: dto.summaryAi ? this.encryption.encrypt(dto.summaryAi) : null,
         }),
         ...(dto.aiMetadata !== undefined && {
-          aiMetadata: dto.aiMetadata ? (dto.aiMetadata as import('@prisma/client').Prisma.InputJsonValue) : undefined,
+          aiMetadata: dto.aiMetadata
+            ? (dto.aiMetadata as import('@prisma/client').Prisma.InputJsonValue)
+            : Prisma.DbNull,
         }),
       },
     });

@@ -70,6 +70,8 @@ export async function streamSessionSummary(
   const decoder = new TextDecoder();
   let buffer = '';
 
+  let doneEmitted = false;
+
   try {
     while (true) {
       const { done, value } = await reader.read();
@@ -84,6 +86,7 @@ export async function streamSessionSummary(
 
         const data = line.slice(6).trim();
         if (data === '[DONE]') {
+          doneEmitted = true;
           callbacks.onDone();
           return;
         }
@@ -113,5 +116,5 @@ export async function streamSessionSummary(
     reader.releaseLock();
   }
 
-  callbacks.onDone();
+  if (!doneEmitted) callbacks.onDone();
 }

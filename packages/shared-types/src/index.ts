@@ -90,6 +90,7 @@ export enum AuditAction {
   UPDATE = 'UPDATE',
   DELETE = 'DELETE',
   DECRYPT = 'DECRYPT',
+  AI_SUMMARY_SAVE = 'AI_SUMMARY_SAVE',
 }
 
 export enum GdprConsentType {
