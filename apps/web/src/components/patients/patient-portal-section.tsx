@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { Plus } from 'lucide-react';
 import { patientsApi } from '@/lib/api/patients';
+import { ExerciseDialog } from './exercise-dialog';
 
 interface PortalStatus {
   hasPortalAccess: boolean;
@@ -44,6 +46,7 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [inviting, setInviting] = useState(false);
   const [inviteResult, setInviteResult] = useState<string | null>(null);
+  const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -82,6 +85,14 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
     } finally {
       setInviting(false);
     }
+  };
+
+  const refreshExercises = () => {
+    if (!session?.accessToken) return;
+    patientsApi
+      .portalExercises(patientId, session.accessToken)
+      .then(setExercises)
+      .catch(console.error);
   };
 
   const avgMood =
@@ -178,9 +189,18 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
           </div>
 
           {/* Exercises */}
-          {exercises.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Exercices</h4>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold text-foreground">Exercices</h4>
+              <button
+                onClick={() => setExerciseDialogOpen(true)}
+                className="inline-flex items-center gap-1 text-xs text-[#3D52A0] hover:text-[#2d3f7c] font-medium"
+              >
+                <Plus size={14} />
+                Nouvel exercice
+              </button>
+            </div>
+            {exercises.length > 0 ? (
               <div className="space-y-2">
                 {exercises.slice(0, 5).map((e) => (
                   <div key={e.id} className="flex items-center gap-2 text-sm">
@@ -204,8 +224,10 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-muted-foreground">Aucun exercice assigné</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -217,6 +239,13 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
           </p>
         </div>
       )}
+      <ExerciseDialog
+        patientId={patientId}
+        hasAiConsent={status?.hasAiConsent ?? false}
+        open={exerciseDialogOpen}
+        onClose={() => setExerciseDialogOpen(false)}
+        onCreated={refreshExercises}
+      />
     </section>
   );
 }
