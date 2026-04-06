@@ -365,6 +365,7 @@ model Session {
   paymentStatus  SessionPaymentStatus @default(pending) @map("payment_status")
   orientation    TherapyOrientation?
   templateId     String?              @map("template_id")
+  aiMetadata     Json?                @map("ai_metadata")
   createdAt      DateTime             @default(now()) @map("created_at")
 
   // Relations
