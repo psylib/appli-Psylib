@@ -46,6 +46,54 @@ export interface PatientDashboard {
   pendingExercises: Exercise[];
   nextAppointment: { scheduledAt: string; duration: number; status: string } | null;
   journalCount: number;
+  pendingAssessmentsCount: number;
+}
+
+export interface PatientProfile {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  createdAt: string;
+  psychologist: { name: string; specialization: string };
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  text: string;
+  minValue: number;
+  maxValue: number;
+  labels: string[];
+}
+
+export interface AssessmentTemplate {
+  type: string;
+  name: string;
+  description: string | null;
+  maxScore: number;
+  questions: AssessmentQuestion[];
+}
+
+export interface PendingAssessment {
+  id: string;
+  status: string;
+  template: AssessmentTemplate;
+  createdAt: string;
+}
+
+export interface CompletedAssessment {
+  id: string;
+  score: number | null;
+  severity: string | null;
+  status: string;
+  completedAt: string | null;
+  template: { type: string; name: string; maxScore: number };
+}
+
+export interface AssessmentSubmitResult {
+  score: number;
+  maxScore: number;
+  severity: string;
 }
 
 export const patientPortalApi = {
@@ -89,4 +137,17 @@ export const patientPortalApi = {
 
   deleteJournalEntry: (token: string, id: string) =>
     fetchPortal<{ deleted: boolean }>(`/journal/${id}`, token, { method: 'DELETE' }),
+
+  getProfile: (token: string) => fetchPortal<PatientProfile>('/me', token),
+
+  getAssessments: (token: string) =>
+    fetchPortal<Array<PendingAssessment | CompletedAssessment>>('/assessments', token),
+
+  submitAssessment: (token: string, id: string, answers: Record<string, number>) =>
+    fetchPortal<AssessmentSubmitResult>(`/assessments/${id}/submit`, token, {
+      method: 'POST',
+      body: JSON.stringify({
+        answers: Object.entries(answers).map(([questionId, value]) => ({ questionId, value })),
+      }),
+    }),
 };
