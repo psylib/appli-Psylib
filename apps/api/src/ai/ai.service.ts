@@ -6,6 +6,11 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
+import { EncryptionService } from '../common/encryption.service';
+import {
+  getSessionSummaryPrompt,
+  EXTRACTION_PROMPT,
+} from './prompts/session-summary.prompts';
 import { Response } from 'express';
 
 export interface SessionSummaryDto {
@@ -33,26 +38,6 @@ export interface StreamContentDto {
 }
 
 const SYSTEM_PROMPTS = {
-  sessionSummary: `Tu es un assistant pour psychologues. Génère un résumé structuré de séance thérapeutique.
-Format de sortie en Markdown :
-## Résumé de séance
-[Synthèse en 2-3 phrases]
-
-## Thèmes abordés
-- [thème 1]
-- [thème 2]
-
-## Points de suivi
-- [point 1]
-
-## Suggestions pour la prochaine séance
-- [suggestion 1]
-
-RÈGLES ABSOLUES :
-- Garde uniquement les informations cliniques pertinentes
-- N'invente aucune information non présente dans les notes
-- Rappelle que ce résumé est un outil d'aide et que le praticien reste responsable`,
-
   exercise: `Tu es un assistant pour psychologues. Génère un exercice thérapeutique personnalisé.
 Format JSON :
 {
@@ -78,6 +63,7 @@ export class AiService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly encryption: EncryptionService,
   ) {}
 
   onModuleInit() {
@@ -130,7 +116,170 @@ export class AiService {
   }
 
   /**
-   * Résumé de séance — Streaming SSE
+   * Phase 1 — Collect patient history (last 15 sessions).
+   * Decrypts summaries/notes and builds a formatted dossier string.
+   * Filtered by psychologistId for tenant isolation.
+   */
+  private async collectPatientHistory(
+    sessionId: string,
+    psychologistId: string,
+  ): Promise<{ dossier: string; orientation: string | null; date: Date | null; duration: number | null }> {
+    const currentSession = await this.prisma.session.findFirst({
+      where: { id: sessionId, psychologistId },
+      select: { patientId: true, orientation: true, date: true, duration: true },
+    });
+
+    if (!currentSession) {
+      return { dossier: 'Aucun historique disponible', orientation: null, date: null, duration: null };
+    }
+
+    const pastSessions = await this.prisma.session.findMany({
+      where: {
+        patientId: currentSession.patientId,
+        psychologistId,
+        id: { not: sessionId },
+      },
+      orderBy: { date: 'desc' },
+      take: 15,
+      select: {
+        date: true,
+        duration: true,
+        orientation: true,
+        tags: true,
+        notes: true,
+        summaryAi: true,
+      },
+    });
+
+    if (pastSessions.length === 0) {
+      return {
+        dossier: 'Aucun historique disponible',
+        orientation: currentSession.orientation,
+        date: currentSession.date,
+        duration: currentSession.duration,
+      };
+    }
+
+    const entries = pastSessions.map((s) => {
+      const dateStr = s.date.toISOString().split('T')[0];
+      const orientationStr = s.orientation ?? 'Non spécifiée';
+      const tagsStr = s.tags.length > 0 ? `Tags: ${s.tags.join(', ')}` : '';
+
+      let summaryText = 'Pas de résumé disponible';
+      try {
+        if (s.summaryAi) {
+          summaryText = this.encryption.decrypt(s.summaryAi);
+          if (summaryText.length > 800) {
+            summaryText = summaryText.slice(0, 800) + '...';
+          }
+        } else if (s.notes) {
+          const decryptedNotes = this.encryption.decrypt(s.notes);
+          summaryText = decryptedNotes.slice(0, 500) + (decryptedNotes.length > 500 ? '...' : '');
+        }
+      } catch {
+        summaryText = '[Notes indisponibles]';
+      }
+
+      return [
+        `[${dateStr}] Séance ${s.duration}min (${orientationStr})`,
+        tagsStr,
+        `Résumé: ${summaryText}`,
+        '',
+      ].filter(Boolean).join('\n');
+    });
+
+    return {
+      dossier: `=== Historique patient (${pastSessions.length} dernières séances) ===\n\n${entries.join('\n')}`,
+      orientation: currentSession.orientation,
+      date: currentSession.date,
+      duration: currentSession.duration,
+    };
+  }
+
+  /**
+   * Phase 3 — Extract structured data from the narrative summary using a fast model.
+   */
+  private async extractStructuredData(
+    summaryText: string,
+    psychologistId: string,
+  ): Promise<{ data: Record<string, unknown>; tokens: number } | null> {
+    const apiKey = this.requireAiKey();
+    const startedAt = Date.now();
+
+    try {
+      if (this.aiProvider === 'anthropic') {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 300,
+            system: EXTRACTION_PROMPT,
+            messages: [{ role: 'user', content: summaryText }],
+          }),
+        });
+
+        const result = await response.json() as {
+          content: Array<{ text: string }>;
+          usage?: { input_tokens: number; output_tokens: number };
+        };
+
+        const text = result.content[0]?.text ?? '{}';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const parsed = JSON.parse(jsonMatch?.[0] ?? '{}') as Record<string, unknown>;
+        const tokens = (result.usage?.input_tokens ?? 0) + (result.usage?.output_tokens ?? 0);
+
+        await this.trackUsage(psychologistId, 'session_summary_extraction', tokens, startedAt, 'claude-haiku-4-5-20251001');
+
+        return { data: parsed, tokens };
+      } else {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            max_tokens: 300,
+            response_format: { type: 'json_object' },
+            messages: [
+              { role: 'system', content: EXTRACTION_PROMPT },
+              { role: 'user', content: summaryText },
+            ],
+          }),
+        });
+
+        const result = await response.json() as {
+          choices: Array<{ message: { content: string } }>;
+          usage?: { total_tokens: number };
+        };
+
+        const text = result.choices[0]?.message?.content ?? '{}';
+        const parsed = JSON.parse(text) as Record<string, unknown>;
+        const tokens = result.usage?.total_tokens ?? 0;
+
+        await this.trackUsage(psychologistId, 'session_summary_extraction', tokens, startedAt, 'gpt-4o-mini');
+
+        return { data: parsed, tokens };
+      }
+    } catch (error) {
+      this.logger.error('Phase 3 extraction failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Résumé de séance — 3-Phase Pipeline with SSE Streaming
+   *
+   * Phase 1: Collect patient history (before SSE headers)
+   * Phase 2: Stream narrative summary via Sonnet/GPT-4o (SSE)
+   * Phase 3: Extract structured data via Haiku/GPT-4o-mini
+   *
    * CRITIQUE : Les notes ne quittent le serveur qu'avec consentement explicite du patient
    */
   async streamSessionSummary(
@@ -144,12 +293,25 @@ export class AiService {
       throw new BadRequestException('Notes trop courtes pour générer un résumé');
     }
 
-    // Vérifier le consentement IA du patient avant envoi au LLM
     await this.checkAiConsent(dto.sessionId);
-
     this.requireAiKey();
 
-    // Headers SSE
+    // Phase 1: Collect patient history (before SSE headers)
+    const { dossier, orientation, date, duration } = await this.collectPatientHistory(
+      dto.sessionId,
+      psy.id,
+    );
+
+    const orientationLabel = orientation ?? 'Non spécifiée';
+    const dateStr = date ? date.toISOString().split('T')[0] : 'inconnue';
+    const durationStr = duration ? `${duration}` : '?';
+    const userMessage = `=== Notes de la séance du ${dateStr} ===\nOrientation: ${orientationLabel}\nDurée: ${durationStr} min\n\n${dto.rawNotes}\n\n${dossier}`;
+
+    const systemPrompt = getSessionSummaryPrompt(
+      orientation as import('@prisma/client').TherapyOrientation | null,
+    );
+
+    // SSE headers (set AFTER Phase 1)
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -157,20 +319,40 @@ export class AiService {
 
     const startedAt = Date.now();
     let totalTokens = 0;
+    let fullSummary = '';
 
     try {
+      // Phase 2: Stream narrative summary
       if (this.aiProvider === 'anthropic') {
-        await this.streamWithAnthropic(dto.rawNotes, dto.context, res, (tokens) => {
-          totalTokens = tokens;
-        });
+        await this.streamSummaryAnthropic(
+          userMessage,
+          systemPrompt,
+          res,
+          (tokens) => { totalTokens = tokens; },
+          (text) => { fullSummary += text; },
+        );
       } else {
-        await this.streamWithOpenAI(dto.rawNotes, dto.context, res, (tokens) => {
-          totalTokens = tokens;
-        });
+        await this.streamSummaryOpenAI(
+          userMessage,
+          systemPrompt,
+          res,
+          (tokens) => { totalTokens = tokens; },
+          (text) => { fullSummary += text; },
+        );
       }
 
-      // Tracker l'usage IA
-      await this.trackUsage(psy.id, 'session_summary', totalTokens, startedAt);
+      const phase2Model = this.aiProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4o';
+      await this.trackUsage(psy.id, 'session_summary', totalTokens, startedAt, phase2Model);
+
+      // Phase 3: Extract structured data
+      if (fullSummary.length > 50) {
+        const extraction = await this.extractStructuredData(fullSummary, psy.id);
+        if (extraction) {
+          res.write(`data: ${JSON.stringify({ type: 'structured', data: { ...extraction.data, model: phase2Model } })}\n\n`);
+        } else {
+          res.write(`data: ${JSON.stringify({ type: 'structured_error' })}\n\n`);
+        }
+      }
 
     } catch (error) {
       this.logger.error('AI streaming error:', error);
@@ -222,9 +404,21 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
 
     try {
       if (this.aiProvider === 'anthropic') {
-        await this.streamWithAnthropic(prompt, undefined, res, (tokens) => { totalTokens = tokens; });
+        await this.streamSummaryAnthropic(
+          prompt,
+          SYSTEM_PROMPTS.content,
+          res,
+          (tokens) => { totalTokens = tokens; },
+          () => {},
+        );
       } else {
-        await this.streamWithOpenAI(prompt, undefined, res, (tokens) => { totalTokens = tokens; });
+        await this.streamSummaryOpenAI(
+          prompt,
+          SYSTEM_PROMPTS.content,
+          res,
+          (tokens) => { totalTokens = tokens; },
+          () => {},
+        );
       }
       await this.trackUsage(psy.id, 'marketing_content', totalTokens, startedAt);
     } catch (error) {
@@ -236,11 +430,12 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
     }
   }
 
-  private async streamWithAnthropic(
-    notes: string,
-    context: string | undefined,
+  private async streamSummaryAnthropic(
+    userMessage: string,
+    systemPrompt: string,
     res: Response,
     onComplete: (tokens: number) => void,
+    onText: (text: string) => void,
   ): Promise<void> {
     const apiKey = this.requireAiKey();
 
@@ -252,16 +447,11 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
         stream: true,
-        system: SYSTEM_PROMPTS.sessionSummary,
-        messages: [
-          {
-            role: 'user',
-            content: `Notes de séance:\n${notes}${context ? `\n\nContexte additionnel:\n${context}` : ''}`,
-          },
-        ],
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }],
       }),
     });
 
@@ -294,7 +484,9 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
           };
 
           if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
-            res.write(`data: ${JSON.stringify({ text: parsed.delta.text })}\n\n`);
+            const text = parsed.delta.text ?? '';
+            res.write(`data: ${JSON.stringify({ text })}\n\n`);
+            onText(text);
           }
           if (parsed.type === 'message_start' && parsed.message?.usage) {
             inputTokens = parsed.message.usage.input_tokens;
@@ -309,11 +501,12 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
     onComplete(inputTokens + outputTokens);
   }
 
-  private async streamWithOpenAI(
-    notes: string,
-    context: string | undefined,
+  private async streamSummaryOpenAI(
+    userMessage: string,
+    systemPrompt: string,
     res: Response,
     onComplete: (tokens: number) => void,
+    onText: (text: string) => void,
   ): Promise<void> {
     const apiKey = this.requireAiKey();
 
@@ -324,15 +517,12 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        max_tokens: 1500,
+        model: 'gpt-4o',
+        max_tokens: 2000,
         stream: true,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPTS.sessionSummary },
-          {
-            role: 'user',
-            content: `Notes de séance:\n${notes}${context ? `\n\nContexte:\n${context}` : ''}`,
-          },
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
         ],
       }),
     });
@@ -362,7 +552,10 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
             usage?: { total_tokens: number };
           };
           const text = parsed.choices[0]?.delta?.content;
-          if (text) res.write(`data: ${JSON.stringify({ text })}\n\n`);
+          if (text) {
+            res.write(`data: ${JSON.stringify({ text })}\n\n`);
+            onText(text);
+          }
           if (parsed.usage) totalTokens = parsed.usage.total_tokens;
         } catch { /* ignore */ }
       }
@@ -478,11 +671,17 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
     feature: string,
     tokens: number,
     startedAt: number,
+    model?: string,
   ): Promise<void> {
-    const model = this.aiProvider === 'anthropic' ? 'claude-haiku-4-5' : 'gpt-4o-mini';
+    const resolvedModel = model ?? (this.aiProvider === 'anthropic' ? 'claude-haiku-4-5' : 'gpt-4o-mini');
 
-    // Coût approximatif ($/1M tokens)
-    const costPer1M = model.startsWith('claude') ? 0.25 : 0.15;
+    const costMap: Record<string, number> = {
+      'claude-sonnet-4-6': 3.0,
+      'claude-haiku-4-5-20251001': 0.25,
+      'gpt-4o': 2.5,
+      'gpt-4o-mini': 0.15,
+    };
+    const costPer1M = costMap[resolvedModel] ?? 0.25;
     const costUsd = (tokens / 1_000_000) * costPer1M;
 
     try {
@@ -491,7 +690,7 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
           psychologistId,
           feature,
           tokensUsed: tokens,
-          model,
+          model: resolvedModel,
           costUsd,
         },
       });

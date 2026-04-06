@@ -56,7 +56,8 @@ describe('AiService', () => {
   });
 
   function buildService(anthropicKey?: string, openaiKey?: string) {
-    const s = new AiService(prisma as any, createConfigMock(anthropicKey, openaiKey) as any);
+    const encryptionMock = { decrypt: vi.fn().mockReturnValue('decrypted text') };
+    const s = new AiService(prisma as any, createConfigMock(anthropicKey, openaiKey) as any, encryptionMock as any);
     s.onModuleInit();
     return s;
   }
