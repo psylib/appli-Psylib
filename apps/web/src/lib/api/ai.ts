@@ -2,15 +2,27 @@
  * Client IA PsyLib — streaming SSE vers NestJS /ai/session-summary
  *
  * Format SSE reçu :
- *   data: {"text": "chunk"}\n\n   (fragments de texte)
- *   data: {"error": "message"}\n\n (erreur IA)
- *   data: [DONE]\n\n               (fin du stream)
+ *   data: {"text": "chunk"}\n\n                        (fragments de texte)
+ *   data: {"type":"structured","data":{...}}\n\n        (extraction structurée)
+ *   data: {"type":"structured_error"}\n\n               (extraction échouée)
+ *   data: {"error": "message"}\n\n                      (erreur IA)
+ *   data: [DONE]\n\n                                    (fin du stream)
  */
 
 const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
 
+export interface StructuredSummaryData {
+  tags: string[];
+  evolution: 'progress' | 'stable' | 'regression' | 'mixed';
+  alertLevel: 'none' | 'low' | 'medium' | 'high';
+  alertReason: string | null;
+  keyThemes: string[];
+  model?: string;
+}
+
 export interface AiStreamCallbacks {
   onChunk: (text: string) => void;
+  onStructuredData?: (data: StructuredSummaryData) => void;
   onDone: () => void;
   onError: (message: string) => void;
 }
@@ -77,12 +89,21 @@ export async function streamSessionSummary(
         }
 
         try {
-          const parsed = JSON.parse(data) as { text?: string; error?: string };
-          if (parsed.error) {
+          const parsed = JSON.parse(data) as {
+            text?: string;
+            error?: string;
+            type?: string;
+            data?: StructuredSummaryData;
+          };
+
+          if (parsed.type === 'structured' && parsed.data) {
+            callbacks.onStructuredData?.(parsed.data);
+          } else if (parsed.type === 'structured_error') {
+            // Extraction failed — frontend handles gracefully
+          } else if (parsed.error) {
             callbacks.onError(parsed.error);
             return;
-          }
-          if (parsed.text) {
+          } else if (parsed.text) {
             callbacks.onChunk(parsed.text);
           }
         } catch { /* ignore parse errors on malformed chunks */ }
