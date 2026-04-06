@@ -193,6 +193,14 @@ export function DashboardContent({ userName }: DashboardContentProps) {
 
   const [profileLinkCopied, setProfileLinkCopied] = useState(false);
 
+  // ─── Client-only date values (avoid SSR hydration mismatch) ───────────────
+  const [greeting, setGreeting] = useState('Bonjour');
+  const [todayLabel, setTodayLabel] = useState('');
+  useEffect(() => {
+    setGreeting(greet());
+    setTodayLabel(todayFr());
+  }, []);
+
   // Identify psy in PostHog once KPIs are available
   useEffect(() => {
     if (!kpis || !session?.user?.id) return;
@@ -225,10 +233,10 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">
-            {greet()}{firstName ? `, ${firstName}` : ''}{' '}
+            {greeting}{firstName ? `, ${firstName}` : ''}{' '}
             <span aria-hidden="true">👋</span>
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 capitalize">{todayFr()}</p>
+          <p className="text-sm text-muted-foreground mt-1 capitalize">{todayLabel}</p>
         </div>
 
         <button

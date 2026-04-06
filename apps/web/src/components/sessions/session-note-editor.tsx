@@ -312,18 +312,21 @@ export function SessionNoteEditor({
   // ─── Template handlers ────────────────────────────────────────────────────
 
   const handleTemplateApply = (id: string, sections: TemplateSection[]) => {
+    const safeSections = Array.isArray(sections) ? sections : [];
     setSelectedTemplateId(id);
-    setTemplateSections(sections);
+    setTemplateSections(safeSections);
     // Initialise empty values for new sections (preserve existing if same id)
     setStructuredValues((prev) => {
       const next: Record<string, string> = {};
-      sections.forEach((s) => {
+      safeSections.forEach((s) => {
         next[s.id] = prev[s.id] ?? '';
       });
       return next;
     });
     setEditorMode('structured');
     setIsDirty(true);
+    // Fermer le panel orientation pour montrer l'éditeur structuré
+    setOrientationPanelOpen(false);
   };
 
   const handleStructuredChange = (values: Record<string, string>) => {
