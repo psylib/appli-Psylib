@@ -229,6 +229,12 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
         <SessionNoteEditor
           sessionId={sessionId}
           initialNotes={session.notes}
+          existingSummary={session.summaryAi}
+          existingAiMetadata={session.aiMetadata as Record<string, unknown> | null}
+          existingTags={session.tags}
+          onSummarySaved={() => {
+            void queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+          }}
         />
       </div>
 
