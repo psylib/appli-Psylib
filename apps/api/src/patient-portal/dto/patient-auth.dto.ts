@@ -1,5 +1,5 @@
-import { IsEmail, IsString, MinLength, IsUUID } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength, IsUUID, IsBoolean, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AcceptInvitationDto {
   @ApiProperty({ example: 'abc123token' })
@@ -10,6 +10,11 @@ export class AcceptInvitationDto {
   @IsString()
   @MinLength(8)
   password!: string;
+
+  @ApiPropertyOptional({ description: 'Consentement traitement IA (RGPD opt-in)' })
+  @IsBoolean()
+  @IsOptional()
+  consentAi?: boolean;
 }
 
 export class PatientLoginDto {

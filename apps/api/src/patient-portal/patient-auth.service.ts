@@ -76,25 +76,14 @@ export class PatientAuthService {
       });
 
       // Consentements RGPD initiaux
-      await tx.gdprConsent.createMany({
-        data: [
-          {
-            patientId: invitation.patientId,
-            type: 'portal_access',
-            version: '1.0',
-          },
-          {
-            patientId: invitation.patientId,
-            type: 'data_processing',
-            version: '1.0',
-          },
-          {
-            patientId: invitation.patientId,
-            type: 'ai_processing',
-            version: '1.0',
-          },
-        ],
-      });
+      const consents = [
+        { patientId: invitation.patientId, type: 'portal_access', version: '1.0' },
+        { patientId: invitation.patientId, type: 'data_processing', version: '1.0' },
+      ];
+      if (dto.consentAi) {
+        consents.push({ patientId: invitation.patientId, type: 'ai_processing', version: '1.0' });
+      }
+      await tx.gdprConsent.createMany({ data: consents });
 
       return { user, patient };
     });
