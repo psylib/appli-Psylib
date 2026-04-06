@@ -149,6 +149,60 @@ export class StripeService implements OnModuleInit {
     };
   }
 
+  async createRefund(paymentIntentId: string): Promise<Stripe.Refund> {
+    return this.stripe.refunds.create({
+      payment_intent: paymentIntentId,
+    });
+  }
+
+  /**
+   * Creates a Stripe Checkout for post-session payment link.
+   * @param params.amount Amount in euros (e.g., 60.00)
+   */
+  async createPaymentLinkSession(params: {
+    connectedAccountId: string;
+    amount: number; // euros
+    patientEmail: string;
+    psychologistName: string;
+    appointmentId: string;
+    successUrl: string;
+    cancelUrl: string;
+  }): Promise<Stripe.Checkout.Session> {
+    return this.stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Séance avec ${params.psychologistName}`,
+            },
+            unit_amount: Math.round(params.amount * 100),
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: params.patientEmail,
+      payment_intent_data: {
+        application_fee_amount: 0,
+        transfer_data: {
+          destination: params.connectedAccountId,
+        },
+        metadata: {
+          appointmentId: params.appointmentId,
+          type: 'payment_link',
+        },
+      },
+      metadata: {
+        appointmentId: params.appointmentId,
+        type: 'payment_link',
+      },
+      success_url: params.successUrl,
+      cancel_url: params.cancelUrl,
+    });
+  }
+
   async createBookingCheckoutSession(params: {
     psyStripeAccountId: string;
     amount: number; // in cents
