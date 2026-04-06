@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { CreateAppointmentDialog } from '@/components/calendar/create-appointment-dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { appointmentsApi } from '@/lib/api/appointments';
@@ -130,6 +131,7 @@ export function CalendarContent() {
   });
 
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const appointments = appointmentsData?.data ?? [];
 
@@ -178,7 +180,7 @@ export function CalendarContent() {
           <h1 className="text-2xl font-bold text-foreground">Calendrier</h1>
           <p className="text-muted-foreground mt-1">Gérez vos rendez-vous et séances</p>
         </div>
-        <Button size="sm">
+        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
           <Plus size={16} />
           Nouveau RDV
         </Button>
@@ -366,7 +368,10 @@ export function CalendarContent() {
             <div className="rounded-xl border border-dashed border-border p-6 text-center">
               <Calendar size={24} className="text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">Pas de RDV ce jour</p>
-              <button className="text-xs text-primary hover:underline mt-1">
+              <button
+                className="text-xs text-primary hover:underline mt-1"
+                onClick={() => setShowCreateDialog(true)}
+              >
                 Planifier un RDV
               </button>
             </div>
@@ -476,6 +481,13 @@ export function CalendarContent() {
           </div>
         </div>
       </div>
+
+      {/* Create appointment dialog */}
+      <CreateAppointmentDialog
+        open={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        defaultDate={selectedDate}
+      />
 
       {/* Cancel appointment dialog */}
       <ConfirmDialog

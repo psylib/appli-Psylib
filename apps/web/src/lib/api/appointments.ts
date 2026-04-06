@@ -14,7 +14,16 @@ export interface PendingAppointment {
   };
 }
 
+export interface CreateAppointmentData {
+  patientId: string;
+  scheduledAt: string;
+  duration: number;
+}
+
 export const appointmentsApi = {
+  create: (data: CreateAppointmentData, token: string) =>
+    apiClient.post<{ id: string; status: string }>('/appointments', data, token),
+
   getPending: (token: string) =>
     apiClient.get<PendingAppointment[]>('/appointments/pending', token),
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Loader2, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
   noteTemplatesApi,
@@ -45,8 +44,6 @@ export function OrientationSelector({
   const [templates, setTemplates] = useState<NoteTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(selectedTemplateId);
-
   // Charger les templates quand l'orientation change
   useEffect(() => {
     if (!orientation) {
@@ -57,7 +54,6 @@ export function OrientationSelector({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    setPendingTemplateId(null);
 
     noteTemplatesApi
       .getTemplates(token, orientation)
@@ -79,14 +75,6 @@ export function OrientationSelector({
       cancelled = true;
     };
   }, [orientation, token]);
-
-  const handleApply = () => {
-    if (!pendingTemplateId) return;
-    const tpl = templates.find((t) => t.id === pendingTemplateId);
-    if (tpl) {
-      onTemplateSelect(tpl.id, tpl.sections);
-    }
-  };
 
   return (
     <div className="space-y-3">
@@ -139,12 +127,12 @@ export function OrientationSelector({
             <div className="space-y-1.5">
               {templates.map((tpl) => {
                 const colors = ORIENTATION_COLORS[tpl.orientation];
-                const isChosen = pendingTemplateId === tpl.id;
+                const isChosen = selectedTemplateId === tpl.id;
                 return (
                   <button
                     key={tpl.id}
                     type="button"
-                    onClick={() => setPendingTemplateId(isChosen ? null : tpl.id)}
+                    onClick={() => onTemplateSelect(tpl.id, tpl.sections)}
                     className={cn(
                       'w-full text-left px-3 py-2.5 rounded-lg border transition-all text-sm',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
@@ -192,17 +180,6 @@ export function OrientationSelector({
                 );
               })}
             </div>
-          )}
-
-          {/* Bouton Appliquer */}
-          {pendingTemplateId && (
-            <Button
-              size="sm"
-              onClick={handleApply}
-              className="mt-1"
-            >
-              Appliquer ce template
-            </Button>
           )}
         </div>
       )}

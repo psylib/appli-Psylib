@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Users, Search, Plus, Mail, CheckCircle2, Clock, MoreVertical, Send } from 'lucide-react';
+import { Users, Search, Plus, Mail, CheckCircle2, Clock, MoreVertical, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PatientRowSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { CreatePatientDialog } from './create-patient-dialog';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ExportButton } from '@/components/shared/export-button';
 import { usePatients } from '@/hooks/use-dashboard';
 import { patientsApi } from '@/lib/api/patients';
@@ -52,12 +53,29 @@ export function PatientsPageContent() {
   const [page, setPage] = useState(1);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [inviting, setInviting] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{ id: string; name: string } | null>(null);
+  const [archiving, setArchiving] = useState(false);
 
   const { data, isLoading, isError, refetch } = usePatients({
     search: search || undefined,
     status: statusFilter || undefined,
     page,
   });
+
+  const handleArchive = async () => {
+    if (!archiveTarget) return;
+    setArchiving(true);
+    try {
+      await patientsApi.archive(archiveTarget.id, session?.accessToken ?? '');
+      success(`${archiveTarget.name} archivé(e)`);
+      setArchiveTarget(null);
+      void refetch();
+    } catch {
+      showError("Impossible d'archiver ce patient");
+    } finally {
+      setArchiving(false);
+    }
+  };
 
   const handleInvite = async (patientId: string, patientName: string) => {
     setInviting(patientId);
@@ -212,6 +230,14 @@ export function PatientsPageContent() {
                                 {inviting === patient.id ? 'Envoi...' : 'Renvoyer l\'invitation'}
                               </button>
                             )}
+                            <div className="border-t border-border my-1" />
+                            <button
+                              onClick={() => { setOpenMenu(null); setArchiveTarget({ id: patient.id, name: patient.name }); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-red-50 transition-colors"
+                            >
+                              <Trash2 size={14} aria-hidden />
+                              Archiver
+                            </button>
                           </div>
                         </>
                       )}
@@ -246,6 +272,22 @@ export function PatientsPageContent() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onCreated={() => { setShowCreate(false); void refetch(); }}
+      />
+
+      {/* Confirmation archivage */}
+      <ConfirmDialog
+        open={!!archiveTarget}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={handleArchive}
+        title="Archiver ce patient ?"
+        description={
+          archiveTarget
+            ? `${archiveTarget.name} sera archivé(e). Vous pourrez toujours consulter son dossier mais il n'apparaîtra plus dans la liste active.`
+            : ''
+        }
+        confirmLabel="Archiver"
+        variant="destructive"
+        loading={archiving}
       />
     </div>
   );
