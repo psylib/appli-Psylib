@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   { label: 'Assistant IA', href: '/dashboard/ai-assistant', icon: Sparkles },
   { label: 'Formations', href: '/dashboard/courses', icon: BookOpen },
   { label: 'Analytiques', href: '/dashboard/analytics', icon: BarChart2 },
+  { label: 'Paiements', href: '/dashboard/payments', icon: CreditCard },
   { label: 'Factures', href: '/dashboard/invoices', icon: Receipt },
   { label: 'Parrainage', href: '/dashboard/referral', icon: Gift },
 ];

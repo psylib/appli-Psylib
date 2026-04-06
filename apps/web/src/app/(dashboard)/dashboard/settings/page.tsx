@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Building2, Shield, Bell, Lock, Scale } from 'lucide-react';
+import { User, CreditCard, Building2, Shield, Bell, Lock, Scale, Banknote } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -20,6 +20,12 @@ const settingsLinks = [
     label: 'Abonnement & facturation',
     description: 'Plan actuel, historique des paiements',
     icon: CreditCard,
+  },
+  {
+    href: '/dashboard/settings/payments',
+    label: 'Paiements en ligne',
+    description: 'Stripe Connect, mode de paiement, remboursements',
+    icon: Banknote,
   },
   {
     href: '/dashboard/settings/practice',
