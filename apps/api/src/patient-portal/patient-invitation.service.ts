@@ -107,8 +107,14 @@ export class PatientInvitationService {
     const hasPortalAccess = !!patient.userId;
     const lastInvitation = patient.invitations[0] ?? null;
 
+    // Check AI processing consent
+    const aiConsent = await this.prisma.gdprConsent.findFirst({
+      where: { patientId, type: 'ai_processing', withdrawnAt: null },
+    });
+
     return {
       hasPortalAccess,
+      hasAiConsent: !!aiConsent,
       lastSignIn: patient.user?.lastSignInAt ?? null,
       invitation: lastInvitation
         ? {
