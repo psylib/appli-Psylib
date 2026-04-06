@@ -55,4 +55,15 @@ export const patientsApi = {
     apiClient.get<
       { id: string; title: string; status: string; completedAt?: string; patientFeedback?: string }[]
     >(`/patients/${id}/portal-exercises`, token),
+
+  createExercise: (
+    patientId: string,
+    data: { title: string; description: string; dueDate?: string; createdByAi: boolean },
+    token: string,
+  ) =>
+    apiClient.post<{ id: string; title: string; status: string }>(
+      `/patients/${patientId}/exercises`,
+      data,
+      token,
+    ),
 };

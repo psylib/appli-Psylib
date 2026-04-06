@@ -118,3 +118,39 @@ export async function streamSessionSummary(
 
   if (!doneEmitted) callbacks.onDone();
 }
+
+export interface GenerateExerciseParams {
+  patientContext: string;
+  theme: string;
+  exerciseType: 'breathing' | 'journaling' | 'exposure' | 'mindfulness' | 'cognitive';
+}
+
+export interface GeneratedExercise {
+  title: string;
+  description: string;
+  instructions: string[];
+  duration: string;
+  frequency: string;
+  disclaimer: string;
+}
+
+export async function generateExercise(
+  params: GenerateExerciseParams,
+  token: string,
+): Promise<GeneratedExercise> {
+  const res = await fetch(`${API_BASE}/api/v1/ai/generate-exercise`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(err.message ?? `Erreur ${res.status}`);
+  }
+
+  return res.json() as Promise<GeneratedExercise>;
+}
