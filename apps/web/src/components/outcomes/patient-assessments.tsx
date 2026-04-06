@@ -3,40 +3,12 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle2, ClipboardList, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? '';
-
-interface Question {
-  id: string;
-  text: string;
-  minValue: number;
-  maxValue: number;
-  labels: string[];
-}
-
-interface Template {
-  type: string;
-  name: string;
-  description: string | null;
-  maxScore: number;
-  questions: Question[];
-}
-
-interface PendingAssessment {
-  id: string;
-  status: string;
-  template: Template;
-  createdAt: string;
-}
-
-interface CompletedAssessment {
-  id: string;
-  score: number | null;
-  severity: string | null;
-  status: string;
-  completedAt: string | null;
-  template: { type: string; name: string; maxScore: number };
-}
+import { patientPortalApi } from '@/lib/api/patient-portal';
+import type {
+  PendingAssessment,
+  CompletedAssessment,
+  AssessmentQuestion,
+} from '@/lib/api/patient-portal';
 
 type Assessment = PendingAssessment | CompletedAssessment;
 
@@ -56,7 +28,7 @@ function LikertQuestion({
   value,
   onChange,
 }: {
-  question: Question;
+  question: AssessmentQuestion;
   value: number | undefined;
   onChange: (id: string, v: number) => void;
 }) {
@@ -110,18 +82,9 @@ function AssessmentForm({
   const submit = async () => {
     setSubmitting(true);
     try {
-      const r = await fetch(`${API}/api/v1/patient-portal/assessments/${assessment.id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          answers: Object.entries(answers).map(([questionId, value]) => ({ questionId, value })),
-        }),
-      });
-      if (r.ok) {
-        const data = await r.json() as { score?: number; severity?: string };
-        setResult({ score: data.score ?? 0, severity: data.severity ?? '' });
-        setDone(true);
-      }
+      const data = await patientPortalApi.submitAssessment(token, assessment.id, answers);
+      setResult({ score: data.score, severity: data.severity });
+      setDone(true);
     } catch (e) { console.error(e); }
     finally { setSubmitting(false); }
   };
@@ -213,11 +176,8 @@ export function PatientAssessmentsContent() {
 
   const load = () => {
     if (!session?.accessToken) return;
-    fetch(`${API}/api/v1/patient-portal/assessments`, {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
-    })
-      .then((r) => r.json())
-      .then((d: Assessment[]) => setAssessments(d))
+    patientPortalApi.getAssessments(session.accessToken)
+      .then((data) => setAssessments(data))
       .catch(() => setError('Impossible de charger les questionnaires.'))
       .finally(() => setLoading(false));
   };
