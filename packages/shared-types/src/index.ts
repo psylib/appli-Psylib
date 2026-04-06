@@ -76,6 +76,7 @@ export enum PaymentStatus {
   PENDING = 'pending',
   PAID = 'paid',
   FAILED = 'failed',
+  REFUNDED = 'refunded',
 }
 
 export enum InvoiceStatus {
@@ -481,6 +482,20 @@ export enum BookingPaymentStatus {
   PENDING_PAYMENT = 'pending_payment',
   PAID = 'paid',
   PAYMENT_FAILED = 'payment_failed',
+  REFUNDED = 'refunded',
+}
+
+export enum PaymentMode {
+  PREPAID = 'prepaid',
+  POSTPAID = 'postpaid',
+  BOTH = 'both',
+}
+
+export interface ConnectSettings {
+  paymentMode: PaymentMode;
+  cancellationDelay: number;
+  autoRefund: boolean;
+  defaultSessionRate: number;
 }
 
 export enum WaitlistUrgency {

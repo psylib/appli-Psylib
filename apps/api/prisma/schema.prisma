@@ -87,6 +87,7 @@ enum PaymentStatus {
   pending
   paid
   failed
+  refunded
 }
 
 enum InvoiceStatus {
@@ -121,6 +122,13 @@ enum BookingPaymentStatus {
   pending_payment
   paid
   payment_failed
+  refunded
+}
+
+enum PaymentMode {
+  prepaid
+  postpaid
+  both
 }
 
 enum WaitlistUrgency {
@@ -210,6 +218,9 @@ model Psychologist {
   allowOnlinePayment       Boolean                 @default(false) @map("allow_online_payment")
   stripeAccountId          String?                 @unique @map("stripe_account_id")
   stripeOnboardingComplete Boolean                 @default(false) @map("stripe_onboarding_complete")
+  paymentMode              PaymentMode             @default(both) @map("payment_mode")
+  cancellationDelay        Int                     @default(24) @map("cancellation_delay")
+  autoRefund               Boolean                 @default(true) @map("auto_refund")
   reminderDelay            Int                     @default(24) @map("reminder_delay")
   reminderSmsEnabled       Boolean                 @default(false) @map("reminder_sms_enabled")
   reminderEmailEnabled     Boolean                 @default(true) @map("reminder_email_enabled")
@@ -508,6 +519,7 @@ model Appointment {
   patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   session          Session?          @relation(fields: [sessionId], references: [id])
   consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id])
+  payments         Payment[]
 
   @@index([psychologistId, scheduledAt], name: "idx_appointments_psy_date")
   @@index([patientId], name: "idx_appointments_patient")
@@ -653,13 +665,17 @@ model Payment {
   type                  PaymentType
   amount                Decimal       @db.Decimal(10, 2)
   status                PaymentStatus @default(pending)
-  stripePaymentIntentId String?       @map("stripe_payment_intent_id")
-  invoiceUrl            String?       @map("invoice_url")
-  createdAt             DateTime      @default(now()) @map("created_at")
+  stripePaymentIntentId   String?       @map("stripe_payment_intent_id")
+  stripeCheckoutSessionId String?       @unique @map("stripe_checkout_session_id")
+  invoiceUrl              String?       @map("invoice_url")
+  appointmentId           String?       @db.Uuid @map("appointment_id")
+  createdAt               DateTime      @default(now()) @map("created_at")
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient      Patient?     @relation(fields: [patientId], references: [id])
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
 
+  @@index([appointmentId])
   @@map("payments")
 }
 
