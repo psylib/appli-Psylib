@@ -486,6 +486,7 @@ function SuccessStep() {
                 <input type="text" value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                   placeholder="Ex\u00a0: MARIE-X7K2"
+                  aria-label="Code de parrainage"
                   className="flex-1 rounded-lg border border-border px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary/40"
                   maxLength={20} />
                 <Button onClick={() => void handleReferralValidate()}

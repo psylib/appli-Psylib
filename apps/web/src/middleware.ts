@@ -13,6 +13,13 @@ import { UserRole } from '@psyscale/shared-types';
  * - /(patient-portal)/* → redirect vers /login si non authentifié
  * - /onboarding/* → redirect vers /dashboard si is_onboarded = true
  */
+// Helper: NextResponse.next() with pathname header for server components
+function nextWithPathname(req: NextRequest) {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-next-pathname', req.nextUrl.pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }; expires: string } | null }) => {
   const { pathname } = req.nextUrl;
@@ -21,12 +28,12 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
 
   // Routes publiques — toujours accessibles
   if (pathname === '/' || pathname.startsWith('/api/auth')) {
-    return NextResponse.next();
+    return nextWithPathname(req);
   }
 
   // /forgot-password — toujours accessible
   if (pathname === '/forgot-password') {
-    return NextResponse.next();
+    return nextWithPathname(req);
   }
 
   // /login — redirect vers dashboard si déjà authentifié
@@ -38,7 +45,7 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
       }
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
-    return NextResponse.next();
+    return nextWithPathname(req);
   }
 
   // Routes protégées — redirect vers /login si non authentifié
@@ -70,7 +77,7 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     }
   }
 
-  return NextResponse.next();
+  return nextWithPathname(req);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }) as unknown as import('next/server').NextMiddleware;
 
