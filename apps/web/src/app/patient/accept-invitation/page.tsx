@@ -11,6 +11,7 @@ const schema = z
   .object({
     password: z.string().min(8, 'Minimum 8 caractères'),
     confirm: z.string(),
+    consentAi: z.boolean().default(false),
   })
   .refine((d) => d.password === d.confirm, {
     message: 'Les mots de passe ne correspondent pas',
@@ -60,7 +61,7 @@ function AcceptInvitationForm() {
       const res = await fetch(`${apiUrl}/api/v1/patient-portal/auth/accept-invitation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password: data.password }),
+        body: JSON.stringify({ token, password: data.password, consentAi: data.consentAi }),
       });
 
       if (!res.ok) {
@@ -159,6 +160,19 @@ function AcceptInvitationForm() {
               {errors.confirm && (
                 <p className="mt-1 text-xs text-red-500">{errors.confirm.message}</p>
               )}
+            </div>
+
+            <div className="flex items-start gap-3 pt-2">
+              <input
+                {...register('consentAi')}
+                type="checkbox"
+                id="consentAi"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-[#3D52A0] focus:ring-[#3D52A0]/30"
+              />
+              <label htmlFor="consentAi" className="text-xs text-slate-500 leading-relaxed">
+                J&apos;autorise le traitement de mes données par intelligence artificielle
+                pour personnaliser mes exercices thérapeutiques. <span className="text-slate-400">(Optionnel)</span>
+              </label>
             </div>
 
             {submitError && (
