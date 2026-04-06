@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { appointmentsApi } from '@/lib/api/appointments';
 import type { PendingAppointment } from '@/lib/api/appointments';
+import { PaymentActions } from '@/components/billing/payment-actions';
 import { cn } from '@/lib/utils';
 
 interface Appointment {
@@ -455,6 +456,13 @@ export function CalendarContent() {
                           </button>
                         )}
                       </div>
+
+                      {/* Payment actions */}
+                      {(appt.status === 'scheduled' || appt.status === 'confirmed' || appt.status === 'completed') && (
+                        <div className="mt-2 pt-2 border-t border-border/50">
+                          <PaymentActions appointment={appt} compact />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
