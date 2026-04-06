@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Request } from 'express';
 import { PrismaService } from './prisma.service';
 
-export type AuditAction = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE' | 'DECRYPT';
+export type AuditAction = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE' | 'DECRYPT' | 'AI_SUMMARY_SAVE';
 export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin';
 
 export interface AuditLogParams {

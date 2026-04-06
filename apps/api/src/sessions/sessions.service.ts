@@ -181,6 +181,8 @@ export class SessionsService {
     });
     if (!existing) throw new NotFoundException('Séance introuvable');
 
+    const hasSummaryAi = dto.summaryAi !== undefined;
+
     const updated = await this.prisma.session.update({
       where: { id: sessionId },
       data: {
@@ -195,9 +197,16 @@ export class SessionsService {
         ...(dto.paymentStatus !== undefined && { paymentStatus: dto.paymentStatus }),
         ...(dto.orientation !== undefined && { orientation: dto.orientation }),
         ...(dto.templateId !== undefined && { templateId: dto.templateId }),
+        ...(hasSummaryAi && {
+          summaryAi: dto.summaryAi ? this.encryption.encrypt(dto.summaryAi) : null,
+        }),
+        ...(dto.aiMetadata !== undefined && {
+          aiMetadata: dto.aiMetadata ? (dto.aiMetadata as import('@prisma/client').Prisma.InputJsonValue) : undefined,
+        }),
       },
     });
 
+    // Standard update audit
     await this.audit.log({
       actorId,
       actorType: 'psychologist',
@@ -207,6 +216,18 @@ export class SessionsService {
       metadata: { fields: Object.keys(dto) },
       req,
     });
+
+    // Additional audit entry for AI summary save
+    if (hasSummaryAi) {
+      await this.audit.log({
+        actorId,
+        actorType: 'psychologist',
+        action: 'AI_SUMMARY_SAVE',
+        entityType: 'session',
+        entityId: sessionId,
+        req,
+      });
+    }
 
     return updated;
   }
