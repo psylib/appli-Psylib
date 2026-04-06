@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsArray,
   IsUUID,
+  IsObject,
   Min,
   Max,
   MaxLength,
@@ -113,6 +114,17 @@ export class UpdateSessionDto {
   @IsOptional()
   @IsUUID()
   templateId?: string;
+
+  @ApiPropertyOptional({ description: 'Résumé IA (plaintext — chiffré par le backend)' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(100000)
+  summaryAi?: string;
+
+  @ApiPropertyOptional({ description: 'Métadonnées IA (evolution, alertes, thèmes)' })
+  @IsOptional()
+  @IsObject()
+  aiMetadata?: Record<string, unknown>;
 }
 
 export class SessionQueryDto {
