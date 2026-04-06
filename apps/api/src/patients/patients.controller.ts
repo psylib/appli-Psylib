@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { Request } from 'express';
 import { PatientsService } from './patients.service';
-import { CreatePatientDto, UpdatePatientDto, PatientQueryDto } from './dto/create-patient.dto';
+import { CreatePatientDto, UpdatePatientDto, PatientQueryDto, CreateExerciseDto } from './dto/create-patient.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -182,5 +182,16 @@ export class PatientsController {
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.patientsService.getPatientPortalExercises(user.sub, id);
+  }
+
+  @Post(':id/exercises')
+  @ApiOperation({ summary: 'Créer un exercice pour un patient' })
+  @ApiResponse({ status: 201, description: 'Exercice créé' })
+  createExercise(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateExerciseDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.patientsService.createExercise(user.sub, id, dto);
   }
 }

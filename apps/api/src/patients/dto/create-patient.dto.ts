@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDateString,
   IsEnum,
+  IsBoolean,
   MinLength,
   MaxLength,
 } from 'class-validator';
@@ -104,4 +105,27 @@ export class PatientQueryDto {
   @IsEnum(PatientStatus)
   @IsOptional()
   status?: PatientStatus;
+}
+
+export class CreateExerciseDto {
+  @ApiProperty({ example: 'Respiration 4-7-8' })
+  @IsString()
+  @MinLength(3)
+  @MaxLength(200)
+  title!: string;
+
+  @ApiProperty({ example: 'Inspirez pendant 4 secondes...' })
+  @IsString()
+  @MinLength(10)
+  @MaxLength(5000)
+  description!: string;
+
+  @ApiPropertyOptional({ example: '2026-04-20' })
+  @IsDateString()
+  @IsOptional()
+  dueDate?: string;
+
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  createdByAi!: boolean;
 }

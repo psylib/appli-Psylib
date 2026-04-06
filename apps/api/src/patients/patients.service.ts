@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
-import { CreatePatientDto, UpdatePatientDto, PatientQueryDto } from './dto/create-patient.dto';
+import { CreatePatientDto, UpdatePatientDto, PatientQueryDto, CreateExerciseDto } from './dto/create-patient.dto';
 import type { PaginatedResponse } from '@psyscale/shared-types';
 import type { Patient, Prisma } from '@prisma/client';
 import type { Request } from 'express';
@@ -317,6 +317,29 @@ export class PatientsService {
     return this.prisma.exercise.findMany({
       where: { patientId },
       orderBy: [{ status: 'asc' }, { dueDate: 'asc' }],
+    });
+  }
+
+  async createExercise(
+    psychologistUserId: string,
+    patientId: string,
+    dto: CreateExerciseDto,
+  ) {
+    const psy = await this.getPsychologist(psychologistUserId);
+    const patient = await this.prisma.patient.findFirst({
+      where: { id: patientId, psychologistId: psy.id },
+    });
+    if (!patient) throw new NotFoundException('Patient introuvable');
+
+    return this.prisma.exercise.create({
+      data: {
+        patientId,
+        title: dto.title,
+        description: dto.description,
+        status: 'assigned',
+        createdByAi: dto.createdByAi,
+        dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
+      },
     });
   }
 
