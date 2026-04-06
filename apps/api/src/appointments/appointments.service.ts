@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { AuditService } from '../common/audit.service';
 import { EmailService } from '../notifications/email.service';
+import { StripeService } from '../billing/stripe.service';
 import { WaitlistService } from '../waitlist/waitlist.service';
 import {
   CreateAppointmentDto,
@@ -11,9 +13,14 @@ import type { Appointment } from '@prisma/client';
 
 @Injectable()
 export class AppointmentsService {
+  private readonly logger = new Logger(AppointmentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
     private readonly email: EmailService,
+    @Inject(forwardRef(() => StripeService))
+    private readonly stripeService: StripeService,
     @Inject(forwardRef(() => WaitlistService))
     private readonly waitlistService: WaitlistService,
   ) {}
@@ -172,6 +179,160 @@ export class AppointmentsService {
     }
 
     return updated;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Public cancel-by-token
+  // ---------------------------------------------------------------------------
+
+  async getCancelInfo(cancelToken: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { cancelToken },
+      include: {
+        psychologist: {
+          select: {
+            id: true,
+            name: true,
+            cancellationDelay: true,
+            autoRefund: true,
+          },
+        },
+        patient: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+
+    const alreadyCancelled = appointment.status === 'cancelled';
+    const hoursUntil =
+      (appointment.scheduledAt.getTime() - Date.now()) / (1000 * 60 * 60);
+    const withinDelay = hoursUntil >= appointment.psychologist.cancellationDelay;
+    const canAutoRefund =
+      withinDelay &&
+      appointment.psychologist.autoRefund &&
+      appointment.bookingPaymentStatus === 'paid' &&
+      !!appointment.paymentIntentId;
+
+    return {
+      appointmentId: appointment.id,
+      scheduledAt: appointment.scheduledAt,
+      duration: appointment.duration,
+      psychologistName: appointment.psychologist.name,
+      patientName: appointment.patient.name,
+      alreadyCancelled,
+      withinDelay,
+      canAutoRefund,
+      hoursUntil: Math.round(hoursUntil * 10) / 10,
+      cancellationDelay: appointment.psychologist.cancellationDelay,
+    };
+  }
+
+  async cancelByToken(cancelToken: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { cancelToken },
+      include: {
+        psychologist: {
+          select: {
+            id: true,
+            name: true,
+            cancellationDelay: true,
+            autoRefund: true,
+            user: { select: { id: true, email: true } },
+          },
+        },
+        patient: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
+
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+
+    if (appointment.status === 'cancelled') {
+      return { success: true, alreadyCancelled: true, refunded: false, withinDelay: false };
+    }
+
+    const hoursUntil =
+      (appointment.scheduledAt.getTime() - Date.now()) / (1000 * 60 * 60);
+    const withinDelay = hoursUntil >= appointment.psychologist.cancellationDelay;
+    const canAutoRefund =
+      withinDelay &&
+      appointment.psychologist.autoRefund &&
+      appointment.bookingPaymentStatus === 'paid' &&
+      !!appointment.paymentIntentId;
+
+    // Cancel the appointment
+    await this.prisma.appointment.update({
+      where: { id: appointment.id },
+      data: { status: 'cancelled' },
+    });
+
+    let refunded = false;
+
+    // Auto-refund if eligible
+    if (canAutoRefund) {
+      try {
+        await this.stripeService.createRefund(appointment.paymentIntentId!);
+
+        await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: { bookingPaymentStatus: 'refunded' },
+        });
+
+        // Update related payment records
+        await this.prisma.payment.updateMany({
+          where: { appointmentId: appointment.id, status: 'paid' },
+          data: { status: 'refunded' },
+        });
+
+        refunded = true;
+
+        // Send refund confirmation to patient
+        if (appointment.patient.email) {
+          void this.email.sendRefundConfirmation(appointment.patient.email, {
+            patientName: appointment.patient.name,
+            psychologistName: appointment.psychologist.name,
+            amount: 0, // amount not easily available here, generic confirmation
+          });
+        }
+      } catch (err) {
+        this.logger.error(
+          `Auto-refund failed for appointment ${appointment.id}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+
+    // Audit log
+    void this.audit.log({
+      actorId: appointment.patient.id,
+      actorType: 'patient',
+      action: 'UPDATE',
+      entityType: 'appointment',
+      entityId: appointment.id,
+      metadata: {
+        action: 'cancel_by_token',
+        refunded,
+        withinDelay,
+      },
+    });
+
+    // Notify psychologist
+    void this.email.sendCancellationNotification(appointment.psychologist.user.email, {
+      psychologistName: appointment.psychologist.name,
+      patientName: appointment.patient.name,
+      scheduledAt: appointment.scheduledAt,
+      refunded,
+    });
+
+    // Notify waitlist candidates
+    void this.waitlistService.onAppointmentCancelled(
+      appointment.psychologist.id,
+      appointment.scheduledAt,
+    );
+
+    return { success: true, refunded, withinDelay };
   }
 
   private async getPsychologist(userId: string) {

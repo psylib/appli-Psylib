@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { SaveAvailabilityDto } from './dto/availability.dto';
 
@@ -44,6 +44,24 @@ export class AvailabilityService {
       where: { id: slotId, psychologistId: psy.id },
     });
     return { success: true };
+  }
+
+  async updateSlot(
+    userId: string,
+    slotId: string,
+    data: { startTime?: string; endTime?: string; isActive?: boolean },
+  ) {
+    const psy = await this.getPsychologist(userId);
+
+    const slot = await this.prisma.availability.findFirst({
+      where: { id: slotId, psychologistId: psy.id },
+    });
+    if (!slot) throw new NotFoundException('Créneau introuvable');
+
+    return this.prisma.availability.update({
+      where: { id: slotId },
+      data,
+    });
   }
 
   /**

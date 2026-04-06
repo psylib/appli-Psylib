@@ -470,6 +470,7 @@ export class PublicBookingService {
       psychologistName: psy.name,
       scheduledAt,
       duration,
+      cancelUrl: `${FRONTEND_URL}/appointments/cancel/${cancelToken}`,
     });
 
     return { success: true, appointmentId: appointment.id };

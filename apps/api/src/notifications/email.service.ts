@@ -482,6 +482,7 @@ export class EmailService {
       psychologistName: string;
       scheduledAt: Date;
       duration: number;
+      cancelUrl?: string;
     },
   ): Promise<void> {
     const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
@@ -490,6 +491,19 @@ export class EmailService {
     const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
       hour: '2-digit', minute: '2-digit',
     });
+
+    const cancelHtml = data.cancelUrl
+      ? `<p style="font-size:14px;color:#6B7280;margin-top:16px;">
+          Si vous souhaitez annuler ce rendez-vous, vous pouvez le faire directement :
+        </p>
+        <div style="text-align:center;">
+          <a href="${data.cancelUrl}" style="display:inline-block;color:#991B1B;text-decoration:underline;font-size:14px;margin-top:8px;">
+            Annuler ce rendez-vous
+          </a>
+        </div>`
+      : `<p style="font-size:14px;color:#6B7280;margin-top:16px;">
+          Si vous souhaitez annuler cette demande, répondez à cet email en indiquant votre souhait.
+        </p>`;
 
     const html = emailLayout(
       'Demande de RDV reçue',
@@ -501,13 +515,11 @@ export class EmailService {
       </p>
       <div class="info-box">
         <p style="margin:0;font-size:15px;">
-          <strong>📅 ${dateFormatted}</strong><br />
+          <strong>${dateFormatted}</strong><br />
           <span style="color:#6B7280;">à ${timeFormatted} · durée ${data.duration} min</span>
         </p>
       </div>
-      <p style="font-size:14px;color:#6B7280;margin-top:16px;">
-        Si vous souhaitez annuler cette demande, répondez à cet email en indiquant votre souhait.
-      </p>`,
+      ${cancelHtml}`,
     );
 
     await this.send(
@@ -1345,5 +1357,64 @@ export class EmailService {
     );
 
     await this.send(to, `Remboursement — ${data.psychologistName}`, html, 'sendRefundConfirmation');
+  }
+
+  // ─── CANCELLATION NOTIFICATION — NOTIF PSY QUAND PATIENT ANNULE ────────────
+
+  async sendCancellationNotification(
+    to: string,
+    data: {
+      psychologistName: string;
+      patientName: string;
+      scheduledAt: Date;
+      refunded: boolean;
+    },
+  ): Promise<void> {
+    const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const refundHtml = data.refunded
+      ? `<div class="alert-box alert-warning">
+          <div>
+            <strong style="color:#92400E;">Remboursement automatique effectué</strong><br />
+            <span style="font-size:14px;color:#78350F;">
+              Le paiement du patient a été remboursé automatiquement (annulation dans les délais).
+            </span>
+          </div>
+        </div>`
+      : '';
+
+    const html = emailLayout(
+      'Rendez-vous annulé par le patient',
+      `<h1>Rendez-vous annulé</h1>
+      <div class="badge badge-warning">Annulé par le patient</div>
+      <p>Bonjour ${data.psychologistName},</p>
+      <p><strong>${data.patientName}</strong> a annulé son rendez-vous.</p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;">
+          <strong>${dateFormatted}</strong><br />
+          <span style="color:#6B7280;">à ${timeFormatted}</span>
+        </p>
+      </div>
+      ${refundHtml}
+      <p style="font-size:14px;color:#6B7280;margin-top:16px;">
+        Le créneau est à nouveau disponible pour d'autres patients.
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      `RDV annulé — ${data.patientName} le ${dateFormatted}`,
+      html,
+      'sendCancellationNotification',
+    );
   }
 }

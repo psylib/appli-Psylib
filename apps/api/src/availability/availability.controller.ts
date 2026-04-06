@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Body,
   Param,
@@ -37,6 +38,16 @@ export class AvailabilityController {
   @ApiOperation({ summary: 'Sauvegarde les créneaux (remplace les existants)' })
   async saveSlots(@Body() dto: SaveAvailabilityDto, @CurrentUser() user: KeycloakUser) {
     return this.availabilityService.saveSlots(user.sub, dto);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Modifier un créneau' })
+  async updateSlot(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: { startTime?: string; endTime?: string; isActive?: boolean },
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.availabilityService.updateSlot(user.sub, id, body);
   }
 
   @Delete(':id')
