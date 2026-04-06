@@ -40,6 +40,7 @@ export const patientsApi = {
   portalStatus: (id: string, token: string) =>
     apiClient.get<{
       hasPortalAccess: boolean;
+      hasAiConsent: boolean;
       lastSignIn: string | null;
       invitation: { status: string; email: string; expiresAt: string } | null;
     }>(`/patients/${id}/portal-status`, token),

@@ -6,6 +6,7 @@ import { patientsApi } from '@/lib/api/patients';
 
 interface PortalStatus {
   hasPortalAccess: boolean;
+  hasAiConsent: boolean;
   lastSignIn: string | null;
   invitation: { status: string; email: string; expiresAt: string } | null;
 }
@@ -115,6 +116,15 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
             >
               {inviting ? 'Envoi...' : status?.invitation?.status === 'pending' ? 'Renvoyer l\'invitation' : 'Inviter au portal'}
             </button>
+          )}
+          {status?.hasPortalAccess && (
+            <span className={`inline-flex items-center gap-1.5 text-xs rounded-full px-3 py-1 ${
+              status.hasAiConsent
+                ? 'bg-violet-50 text-violet-700 border border-violet-200'
+                : 'bg-slate-50 text-slate-500 border border-slate-200'
+            }`}>
+              {status.hasAiConsent ? 'IA autorisée' : 'IA non autorisée'}
+            </span>
           )}
         </div>
       </div>
