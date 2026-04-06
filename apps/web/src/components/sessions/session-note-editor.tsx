@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { sessionsApi } from '@/lib/api/sessions';
 import { streamSessionSummary } from '@/lib/api/ai';
+import type { StructuredSummaryData } from '@/lib/api/ai';
 import { cn } from '@/lib/utils';
 import { OrientationSelector } from '@/components/sessions/orientation-selector';
 import { StructuredNoteEditor } from '@/components/sessions/structured-note-editor';
@@ -56,10 +57,23 @@ function tryParseStructured(notes: string): {
   }
 }
 
+interface AiMetadata {
+  evolution?: string;
+  alertLevel?: string;
+  alertReason?: string | null;
+  keyThemes?: string[];
+  generatedAt?: string;
+  model?: string;
+}
+
 interface SessionNoteEditorProps {
   sessionId: string;
   initialNotes?: string | null;
+  existingSummary?: string | null;
+  existingAiMetadata?: AiMetadata | null;
+  existingTags?: string[];
   onNotesChange?: (notes: string) => void;
+  onSummarySaved?: () => void;
   readOnly?: boolean;
 }
 
@@ -120,6 +134,43 @@ function MarkdownBlock({ content }: { content: string }) {
   );
 }
 
+function EvolutionBadge({ evolution }: { evolution: string }) {
+  const config: Record<string, { label: string; className: string }> = {
+    progress: { label: 'Progrès', className: 'bg-green-100 text-green-800 border-green-200' },
+    stable: { label: 'Stable', className: 'bg-gray-100 text-gray-700 border-gray-200' },
+    regression: { label: 'Régression', className: 'bg-red-100 text-red-800 border-red-200' },
+    mixed: { label: 'Mixte', className: 'bg-amber-100 text-amber-800 border-amber-200' },
+  };
+  const fallback = { label: 'Stable', className: 'bg-gray-100 text-gray-700 border-gray-200' };
+  const c = config[evolution] ?? fallback;
+  return (
+    <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border', c.className)}>
+      {c.label}
+    </span>
+  );
+}
+
+function AlertBadge({ level, reason }: { level: string; reason?: string | null }) {
+  if (level === 'none') return null;
+  const config: Record<string, { className: string }> = {
+    low: { className: 'bg-amber-50 text-amber-700 border-amber-200' },
+    medium: { className: 'bg-orange-50 text-orange-700 border-orange-200' },
+    high: { className: 'bg-red-50 text-red-700 border-red-200' },
+  };
+  const fallback = { className: 'bg-amber-50 text-amber-700 border-amber-200' };
+  const c = config[level] ?? fallback;
+  return (
+    <span
+      className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border', c.className)}
+      title={reason ?? undefined}
+    >
+      <AlertCircle size={12} aria-hidden />
+      Alerte {level === 'high' ? 'élevée' : level === 'medium' ? 'modérée' : 'faible'}
+      {reason && ` — ${reason}`}
+    </span>
+  );
+}
+
 /**
  * SessionNoteEditor — Éditeur de notes de séance
  *
@@ -133,7 +184,11 @@ function MarkdownBlock({ content }: { content: string }) {
 export function SessionNoteEditor({
   sessionId,
   initialNotes = '',
+  existingSummary,
+  existingAiMetadata,
+  existingTags,
   onNotesChange,
+  onSummarySaved,
   readOnly = false,
 }: SessionNoteEditorProps) {
   const { data: session } = useSession();
@@ -155,6 +210,13 @@ export function SessionNoteEditor({
   const [aiError, setAiError] = useState('');
   const [copied, setCopied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+
+  // État IA structuré / tags / save
+  const [structuredData, setStructuredData] = useState<StructuredSummaryData | null>(null);
+  const [editableTags, setEditableTags] = useState<string[]>(existingTags ?? []);
+  const [newTagInput, setNewTagInput] = useState('');
+  const [savingSummary, setSavingSummary] = useState(false);
+  const [summaryToast, setSummaryToast] = useState<'saved' | null>(null);
 
   const autosaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notesRef = useRef(notes);
@@ -307,6 +369,10 @@ export function SessionNoteEditor({
       session.accessToken,
       {
         onChunk: (text) => setAiSummary((prev) => prev + text),
+        onStructuredData: (data) => {
+          setStructuredData(data);
+          setEditableTags(data.tags);
+        },
         onDone: () => setAiStatus('done'),
         onError: (msg) => {
           setAiError(msg);
@@ -329,6 +395,51 @@ export function SessionNoteEditor({
     setAiStatus('idle');
     setAiSummary('');
     setAiError('');
+    setStructuredData(null);
+    setEditableTags([]);
+    setNewTagInput('');
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setEditableTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const handleAddTag = () => {
+    const tag = newTagInput.trim().toLowerCase();
+    if (tag && !editableTags.includes(tag)) {
+      setEditableTags((prev) => [...prev, tag]);
+    }
+    setNewTagInput('');
+  };
+
+  const handleSaveSummary = async () => {
+    if (!session?.accessToken || !aiSummary) return;
+    setSavingSummary(true);
+    try {
+      await sessionsApi.update(
+        sessionId,
+        {
+          summaryAi: aiSummary,
+          tags: editableTags,
+          aiMetadata: {
+            evolution: structuredData?.evolution ?? 'stable',
+            alertLevel: structuredData?.alertLevel ?? 'none',
+            alertReason: structuredData?.alertReason ?? null,
+            keyThemes: structuredData?.keyThemes ?? [],
+            generatedAt: new Date().toISOString(),
+            model: structuredData?.model ?? 'unknown',
+          },
+        },
+        session.accessToken,
+      );
+      setSummaryToast('saved');
+      setTimeout(() => setSummaryToast(null), 3000);
+      onSummarySaved?.();
+    } catch {
+      setAiError('Erreur lors de la sauvegarde du résumé');
+    } finally {
+      setSavingSummary(false);
+    }
   };
 
   return (
@@ -563,6 +674,53 @@ export function SessionNoteEditor({
         </div>
       )}
 
+      {/* Résumé IA sauvegardé (affiché quand disponible et IA idle) */}
+      {!readOnly && existingSummary && aiStatus === 'idle' && (
+        <details className="rounded-xl border border-border bg-white shadow-sm group">
+          <summary className="flex items-center justify-between px-4 py-3 cursor-pointer text-sm font-medium text-foreground hover:bg-surface/50 rounded-xl">
+            <div className="flex items-center gap-2">
+              <Sparkles size={15} className="text-accent" aria-hidden />
+              <span>Résumé IA sauvegardé</span>
+              {existingAiMetadata?.evolution && (
+                <EvolutionBadge evolution={existingAiMetadata.evolution} />
+              )}
+              {existingAiMetadata?.alertLevel && existingAiMetadata.alertLevel !== 'none' && (
+                <AlertBadge level={existingAiMetadata.alertLevel} reason={existingAiMetadata.alertReason} />
+              )}
+            </div>
+          </summary>
+          <div className="px-4 pb-4 pt-1 border-t border-border space-y-3">
+            <MarkdownBlock content={existingSummary} />
+            {existingTags && existingTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {existingTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            {existingAiMetadata?.generatedAt && (
+              <p className="text-xs text-muted-foreground">
+                Généré le {new Date(existingAiMetadata.generatedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </p>
+            )}
+            <button
+              onClick={() => {
+                handleDismissAi();
+                void handleAiSummarize();
+              }}
+              className="text-xs text-accent hover:underline"
+            >
+              Régénérer un nouveau résumé
+            </button>
+          </div>
+        </details>
+      )}
+
       {/* Bouton IA — opt-in uniquement, visible quand notes suffisantes */}
       {!readOnly && notesLengthForAi > 50 && aiStatus === 'idle' && (
         <div className="rounded-xl border border-accent/30 bg-accent/5 p-4 flex items-start gap-3">
@@ -671,6 +829,52 @@ export function SessionNoteEditor({
                 )}
               </div>
             )}
+
+            {/* Tags + badges (quand done) */}
+            {aiStatus === 'done' && (structuredData || editableTags.length > 0) && (
+              <div className="mt-4 pt-3 border-t border-accent/20 space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {structuredData?.evolution && (
+                    <EvolutionBadge evolution={structuredData.evolution} />
+                  )}
+                  {structuredData?.alertLevel && structuredData.alertLevel !== 'none' && (
+                    <AlertBadge level={structuredData.alertLevel} reason={structuredData.alertReason} />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Tags suggérés (modifiables)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {editableTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary"
+                      >
+                        {tag}
+                        <button
+                          onClick={() => handleRemoveTag(tag)}
+                          className="hover:text-destructive transition-colors"
+                          aria-label={`Supprimer le tag ${tag}`}
+                        >
+                          <X size={10} />
+                        </button>
+                      </span>
+                    ))}
+                    <form
+                      className="inline-flex"
+                      onSubmit={(e) => { e.preventDefault(); handleAddTag(); }}
+                    >
+                      <input
+                        type="text"
+                        value={newTagInput}
+                        onChange={(e) => setNewTagInput(e.target.value)}
+                        placeholder="+ tag"
+                        className="w-16 text-xs rounded-full border border-dashed border-border px-2 py-0.5 focus:outline-none focus:border-primary"
+                      />
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Disclaimer légal (affiché uniquement quand terminé) */}
@@ -683,15 +887,43 @@ export function SessionNoteEditor({
             </div>
           )}
 
-          {/* Bouton relancer après done */}
+          {/* Barre d'actions (done) */}
           {aiStatus === 'done' && (
-            <div className="px-4 pb-3 flex justify-end">
-              <button
-                onClick={() => void handleAiSummarize()}
-                className="text-xs text-accent hover:underline"
-              >
-                Regénérer
-              </button>
+            <div className="px-4 pb-3 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    handleDismissAi();
+                    void handleAiSummarize();
+                  }}
+                  className="text-xs text-accent hover:underline"
+                >
+                  Régénérer
+                </button>
+                <button
+                  onClick={handleDismissAi}
+                  className="text-xs text-muted-foreground hover:underline"
+                >
+                  Fermer
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                {summaryToast === 'saved' && (
+                  <span className="text-xs text-accent flex items-center gap-1">
+                    <CheckCircle2 size={12} />
+                    Résumé sauvegardé
+                  </span>
+                )}
+                <Button
+                  size="sm"
+                  onClick={() => void handleSaveSummary()}
+                  loading={savingSummary}
+                  disabled={savingSummary || !aiSummary}
+                >
+                  <Save size={14} />
+                  Sauvegarder le résumé
+                </Button>
+              </div>
             </div>
           )}
         </div>
