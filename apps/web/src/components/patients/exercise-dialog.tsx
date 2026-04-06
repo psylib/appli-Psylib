@@ -52,9 +52,11 @@ export function ExerciseDialog({ patientId, hasAiConsent, open, onClose, onCreat
   const [editedDescription, setEditedDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const manual = useForm<ManualForm>({ resolver: zodResolver(manualSchema) });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const manual = useForm<ManualForm>({ resolver: zodResolver(manualSchema as any) });
   const ai = useForm<AiForm>({
-    resolver: zodResolver(aiSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(aiSchema as any),
     defaultValues: { exerciseType: 'breathing' },
   });
 

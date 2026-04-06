@@ -54,7 +54,8 @@ export function PaymentSettingsForm() {
     setValue,
     formState: { errors, isDirty },
   } = useForm<SettingsForm>({
-    resolver: zodResolver(settingsSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(settingsSchema as any),
     defaultValues: {
       paymentMode: PaymentMode.BOTH,
       defaultSessionRate: 60,

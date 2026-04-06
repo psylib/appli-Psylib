@@ -19,9 +19,19 @@ const mockPrisma = {
   },
 };
 
+const mockAudit = {
+  log: vi.fn(),
+};
+
 const mockEmail = {
   sendAppointmentConfirmation: vi.fn(),
   sendBookingDeclined: vi.fn(),
+  sendRefundConfirmation: vi.fn(),
+  sendCancellationNotification: vi.fn(),
+};
+
+const mockStripeService = {
+  createRefund: vi.fn(),
 };
 
 const mockWaitlist = {
@@ -63,7 +73,9 @@ function makeAppointment(overrides: Partial<Appointment> = {}): Appointment {
 function createService(): AppointmentsService {
   return new AppointmentsService(
     mockPrisma as never,
+    mockAudit as never,
     mockEmail as never,
+    mockStripeService as never,
     mockWaitlist as never,
   );
 }

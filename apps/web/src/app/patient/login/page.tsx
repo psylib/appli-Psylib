@@ -33,7 +33,8 @@ function PatientLoginForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = useForm<FormData>({ resolver: zodResolver(schema as any) });
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);

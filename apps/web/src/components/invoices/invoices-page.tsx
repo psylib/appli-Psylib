@@ -62,7 +62,8 @@ function CreateInvoiceModal({
     formState: { errors },
     setValue,
   } = useForm<CreateForm>({
-    resolver: zodResolver(createSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(createSchema as any),
     defaultValues: {
       patientId: '',
       amountTtc: undefined,

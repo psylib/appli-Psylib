@@ -61,7 +61,8 @@ export function ProfileForm() {
     reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(profileSchema as any),
     defaultValues: {
       name: '',
       specialization: '',
