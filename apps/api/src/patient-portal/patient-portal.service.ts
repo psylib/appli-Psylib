@@ -240,7 +240,7 @@ export class PatientPortalService {
   // ─── DASHBOARD PATIENT ───────────────────────────────────────────────────
 
   async getDashboard(patientId: string) {
-    const [recentMoods, exercises, nextAppointment, recentJournal] = await Promise.all([
+    const [recentMoods, exercises, nextAppointment, recentJournal, pendingAssessmentsCount] = await Promise.all([
       // 7 derniers jours d'humeur
       this.prisma.moodTracking.findMany({
         where: {
@@ -268,6 +268,8 @@ export class PatientPortalService {
       }),
       // Dernières entrées journal (sans contenu déchiffré ici — juste le count)
       this.prisma.journalEntry.count({ where: { patientId } }),
+      // Évaluations en attente
+      this.prisma.assessment.count({ where: { patientId, status: 'pending' } }),
     ]);
 
     const avgMood = recentMoods.length
@@ -280,6 +282,7 @@ export class PatientPortalService {
       pendingExercises: exercises,
       nextAppointment,
       journalCount: recentJournal,
+      pendingAssessmentsCount,
     };
   }
 }
