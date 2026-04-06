@@ -180,6 +180,8 @@ export interface Session {
   tags: string[];
   rate: number | null;
   paymentStatus: SessionPaymentStatus;
+  orientation?: string | null;
+  aiMetadata?: Record<string, unknown> | null;
   createdAt: Date;
 }
 
