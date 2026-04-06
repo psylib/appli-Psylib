@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { ClipboardList } from 'lucide-react';
 import { patientPortalApi, type PatientDashboard } from '@/lib/api/patient-portal';
 
 const MOOD_EMOJIS: Record<number, string> = {
@@ -174,6 +175,24 @@ export default function PatientPortalDashboard() {
           <span className="text-2xl">📖</span>
         </div>
       </Link>
+
+      {/* Assessments teaser */}
+      {data && data.pendingAssessmentsCount > 0 && (
+        <a
+          href="/patient-portal/assessments"
+          className="block rounded-xl border border-amber-200 bg-amber-50 p-4 hover:border-amber-300 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-amber-900">Évaluations en attente</h3>
+              <p className="text-xs text-amber-700 mt-0.5">
+                {data.pendingAssessmentsCount} évaluation{data.pendingAssessmentsCount > 1 ? 's' : ''} à compléter
+              </p>
+            </div>
+            <ClipboardList className="h-5 w-5 text-amber-600" />
+          </div>
+        </a>
+      )}
     </div>
   );
 }
