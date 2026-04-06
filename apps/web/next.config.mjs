@@ -46,13 +46,13 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // unsafe-eval requis Next.js
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://client.crisp.chat", // unsafe-eval requis Next.js
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://client.crisp.chat",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
               // connect-src dynamique : dev (localhost) + prod (vraies URLs)
-              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} https://eu.posthog.com https://o4511050353475584.ingest.de.sentry.io`,
-              "frame-src 'self'",
+              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} https://eu.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
+              "frame-src 'self' https://game.crisp.chat",
               "frame-ancestors 'none'",
               "object-src 'none'",
               "base-uri 'self'",

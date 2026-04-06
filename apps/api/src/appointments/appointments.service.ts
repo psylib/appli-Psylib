@@ -63,6 +63,7 @@ export class AppointmentsService {
         }),
       },
       orderBy: { scheduledAt: 'asc' },
+      ...(query.limit && { take: query.limit }),
       include: {
         patient: { select: { name: true, email: true } },
         consultationType: { select: { id: true, name: true, color: true } },

@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { dashboardApi } from '@/lib/api/dashboard';
+import { apiClient } from '@/lib/api/client';
 
 interface ClinicalAlert {
   id: string;
@@ -35,12 +35,7 @@ function useClinicalAlerts() {
     queryFn: async () => {
       if (!token) return [];
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1'}/dashboard/clinical-alerts`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-        if (!res.ok) return [];
-        return res.json();
+        return await apiClient.get<ClinicalAlert[]>('/dashboard/clinical-alerts', token);
       } catch {
         return [];
       }

@@ -53,4 +53,11 @@ export class AppointmentQueryDto {
   @IsDateString()
   @IsOptional()
   to?: string;
+
+  @ApiPropertyOptional({ example: 20 })
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }
