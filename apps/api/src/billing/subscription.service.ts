@@ -1,10 +1,13 @@
-import { Injectable, Logger, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { StripeService } from './stripe.service';
 import { EmailService } from '../notifications/email.service';
+import { AuditService } from '../common/audit.service';
 import { SubscriptionPlan, SubscriptionStatus, PLAN_LIMITS } from '@psyscale/shared-types';
 import { ReferralService } from '../referral/referral.service';
+import type { ConnectSettingsDto } from './dto/connect-settings.dto';
+import type { PaymentLinkDto } from './dto/payment-link.dto';
 import type Stripe from 'stripe';
 
 @Injectable()
@@ -17,6 +20,7 @@ export class SubscriptionService {
     private readonly config: ConfigService,
     private readonly email: EmailService,
     private readonly referral: ReferralService,
+    private readonly audit: AuditService,
   ) {}
 
   private getPriceIdForPlan(plan: SubscriptionPlan): string {
@@ -284,6 +288,9 @@ export class SubscriptionService {
       case 'invoice.payment_failed':
         await this.handleInvoicePaymentFailed(event.data.object as Stripe.Invoice);
         break;
+      case 'charge.refunded':
+        await this.handleChargeRefunded(event.data.object as Stripe.Charge);
+        break;
       case 'account.updated':
         await this.handleAccountUpdated(event.data.object as Stripe.Account);
         break;
@@ -296,6 +303,12 @@ export class SubscriptionService {
     // Booking payment (one-time, via Connect)
     if (session.metadata?.['type'] === 'booking_payment') {
       await this.handleBookingPaymentCompleted(session);
+      return;
+    }
+
+    // Payment link (post-session payment, via Connect)
+    if (session.metadata?.['type'] === 'payment_link') {
+      await this.handlePaymentLinkCompleted(session);
       return;
     }
 
@@ -473,6 +486,97 @@ export class SubscriptionService {
     this.logger.log(`Booking payment completed for appointment ${appointmentId}`);
   }
 
+  private async handlePaymentLinkCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    const appointmentId = session.metadata?.['appointmentId'];
+    if (!appointmentId) {
+      this.logger.warn('payment_link checkout.session.completed: missing appointmentId');
+      return;
+    }
+
+    // Update Payment record by checkout session id
+    const payment = await this.prisma.payment.findUnique({
+      where: { stripeCheckoutSessionId: session.id },
+    });
+
+    if (payment) {
+      await this.prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'paid',
+          stripePaymentIntentId: (session.payment_intent as string) ?? null,
+        },
+      });
+    }
+
+    // Update Appointment
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        bookingPaymentStatus: 'paid',
+        paidOnline: true,
+        paymentIntentId: (session.payment_intent as string) ?? null,
+      },
+    });
+
+    // Notify psychologist
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        psychologist: { include: { user: { select: { email: true } } } },
+        patient: { select: { name: true } },
+      },
+    });
+
+    if (appointment?.psychologist.user.email) {
+      void this.email.sendPaymentReceivedToPsy(
+        appointment.psychologist.user.email,
+        {
+          psychologistName: appointment.psychologist.name,
+          patientName: appointment.patient.name,
+          amount: payment ? Number(payment.amount) : 0,
+        },
+      );
+    }
+
+    this.logger.log(`Payment link completed for appointment ${appointmentId}`);
+  }
+
+  private async handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+    const paymentIntentId = typeof charge.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+    if (!paymentIntentId) {
+      this.logger.warn('charge.refunded: missing payment_intent');
+      return;
+    }
+
+    // Find Payment by stripePaymentIntentId
+    const payment = await this.prisma.payment.findFirst({
+      where: { stripePaymentIntentId: paymentIntentId },
+    });
+
+    if (!payment) {
+      this.logger.debug(`charge.refunded: no payment found for PI ${paymentIntentId}`);
+      return;
+    }
+
+    // Update payment and appointment statuses
+    await this.prisma.payment.update({
+      where: { id: payment.id },
+      data: { status: 'refunded' },
+    });
+
+    if (payment.appointmentId) {
+      await this.prisma.appointment.update({
+        where: { id: payment.appointmentId },
+        data: { bookingPaymentStatus: 'refunded' },
+      });
+    }
+
+    this.logger.log(`Charge refunded synced: payment ${payment.id}, PI ${paymentIntentId}`);
+  }
+
   async handleAccountUpdated(account: Stripe.Account): Promise<void> {
     if (!account.id) return;
 
@@ -499,6 +603,335 @@ export class SubscriptionService {
       });
       this.logger.log(`Stripe Connect onboarding ${onboardingComplete ? 'completed' : 'incomplete'} for psy ${psy.id}`);
     }
+  }
+
+  // --- Connect Settings ---
+
+  async updateConnectSettings(userId: string, dto: ConnectSettingsDto) {
+    const psy = await this.getPsychologist(userId);
+
+    if (!psy.stripeOnboardingComplete) {
+      throw new ForbiddenException('Veuillez compléter l\'onboarding Stripe Connect avant de modifier les paramètres de paiement.');
+    }
+
+    const updated = await this.prisma.psychologist.update({
+      where: { id: psy.id },
+      data: {
+        paymentMode: dto.paymentMode,
+        cancellationDelay: dto.cancellationDelay,
+        autoRefund: dto.autoRefund,
+        defaultSessionRate: dto.defaultSessionRate,
+      },
+      select: {
+        paymentMode: true,
+        cancellationDelay: true,
+        autoRefund: true,
+        defaultSessionRate: true,
+      },
+    });
+
+    this.logger.log(`Connect settings updated for psy ${psy.id}`);
+    return updated;
+  }
+
+  // --- Payment Link ---
+
+  async createPaymentLink(userId: string, dto: PaymentLinkDto) {
+    const psy = await this.getPsychologist(userId);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Utilisateur introuvable');
+
+    if (!psy.stripeAccountId || !psy.stripeOnboardingComplete) {
+      throw new ForbiddenException('Stripe Connect non configuré. Complétez l\'onboarding d\'abord.');
+    }
+
+    // Resolve appointment
+    let appointment;
+    if (dto.appointmentId) {
+      appointment = await this.prisma.appointment.findFirst({
+        where: { id: dto.appointmentId, psychologistId: psy.id },
+        include: { patient: true },
+      });
+    } else if (dto.sessionId) {
+      const session = await this.prisma.session.findFirst({
+        where: { id: dto.sessionId, psychologistId: psy.id },
+        include: { appointment: { include: { patient: true } } },
+      });
+      if (session?.appointment) {
+        appointment = { ...session.appointment, patient: session.appointment.patient };
+      }
+    }
+
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+
+    // Resolve amount: explicit > appointment consultationType > psy default
+    let amount = dto.amount;
+    if (!amount) {
+      if (appointment.consultationTypeId) {
+        const ct = await this.prisma.consultationType.findUnique({
+          where: { id: appointment.consultationTypeId },
+        });
+        amount = ct ? Number(ct.rate) : undefined;
+      }
+    }
+    if (!amount) {
+      amount = psy.defaultSessionRate ? Number(psy.defaultSessionRate) : undefined;
+    }
+    if (!amount) {
+      throw new BadRequestException('Montant requis : aucun tarif par défaut ni type de consultation trouvé.');
+    }
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    const session = await this.stripe.createPaymentLinkSession({
+      connectedAccountId: psy.stripeAccountId,
+      amount,
+      patientEmail: appointment.patient.email ?? '',
+      psychologistName: psy.name,
+      appointmentId: appointment.id,
+      successUrl: `${frontendUrl}/payment/success?appointmentId=${appointment.id}`,
+      cancelUrl: `${frontendUrl}/payment/cancel?appointmentId=${appointment.id}`,
+    });
+
+    // Create Payment record
+    await this.prisma.payment.create({
+      data: {
+        psychologistId: psy.id,
+        patientId: appointment.patientId,
+        type: 'session',
+        amount,
+        status: 'pending',
+        stripeCheckoutSessionId: session.id,
+        appointmentId: appointment.id,
+      },
+    });
+
+    // Audit log
+    void this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'CREATE',
+      entityType: 'payment_link',
+      entityId: appointment.id,
+      metadata: { amount, appointmentId: appointment.id },
+    });
+
+    // Send payment link email to patient
+    if (appointment.patient.email) {
+      void this.email.sendPaymentLinkToPatient(
+        appointment.patient.email,
+        {
+          patientName: appointment.patient.name,
+          psychologistName: psy.name,
+          amount,
+          paymentUrl: session.url ?? '',
+        },
+      );
+    }
+
+    this.logger.log(`Payment link created for appointment ${appointment.id}, amount=${amount}€`);
+    return { url: session.url, appointmentId: appointment.id };
+  }
+
+  // --- Refund ---
+
+  async handleRefund(userId: string, appointmentId: string) {
+    const psy = await this.getPsychologist(userId);
+
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+      include: {
+        patient: true,
+        payments: { where: { status: 'paid' }, orderBy: { createdAt: 'desc' }, take: 1 },
+      },
+    });
+
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+
+    const payment = appointment.payments[0];
+    if (!payment || !payment.stripePaymentIntentId) {
+      throw new BadRequestException('Aucun paiement en ligne trouvé pour ce rendez-vous.');
+    }
+
+    // Create Stripe refund
+    await this.stripe.createRefund(payment.stripePaymentIntentId);
+
+    // Update appointment and payment statuses
+    await this.prisma.$transaction([
+      this.prisma.appointment.update({
+        where: { id: appointmentId },
+        data: { bookingPaymentStatus: 'refunded' },
+      }),
+      this.prisma.payment.update({
+        where: { id: payment.id },
+        data: { status: 'refunded' },
+      }),
+    ]);
+
+    // Audit log
+    void this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'UPDATE',
+      entityType: 'refund',
+      entityId: appointmentId,
+      metadata: { paymentId: payment.id, amount: Number(payment.amount) },
+    });
+
+    // Send refund email to patient
+    if (appointment.patient.email) {
+      void this.email.sendRefundConfirmation(
+        appointment.patient.email,
+        {
+          patientName: appointment.patient.name,
+          psychologistName: psy.name,
+          amount: Number(payment.amount),
+        },
+      );
+    }
+
+    this.logger.log(`Refund processed for appointment ${appointmentId}, payment ${payment.id}`);
+    return { success: true, appointmentId };
+  }
+
+  // --- Mark Paid On Site ---
+
+  async markPaidOnSite(userId: string, appointmentId: string) {
+    const psy = await this.getPsychologist(userId);
+
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+      include: { patient: true },
+    });
+
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+
+    // Resolve amount from consultationType or psy default
+    let amount: number | undefined;
+    if (appointment.consultationTypeId) {
+      const ct = await this.prisma.consultationType.findUnique({
+        where: { id: appointment.consultationTypeId },
+      });
+      amount = ct ? Number(ct.rate) : undefined;
+    }
+    if (!amount) {
+      amount = psy.defaultSessionRate ? Number(psy.defaultSessionRate) : 0;
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.appointment.update({
+        where: { id: appointmentId },
+        data: { bookingPaymentStatus: 'paid', paidOnline: false },
+      }),
+      this.prisma.payment.create({
+        data: {
+          psychologistId: psy.id,
+          patientId: appointment.patientId,
+          type: 'session',
+          amount: amount ?? 0,
+          status: 'paid',
+          appointmentId,
+        },
+      }),
+    ]);
+
+    this.logger.log(`Marked paid on site for appointment ${appointmentId}`);
+    return { success: true, appointmentId };
+  }
+
+  // --- Payments List ---
+
+  async getPayments(userId: string, query: {
+    status?: string;
+    mode?: string;
+    from?: string;
+    to?: string;
+    page?: string;
+    limit?: string;
+  }) {
+    const psy = await this.getPsychologist(userId);
+
+    const page = Math.max(1, parseInt(query.page ?? '1', 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(query.limit ?? '20', 10) || 20));
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: Record<string, unknown> = { psychologistId: psy.id };
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.mode === 'online') {
+      where.stripePaymentIntentId = { not: null };
+    } else if (query.mode === 'onsite') {
+      where.stripePaymentIntentId = null;
+    }
+
+    if (query.from || query.to) {
+      const createdAt: Record<string, Date> = {};
+      if (query.from) createdAt.gte = new Date(query.from);
+      if (query.to) createdAt.lte = new Date(query.to);
+      where.createdAt = createdAt;
+    }
+
+    const [payments, total] = await this.prisma.$transaction([
+      this.prisma.payment.findMany({
+        where: where as never,
+        include: {
+          patient: { select: { id: true, name: true, email: true } },
+          appointment: { select: { id: true, scheduledAt: true, reason: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.payment.count({ where: where as never }),
+    ]);
+
+    // KPIs
+    const kpiWhere = { psychologistId: psy.id } as Record<string, unknown>;
+    if (query.from || query.to) {
+      const createdAt: Record<string, Date> = {};
+      if (query.from) createdAt.gte = new Date(query.from);
+      if (query.to) createdAt.lte = new Date(query.to);
+      kpiWhere.createdAt = createdAt;
+    }
+
+    const allPayments = await this.prisma.payment.findMany({
+      where: kpiWhere as never,
+      select: { status: true, amount: true, stripePaymentIntentId: true },
+    });
+
+    const paidPayments = allPayments.filter(p => p.status === 'paid');
+    const totalReceived = paidPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const pendingPayments = allPayments.filter(p => p.status === 'pending');
+    const totalPending = pendingPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const onlineCount = paidPayments.filter(p => p.stripePaymentIntentId).length;
+    const onlineRate = paidPayments.length > 0 ? Math.round((onlineCount / paidPayments.length) * 100) : 0;
+
+    return {
+      payments: payments.map(p => ({
+        id: p.id,
+        patientId: p.patientId,
+        patient: p.patient,
+        appointment: p.appointment,
+        type: p.type,
+        amount: Number(p.amount),
+        status: p.status,
+        stripePaymentIntentId: p.stripePaymentIntentId,
+        appointmentId: p.appointmentId,
+        createdAt: p.createdAt.toISOString(),
+      })),
+      total,
+      page,
+      limit,
+      kpis: {
+        totalReceived,
+        totalPending,
+        transactionCount: allPayments.length,
+        onlineRate,
+      },
+    };
   }
 
   private stripePlanFromSubscription(subscription: Stripe.Subscription): SubscriptionPlan {

@@ -1262,4 +1262,88 @@ export class EmailService {
 
     await this.send(to, `Créneau disponible — ${data.psychologistName}`, html, 'sendWaitlistProposal');
   }
+
+  // ─── PAYMENT LINK — LIEN DE PAIEMENT PATIENT ─────────────────────────────────
+
+  async sendPaymentLinkToPatient(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      amount: number;
+      paymentUrl: string;
+    },
+  ): Promise<void> {
+    const amountFormatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(data.amount);
+
+    const html = emailLayout(
+      'Lien de paiement',
+      `<h1>Bonjour ${data.patientName},</h1>
+      <p>${data.psychologistName} vous invite à régler votre séance d'un montant de <strong>${amountFormatted}</strong>.</p>
+      <div style="text-align:center;">
+        <a href="${data.paymentUrl}" class="btn">Régler ma séance</a>
+      </div>
+      <p style="font-size: 14px; color: #6B7280;">Le paiement est sécurisé via Stripe. Aucune donnée bancaire n'est stockée par PsyLib.</p>`,
+    );
+
+    await this.send(to, `Paiement séance — ${data.psychologistName}`, html, 'sendPaymentLinkToPatient');
+  }
+
+  // ─── PAYMENT RECEIVED — NOTIFICATION PSY ──────────────────────────────────────
+
+  async sendPaymentReceivedToPsy(
+    to: string,
+    data: {
+      psychologistName: string;
+      patientName: string;
+      amount: number;
+    },
+  ): Promise<void> {
+    const amountFormatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(data.amount);
+
+    const html = emailLayout(
+      'Paiement reçu',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <div class="badge badge-success">Paiement reçu</div>
+      <p>${data.patientName} a réglé sa séance d'un montant de <strong>${amountFormatted}</strong>.</p>
+      <div class="info-box">
+        <p style="margin:0;"><strong>Patient :</strong> ${data.patientName}</p>
+        <p style="margin:0;"><strong>Montant :</strong> ${amountFormatted}</p>
+      </div>`,
+    );
+
+    await this.send(to, `Paiement reçu — ${data.patientName}`, html, 'sendPaymentReceivedToPsy');
+  }
+
+  // ─── REFUND CONFIRMATION — NOTIFICATION PATIENT ───────────────────────────────
+
+  async sendRefundConfirmation(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      amount: number;
+    },
+  ): Promise<void> {
+    const amountFormatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(data.amount);
+
+    const html = emailLayout(
+      'Remboursement effectué',
+      `<h1>Bonjour ${data.patientName},</h1>
+      <div class="badge badge-success">Remboursement confirmé</div>
+      <p>${data.psychologistName} a procédé au remboursement de votre séance d'un montant de <strong>${amountFormatted}</strong>.</p>
+      <p>Le montant sera crédité sur votre moyen de paiement sous 5 à 10 jours ouvrés.</p>`,
+    );
+
+    await this.send(to, `Remboursement — ${data.psychologistName}`, html, 'sendRefundConfirmation');
+  }
 }
