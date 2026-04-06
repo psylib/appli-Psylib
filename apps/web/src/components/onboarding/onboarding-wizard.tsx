@@ -133,11 +133,12 @@ function AnimatedField({ index, children }: { index: number; children: React.Rea
 
 function DurationChips({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2" role="group" aria-label="Durée de séance">
       {DURATION_OPTIONS.map((d) => (
         <button
           key={d}
           type="button"
+          aria-pressed={value === d}
           onClick={() => onChange(d)}
           className={cn(
             'rounded-full border px-4 py-2 text-sm font-medium transition-colors',
@@ -179,7 +180,7 @@ function OnboardingSidebar({ currentStepIndex }: { currentStepIndex: number }) {
                       'h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0',
                       isDone && 'bg-accent text-white',
                       isActive && 'bg-white text-primary',
-                      !isDone && !isActive && 'bg-white/10 text-white/30',
+                      !isDone && !isActive && 'bg-transparent text-white/30 ring-1 ring-white/20',
                     )}
                     animate={isActive ? { scale: [0.8, 1] } : {}}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -205,9 +206,10 @@ function OnboardingSidebar({ currentStepIndex }: { currentStepIndex: number }) {
                         'w-px h-4',
                         i < currentStepIndex ? 'bg-accent' : 'bg-white/10',
                       )}
-                      initial={false}
+                      initial={{ scaleY: 0 }}
                       animate={{ scaleY: 1 }}
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                      style={{ originY: 0 }}
                     />
                   </div>
                 )}
@@ -229,6 +231,7 @@ function OnboardingSidebar({ currentStepIndex }: { currentStepIndex: number }) {
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-white">
         <span className="text-sm font-bold text-primary">PsyLib</span>
+        <span className="text-xs text-muted-foreground truncate">{STEPS_CONFIG[currentStepIndex]?.label}</span>
         <div className="flex-1" />
         <div className="flex items-center gap-2">
           {STEPS_CONFIG.map((step, i) => (
@@ -243,7 +246,7 @@ function OnboardingSidebar({ currentStepIndex }: { currentStepIndex: number }) {
             />
           ))}
         </div>
-        <span className="text-xs text-muted-foreground ml-1">{currentStepIndex + 1}/4</span>
+        <span className="text-xs text-muted-foreground ml-1">{currentStepIndex + 1}/{STEPS_CONFIG.length}</span>
       </div>
     </>
   );
@@ -327,7 +330,7 @@ function PreferencesStep({ form }: { form: ReturnType<typeof useForm<Preferences
       </div>
       <AnimatedField index={0}>
         <div>
-          <label className="text-sm font-medium text-foreground block mb-2">Durée par défaut</label>
+          <span className="text-sm font-medium text-foreground block mb-2">Durée par défaut</span>
           <Controller
             control={form.control}
             name="sessionDuration"
@@ -345,7 +348,7 @@ function PreferencesStep({ form }: { form: ReturnType<typeof useForm<Preferences
       </AnimatedField>
       <AnimatedField index={1}>
         <div>
-          <label className="text-sm font-medium text-foreground block mb-2">Tarif par séance</label>
+          <span className="text-sm font-medium text-foreground block mb-2">Tarif par séance</span>
           <div className="flex items-center gap-2">
             <Input type="number" min={0} className="w-28 text-center font-semibold"
               error={form.formState.errors.sessionRate?.message}
@@ -482,7 +485,7 @@ function SuccessStep() {
               <div className="flex gap-2">
                 <input type="text" value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  placeholder="Ex&nbsp;: MARIE-X7K2"
+                  placeholder="Ex\u00a0: MARIE-X7K2"
                   className="flex-1 rounded-lg border border-border px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary/40"
                   maxLength={20} />
                 <Button onClick={() => void handleReferralValidate()}
@@ -516,7 +519,7 @@ interface OnboardingWizardProps {
   totalSteps: number;
 }
 
-export function OnboardingWizard({ currentStep, currentStepIndex }: OnboardingWizardProps) {
+export function OnboardingWizard({ currentStep, currentStepIndex, totalSteps: _totalSteps }: OnboardingWizardProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
@@ -546,35 +549,63 @@ export function OnboardingWizard({ currentStep, currentStepIndex }: OnboardingWi
     router.push(path);
   };
 
-  const submitStep = async (data: Record<string, unknown>) => {
+  const submitProfile = async (data: ProfileData) => {
+    setApiError(null);
+    setLoading(true);
+    try {
+      await apiClient.put('/onboarding/profile', data, session?.accessToken);
+      navigateTo('/onboarding/practice', 1);
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitPractice = async (data: PracticeData) => {
     setApiError(null);
     setLoading(true);
     try {
       const token = session?.accessToken;
-      if (currentStep === 'profile') {
-        await apiClient.put('/onboarding/profile', data, token);
-        navigateTo('/onboarding/practice', 1);
-      } else if (currentStep === 'practice') {
-        await apiClient.put('/onboarding/profile', data, token);
-        await apiClient.post('/onboarding/steps/practice/complete', {}, token);
-        navigateTo('/onboarding/preferences', 1);
-      } else if (currentStep === 'preferences') {
-        const prefs = data as unknown as PreferencesData;
-        await apiClient.put('/onboarding/profile', {
-          defaultSessionDuration: prefs.sessionDuration,
-          defaultSessionRate: prefs.sessionRate,
-        }, token);
-        await apiClient.post('/onboarding/steps/preferences/complete', {}, token);
-        navigateTo('/onboarding/first_patient', 1);
-      } else if (currentStep === 'first_patient') {
-        const patient = data as unknown as FirstPatientData;
-        if (patient.name) {
-          await apiClient.post('/patients', { name: patient.name, email: patient.email || undefined }, token);
-          await apiClient.post('/onboarding/steps/first_patient/complete', {}, token);
-        }
-        await apiClient.post('/onboarding/complete', {}, token);
-        navigateTo('/onboarding/success', 1);
+      await apiClient.put('/onboarding/profile', data, token);
+      await apiClient.post('/onboarding/steps/practice/complete', {}, token);
+      navigateTo('/onboarding/preferences', 1);
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitPreferences = async (data: PreferencesData) => {
+    setApiError(null);
+    setLoading(true);
+    try {
+      const token = session?.accessToken;
+      await apiClient.put('/onboarding/profile', {
+        defaultSessionDuration: data.sessionDuration,
+        defaultSessionRate: data.sessionRate,
+      }, token);
+      await apiClient.post('/onboarding/steps/preferences/complete', {}, token);
+      navigateTo('/onboarding/first_patient', 1);
+    } catch (e) {
+      setApiError(e instanceof Error ? e.message : 'Une erreur est survenue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitFirstPatient = async (data: FirstPatientData) => {
+    setApiError(null);
+    setLoading(true);
+    try {
+      const token = session?.accessToken;
+      if (data.name) {
+        await apiClient.post('/patients', { name: data.name, email: data.email || undefined }, token);
+        await apiClient.post('/onboarding/steps/first_patient/complete', {}, token);
       }
+      await apiClient.post('/onboarding/complete', {}, token);
+      navigateTo('/onboarding/success', 1);
     } catch (e) {
       setApiError(e instanceof Error ? e.message : 'Une erreur est survenue');
     } finally {
@@ -584,13 +615,13 @@ export function OnboardingWizard({ currentStep, currentStepIndex }: OnboardingWi
 
   const goNext = () => {
     if (currentStep === 'profile') {
-      void profileForm.handleSubmit((d) => submitStep(d as unknown as Record<string, unknown>))();
+      void profileForm.handleSubmit(submitProfile)();
     } else if (currentStep === 'practice') {
-      void practiceForm.handleSubmit((d) => submitStep(d as unknown as Record<string, unknown>))();
+      void practiceForm.handleSubmit(submitPractice)();
     } else if (currentStep === 'preferences') {
-      void preferencesForm.handleSubmit((d) => submitStep(d as unknown as Record<string, unknown>))();
+      void preferencesForm.handleSubmit(submitPreferences)();
     } else if (currentStep === 'first_patient') {
-      void firstPatientForm.handleSubmit((d) => submitStep(d as unknown as Record<string, unknown>))();
+      void firstPatientForm.handleSubmit(submitFirstPatient)();
     } else if (currentStep === 'success') {
       router.push('/dashboard');
     }
@@ -629,7 +660,7 @@ export function OnboardingWizard({ currentStep, currentStepIndex }: OnboardingWi
     <div className="flex flex-col md:flex-row min-h-screen">
       <OnboardingSidebar currentStepIndex={currentStepIndex} />
 
-      <div className="flex-1 flex flex-col overflow-y-auto">
+      <div className="flex-1 flex flex-col overflow-y-auto bg-white">
         {/* Desktop form area */}
         <div className="hidden md:flex flex-1 items-center justify-center p-12">
           <div className="w-full max-w-md">
@@ -655,7 +686,9 @@ export function OnboardingWizard({ currentStep, currentStepIndex }: OnboardingWi
               </motion.div>
               <div className="flex items-center gap-3">
                 {currentStep === 'first_patient' && (
-                  <Button variant="ghost" onClick={() => void skipPatient()} loading={loading}>Passer</Button>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button variant="ghost" onClick={() => void skipPatient()} loading={loading}>Passer cette étape</Button>
+                  </motion.div>
                 )}
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button onClick={goNext} loading={loading}>
@@ -694,7 +727,7 @@ export function OnboardingWizard({ currentStep, currentStepIndex }: OnboardingWi
           </Button>
           <div className="flex items-center gap-2">
             {currentStep === 'first_patient' && (
-              <Button variant="ghost" size="sm" onClick={() => void skipPatient()} loading={loading}>Passer</Button>
+              <Button variant="ghost" size="sm" onClick={() => void skipPatient()} loading={loading}>Passer cette étape</Button>
             )}
             <Button size="sm" onClick={goNext} loading={loading}>
               {currentStep === 'first_patient' ? 'Terminer 🎉' : 'Continuer'}
