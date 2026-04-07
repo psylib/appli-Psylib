@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef, Logger } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { AuditService } from '../common/audit.service';
@@ -41,6 +42,8 @@ export class AppointmentsService {
         scheduledAt: new Date(dto.scheduledAt),
         duration: dto.duration,
         status: 'scheduled',
+        isOnline: dto.isOnline ?? false,
+        videoJoinToken: dto.isOnline ? randomUUID() : undefined,
       },
     });
 

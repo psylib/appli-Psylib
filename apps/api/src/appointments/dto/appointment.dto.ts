@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
+  IsBoolean,
   Min,
   Max,
 } from 'class-validator';
@@ -24,6 +25,11 @@ export class CreateAppointmentDto {
   @Min(5)
   @Max(480)
   duration!: number;
+
+  @ApiPropertyOptional({ default: false })
+  @IsBoolean()
+  @IsOptional()
+  isOnline?: boolean;
 }
 
 export class UpdateAppointmentDto {
