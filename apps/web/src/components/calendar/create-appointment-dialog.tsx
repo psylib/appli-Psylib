@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { Search, Video } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,7 @@ export function CreateAppointmentDialog({
   const [time, setTime] = useState('09:00');
   const [duration, setDuration] = useState(50);
   const [search, setSearch] = useState('');
+  const [isOnline, setIsOnline] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset form when dialog opens with a new default date
@@ -57,7 +58,7 @@ export function CreateAppointmentDialog({
   }, [patients, search]);
 
   const createMutation = useMutation({
-    mutationFn: (data: { patientId: string; scheduledAt: string; duration: number }) =>
+    mutationFn: (data: { patientId: string; scheduledAt: string; duration: number; isOnline?: boolean }) =>
       appointmentsApi.create(data, session?.accessToken ?? ''),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
@@ -76,6 +77,7 @@ export function CreateAppointmentDialog({
     setTime('09:00');
     setDuration(50);
     setSearch('');
+    setIsOnline(false);
     setError(null);
     onClose();
   };
@@ -96,7 +98,7 @@ export function CreateAppointmentDialog({
 
     const scheduledAt = new Date(`${selectedDate}T${time}:00`).toISOString();
     setError(null);
-    createMutation.mutate({ patientId, scheduledAt, duration });
+    createMutation.mutate({ patientId, scheduledAt, duration, isOnline });
   };
 
   const selectedPatient = patients.find((p) => p.id === patientId);
@@ -195,6 +197,21 @@ export function CreateAppointmentDialog({
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Visio toggle */}
+        <div className="flex items-center gap-2 pt-2">
+          <input
+            type="checkbox"
+            id="isOnline"
+            checked={isOnline}
+            onChange={(e) => setIsOnline(e.target.checked)}
+            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+          />
+          <label htmlFor="isOnline" className="text-sm text-muted-foreground flex items-center gap-1.5">
+            <Video className="h-4 w-4" />
+            Consultation en visio
+          </label>
         </div>
 
         {error && (

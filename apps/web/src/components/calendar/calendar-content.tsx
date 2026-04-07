@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,6 +14,7 @@ import {
   XCircle,
   AlertCircle,
   Bell,
+  Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -29,6 +31,7 @@ interface Appointment {
   scheduledAt: string;
   duration: number;
   status: 'scheduled' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+  isOnline?: boolean;
   paidOnline?: boolean;
   bookingPaymentStatus?: 'none' | 'pending_payment' | 'paid' | 'payment_failed';
   patient: {
@@ -77,8 +80,16 @@ function isSameDay(a: Date, b: Date) {
     a.getDate() === b.getDate();
 }
 
+function isWithinVideoWindow(scheduledAt: string): boolean {
+  const scheduled = new Date(scheduledAt);
+  const now = new Date();
+  const windowStart = new Date(scheduled.getTime() - 10 * 60 * 1000);
+  return now >= windowStart;
+}
+
 export function CalendarContent() {
   const { data: session } = useSession();
+  const router = useRouter();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [selectedDate, setSelectedDate] = useState<Date>(today);
@@ -404,6 +415,12 @@ export function CalendarContent() {
                           <StatusIcon size={10} className="inline mr-1" />
                           {config.label}
                         </span>
+                        {appt.isOnline && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                            <Video className="h-3 w-3" />
+                            Visio
+                          </span>
+                        )}
                       </div>
 
                       {/* Consultation type + payment badges */}
@@ -456,6 +473,17 @@ export function CalendarContent() {
                           </button>
                         )}
                       </div>
+
+                      {/* Video call button */}
+                      {appt.isOnline && isWithinVideoWindow(appt.scheduledAt) && appt.status !== 'completed' && (
+                        <button
+                          onClick={() => router.push(`/dashboard/video/${appt.id}`)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90 transition-colors mt-2"
+                        >
+                          <Video className="h-3.5 w-3.5" />
+                          Démarrer la visio
+                        </button>
+                      )}
 
                       {/* Payment actions */}
                       {(appt.status === 'scheduled' || appt.status === 'confirmed' || appt.status === 'completed') && (
