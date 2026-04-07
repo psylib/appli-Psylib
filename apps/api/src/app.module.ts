@@ -35,6 +35,7 @@ import { ConsultationTypesModule } from './consultation-types/consultation-types
 import { MonSoutienPsyModule } from './mon-soutien-psy/mon-soutien-psy.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
 import { ReminderModule } from './reminder/reminder.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -98,6 +99,7 @@ import { ReminderModule } from './reminder/reminder.module';
     MonSoutienPsyModule,
     WaitlistModule,
     ReminderModule,
+    VideoModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
