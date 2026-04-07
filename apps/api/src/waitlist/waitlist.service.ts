@@ -28,10 +28,16 @@ export class WaitlistService {
       },
     });
 
-    return entries.map((entry) => ({
-      ...entry,
-      note: this.encryption.decryptNullable(entry.note),
-    }));
+    return entries.map((entry) => {
+      let note: string | null = null;
+      try {
+        note = this.encryption.decryptNullable(entry.note);
+      } catch {
+        // Entry with corrupted/unencrypted note — return raw value
+        note = entry.note;
+      }
+      return { ...entry, note };
+    });
   }
 
   // ── Create entry (authenticated psy) ────────────────────────────────────

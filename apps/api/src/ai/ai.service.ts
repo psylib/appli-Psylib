@@ -223,12 +223,17 @@ export class AiService {
           }),
         });
 
+        if (!response.ok) {
+          this.logger.error(`Anthropic extraction API error: ${response.status}`);
+          return null;
+        }
+
         const result = await response.json() as {
           content: Array<{ text: string }>;
           usage?: { input_tokens: number; output_tokens: number };
         };
 
-        const text = result.content[0]?.text ?? '{}';
+        const text = result.content?.[0]?.text ?? '{}';
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         const parsed = JSON.parse(jsonMatch?.[0] ?? '{}') as Record<string, unknown>;
         const tokens = (result.usage?.input_tokens ?? 0) + (result.usage?.output_tokens ?? 0);
@@ -254,12 +259,17 @@ export class AiService {
           }),
         });
 
+        if (!response.ok) {
+          this.logger.error(`OpenAI extraction API error: ${response.status}`);
+          return null;
+        }
+
         const result = await response.json() as {
           choices: Array<{ message: { content: string } }>;
           usage?: { total_tokens: number };
         };
 
-        const text = result.choices[0]?.message?.content ?? '{}';
+        const text = result.choices?.[0]?.message?.content ?? '{}';
         const parsed = JSON.parse(text) as Record<string, unknown>;
         const tokens = result.usage?.total_tokens ?? 0;
 
@@ -634,12 +644,39 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
           messages: [{ role: 'user', content: prompt }],
         }),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
+        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
+      }
       const data = await res.json() as { content: Array<{ text: string }> };
-      const text = data.content[0]?.text ?? '{}';
+      const text = data.content?.[0]?.text ?? '{}';
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       return JSON.parse(jsonMatch?.[0] ?? '{}') as object;
+    } else {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          max_tokens: 1000,
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
+        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
+      }
+      const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+      const text = data.choices?.[0]?.message?.content ?? '{}';
+      return JSON.parse(text) as object;
     }
-    return {};
   }
 
   private async callAiText(prompt: string, system: string): Promise<string> {
@@ -659,10 +696,35 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
           messages: [{ role: 'user', content: prompt }],
         }),
       });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
+        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
+      }
       const data = await res.json() as { content: Array<{ text: string }> };
-      return data.content[0]?.text ?? '';
+      return data.content?.[0]?.text ?? '';
+    } else {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          max_tokens: 2000,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
+          ],
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
+        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
+      }
+      const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+      return data.choices?.[0]?.message?.content ?? '';
     }
-    return '';
   }
 
   private async trackUsage(
