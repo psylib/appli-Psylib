@@ -50,8 +50,8 @@ function PatientLayout() {
   return (
     <div className="flex flex-col h-screen bg-gray-900">
       <div className="flex-1 relative">
-        {remoteTracks.length > 0 && remoteTracks[0].publication ? (
-          <VideoTrack trackRef={remoteTracks[0]} className="w-full h-full object-cover" />
+        {remoteTracks.length > 0 && remoteTracks[0]?.publication ? (
+          <VideoTrack trackRef={remoteTracks[0]!} className="w-full h-full object-cover" />
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-white/60">
