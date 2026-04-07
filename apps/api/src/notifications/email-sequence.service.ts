@@ -330,6 +330,52 @@ export class EmailSequenceService {
     }
   }
 
+  // ─── Envoi lien visio 10 min avant RDV ──────────────────────────────────────
+
+  @Cron('*/5 * * * *', { timeZone: 'Europe/Paris' })
+  async sendVideoLinks(): Promise<void> {
+    const now = new Date();
+    const inTenMin = new Date(now.getTime() + 10 * 60 * 1000);
+
+    // Find online appointments in the next 10 minutes that haven't had video link sent
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        isOnline: true,
+        videoJoinToken: { not: null },
+        videoLinkSentAt: null,
+        scheduledAt: { lte: inTenMin, gt: now },
+        status: { in: ['scheduled', 'confirmed'] },
+      },
+      include: {
+        patient: { select: { name: true, email: true } },
+        psychologist: { select: { name: true } },
+      },
+    });
+
+    for (const appt of appointments) {
+      if (!appt.patient.email) continue;
+      const joinUrl = `${this.frontendUrl}/patient-portal/video/${appt.videoJoinToken}`;
+
+      try {
+        await this.email.sendVideoConsultationLink(appt.patient.email, {
+          patientName: appt.patient.name,
+          psychologistName: appt.psychologist.name,
+          scheduledAt: appt.scheduledAt,
+          joinUrl,
+        });
+
+        await this.prisma.appointment.update({
+          where: { id: appt.id },
+          data: { videoLinkSentAt: new Date() },
+        });
+
+        this.logger.log(`[VideoLink] Lien visio envoyé → ${appt.patient.email} (RDV ${appt.id})`);
+      } catch (err) {
+        this.logger.error(`[VideoLink] Échec envoi lien visio ${appt.id}: ${(err as Error).message}`);
+      }
+    }
+  }
+
   private async sendEmail(
     psy: { name: string; slug: string | null; user: { email: string; createdAt: Date }; subscription: { status: string; trialEndsAt: Date | null } | null },
     action: string,

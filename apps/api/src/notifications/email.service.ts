@@ -1417,4 +1417,54 @@ export class EmailService {
       'sendCancellationNotification',
     );
   }
+
+  // ─── CONSULTATION VIDÉO ────────────────────────────────────────────────────
+
+  async sendVideoConsultationLink(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      scheduledAt: Date;
+      joinUrl: string;
+    },
+  ): Promise<void> {
+    const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+    const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Paris',
+    });
+
+    const html = emailLayout(
+      'Votre consultation vidéo',
+      `<h1>Bonjour ${data.patientName},</h1>
+       <p>Votre consultation vidéo avec <strong>${data.psychologistName}</strong> commence bientôt.</p>
+       <div class="info-box">
+         <strong>📅 ${dateFormatted}</strong> à <strong>${timeFormatted}</strong>
+       </div>
+       <p style="text-align: center; margin: 24px 0;">
+         <a href="${data.joinUrl}" class="btn">Rejoindre la consultation</a>
+       </p>
+       <p>Aucune application à installer — le lien s'ouvre dans votre navigateur.</p>
+       <div class="info-box">
+         <strong>Conseils :</strong><br />
+         • Installez-vous dans un endroit calme et privé<br />
+         • Vérifiez que votre micro et caméra fonctionnent<br />
+         • Utilisez Chrome, Firefox ou Safari à jour
+       </div>
+       <p>En cas de problème technique, contactez votre psychologue.</p>`,
+    );
+
+    await this.send(
+      to,
+      `Consultation vidéo — ${dateFormatted} à ${timeFormatted}`,
+      html,
+      'sendVideoConsultationLink',
+    );
+  }
 }

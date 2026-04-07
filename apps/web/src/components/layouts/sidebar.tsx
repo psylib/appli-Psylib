@@ -23,6 +23,7 @@ import {
   LogOut,
   GraduationCap,
   Gift,
+  Video,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
   { label: 'Outcomes', href: '/dashboard/outcomes', icon: Target },
   { label: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
   { label: 'Calendrier', href: '/dashboard/calendar', icon: Calendar },
+  { label: 'Visio', href: '/dashboard/video', icon: Video },
   { label: 'Liste d\'attente', href: '/dashboard/waitlist', icon: ClipboardList },
   { label: 'Assistant IA', href: '/dashboard/ai-assistant', icon: Sparkles },
   { label: 'Formations', href: '/dashboard/courses', icon: BookOpen },

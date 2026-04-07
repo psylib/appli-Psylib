@@ -7,6 +7,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:4000';
 const keycloakUrl = process.env.KEYCLOAK_URL || 'http://localhost:8080';
+const livekitWsUrl = process.env.NEXT_PUBLIC_LIVEKIT_WS_URL || '';
 
 const nextConfig = {
   // Output standalone pour Docker — désactivé sur Vercel (Vercel gère nativement)
@@ -51,7 +52,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
               // connect-src dynamique : dev (localhost) + prod (vraies URLs)
-              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} https://eu.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
+              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
               "frame-src 'self' https://game.crisp.chat",
               "frame-ancestors 'none'",
               "object-src 'none'",
@@ -63,8 +64,8 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: [
-              'camera=()',
-              'microphone=()',
+              'camera=(self)',
+              'microphone=(self)',
               'geolocation=()',
               'payment=(self)',
               'usb=()',

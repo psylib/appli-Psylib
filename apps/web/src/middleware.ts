@@ -48,6 +48,11 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     return nextWithPathname(req);
   }
 
+  // Video consultation — patient joins via token (no login required)
+  if (pathname.startsWith('/patient-portal/video/')) {
+    return nextWithPathname(req);
+  }
+
   // Routes protégées — redirect vers /login si non authentifié
   if (
     pathname.startsWith('/dashboard') ||
