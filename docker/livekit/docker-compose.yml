@@ -1,6 +1,6 @@
 # PsyScale — LiveKit Video Server (OVH HDS)
 # Reverse proxy via nginx (existant sur le VPS)
-# Redis partagé avec l'API — NE PAS démarrer un 2ème Redis
+# Redis dédié sur port 6380 (le Redis API est sur réseau Docker interne)
 
 services:
   livekit:
@@ -8,7 +8,26 @@ services:
     container_name: livekit
     restart: unless-stopped
     network_mode: host
-    environment:
-      - LIVEKIT_CONFIG=/etc/livekit.yaml
+    command: ["--config", "/etc/livekit.yaml"]
     volumes:
       - ./livekit.yaml:/etc/livekit.yaml:ro
+    depends_on:
+      redis-livekit:
+        condition: service_healthy
+
+  redis-livekit:
+    image: redis:7-alpine
+    container_name: redis-livekit
+    restart: unless-stopped
+    network_mode: host
+    command: redis-server --port 6380 --appendonly yes --save 60 1
+    volumes:
+      - redis-livekit-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6380", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis-livekit-data:

@@ -11,7 +11,7 @@ rtc:
   use_external_ip: true
   # Le VPS a une seule IP publique — LiveKit la détecte automatiquement
 redis:
-  address: localhost:6379
+  address: localhost:6380
 keys:
   # IMPORTANT: Remplacer par les vraies clés avant déploiement
   # Générer avec: docker run --rm livekit/generate
