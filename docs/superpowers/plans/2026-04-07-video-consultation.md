@@ -56,6 +56,7 @@ apps/api/src/appointments/appointments.service.ts           # Generate videoJoin
 apps/api/src/billing/decorators/require-plan.decorator.ts   # Add 'video' to BillingFeature
 apps/api/src/notifications/email.service.ts                 # Add sendVideoConsultationLink method
 apps/api/src/notifications/email-sequence.service.ts        # Add video link cron check
+apps/api/src/common/audit.service.ts                         # Extend AuditAction type with VIDEO_* actions
 apps/api/src/app.module.ts                                  # Import VideoModule
 
 apps/web/src/middleware.ts                                  # Whitelist /patient-portal/video/*
@@ -344,6 +345,17 @@ describe('VideoService', () => {
         .rejects.toThrow(NotFoundException);
     });
 
+    it('should throw if outside the 10-min window', async () => {
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
+      // Appointment 2 hours from now — outside the 10-min window
+      mockPrisma.appointment.findFirst.mockResolvedValueOnce(
+        makeAppointment({ scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000) }),
+      );
+
+      await expect(service.createRoom(PSY_USER_ID, APPOINTMENT_ID))
+        .rejects.toThrow(BadRequestException);
+    });
+
     it('should return existing room if already created (idempotent)', async () => {
       const existingRoom = makeVideoRoom();
       mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
@@ -433,6 +445,23 @@ describe('VideoService', () => {
         data: expect.objectContaining({ status: 'completed' }),
       }));
       expect(mockAudit.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'VIDEO_CALL_END' }));
+    });
+  });
+
+    it('should skip session creation if appointment already has a session', async () => {
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
+      const room = makeVideoRoom({ status: 'active', psyJoinedAt: new Date(Date.now() - 50 * 60 * 1000) });
+      mockPrisma.videoRoom.findFirst.mockResolvedValueOnce({
+        ...room,
+        appointment: { ...makeAppointment(), sessionId: 'existing-session-id' },
+      });
+      mockLivekitRoomService.deleteRoom.mockResolvedValueOnce(undefined);
+      mockPrisma.videoRoom.update.mockResolvedValueOnce({ ...room, status: 'ended' });
+      mockPrisma.appointment.update.mockResolvedValueOnce({});
+
+      await service.endRoom(PSY_USER_ID, APPOINTMENT_ID);
+
+      expect(mockPrisma.session.create).not.toHaveBeenCalled();
     });
   });
 
@@ -788,6 +817,16 @@ export class VideoService {
     });
   }
 
+  async getRoomInfo(userId: string, appointmentId: string) {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+      include: { appointment: { select: { scheduledAt: true, duration: true, patientId: true } } },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+    return room;
+  }
+
   @Cron('*/5 * * * *') // Every 5 minutes
   async cleanupOrphanedRooms(): Promise<void> {
     const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000);
@@ -808,6 +847,13 @@ export class VideoService {
             where: { id: room.id },
             data: { status: 'ended', endedAt: new Date() },
           });
+          await this.audit.log({
+            actorId: 'system',
+            actorType: 'system',
+            action: 'VIDEO_ROOM_CLEANUP',
+            entityType: 'video_room',
+            entityId: room.id,
+          });
           this.logger.log(`Cleaned up orphaned room ${room.roomName}`);
         }
       } catch {
@@ -820,6 +866,15 @@ export class VideoService {
     }
   }
 }
+```
+
+**Additional implementation notes for the implementer:**
+
+1. **Extend local `AuditAction` type** in `apps/api/src/common/audit.service.ts` — add `'VIDEO_ROOM_CREATED' | 'VIDEO_PSY_JOIN' | 'VIDEO_PATIENT_JOIN' | 'VIDEO_CALL_END' | 'VIDEO_ROOM_CLEANUP'` to the `AuditAction` union type.
+
+2. **Use `ConfigService`** instead of `process.env` — inject `ConfigService` from `@nestjs/config` and use `this.config.get<string>('LIVEKIT_API_KEY')` etc. This is consistent with the existing codebase pattern.
+
+3. **Pass IP address** to audit logs for `VIDEO_PSY_JOIN` and `VIDEO_PATIENT_JOIN` — the controller should pass `@Req() req: Request` and the service should accept an optional `ip?: string` parameter.
 ```
 
 - [ ] **Step 6: Run tests to verify they pass**
@@ -906,7 +961,7 @@ export class VideoController {
   @UseGuards(KeycloakGuard, RolesGuard)
   @Roles('psychologist', 'admin')
   async getRoom(@Param('appointmentId') appointmentId: string, @CurrentUser() user: any) {
-    return this.videoService.createRoom(user.sub, appointmentId);
+    return this.videoService.getRoomInfo(user.sub, appointmentId);
   }
 
   @Post('rooms/:appointmentId/token')
@@ -1023,8 +1078,10 @@ In `apps/api/src/appointments/dto/appointment.dto.ts`, add to `CreateAppointment
 
 ```typescript
 import { IsBoolean, IsOptional } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 // Add to CreateAppointmentDto:
+@ApiPropertyOptional({ default: false })
 @IsBoolean()
 @IsOptional()
 isOnline?: boolean;
@@ -2184,7 +2241,7 @@ function PatientLayout() {
         )}
 
         {localTrack?.publication && (
-          <div className="absolute bottom-4 right-4 w-40 h-30 rounded-lg overflow-hidden border-2 border-white/20">
+          <div className="absolute bottom-4 right-4 w-40 h-32 rounded-lg overflow-hidden border-2 border-white/20">
             <VideoTrack trackRef={localTrack} className="w-full h-full object-cover" />
           </div>
         )}
@@ -2232,7 +2289,7 @@ Create `apps/web/src/app/(patient-portal)/video/[token]/page.tsx`:
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { videoApi } from '@/lib/api/video';
 import { VideoConsentScreen } from '@/components/video/video-consent-screen';
 import { WaitingRoom } from '@/components/video/waiting-room';
@@ -2266,7 +2323,7 @@ export default function PatientVideoPage() {
   }, [joinToken]);
 
   // Run on mount
-  useState(() => { checkToken(); });
+  useEffect(() => { checkToken(); }, [checkToken]);
 
   const handleConsent = async () => {
     setConsentLoading(true);
@@ -2367,8 +2424,7 @@ services:
   redis:
     image: redis:7.4-alpine
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:6380:6379"
+    network_mode: host    # Same network as LiveKit for localhost:6379 access
     volumes:
       - redis-data:/data
 
@@ -2401,7 +2457,7 @@ rtc:
   port_range_end: 50200
   use_external_ip: true
 redis:
-  address: localhost:6380
+  address: localhost:6379
 keys:
   # IMPORTANT: Replace with real keys before deploying
   # Generate with: docker run --rm livekit/generate
