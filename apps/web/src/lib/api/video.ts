@@ -20,6 +20,8 @@ export interface PatientJoinResponse {
   wsUrl: string;
   roomName: string;
   needsConsent?: boolean;
+  psychologistName?: string;
+  patientName?: string;
 }
 
 export const videoApi = {
