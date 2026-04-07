@@ -144,6 +144,12 @@ enum WaitlistStatus {
   removed
 }
 
+enum VideoRoomStatus {
+  waiting
+  active
+  ended
+}
+
 // =============================================================================
 // Core Tables
 // =============================================================================
@@ -228,6 +234,7 @@ model Psychologist {
   consultationTypes        ConsultationType[]
   monSoutienPsyTrackings   MonSoutienPsyTracking[]
   waitlistEntries          WaitlistEntry[]
+  videoRooms               VideoRoom[]
 
   @@map("psychologists")
 }
@@ -513,6 +520,9 @@ model Appointment {
   paymentIntentId      String?              @map("payment_intent_id")
   paidOnline           Boolean              @default(false) @map("paid_online")
   bookingPaymentStatus BookingPaymentStatus @default(none) @map("booking_payment_status")
+  isOnline             Boolean              @default(false) @map("is_online")
+  videoJoinToken       String?              @unique @map("video_join_token")
+  videoLinkSentAt      DateTime?            @map("video_link_sent_at")
   createdAt            DateTime             @default(now()) @map("created_at")
 
   psychologist     Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
@@ -520,11 +530,30 @@ model Appointment {
   session          Session?          @relation(fields: [sessionId], references: [id])
   consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id])
   payments         Payment[]
+  videoRoom        VideoRoom?
 
   @@index([psychologistId, scheduledAt], name: "idx_appointments_psy_date")
   @@index([patientId], name: "idx_appointments_patient")
   @@index([consultationTypeId], name: "idx_appointments_consultation_type")
   @@map("appointments")
+}
+
+model VideoRoom {
+  id              String          @id @default(uuid())
+  appointmentId   String          @unique @map("appointment_id")
+  appointment     Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  psychologistId  String          @map("psychologist_id")
+  psychologist    Psychologist    @relation(fields: [psychologistId], references: [id])
+  roomName        String          @unique @map("room_name")
+  status          VideoRoomStatus @default(waiting)
+  psyJoinedAt     DateTime?       @map("psy_joined_at")
+  patientJoinedAt DateTime?       @map("patient_joined_at")
+  endedAt         DateTime?       @map("ended_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([psychologistId, status])
+  @@index([appointmentId])
+  @@map("video_rooms")
 }
 
 // =============================================================================

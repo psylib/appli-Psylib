@@ -92,12 +92,24 @@ export enum AuditAction {
   DELETE = 'DELETE',
   DECRYPT = 'DECRYPT',
   AI_SUMMARY_SAVE = 'AI_SUMMARY_SAVE',
+  VIDEO_ROOM_CREATED = 'VIDEO_ROOM_CREATED',
+  VIDEO_PSY_JOIN = 'VIDEO_PSY_JOIN',
+  VIDEO_PATIENT_JOIN = 'VIDEO_PATIENT_JOIN',
+  VIDEO_CALL_END = 'VIDEO_CALL_END',
+  VIDEO_ROOM_CLEANUP = 'VIDEO_ROOM_CLEANUP',
 }
 
 export enum GdprConsentType {
   DATA_PROCESSING = 'data_processing',
   AI_PROCESSING = 'ai_processing',
   MARKETING = 'marketing',
+  VIDEO_CONSULTATION = 'video_consultation',
+}
+
+export enum VideoRoomStatus {
+  WAITING = 'waiting',
+  ACTIVE = 'active',
+  ENDED = 'ended',
 }
 
 export enum NotificationType {
@@ -454,11 +466,11 @@ export interface HealthCheckResponse {
 }
 
 // Plan limits
-export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number }> = {
-  [SubscriptionPlan.FREE]: { patients: 5, sessions: 10, aiSummaries: 0 },
-  [SubscriptionPlan.STARTER]: { patients: 40, sessions: 40, aiSummaries: 10 },
-  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: 100 },
-  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1 }, // -1 = illimité
+export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null }> = {
+  [SubscriptionPlan.FREE]: { patients: 5, sessions: 10, aiSummaries: 0, videoConsultations: 0 },
+  [SubscriptionPlan.STARTER]: { patients: 40, sessions: 40, aiSummaries: 10, videoConsultations: 0 },
+  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: 100, videoConsultations: null },  // null = unlimited
+  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null }, // -1 = illimité
 };
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
