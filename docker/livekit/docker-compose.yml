@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  livekit:
+    image: livekit/livekit-server:v1.8
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - LIVEKIT_CONFIG=/etc/livekit.yaml
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - redis-data:/data
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  redis-data:
+  caddy-data:
+  caddy-config:

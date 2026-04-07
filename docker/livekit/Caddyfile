@@ -1,0 +1,3 @@
+video.psylib.eu {
+    reverse_proxy localhost:7880
+}
