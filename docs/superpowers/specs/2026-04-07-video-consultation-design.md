@@ -21,6 +21,8 @@ Permettre aux psychologues de mener des consultations vidéo directement dans Ps
 - Email de notification 10 min avant le RDV
 - Timer de séance visible
 - Audit logs HDS (`VIDEO_CALL_START`, `VIDEO_CALL_END`)
+- Consentement RGPD `video_consultation` avant première visio
+- Feature-gated Pro/Clinic (via `@RequirePlan`)
 
 ### Ce qu'on ne livre PAS au MVP
 
@@ -61,7 +63,7 @@ DNS : A record → 51.178.31.68 (ou IP dédiée si VPS séparé)
 
 | Couche | Technologie | Package |
 |---|---|---|
-| Serveur vidéo | LiveKit Server | `livekit/livekit-server:latest` (Docker) |
+| Serveur vidéo | LiveKit Server | `livekit/livekit-server:v1.8` (Docker, version pinnée) |
 | Backend SDK | LiveKit Node.js SDK | `livekit-server-sdk` (npm) |
 | Frontend SDK | LiveKit React Components | `@livekit/components-react` + `livekit-client` |
 | Signaling | WebRTC via LiveKit SFU | Intégré |
@@ -91,6 +93,8 @@ model VideoRoom {
   id              String          @id @default(uuid())
   appointmentId   String          @unique
   appointment     Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  psychologistId  String          @map("psychologist_id")  // Tenant isolation directe
+  psychologist    Psychologist    @relation(fields: [psychologistId], references: [id])
   roomName        String          @unique   // "psylib-{appointmentId}"
   status          VideoRoomStatus @default(waiting)
   psyJoinedAt     DateTime?
@@ -98,7 +102,7 @@ model VideoRoom {
   endedAt         DateTime?
   createdAt       DateTime        @default(now())
 
-  @@index([status])
+  @@index([psychologistId, status])
   @@index([appointmentId])
 }
 
@@ -134,16 +138,41 @@ src/video/
     └── video-room.guard.ts
 ```
 
+### Feature gating
+
+La visio est disponible uniquement pour les plans **Pro** et **Clinic**.
+
+```typescript
+@UseGuards(SubscriptionGuard)
+@RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+@Controller('video')
+export class VideoController { ... }
+```
+
+Ajout de `'video'` au type `BillingFeature` dans `require-plan.decorator.ts`.
+
 ### Endpoints
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
-| `POST` | `/video/rooms` | Psy (JWT) | Crée une room LiveKit pour un RDV |
+| `POST` | `/video/rooms` | Psy (JWT) + Pro/Clinic | Crée une room LiveKit pour un RDV |
 | `GET` | `/video/rooms/:appointmentId` | Psy (JWT) | Info sur la room (statut, participants) |
 | `POST` | `/video/rooms/:appointmentId/token` | Psy (JWT) | Génère un token psy pour rejoindre |
 | `POST` | `/video/join/:token` | Public (rate limited) | Génère un token patient via lien unique |
 | `POST` | `/video/rooms/:appointmentId/end` | Psy (JWT) | Termine la consultation |
 | `GET` | `/video/today` | Psy (JWT) | Liste des visios du jour pour le psy |
+
+### Gestion des erreurs
+
+| Cas | HTTP | Exception |
+|---|---|---|
+| RDV inexistant | 404 | `NotFoundException('Rendez-vous introuvable')` |
+| RDV pas `isOnline` | 400 | `BadRequestException('Ce rendez-vous n\'est pas en visio')` |
+| RDV annulé/terminé | 400 | `BadRequestException('Ce rendez-vous est annulé ou terminé')` |
+| Room déjà existante | 200 | Retour idempotent de la room existante |
+| Hors fenêtre horaire | 400 | `BadRequestException('La visio ne peut être démarrée que 10 min avant le RDV')` |
+| Token patient invalide | 401 | `UnauthorizedException('Lien de visio invalide ou expiré')` |
+| Plan insuffisant | 403 | `ForbiddenException('La visio nécessite un abonnement Pro ou Clinic')` |
 
 ### VideoService — Logique métier
 
@@ -168,22 +197,31 @@ generatePsyToken(psychologistId: string, appointmentId: string): Promise<string>
   // 3. Audit log: VIDEO_PSY_JOIN
 
 generatePatientToken(joinToken: string): Promise<{token: string, wsUrl: string}>
-  // 1. Valider le joinToken (signé, non expiré)
+  // 1. Valider le joinToken HMAC (signé, non expiré — expiry: 24h après le RDV)
   // 2. Récupérer le RDV associé
   // 3. Vérifier que la room existe et status != ended
-  // 4. Créer AccessToken LiveKit avec permissions:
+  // 4. Vérifier consentement RGPD `video_consultation` pour ce patient
+  //    - Si pas de consentement → retourner { needsConsent: true }
+  // 5. Créer un NOUVEAU AccessToken LiveKit (frais à chaque appel) :
   //    - canPublish: true, canSubscribe: true
   //    - roomName: "psylib-{appointmentId}"
   //    - identity: "patient-{patientId}"
-  //    - expiry: durée RDV + 15 min
-  // 5. Audit log: VIDEO_PATIENT_JOIN
+  //    - expiry: durée RDV + 30 min (depuis maintenant, PAS depuis la création room)
+  // 6. Audit log: VIDEO_PATIENT_JOIN
+  //
+  // NOTE: Le joinToken HMAC dans l'URL est longue durée (24h).
+  // Le LiveKit AccessToken est généré frais à chaque appel pour éviter l'expiration mid-session.
 
 endRoom(psychologistId: string, appointmentId: string): Promise<void>
-  // 1. Vérifier ownership
+  // 1. Vérifier ownership (psychologistId sur VideoRoom)
   // 2. Appeler LiveKit API: deleteRoom
   // 3. Mettre à jour VideoRoom: status = ended, endedAt = now()
-  // 4. Audit log: VIDEO_CALL_END
-  // 5. Optionnel: créer automatiquement une Session liée au RDV
+  // 4. Mettre à jour Appointment: status = completed
+  // 5. Créer automatiquement une Session liée au RDV si aucune n'existe :
+  //    - type: 'online', duration: calculée depuis psyJoinedAt
+  //    - notes: vides (le psy peut les avoir remplies dans le panneau latéral)
+  //    - Lier via appointment.sessionId
+  // 6. Audit log: VIDEO_CALL_END (avec durée)
 
 getTodayRooms(psychologistId: string): Promise<VideoRoomWithAppointment[]>
   // 1. Requête: appointments du jour avec isOnline = true
@@ -199,7 +237,14 @@ Le lien patient contient un **token signé HMAC-SHA256** (même pattern que `can
 https://psylib.eu/patient-portal/video/{joinToken}
 ```
 
-Le `joinToken` encode : `appointmentId + patientId + expiry`. Généré quand la room est créée, envoyé par email au patient.
+**Distinction joinToken vs LiveKit AccessToken :**
+
+| Token | Type | Durée de vie | Usage |
+|---|---|---|---|
+| `joinToken` (URL) | HMAC-SHA256 | 24h après le RDV | Identifier le patient + autoriser l'accès à la page |
+| LiveKit `AccessToken` | JWT LiveKit | durée RDV + 30 min (depuis génération) | Accès au flux WebRTC |
+
+Le `joinToken` dans l'URL est longue durée — il permet au patient de revenir si la connexion coupe. Le LiveKit `AccessToken` est généré **frais à chaque appel** à `POST /video/join/:token`, ce qui évite l'expiration mid-session et permet la reconnexion.
 
 ### Rate limiting
 
@@ -311,11 +356,14 @@ Page publique (protégée par le token signé, pas besoin de login patient).
 ```
 
 Flow :
-1. Le patient ouvre le lien → test auto micro/caméra → preview
-2. Le `POST /video/join/:token` valide le token et connecte au LiveKit room
-3. Le patient attend (status `waiting` dans la room)
-4. Quand le psy rejoint, la consultation démarre automatiquement
-5. Quand le psy termine, le patient voit "La consultation est terminée" + bouton retour portail
+1. Le patient ouvre le lien → **écran de consentement RGPD** si première visio (type `video_consultation`)
+2. Test auto micro/caméra → preview
+3. Le `POST /video/join/:token` valide le token, vérifie le consentement, et génère un LiveKit AccessToken frais
+4. Le patient attend (status `waiting` dans la room)
+5. Quand le psy rejoint, la consultation démarre automatiquement
+6. Quand le psy termine, le patient voit "La consultation est terminée" + bouton retour portail
+
+**Reconnexion :** si le patient perd la connexion, il peut rouvrir le même lien. Un nouveau LiveKit AccessToken est généré via `POST /video/join/:token` (le joinToken HMAC reste valide 24h).
 
 ### 5.6 Hook `useVideoCall`
 
@@ -333,7 +381,14 @@ useVideoCall({
 })
 ```
 
-Retourne : `{ isConnected, participants, localParticipant, toggleMic, toggleCamera, disconnect }`
+Retourne : `{ isConnected, participants, localParticipant, toggleMic, toggleCamera, disconnect, connectedAt, isReconnecting }`
+
+### 5.7 Reconnexion & gestion des erreurs réseau
+
+- **Auto-reconnexion** : LiveKit client a un mécanisme de reconnexion intégré (3 tentatives, backoff exponentiel). Le hook expose `isReconnecting` pour afficher un indicateur visuel.
+- **Psy ferme l'onglet** : le patient voit "Votre psychologue s'est déconnecté. Il peut revenir dans quelques instants." (pas de fermeture automatique de la room)
+- **Patient perd la connexion** : le psy voit "Le patient s'est déconnecté" avec un timer. Si le patient ne revient pas après 5 min, notification "Le patient ne semble pas pouvoir se reconnecter."
+- **Rooms orphelines** : un cron job NestJS toutes les 15 min vérifie les rooms `active` dont le dernier heartbeat LiveKit date de >15 min → passage automatique en `ended` + audit log `VIDEO_ROOM_ORPHAN_CLEANUP`
 
 ---
 
@@ -341,7 +396,14 @@ Retourne : `{ isConnected, participants, localParticipant, toggleMic, toggleCame
 
 Template React Email (Resend) : `video-consultation-link.tsx`
 
-Envoyé **10 minutes avant le RDV** via un job BullMQ (même pattern que les rappels de RDV existants).
+Envoyé **10 minutes avant le RDV** via un job BullMQ avec `delay` calculé.
+
+### Scheduling du job
+
+- À la création d'un RDV avec `isOnline: true` → ajouter un job BullMQ `send-video-link` avec `delay: scheduledAt - 10min - now()` (millisecondes)
+- Si le RDV est modifié (`PUT /appointments/:id`) et que `isOnline` change ou que `scheduledAt` change → supprimer l'ancien job + en créer un nouveau
+- Si le RDV est annulé → supprimer le job
+- Ajout d'un champ `videoLinkSentAt DateTime?` sur `Appointment` pour tracker l'envoi
 
 ```
 Sujet : Votre consultation vidéo dans 10 minutes
@@ -391,6 +453,27 @@ En cas de problème technique, contactez votre psychologue.
 - Le patient ne peut voir que sa propre room (validation serveur du token)
 - Aucun enregistrement au MVP — les flux vidéo ne sont jamais persistés
 
+### Consentement RGPD vidéo
+
+Nouveau type de consentement dans `gdpr_consents` : `video_consultation`
+
+Le patient doit consentir **avant sa première visio** :
+- Écran de consentement dans la salle d'attente (avant le test micro/caméra)
+- Texte : "En rejoignant cette consultation vidéo, vous autorisez le traitement de votre image et votre voix en temps réel sur une infrastructure certifiée HDS en France. Aucun enregistrement n'est effectué."
+- Le consentement est enregistré dans `gdpr_consents` (type: `video_consultation`, version: `2026-04-v1`)
+- Le consentement est vérifié côté serveur dans `generatePatientToken`
+
+### CSP & Permissions-Policy (next.config.mjs)
+
+Modifications nécessaires :
+- `connect-src` : ajouter `wss://video.psylib.eu https://video.psylib.eu`
+- `Permissions-Policy` : pour les routes `/dashboard/video/*` et `/patient-portal/video/*`, changer `camera=()` et `microphone=()` en `camera=(self)` et `microphone=(self)`
+- Implémenter via un middleware conditionnel ou des headers route-spécifiques dans `next.config.mjs`
+
+### Middleware (middleware.ts)
+
+Ajouter `/patient-portal/video/(.*)` à la liste des routes publiques (même pattern que `/appointments/cancel/(.*)`) pour que les patients sans compte PsyLib puissent accéder à la salle d'attente via le lien signé.
+
 ### CORS & réseau
 
 - LiveKit server : CORS restreint à `psylib.eu` et `www.psylib.eu`
@@ -410,7 +493,7 @@ En cas de problème technique, contactez votre psychologue.
 | **Session notes** | Panneau latéral dans la salle de consultation |
 | **Patient portal** | Page salle d'attente + notification "visio dans 10 min" |
 | **Emails (Resend)** | Nouveau template `video-consultation-link` |
-| **BullMQ** | Job `send-video-link` 10 min avant le RDV |
+| **BullMQ** | Job `send-video-link` schedulé avec `delay` à la création du RDV |
 | **Audit logs** | 4 nouveaux événements VIDEO_* |
 | **Socket.io** | Non utilisé pour la visio (LiveKit gère son propre signaling) |
 
@@ -428,12 +511,11 @@ version: '3.8'
 
 services:
   livekit:
-    image: livekit/livekit-server:latest
+    image: livekit/livekit-server:v1.8    # Version pinnée
     restart: unless-stopped
-    ports:
-      - "7880:7880"   # HTTP API
-      - "7881:7881"   # RTC (WebRTC)
-      - "7882:7882"   # TURN TCP
+    network_mode: host    # Requis pour WebRTC UDP (accès direct aux ports)
+    # Ports utilisés : 7880 (HTTP API), 7881 (RTC signaling),
+    # 50000-50200 (UDP media), 7882 (TURN TCP)
     environment:
       - LIVEKIT_CONFIG=/etc/livekit.yaml
     volumes:
@@ -442,13 +524,13 @@ services:
       - redis
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine    # Version pinnée
     restart: unless-stopped
     volumes:
       - redis-data:/data
 
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2.8-alpine    # Version pinnée
     restart: unless-stopped
     ports:
       - "443:443"
@@ -466,11 +548,12 @@ volumes:
 ```yaml
 port: 7880
 rtc:
-  port_range_start: 7881
-  port_range_end: 7881
+  udp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50200    # 200 ports UDP pour ~100 sessions simultanées
   use_external_ip: true
 redis:
-  address: redis:6379
+  address: localhost:6379    # network_mode: host → localhost
 keys:
   # Clé API + secret pour générer les tokens côté NestJS
   APIxxxxxx: secretxxxxxx
@@ -481,6 +564,8 @@ turn:
 logging:
   level: info
 ```
+
+> **Note :** `network_mode: host` est utilisé pour le container LiveKit afin d'éviter le NAT Docker sur les ports UDP media. Les ports 50000-50200/UDP + 7880-7882 doivent être ouverts dans le firewall OVH.
 
 ---
 
@@ -525,18 +610,22 @@ NEXT_PUBLIC_LIVEKIT_WS_URL=wss://video.psylib.eu
 | # | Livrable | Fichiers principaux |
 |---|---|---|
 | 1 | Infrastructure LiveKit | `docker-compose.livekit.yml`, `livekit.yaml`, `Caddyfile` |
-| 2 | Migration Prisma | `schema.prisma` (Appointment.isOnline + VideoRoom) |
+| 2 | Migration Prisma | `schema.prisma` (Appointment.isOnline/videoLinkSentAt + VideoRoom + gdpr_consents type) |
 | 3 | VideoModule NestJS | `video.module.ts`, `video.service.ts`, `video.controller.ts` |
-| 4 | Modification Appointment DTO | `appointment.dto.ts` (ajout `isOnline`) |
-| 5 | Hook useVideoCall | `hooks/use-video-call.ts` |
-| 6 | Page `/dashboard/video` | `app/(dashboard)/video/page.tsx` |
-| 7 | Salle consultation psy | `app/(dashboard)/video/[roomId]/page.tsx` |
-| 8 | Salle d'attente patient | `app/(patient-portal)/video/[token]/page.tsx` |
-| 9 | Composants vidéo | `components/video/` (VideoRoom, WaitingRoom, Controls, Timer) |
-| 10 | Badge calendrier | `calendar-content.tsx` (modification) |
-| 11 | Checkbox visio | `create-appointment-dialog.tsx` (modification) |
-| 12 | Sidebar item | `sidebar.tsx` (modification) |
-| 13 | Email template | `video-consultation-link.tsx` |
-| 14 | Job BullMQ | `send-video-link.job.ts` |
-| 15 | Shared types | `packages/shared-types` (VideoRoom, VideoRoomStatus) |
-| 16 | Tests | Vitest (VideoService) + Playwright (flow E2E) |
+| 4 | Feature gating | `require-plan.decorator.ts` (ajout `'video'` à BillingFeature) |
+| 5 | Modification Appointment DTO + Service | `appointment.dto.ts` (ajout `isOnline`), scheduling BullMQ |
+| 6 | Hook useVideoCall | `hooks/use-video-call.ts` |
+| 7 | Page `/dashboard/video` | `app/(dashboard)/video/page.tsx` |
+| 8 | Salle consultation psy | `app/(dashboard)/video/[roomId]/page.tsx` |
+| 9 | Salle d'attente patient | `app/(patient-portal)/video/[token]/page.tsx` |
+| 10 | Composants vidéo | `components/video/` (VideoRoom, WaitingRoom, Controls, Timer, ConsentScreen) |
+| 11 | Badge calendrier | `calendar-content.tsx` (modification) |
+| 12 | Checkbox visio | `create-appointment-dialog.tsx` (modification) |
+| 13 | Sidebar item | `sidebar.tsx` (modification) |
+| 14 | Email template | `video-consultation-link.tsx` |
+| 15 | Job BullMQ | `send-video-link.job.ts` |
+| 16 | Shared types | `packages/shared-types` (VideoRoom, VideoRoomStatus) |
+| 17 | CSP & Permissions-Policy | `next.config.mjs` (connect-src + camera/microphone permissions) |
+| 18 | Middleware route publique | `middleware.ts` (whitelist `/patient-portal/video/(.*)`) |
+| 19 | Cron rooms orphelines | `video-cleanup.cron.ts` (nettoyage rooms active >15 min sans heartbeat) |
+| 20 | Tests | Vitest (VideoService) + Playwright (flow E2E) |
