@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { CheckCircle2, ExternalLink, Landmark } from 'lucide-react';
@@ -18,10 +19,15 @@ export function ConnectOnboardingCard() {
     staleTime: 60 * 1000,
   });
 
+  const [error, setError] = useState<string | null>(null);
+
   const { mutate: startOnboarding, isPending } = useMutation({
     mutationFn: () => billingApi.startConnectOnboarding(session!.accessToken),
     onSuccess: ({ url }) => {
       window.location.href = url;
+    },
+    onError: (err: Error) => {
+      setError(err.message || 'Une erreur est survenue lors de la connexion à Stripe.');
     },
   });
 
@@ -51,10 +57,13 @@ export function ConnectOnboardingCard() {
             </p>
           </div>
         </div>
-        <Button onClick={() => startOnboarding()} loading={isPending}>
+        <Button onClick={() => { setError(null); startOnboarding(); }} loading={isPending}>
           <ExternalLink size={16} aria-hidden />
           Connecter mon compte
         </Button>
+        {error && (
+          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+        )}
       </div>
     );
   }
