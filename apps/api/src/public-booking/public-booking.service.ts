@@ -394,6 +394,7 @@ export class PublicBookingService {
         cancelToken,
         consultationTypeId: dto.consultationTypeId ?? null,
         bookingPaymentStatus: wantsOnlinePayment ? 'pending_payment' : 'none',
+        isOnline: dto.isOnline === true,
       },
     });
 

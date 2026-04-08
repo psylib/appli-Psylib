@@ -10,8 +10,8 @@ export class PublicBookingDto {
   patientEmail!: string;
 
   @IsString()
-  @IsOptional()
-  patientPhone?: string;
+  @MinLength(6)
+  patientPhone!: string;
 
   @IsDateString()
   scheduledAt!: string;
@@ -28,4 +28,8 @@ export class PublicBookingDto {
   @IsOptional()
   @IsUUID()
   consultationTypeId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isOnline?: boolean;
 }

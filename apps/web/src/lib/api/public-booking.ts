@@ -36,11 +36,12 @@ export interface PublicPsyProfile {
 export interface BookingDto {
   patientName: string;
   patientEmail: string;
-  patientPhone?: string;
+  patientPhone: string;
   scheduledAt: string;
   reason?: string;
   consultationTypeId?: string;
   payOnline?: boolean;
+  isOnline?: boolean;
 }
 
 export interface BookingResult {

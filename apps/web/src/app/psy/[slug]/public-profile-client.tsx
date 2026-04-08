@@ -155,6 +155,7 @@ function BookingModal({
   duration,
   consultationType,
   acceptsOnlinePayment,
+  offersVisio,
   onClose,
   onSuccess,
 }: {
@@ -163,6 +164,7 @@ function BookingModal({
   duration: number;
   consultationType?: ConsultationType;
   acceptsOnlinePayment?: boolean;
+  offersVisio?: boolean;
   onClose: () => void;
   onSuccess: (appointmentId: string, checkoutUrl?: string) => void;
 }) {
@@ -173,6 +175,7 @@ function BookingModal({
     reason: '',
   });
   const [payOnline, setPayOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -187,11 +190,12 @@ function BookingModal({
       const result = await publicBookingApi.book(slug, {
         patientName: form.patientName,
         patientEmail: form.patientEmail,
-        patientPhone: form.patientPhone || undefined,
+        patientPhone: form.patientPhone,
         scheduledAt: slot.toISOString(),
         reason: form.reason || undefined,
         consultationTypeId: consultationType?.id,
         payOnline: showPaymentChoice ? payOnline : undefined,
+        isOnline: offersVisio ? isOnline : undefined,
       });
       onSuccess(result.appointmentId, result.checkoutUrl);
     } catch (err) {
@@ -268,9 +272,10 @@ function BookingModal({
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
-              Téléphone
+              Téléphone <span className="text-red-500">*</span>
             </label>
             <input
+              required
               type="tel"
               value={form.patientPhone}
               onChange={(e) => setForm((f) => ({ ...f, patientPhone: e.target.value }))}
@@ -291,6 +296,37 @@ function BookingModal({
               className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
             />
           </div>
+
+          {/* Visio / Cabinet choice */}
+          {offersVisio && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-sky-50 border border-sky-200">
+              <Video className="w-5 h-5 text-sky-600 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">Mode de consultation</p>
+                <p className="text-xs text-muted-foreground">Ce praticien propose aussi des séances en visio</p>
+              </div>
+              <div className="flex rounded-lg border border-sky-200 overflow-hidden text-sm">
+                <button
+                  type="button"
+                  onClick={() => setIsOnline(false)}
+                  className={`px-3 py-1.5 font-medium transition ${
+                    !isOnline ? 'bg-white text-foreground shadow-sm' : 'bg-transparent text-muted-foreground hover:bg-sky-100'
+                  }`}
+                >
+                  Au cabinet
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsOnline(true)}
+                  className={`px-3 py-1.5 font-medium transition ${
+                    isOnline ? 'bg-sky-600 text-white' : 'bg-transparent text-muted-foreground hover:bg-sky-100'
+                  }`}
+                >
+                  En visio
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Payment choice */}
           {showPaymentChoice && (
@@ -608,6 +644,7 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
           duration={effectiveDuration}
           consultationType={selectedType ?? undefined}
           acceptsOnlinePayment={profile.acceptsOnlinePayment}
+          offersVisio={profile.offersVisio}
           onClose={() => setSelectedSlot(null)}
           onSuccess={handleSuccess}
         />
