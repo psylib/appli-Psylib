@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { UserRole } from '@psyscale/shared-types';
+import { PatientLogoutButton } from '@/components/patient-portal/patient-logout-button';
 
 export default async function PatientPortalLayout({
   children,
@@ -23,7 +24,10 @@ export default async function PatientPortalLayout({
     <div className="flex min-h-screen flex-col bg-background">
       <header className="bg-white border-b border-border px-4 py-3 flex items-center justify-between">
         <span className="text-lg font-semibold text-primary">PsyLib</span>
-        <span className="text-sm text-muted-foreground">{session.user.email}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground hidden sm:inline">{session.user.email}</span>
+          <PatientLogoutButton />
+        </div>
       </header>
 
       <main className="flex-1 p-4">{children}</main>
