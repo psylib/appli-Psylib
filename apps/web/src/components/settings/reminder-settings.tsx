@@ -38,7 +38,7 @@ const PREVIEW_VALUES: Record<string, string> = {
 };
 
 export function ReminderSettings() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -53,7 +53,8 @@ export function ReminderSettings() {
   const token = session?.accessToken ?? '';
 
   useEffect(() => {
-    if (!token) return;
+    if (status === 'loading') return;
+    if (!token) { setLoading(false); return; }
     psychologistApi
       .getProfile(token)
       .then((profile) => {
@@ -68,7 +69,7 @@ export function ReminderSettings() {
       .finally(() => {
         setLoading(false);
       });
-  }, [token, toastError]);
+  }, [token, status, toastError]);
 
   const previewMessage = useMemo(() => {
     let msg = template;

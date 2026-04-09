@@ -7,7 +7,7 @@ import { psychologistApi } from '@/lib/api/psychologist';
 import { Loader2, FileText } from 'lucide-react';
 
 export function InvoiceSettings() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
   const [autoInvoice, setAutoInvoice] = useState(true);
@@ -18,7 +18,8 @@ export function InvoiceSettings() {
   const token = session?.accessToken ?? '';
 
   useEffect(() => {
-    if (!token) return;
+    if (status === 'loading') return;
+    if (!token) { setLoading(false); return; }
     psychologistApi
       .getProfile(token)
       .then((profile) => {
@@ -31,7 +32,7 @@ export function InvoiceSettings() {
       .finally(() => {
         setLoading(false);
       });
-  }, [token]);
+  }, [token, status]);
 
   const handleToggleAutoInvoice = async () => {
     if (!token) return;

@@ -23,7 +23,7 @@ interface ConnectStatus {
 }
 
 export function PaymentSettings() {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<ConnectStatus | null>(null);
@@ -34,7 +34,8 @@ export function PaymentSettings() {
   const token = session?.accessToken ?? '';
 
   useEffect(() => {
-    if (!token) return;
+    if (sessionStatus === 'loading') return;
+    if (!token) { setLoading(false); return; }
     apiClient
       .get<ConnectStatus>('/billing/connect/status', token)
       .then((data) => {
@@ -47,7 +48,7 @@ export function PaymentSettings() {
       .finally(() => {
         setLoading(false);
       });
-  }, [token, toastError]);
+  }, [token, sessionStatus, toastError]);
 
   const handleConnect = async () => {
     if (!token) return;

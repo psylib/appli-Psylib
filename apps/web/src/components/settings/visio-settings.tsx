@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/toast';
-import { psychologistApi } from '@/lib/api/psychologist';
-import { consultationTypesApi, type ConsultationType } from '@/lib/api/consultation-types';
-import { Loader2, Shield, Info } from 'lucide-react';
+import { apiClient } from '@/lib/api/client';
+import { Loader2, Video, Info } from 'lucide-react';
 
-export function MspSettings() {
+interface NetworkProfile {
+  offersVisio: boolean;
+}
+
+export function VisioSettings() {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [enabled, setEnabled] = useState(false);
@@ -19,18 +22,19 @@ export function MspSettings() {
   useEffect(() => {
     if (status === 'loading') return;
     if (!token) { setLoading(false); return; }
-    psychologistApi
-      .getProfile(token)
+    apiClient
+      .get<NetworkProfile>('/network/profile', token)
       .then((profile) => {
-        setEnabled(profile.acceptsMonSoutienPsy);
+        setEnabled(profile.offersVisio);
       })
       .catch(() => {
-        toastError('Impossible de charger les parametres MSP.');
+        // Profile may not exist yet — default to false
+        setEnabled(false);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [token, status, toastError]);
+  }, [token, status]);
 
   const handleToggle = async () => {
     if (!token) return;
@@ -38,49 +42,17 @@ export function MspSettings() {
     setToggling(true);
 
     try {
-      // Update profile
-      await psychologistApi.updateProfile(
-        { acceptsMonSoutienPsy: newValue },
+      await apiClient.put<NetworkProfile>(
+        '/network/profile',
+        { offersVisio: newValue },
         token,
       );
       setEnabled(newValue);
-
-      // If enabling, create default MSP consultation types if none exist
-      if (newValue) {
-        const existingTypes = await consultationTypesApi.getAll(token);
-        const hasMspTypes = existingTypes.some(
-          (t: ConsultationType) => t.category === 'mon_soutien_psy' && t.isActive,
-        );
-        if (!hasMspTypes) {
-          await consultationTypesApi.create(
-            {
-              name: 'Bilan initial Mon Soutien Psy',
-              duration: 60,
-              rate: 50,
-              category: 'mon_soutien_psy',
-              color: '#0D9488',
-              isPublic: true,
-            },
-            token,
-          );
-          await consultationTypesApi.create(
-            {
-              name: 'Seance de suivi Mon Soutien Psy',
-              duration: 45,
-              rate: 50,
-              category: 'mon_soutien_psy',
-              color: '#0D9488',
-              isPublic: true,
-            },
-            token,
-          );
-          success('Mon Soutien Psy active. 2 motifs de consultation crees automatiquement.');
-        } else {
-          success('Mon Soutien Psy active.');
-        }
-      } else {
-        success('Mon Soutien Psy desactive.');
-      }
+      success(
+        newValue
+          ? 'Visioconference activee. Vos patients pourront choisir ce mode lors de la reservation.'
+          : 'Visioconference desactivee.',
+      );
     } catch {
       toastError('Erreur lors de la mise a jour.');
     } finally {
@@ -103,11 +75,11 @@ export function MspSettings() {
       <div className="flex items-start gap-4">
         <div className="flex-1">
           <h2 className="text-base font-medium text-foreground flex items-center gap-2">
-            <Shield className="w-4 h-4 text-accent" />
-            Mon Soutien Psy
+            <Video className="w-4 h-4 text-sky-600" />
+            Visioconference
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Acceptez les patients eligibles au dispositif Mon Soutien Psy de l&apos;Assurance Maladie.
+            Proposez des seances en visio a vos patients lors de la prise de rendez-vous en ligne.
           </p>
         </div>
 
@@ -119,7 +91,7 @@ export function MspSettings() {
             onClick={() => void handleToggle()}
             disabled={toggling}
             className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ${
-              enabled ? 'bg-accent' : 'bg-gray-200'
+              enabled ? 'bg-sky-600' : 'bg-gray-200'
             } disabled:opacity-50`}
           >
             <span
@@ -134,8 +106,8 @@ export function MspSettings() {
       {/* Status badge */}
       <div>
         {enabled ? (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-accent/10 text-accent">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-600" />
             Actif
           </span>
         ) : (
@@ -147,17 +119,18 @@ export function MspSettings() {
       </div>
 
       {/* Info box */}
-      <div className="flex gap-3 p-3 rounded-lg bg-accent/5 border border-accent/10">
-        <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+      <div className="flex gap-3 p-3 rounded-lg bg-sky-50/50 border border-sky-100">
+        <Info className="w-4 h-4 text-sky-600 flex-shrink-0 mt-0.5" />
         <div className="text-xs text-muted-foreground space-y-1">
           <p>
-            <strong className="text-foreground">Mon Soutien Psy</strong> permet aux patients
-            orientes par un medecin d&apos;acceder a 12 seances par an, remboursees par l&apos;Assurance Maladie
-            a hauteur de 50 EUR par seance.
+            En activant cette option, vos patients verront un choix{' '}
+            <strong className="text-foreground">&quot;Au cabinet&quot;</strong> ou{' '}
+            <strong className="text-foreground">&quot;En visio&quot;</strong> lors de la
+            reservation en ligne.
           </p>
           <p>
-            En activant cette option, deux motifs de consultation Mon Soutien Psy
-            seront automatiquement crees (bilan initial 60min et suivi 45min a 50 EUR).
+            Les seances en visio utilisent notre systeme de visioconference integre,
+            securise et conforme HDS.
           </p>
         </div>
       </div>

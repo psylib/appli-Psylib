@@ -52,7 +52,7 @@ const EMPTY_FORM: FormState = {
 };
 
 export function ConsultationTypesSettings() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [types, setTypes] = useState<ConsultationType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,8 +78,10 @@ export function ConsultationTypesSettings() {
   }, [token, toastError]);
 
   useEffect(() => {
+    if (status === 'loading') return;
+    if (!token) { setLoading(false); return; }
     void loadTypes();
-  }, [loadTypes]);
+  }, [loadTypes, status, token]);
 
   const resetForm = () => {
     setForm(EMPTY_FORM);
