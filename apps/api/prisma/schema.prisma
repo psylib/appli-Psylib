@@ -150,6 +150,16 @@ enum VideoRoomStatus {
   ended
 }
 
+enum SessionStatus {
+  draft
+  completed
+}
+
+enum InvoiceSource {
+  manual
+  auto
+}
+
 // =============================================================================
 // Core Tables
 // =============================================================================
@@ -227,6 +237,8 @@ model Psychologist {
   paymentMode              PaymentMode             @default(both) @map("payment_mode")
   cancellationDelay        Int                     @default(24) @map("cancellation_delay")
   autoRefund               Boolean                 @default(true) @map("auto_refund")
+  autoInvoice              Boolean                 @default(true) @map("auto_invoice")
+  autoInvoiceEmail         Boolean                 @default(true) @map("auto_invoice_email")
   reminderDelay            Int                     @default(24) @map("reminder_delay")
   reminderSmsEnabled       Boolean                 @default(false) @map("reminder_sms_enabled")
   reminderEmailEnabled     Boolean                 @default(true) @map("reminder_email_enabled")
@@ -384,12 +396,14 @@ model Session {
   orientation    TherapyOrientation?
   templateId     String?              @map("template_id")
   aiMetadata     Json?                @map("ai_metadata")
+  status         SessionStatus        @default(draft)
   createdAt      DateTime             @default(now()) @map("created_at")
 
   // Relations
   patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   appointment  Appointment?
+  invoices     Invoice[]
 
   @@index([patientId], name: "idx_sessions_patient")
   @@index([psychologistId, date(sort: Desc)], name: "idx_sessions_psy_date")
@@ -703,6 +717,7 @@ model Payment {
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient      Patient?     @relation(fields: [patientId], references: [id])
   appointment  Appointment? @relation(fields: [appointmentId], references: [id])
+  invoices     Invoice[]
 
   @@index([appointmentId])
   @@map("payments")
@@ -717,9 +732,15 @@ model Invoice {
   status         InvoiceStatus @default(draft)
   issuedAt       DateTime      @map("issued_at") @db.Date
   pdfUrl         String?       @map("pdf_url")
+  sessionId      String?       @map("session_id")
+  paymentId      String?       @map("payment_id")
+  paidAt         DateTime?     @map("paid_at")
+  source         InvoiceSource @default(manual)
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient      Patient?     @relation(fields: [patientId], references: [id])
+  session      Session?     @relation(fields: [sessionId], references: [id])
+  payment      Payment?     @relation(fields: [paymentId], references: [id])
 
   @@map("invoices")
 }
