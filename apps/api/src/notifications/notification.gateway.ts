@@ -97,7 +97,7 @@ export class NotificationGateway
    */
   isUserOnline(userId: string): boolean {
     if (!this.server) return false;
-    const room = this.server.adapter.rooms?.get(`user:${userId}`);
+    const room = (this.server.sockets?.adapter as unknown as { rooms?: Map<string, Set<string>> })?.rooms?.get(`user:${userId}`);
     return !!room && room.size > 0;
   }
 

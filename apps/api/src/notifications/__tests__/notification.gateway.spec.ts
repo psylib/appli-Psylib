@@ -65,7 +65,7 @@ describe('NotificationGateway', () => {
 
   it('isUserOnline returns false when user has no active connections', () => {
     const mockServer = {
-      adapter: { rooms: new Map() },
+      sockets: { adapter: { rooms: new Map() } },
     };
     (gateway as any).server = mockServer;
     expect(gateway.isUserOnline('user-123')).toBe(false);
@@ -74,7 +74,7 @@ describe('NotificationGateway', () => {
   it('isUserOnline returns true when user has active connections', () => {
     const rooms = new Map();
     rooms.set('user:user-123', new Set(['socket-1']));
-    const mockServer = { adapter: { rooms } };
+    const mockServer = { sockets: { adapter: { rooms } } };
     (gateway as any).server = mockServer;
 
     expect(gateway.isUserOnline('user-123')).toBe(true);
