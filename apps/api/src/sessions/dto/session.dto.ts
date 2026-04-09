@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SessionType, SessionPaymentStatus } from '@psyscale/shared-types';
-import { TherapyOrientation } from '@prisma/client';
+import { TherapyOrientation, SessionStatus } from '@prisma/client';
 
 export class CreateSessionDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
@@ -125,6 +125,11 @@ export class UpdateSessionDto {
   @IsOptional()
   @IsObject()
   aiMetadata?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ enum: SessionStatus })
+  @IsOptional()
+  @IsEnum(SessionStatus)
+  status?: SessionStatus;
 }
 
 export class SessionQueryDto {
