@@ -96,6 +96,19 @@ export class UpdatePsychologistProfileDto {
   @IsOptional()
   @Type(() => Boolean)
   acceptsMonSoutienPsy?: boolean;
+
+  // Auto-invoice settings
+  @ApiPropertyOptional({ description: 'Auto-generate invoices on session completion' })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  autoInvoice?: boolean;
+
+  @ApiPropertyOptional({ description: 'Auto-send invoice email on payment confirmation' })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  autoInvoiceEmail?: boolean;
 }
 
 export type OnboardingStep =
@@ -179,6 +192,8 @@ export class OnboardingService {
         ...(dto.reminderTemplate !== undefined && { reminderTemplate: dto.reminderTemplate }),
         ...(dto.allowOnlinePayment !== undefined && { allowOnlinePayment: dto.allowOnlinePayment }),
         ...(dto.acceptsMonSoutienPsy !== undefined && { acceptsMonSoutienPsy: dto.acceptsMonSoutienPsy }),
+        ...(dto.autoInvoice !== undefined && { autoInvoice: dto.autoInvoice }),
+        ...(dto.autoInvoiceEmail !== undefined && { autoInvoiceEmail: dto.autoInvoiceEmail }),
       },
     });
 

@@ -8,12 +8,14 @@ import { BillingQueueProcessor, BILLING_QUEUE } from './billing.queue';
 import { SubscriptionGuard } from './guards/subscription.guard';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ReferralModule } from '../referral/referral.module';
+import { InvoicesModule } from '../invoices/invoices.module';
 
 @Module({
   imports: [
     BullModule.registerQueue({ name: BILLING_QUEUE }),
     NotificationsModule,
     ReferralModule,
+    InvoicesModule,
   ],
   controllers: [BillingController, WebhookController],
   providers: [StripeService, SubscriptionService, BillingQueueProcessor, SubscriptionGuard],

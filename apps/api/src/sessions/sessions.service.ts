@@ -4,6 +4,8 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
@@ -17,6 +19,7 @@ import type { PaginatedResponse } from '@psyscale/shared-types';
 import { Prisma } from '@prisma/client';
 import type { Session } from '@prisma/client';
 import type { Request } from 'express';
+import { INVOICE_GENERATION_QUEUE, GenerateInvoiceJobData } from '../invoices/invoice-generation.processor';
 
 @Injectable()
 export class SessionsService {
@@ -27,6 +30,8 @@ export class SessionsService {
     private readonly encryption: EncryptionService,
     private readonly audit: AuditService,
     private readonly monSoutienPsy: MonSoutienPsyService,
+    @InjectQueue(INVOICE_GENERATION_QUEUE)
+    private readonly invoiceQueue: Queue<GenerateInvoiceJobData>,
   ) {}
 
   async create(
@@ -206,6 +211,7 @@ export class SessionsService {
             ? (dto.aiMetadata as import('@prisma/client').Prisma.InputJsonValue)
             : Prisma.DbNull,
         }),
+        ...(dto.status !== undefined && { status: dto.status }),
       },
     });
 
@@ -230,6 +236,34 @@ export class SessionsService {
         entityId: sessionId,
         req,
       });
+    }
+
+    // Auto-invoice on session completion
+    if (dto.status === 'completed') {
+      const psychologist = await this.prisma.psychologist.findUnique({
+        where: { id: existing.psychologistId },
+      });
+
+      if (psychologist?.autoInvoice) {
+        const existingInvoice = await this.prisma.invoice.findFirst({
+          where: { sessionId: sessionId },
+        });
+
+        if (!existingInvoice) {
+          const amount = Number(updated.rate) || Number(psychologist.defaultSessionRate) || 0;
+          if (amount > 0) {
+            await this.invoiceQueue.add('generate', {
+              type: 'session_completed',
+              psychologistId: existing.psychologistId,
+              patientId: existing.patientId,
+              sessionId: sessionId,
+              amount,
+              sessionDate: updated.date.toISOString(),
+            });
+            this.logger.log(`Enqueued auto-invoice for session ${sessionId}`);
+          }
+        }
+      }
     }
 
     return updated;

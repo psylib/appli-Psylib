@@ -1,4 +1,6 @@
 import { Injectable, Logger, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { StripeService } from './stripe.service';
@@ -9,6 +11,7 @@ import { ReferralService } from '../referral/referral.service';
 import type { ConnectSettingsDto } from './dto/connect-settings.dto';
 import type { PaymentLinkDto } from './dto/payment-link.dto';
 import type Stripe from 'stripe';
+import { INVOICE_GENERATION_QUEUE, GenerateInvoiceJobData } from '../invoices/invoice-generation.processor';
 
 @Injectable()
 export class SubscriptionService {
@@ -21,6 +24,8 @@ export class SubscriptionService {
     private readonly email: EmailService,
     private readonly referral: ReferralService,
     private readonly audit: AuditService,
+    @InjectQueue(INVOICE_GENERATION_QUEUE)
+    private readonly invoiceQueue: Queue<GenerateInvoiceJobData>,
   ) {}
 
   private getPriceIdForPlan(plan: SubscriptionPlan): string {
@@ -466,6 +471,7 @@ export class SubscriptionService {
 
     const appointment = await this.prisma.appointment.findUnique({
       where: { id: appointmentId },
+      include: { consultationType: true },
     });
 
     if (!appointment) {
@@ -484,6 +490,29 @@ export class SubscriptionService {
     });
 
     this.logger.log(`Booking payment completed for appointment ${appointmentId}`);
+
+    // Auto-invoice for booking payment
+    const psychologist = await this.prisma.psychologist.findUnique({
+      where: { id: appointment.psychologistId },
+    });
+
+    if (psychologist?.autoInvoice && appointment.patientId) {
+      const rate = appointment.consultationType
+        ? Number(appointment.consultationType.rate)
+        : Number(psychologist.defaultSessionRate) || 0;
+
+      if (rate > 0) {
+        await this.invoiceQueue.add('generate', {
+          type: 'payment_received',
+          psychologistId: appointment.psychologistId,
+          patientId: appointment.patientId,
+          appointmentId: appointment.id,
+          amount: rate,
+          sessionDate: appointment.scheduledAt.toISOString(),
+        });
+        this.logger.log(`Enqueued auto-invoice for booking payment ${appointment.id}`);
+      }
+    }
   }
 
   private async handlePaymentLinkCompleted(session: Stripe.Checkout.Session): Promise<void> {
@@ -522,8 +551,17 @@ export class SubscriptionService {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id: appointmentId },
       include: {
-        psychologist: { include: { user: { select: { email: true } } } },
-        patient: { select: { name: true } },
+        psychologist: {
+          select: {
+            name: true,
+            autoInvoice: true,
+            autoInvoiceEmail: true,
+            defaultSessionRate: true,
+            user: { select: { email: true } },
+          },
+        },
+        patient: { select: { name: true, id: true } },
+        consultationType: true,
       },
     });
 
@@ -539,6 +577,30 @@ export class SubscriptionService {
     }
 
     this.logger.log(`Payment link completed for appointment ${appointmentId}`);
+
+    // Auto-invoice for payment link
+    if (appointment) {
+      const psychologist = appointment.psychologist;
+
+      if (psychologist?.autoInvoice && appointment.patientId) {
+        const rate = appointment.consultationType
+          ? Number(appointment.consultationType.rate)
+          : Number(psychologist.defaultSessionRate) || 0;
+
+        if (rate > 0) {
+          await this.invoiceQueue.add('generate', {
+            type: 'payment_received',
+            psychologistId: appointment.psychologistId,
+            patientId: appointment.patientId,
+            appointmentId: appointment.id,
+            internalPaymentId: payment?.id,
+            amount: rate,
+            sessionDate: appointment.scheduledAt.toISOString(),
+          });
+          this.logger.log(`Enqueued auto-invoice for payment link ${appointment.id}`);
+        }
+      }
+    }
   }
 
   private async handleChargeRefunded(charge: Stripe.Charge): Promise<void> {

@@ -22,6 +22,9 @@ export interface PsychologistProfile {
   stripeOnboardingComplete: boolean;
   // MSP
   acceptsMonSoutienPsy: boolean;
+  // Auto-invoice settings
+  autoInvoice: boolean;
+  autoInvoiceEmail: boolean;
 }
 
 export interface UpdateProfileData {
@@ -40,6 +43,9 @@ export interface UpdateProfileData {
   allowOnlinePayment?: boolean;
   // MSP
   acceptsMonSoutienPsy?: boolean;
+  // Auto-invoice settings
+  autoInvoice?: boolean;
+  autoInvoiceEmail?: boolean;
 }
 
 export const psychologistApi = {
