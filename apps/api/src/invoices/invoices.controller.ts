@@ -71,4 +71,13 @@ export class InvoicesController {
   ) {
     return this.invoicesService.markAsSent(user.sub, id);
   }
+
+  @Patch(':id/mark-paid')
+  @ApiOperation({ summary: 'Mark invoice as paid' })
+  async markAsPaid(
+    @CurrentUser() user: KeycloakUser,
+    @Param('id', ParseUUIDPipe) invoiceId: string,
+  ) {
+    return this.invoicesService.markAsPaid(user.sub, invoiceId);
+  }
 }

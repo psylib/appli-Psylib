@@ -3,7 +3,8 @@ import { Request } from 'express';
 import { PrismaService } from './prisma.service';
 
 export type AuditAction = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE' | 'DECRYPT' | 'AI_SUMMARY_SAVE'
-  | 'VIDEO_ROOM_CREATED' | 'VIDEO_PSY_JOIN' | 'VIDEO_PATIENT_JOIN' | 'VIDEO_CALL_END' | 'VIDEO_ROOM_CLEANUP';
+  | 'VIDEO_ROOM_CREATED' | 'VIDEO_PSY_JOIN' | 'VIDEO_PATIENT_JOIN' | 'VIDEO_CALL_END' | 'VIDEO_ROOM_CLEANUP'
+  | 'INVOICE_AUTO_GENERATED' | 'INVOICE_AUTO_EMAILED';
 export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin';
 
 export interface AuditLogParams {

@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
@@ -24,6 +25,8 @@ type InvoiceWithRelations = Invoice & {
 
 @Injectable()
 export class InvoicesService {
+  private readonly logger = new Logger(InvoicesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
@@ -219,6 +222,100 @@ export class InvoicesService {
     }
 
     return updated;
+  }
+
+  async createAutoInvoice(data: {
+    type: 'session_completed' | 'payment_received';
+    psychologistId: string;
+    patientId: string;
+    amount: number;
+    sessionDate: string;
+    sessionId?: string;
+    appointmentId?: string;
+    internalPaymentId?: string;
+  }): Promise<Invoice | null> {
+    // Idempotence check
+    if (data.sessionId) {
+      const existing = await this.prisma.invoice.findFirst({
+        where: { sessionId: data.sessionId },
+      });
+      if (existing) {
+        this.logger.warn(`Invoice already exists for session ${data.sessionId}, skipping`);
+        return null;
+      }
+    }
+    if (data.internalPaymentId) {
+      const existing = await this.prisma.invoice.findFirst({
+        where: { paymentId: data.internalPaymentId },
+      });
+      if (existing) {
+        this.logger.warn(`Invoice already exists for payment ${data.internalPaymentId}, skipping`);
+        return null;
+      }
+    }
+
+    // Generate invoice number (same logic as existing create())
+    const year = new Date(data.sessionDate).getFullYear();
+    const lastInvoice = await this.prisma.invoice.findFirst({
+      where: {
+        psychologistId: data.psychologistId,
+        invoiceNumber: { startsWith: `PSY-${year}-` },
+      },
+      orderBy: { invoiceNumber: 'desc' },
+    });
+    let sequence = 1;
+    if (lastInvoice) {
+      const parts = lastInvoice.invoiceNumber.split('-');
+      const lastSeq = parseInt(parts[2] ?? '0', 10);
+      if (!isNaN(lastSeq)) sequence = lastSeq + 1;
+    }
+    const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+
+    const isPaid = data.type === 'payment_received';
+
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        psychologistId: data.psychologistId,
+        patientId: data.patientId,
+        invoiceNumber,
+        amountTtc: data.amount,
+        status: isPaid ? 'paid' : 'draft',
+        issuedAt: new Date(data.sessionDate),
+        source: 'auto',
+        sessionId: data.sessionId ?? null,
+        paymentId: data.internalPaymentId ?? null,
+        paidAt: isPaid ? new Date() : null,
+      },
+    });
+
+    return invoice;
+  }
+
+  async markAsPaid(userId: string, invoiceId: string): Promise<Invoice> {
+    const psychologist = await this.prisma.psychologist.findFirstOrThrow({
+      where: { userId },
+    });
+
+    const invoice = await this.prisma.invoice.findFirstOrThrow({
+      where: { id: invoiceId, psychologistId: psychologist.id },
+    });
+
+    if (invoice.status === 'paid') {
+      throw new BadRequestException('Invoice is already paid');
+    }
+
+    return this.prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        status: 'paid',
+        paidAt: new Date(),
+      },
+    });
+  }
+
+  /** Public accessor for auto-invoice processor */
+  async buildPdfBufferPublic(invoice: any, sessions: any[]): Promise<Buffer> {
+    return this.buildPdfBuffer(invoice, sessions);
   }
 
   // ─── PDF Builder ──────────────────────────────────────────────────────────
