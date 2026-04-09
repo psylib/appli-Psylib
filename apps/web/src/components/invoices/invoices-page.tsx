@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Receipt, Plus, Download, Send, FileText, Loader2 } from 'lucide-react';
+import { Receipt, Plus, Download, Send, FileText, Loader2, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -171,6 +171,15 @@ function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string 
     onError: () => error("Erreur lors de l'envoi"),
   });
 
+  const paidMutation = useMutation({
+    mutationFn: () => invoicesApi.markAsPaid(invoice.id, token),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['invoices'] });
+      success(`Facture ${invoice.invoiceNumber} marquée comme payée`);
+    },
+    onError: () => error('Erreur lors de la mise à jour'),
+  });
+
   const handleDownload = async () => {
     setDownloading(true);
     try {
@@ -193,8 +202,15 @@ function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string 
     currency: 'EUR',
   }).format(Number(invoice.amountTtc));
 
+  const isMarkAsPaidVisible = invoice.status === 'draft' || invoice.status === 'sent';
+
   return (
-    <li className="flex items-center gap-4 px-5 py-4 hover:bg-surface/50 transition-colors">
+    <li
+      className={cn(
+        'flex items-center gap-4 px-5 py-4 hover:bg-surface/50 transition-colors',
+        invoice.source === 'auto' && invoice.status === 'draft' && 'bg-amber-50/50',
+      )}
+    >
       {/* Icon */}
       <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
         <FileText size={16} className="text-primary" aria-hidden />
@@ -213,15 +229,22 @@ function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string 
       {/* Amount */}
       <p className="text-sm font-medium text-foreground w-20 text-right">{amountFormatted}</p>
 
-      {/* Status */}
-      <span
-        className={cn(
-          'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium w-20 justify-center',
-          STATUS_STYLES[invoice.status] ?? STATUS_STYLES['draft'],
+      {/* Status + Auto badge */}
+      <div className="flex items-center gap-1 w-32 justify-center">
+        <span
+          className={cn(
+            'inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium justify-center',
+            STATUS_STYLES[invoice.status] ?? STATUS_STYLES['draft'],
+          )}
+        >
+          {STATUS_LABELS[invoice.status] ?? invoice.status}
+        </span>
+        {invoice.source === 'auto' && (
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+            Auto
+          </span>
         )}
-      >
-        {STATUS_LABELS[invoice.status] ?? invoice.status}
-      </span>
+      </div>
 
       {/* Actions */}
       <div className="flex items-center gap-1">
@@ -248,6 +271,20 @@ function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string 
               <Loader2 size={15} className="animate-spin" />
             ) : (
               <Send size={15} aria-hidden />
+            )}
+          </button>
+        )}
+        {isMarkAsPaidVisible && (
+          <button
+            onClick={() => paidMutation.mutate()}
+            disabled={paidMutation.isPending}
+            className="p-1.5 rounded-lg hover:bg-accent/10 text-muted-foreground hover:text-accent transition-colors"
+            title="Marquer comme payée"
+          >
+            {paidMutation.isPending ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <CheckCircle2 size={15} aria-hidden />
             )}
           </button>
         )}
@@ -335,7 +372,7 @@ export function InvoicesPageContent() {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20 text-right">
                 Montant
               </p>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-20 text-center">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide w-32 text-center">
                 Statut
               </p>
               <div className="w-16" />

@@ -6,6 +6,8 @@ import { ConsultationTypesSettings } from '@/components/settings/consultation-ty
 import { MspSettings } from '@/components/settings/msp-settings';
 import { ReminderSettings } from '@/components/settings/reminder-settings';
 import { PaymentSettings } from '@/components/settings/payment-settings';
+import { VisioSettings } from '@/components/settings/visio-settings';
+import { InvoiceSettings } from '@/components/settings/invoice-settings';
 
 export const metadata: Metadata = {
   title: 'Cabinet',
@@ -113,6 +115,9 @@ export default async function PracticePage() {
         </div>
       </div>
 
+      {/* Visioconference */}
+      <VisioSettings />
+
       {/* Disponibilites — prise de RDV en ligne */}
       <AvailabilityManager />
 
@@ -121,6 +126,9 @@ export default async function PracticePage() {
 
       {/* Paiement en ligne */}
       <PaymentSettings />
+
+      {/* Facturation automatique */}
+      <InvoiceSettings />
 
       <p className="text-xs text-muted-foreground text-center">
         La gestion complete du cabinet est disponible depuis votre profil.

@@ -9,6 +9,9 @@ export interface InvoiceRecord {
   status: 'draft' | 'sent' | 'paid';
   issuedAt: string;
   pdfUrl: string | null;
+  source: 'manual' | 'auto';
+  paidAt: string | null;
+  sessionId: string | null;
   patient: { id: string; name: string; email: string | null } | null;
 }
 
@@ -28,6 +31,9 @@ export const invoicesApi = {
 
   markAsSent: (id: string, token: string) =>
     apiClient.patch<InvoiceRecord>(`/invoices/${id}/send`, {}, token),
+
+  markAsPaid: (id: string, token: string) =>
+    apiClient.patch<InvoiceRecord>(`/invoices/${id}/mark-paid`, {}, token),
 
   /** Télécharge le PDF comme blob et déclenche le download navigateur */
   downloadPdf: async (id: string, invoiceNumber: string, token: string): Promise<void> => {
