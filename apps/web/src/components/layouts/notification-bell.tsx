@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
@@ -13,22 +12,9 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn, formatDateTime } from '@/lib/utils';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  body: string;
-  data?: Record<string, unknown>;
-  readAt: string | null;
-  createdAt: string;
-}
+import { useNotifications } from '@/hooks/use-notifications';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
 
 function getNotificationIcon(type: string) {
   if (type.includes('network') || type.includes('referral')) {
@@ -55,40 +41,12 @@ function formatRelativeTime(dateStr: string): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function NotificationBell() {
-  const { data: session } = useSession();
+  const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
   const router = useRouter();
-  const token = session?.accessToken;
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-
-  const unreadCount = notifications.filter((n) => !n.readAt).length;
-
-  // ── Fetch notifications ────────────────────────────────────────────────────
-
-  const fetchNotifications = useCallback(async () => {
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/notifications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const data = (await res.json()) as Notification[];
-      setNotifications(data);
-    } catch {
-      // silent — non-blocking
-    }
-  }, [token]);
-
-  // Initial fetch + polling every 30s
-  useEffect(() => {
-    void fetchNotifications();
-    const interval = setInterval(() => void fetchNotifications(), 30_000);
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
 
   // Close on outside click
   useEffect(() => {
@@ -107,37 +65,7 @@ export function NotificationBell() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  const markRead = async (id: string) => {
-    if (!token) return;
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
-    );
-    try {
-      await fetch(`${API_BASE}/api/v1/notifications/${id}/read`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {
-      // optimistic — no rollback needed
-    }
-  };
-
-  const markAllRead = async () => {
-    if (!token) return;
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
-    );
-    try {
-      await fetch(`${API_BASE}/api/v1/notifications/read-all`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {
-      // optimistic
-    }
-  };
-
-  const handleNotificationClick = async (notification: Notification) => {
+  const handleNotificationClick = async (notification: (typeof notifications)[0]) => {
     if (!notification.readAt) {
       await markRead(notification.id);
     }
@@ -161,10 +89,7 @@ export function NotificationBell() {
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => {
-          setIsOpen((prev) => !prev);
-          if (!isOpen) void fetchNotifications();
-        }}
+        onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
           'relative p-2 rounded-lg transition-colors',
           isOpen
@@ -201,7 +126,7 @@ export function NotificationBell() {
               {unreadCount > 0 && (
                 <button
                   type="button"
-                  onClick={markAllRead}
+                  onClick={() => void markAllRead()}
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-surface"
                   title="Tout marquer comme lu"
                 >
@@ -222,22 +147,7 @@ export function NotificationBell() {
 
           {/* List */}
           <div className="max-h-80 overflow-y-auto">
-            {isLoading && notifications.length === 0 && (
-              <div className="space-y-1 p-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="animate-pulse flex gap-3 p-3">
-                    <div className="h-8 w-8 rounded-full bg-surface flex-shrink-0" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-3 bg-surface rounded w-3/4" />
-                      <div className="h-3 bg-surface rounded w-full" />
-                      <div className="h-2 bg-surface rounded w-1/3" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!isLoading && notifications.length === 0 && (
+            {notifications.length === 0 && (
               <div className="py-10 text-center">
                 <Bell size={28} className="text-muted-foreground mx-auto mb-2 opacity-40" aria-hidden />
                 <p className="text-sm text-muted-foreground">Aucune notification</p>
@@ -248,7 +158,7 @@ export function NotificationBell() {
               <button
                 key={notification.id}
                 type="button"
-                onClick={() => handleNotificationClick(notification)}
+                onClick={() => void handleNotificationClick(notification)}
                 className={cn(
                   'w-full flex items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-surface',
                   !notification.readAt && 'bg-primary/5',

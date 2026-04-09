@@ -3,11 +3,12 @@ import { ConfigModule } from '@nestjs/config';
 import { MessagingController } from './messaging.controller';
 import { MessagingService } from './messaging.service';
 import { MessagingGateway } from './messaging.gateway';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    // ConfigService est injecté dans MessagingGateway pour lire KEYCLOAK_URL / KEYCLOAK_REALM
     ConfigModule,
+    NotificationsModule,
   ],
   controllers: [MessagingController],
   providers: [MessagingGateway, MessagingService],

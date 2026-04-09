@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
@@ -14,18 +13,9 @@ import {
   Loader2,
 } from 'lucide-react';
 import { cn, formatDateTime } from '@/lib/utils';
+import { useNotifications } from '@/hooks/use-notifications';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  body: string;
-  data?: Record<string, unknown>;
-  readAt: string | null;
-  createdAt: string;
-}
 
 type FilterTab = 'all' | 'unread';
 
@@ -58,100 +48,25 @@ function formatRelativeTime(dateStr: string): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
-  const { data: session } = useSession();
+  const {
+    notifications,
+    unreadCount,
+    markRead,
+    markAllRead,
+    deleteNotification,
+  } = useNotifications();
   const router = useRouter();
-  const token = session?.accessToken;
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [filter, setFilter] = useState<FilterTab>('all');
-  const [error, setError] = useState<string | null>(null);
-
-  // ── Fetch ──────────────────────────────────────────────────────────────────
-
-  const fetchNotifications = useCallback(async () => {
-    if (!token) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_BASE}/api/v1/notifications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Impossible de charger les notifications.');
-      const data = (await res.json()) as Notification[];
-      setNotifications(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token]);
-
-  useEffect(() => {
-    void fetchNotifications();
-  }, [fetchNotifications]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  const markRead = async (id: string) => {
-    if (!token) return;
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
-    );
-    try {
-      await fetch(`${API_BASE}/api/v1/notifications/${id}/read`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {
-      // optimistic
-    }
-  };
-
-  const markAllRead = async () => {
-    if (!token) return;
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
-    );
-    try {
-      await fetch(`${API_BASE}/api/v1/notifications/read-all`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {
-      // optimistic
-    }
-  };
-
-  const deleteNotification = async (id: string) => {
-    if (!token) return;
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-    try {
-      await fetch(`${API_BASE}/api/v1/notifications/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch {
-      // optimistic — item already removed from state
-    }
-  };
-
   const deleteAll = async () => {
-    if (!token) return;
     if (!window.confirm('Supprimer toutes les notifications ?')) return;
     setIsDeleting(true);
-    const ids = notifications.map((n) => n.id);
-    setNotifications([]);
     try {
-      await Promise.all(
-        ids.map((id) =>
-          fetch(`${API_BASE}/api/v1/notifications/${id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ),
-      );
+      await Promise.all(notifications.map((n) => deleteNotification(n.id)));
     } catch {
       // best-effort
     } finally {
@@ -159,7 +74,7 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleNotificationClick = async (notification: Notification) => {
+  const handleNotificationClick = async (notification: (typeof notifications)[0]) => {
     if (!notification.readAt) {
       await markRead(notification.id);
     }
@@ -173,8 +88,6 @@ export default function NotificationsPage() {
 
   const filteredNotifications =
     filter === 'unread' ? notifications.filter((n) => !n.readAt) : notifications;
-
-  const unreadCount = notifications.filter((n) => !n.readAt).length;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -195,7 +108,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               type="button"
-              onClick={markAllRead}
+              onClick={() => void markAllRead()}
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-surface border border-border"
             >
               <CheckCheck size={15} aria-hidden />
@@ -205,7 +118,7 @@ export default function NotificationsPage() {
           {notifications.length > 0 && (
             <button
               type="button"
-              onClick={deleteAll}
+              onClick={() => void deleteAll()}
               disabled={isDeleting}
               className="flex items-center gap-1.5 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-destructive/5 border border-destructive/20 disabled:opacity-50"
             >
@@ -244,35 +157,8 @@ export default function NotificationsPage() {
         ))}
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-
-      {/* Loading skeletons */}
-      {isLoading && (
-        <div className="space-y-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="animate-pulse flex gap-4 p-4 rounded-xl border border-border bg-white"
-            >
-              <div className="h-10 w-10 rounded-full bg-surface flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3.5 bg-surface rounded w-1/2" />
-                <div className="h-3 bg-surface rounded w-full" />
-                <div className="h-3 bg-surface rounded w-3/4" />
-                <div className="h-2.5 bg-surface rounded w-1/4 mt-1" />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Empty state */}
-      {!isLoading && filteredNotifications.length === 0 && (
+      {filteredNotifications.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="h-16 w-16 rounded-full bg-surface flex items-center justify-center mb-4">
             <Bell size={28} className="text-muted-foreground opacity-50" aria-hidden />
@@ -299,7 +185,7 @@ export default function NotificationsPage() {
       )}
 
       {/* Notification list */}
-      {!isLoading && filteredNotifications.length > 0 && (
+      {filteredNotifications.length > 0 && (
         <div className="space-y-2">
           {filteredNotifications.map((notification) => (
             <div
@@ -325,7 +211,7 @@ export default function NotificationsPage() {
               <button
                 type="button"
                 className="flex-1 min-w-0 text-left"
-                onClick={() => handleNotificationClick(notification)}
+                onClick={() => void handleNotificationClick(notification)}
               >
                 <p
                   className={cn(
@@ -352,7 +238,7 @@ export default function NotificationsPage() {
                 {!notification.readAt && (
                   <button
                     type="button"
-                    onClick={() => markRead(notification.id)}
+                    onClick={() => void markRead(notification.id)}
                     className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface transition-colors"
                     title="Marquer comme lu"
                     aria-label="Marquer comme lu"
@@ -362,7 +248,7 @@ export default function NotificationsPage() {
                 )}
                 <button
                   type="button"
-                  onClick={() => deleteNotification(notification.id)}
+                  onClick={() => void deleteNotification(notification.id)}
                   className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
                   title="Supprimer"
                   aria-label="Supprimer cette notification"

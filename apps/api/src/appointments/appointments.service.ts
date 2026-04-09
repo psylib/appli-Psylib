@@ -10,6 +10,7 @@ import {
   UpdateAppointmentDto,
   AppointmentQueryDto,
 } from './dto/appointment.dto';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { Appointment } from '@prisma/client';
 
 @Injectable()
@@ -24,6 +25,7 @@ export class AppointmentsService {
     private readonly stripeService: StripeService,
     @Inject(forwardRef(() => WaitlistService))
     private readonly waitlistService: WaitlistService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(userId: string, dto: CreateAppointmentDto): Promise<Appointment> {
@@ -56,6 +58,15 @@ export class AppointmentsService {
         duration: appointment.duration,
       });
     }
+
+    // In-app notification for psychologist
+    void this.notifications.createAndDispatch(
+      userId,
+      'appointment_update',
+      'Nouveau rendez-vous',
+      `RDV avec ${patient.name} le ${new Date(dto.scheduledAt).toLocaleDateString('fr-FR')} à ${new Date(dto.scheduledAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`,
+      { href: '/dashboard/calendar' },
+    );
 
     return appointment;
   }
@@ -114,6 +125,19 @@ export class AppointmentsService {
 
     // Notify psy about waitlist candidates when a slot is freed
     void this.waitlistService.onAppointmentCancelled(psy.id, existing.scheduledAt);
+
+    // In-app notification
+    const cancelledPatient = await this.prisma.patient.findUnique({
+      where: { id: existing.patientId },
+      select: { name: true },
+    });
+    void this.notifications.createAndDispatch(
+      userId,
+      'appointment_update',
+      'RDV annulé',
+      `Le rendez-vous avec ${cancelledPatient?.name ?? 'un patient'} a été annulé`,
+      { href: '/dashboard/calendar' },
+    );
 
     return cancelled;
   }
@@ -321,13 +345,22 @@ export class AppointmentsService {
       },
     });
 
-    // Notify psychologist
+    // Notify psychologist (email)
     void this.email.sendCancellationNotification(appointment.psychologist.user.email, {
       psychologistName: appointment.psychologist.name,
       patientName: appointment.patient.name,
       scheduledAt: appointment.scheduledAt,
       refunded,
     });
+
+    // Notify psychologist (in-app)
+    void this.notifications.createAndDispatch(
+      appointment.psychologist.user.id,
+      'appointment_update',
+      'RDV annulé par le patient',
+      `${appointment.patient.name} a annulé son RDV du ${appointment.scheduledAt.toLocaleDateString('fr-FR')}${refunded ? ' (remboursé)' : ''}`,
+      { href: '/dashboard/calendar' },
+    );
 
     // Notify waitlist candidates
     void this.waitlistService.onAppointmentCancelled(

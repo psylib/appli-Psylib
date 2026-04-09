@@ -14,6 +14,9 @@ import type { Server, Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
 import { MessagingService } from './messaging.service';
+import { NotificationGateway } from '../notifications/notification.gateway';
+import { NotificationsService } from '../notifications/notifications.service';
+import { PrismaService } from '../common/prisma.service';
 import { getAllowedOrigins } from '../common/cors.config';
 import type {
   JoinConversationPayload,
@@ -55,6 +58,9 @@ export class MessagingGateway
   constructor(
     private readonly messagingService: MessagingService,
     private readonly configService: ConfigService,
+    private readonly notificationGateway: NotificationGateway,
+    private readonly notificationsService: NotificationsService,
+    private readonly prisma: PrismaService,
   ) {}
 
   onModuleInit(): void {
@@ -189,6 +195,9 @@ export class MessagingGateway
       this.logger.log(
         `[WS] Message envoyé dans ${room} par ${authSocket.userId}`,
       );
+
+      // Notify recipient if offline
+      void this.notifyOfflineRecipient(conversationId, authSocket.userId);
     } catch (error) {
       this.logger.error(
         `[WS] Erreur send_message: ${(error as Error).message}`,
@@ -241,6 +250,48 @@ export class MessagingGateway
       throw new WsException(
         (error as Error).message || 'Erreur lors du marquage des messages',
       );
+    }
+  }
+
+  // ─── Offline notification ─────────────────────────────────────────
+
+  private async notifyOfflineRecipient(
+    conversationId: string,
+    senderId: string,
+  ): Promise<void> {
+    try {
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: {
+          psychologist: { select: { userId: true, name: true } },
+          patient: { select: { userId: true, name: true } },
+        },
+      });
+      if (!conversation) return;
+
+      // Determine recipient
+      const isPsySender = conversation.psychologist.userId === senderId;
+      const recipientUserId = isPsySender
+        ? conversation.patient.userId
+        : conversation.psychologist.userId;
+      const senderName = isPsySender
+        ? conversation.psychologist.name
+        : conversation.patient.name;
+
+      if (!recipientUserId) return;
+
+      // Only notify if recipient is NOT connected to notifications WebSocket
+      if (this.notificationGateway.isUserOnline(recipientUserId)) return;
+
+      void this.notificationsService.createAndDispatch(
+        recipientUserId,
+        'message',
+        'Nouveau message',
+        `${senderName} vous a envoyé un message`,
+        { href: '/dashboard/messaging' },
+      );
+    } catch {
+      // Non-blocking — best effort
     }
   }
 

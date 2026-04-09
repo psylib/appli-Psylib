@@ -20,6 +20,7 @@ import { Prisma } from '@prisma/client';
 import type { Session } from '@prisma/client';
 import type { Request } from 'express';
 import { INVOICE_GENERATION_QUEUE, GenerateInvoiceJobData } from '../invoices/invoice-generation.processor';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class SessionsService {
@@ -32,6 +33,7 @@ export class SessionsService {
     private readonly monSoutienPsy: MonSoutienPsyService,
     @InjectQueue(INVOICE_GENERATION_QUEUE)
     private readonly invoiceQueue: Queue<GenerateInvoiceJobData>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(
@@ -264,6 +266,19 @@ export class SessionsService {
           }
         }
       }
+
+      // Notify psychologist
+      const completedPatient = await this.prisma.patient.findUnique({
+        where: { id: existing.patientId },
+        select: { name: true },
+      });
+      void this.notifications.createAndDispatch(
+        psychologistUserId,
+        'session_update',
+        'Séance terminée',
+        `Séance avec ${completedPatient?.name ?? 'un patient'} enregistrée`,
+        { href: `/dashboard/sessions/${sessionId}` },
+      );
     }
 
     return updated;

@@ -10,6 +10,7 @@ const mockPrisma = {
   },
   patient: {
     findFirst: vi.fn(),
+    findUnique: vi.fn(),
   },
   appointment: {
     create: vi.fn(),
@@ -36,6 +37,10 @@ const mockStripeService = {
 
 const mockWaitlist = {
   onAppointmentCancelled: vi.fn(),
+};
+
+const mockNotifications = {
+  createAndDispatch: vi.fn(),
 };
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -77,6 +82,7 @@ function createService(): AppointmentsService {
     mockEmail as never,
     mockStripeService as never,
     mockWaitlist as never,
+    mockNotifications as never,
   );
 }
 
@@ -251,6 +257,7 @@ describe('AppointmentsService', () => {
       mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
       mockPrisma.appointment.findFirst.mockResolvedValueOnce(existing);
       mockPrisma.appointment.update.mockResolvedValueOnce(cancelled);
+      mockPrisma.patient.findUnique.mockResolvedValueOnce({ name: 'Marie' });
 
       const result = await service.cancel(PSY_USER_ID, APPOINTMENT_ID);
 

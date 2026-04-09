@@ -1467,4 +1467,32 @@ export class EmailService {
       'sendVideoConsultationLink',
     );
   }
+
+  // ─── Generic Notification Email ──────────────────────────────────────────────
+
+  async sendNotificationEmail(
+    to: string,
+    notification: { type: string; title: string; body: string; data?: unknown },
+  ): Promise<void> {
+    try {
+      const data = notification.data as Record<string, unknown> | null | undefined;
+      const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+      const href = typeof data?.href === 'string'
+        ? `${frontendUrl}${data.href}`
+        : frontendUrl;
+
+      const html = emailLayout(
+        notification.title,
+        `<h1>${notification.title}</h1>
+         <p>${notification.body}</p>
+         <p style="text-align: center; margin: 24px 0;">
+           <a href="${href}" class="btn">Voir sur PsyLib</a>
+         </p>`,
+      );
+
+      await this.send(to, notification.title, html, 'sendNotificationEmail');
+    } catch (error) {
+      this.logger.error(`sendNotificationEmail failed: ${(error as Error).message}`);
+    }
+  }
 }

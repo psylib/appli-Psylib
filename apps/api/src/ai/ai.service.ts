@@ -12,6 +12,7 @@ import {
   EXTRACTION_PROMPT,
 } from './prompts/session-summary.prompts';
 import { Response } from 'express';
+import { NotificationsService } from '../notifications/notifications.service';
 
 export interface SessionSummaryDto {
   rawNotes: string;
@@ -57,34 +58,31 @@ RÈGLE ABSOLUE : N'utilise JAMAIS de données patients, même anonymisées.`,
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
-  private aiProvider!: 'anthropic' | 'openai' | null;
   private aiApiKey!: string | null;
+  private aiBaseUrl!: string;
+  private modelMain!: string;
+  private modelFast!: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly encryption: EncryptionService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   onModuleInit() {
-    const anthropicKey = this.config.get<string>('ANTHROPIC_API_KEY');
-    const openaiKey = this.config.get<string>('OPENAI_API_KEY');
-    if (anthropicKey) {
-      this.aiProvider = 'anthropic';
-      this.aiApiKey = anthropicKey;
-    } else if (openaiKey) {
-      this.aiProvider = 'openai';
-      this.aiApiKey = openaiKey;
-    } else {
-      this.aiProvider = null;
-      this.aiApiKey = null;
-      this.logger.warn('Aucune cle IA configuree (ANTHROPIC_API_KEY ou OPENAI_API_KEY)');
+    this.aiApiKey = this.config.get<string>('OPENROUTER_API_KEY') ?? null;
+    this.aiBaseUrl = this.config.get<string>('OPENROUTER_BASE_URL') ?? 'https://openrouter.ai/api/v1';
+    this.modelMain = this.config.get<string>('OPENROUTER_MODEL_MAIN') ?? 'anthropic/claude-sonnet-4';
+    this.modelFast = this.config.get<string>('OPENROUTER_MODEL_FAST') ?? 'anthropic/claude-haiku-4';
+    if (!this.aiApiKey) {
+      this.logger.warn('Aucune cle IA configuree (OPENROUTER_API_KEY)');
     }
   }
 
   private requireAiKey(): string {
     if (!this.aiApiKey) {
-      throw new BadRequestException('Cle IA non configuree. Ajoutez ANTHROPIC_API_KEY ou OPENAI_API_KEY dans .env');
+      throw new BadRequestException('Cle IA non configuree. Ajoutez OPENROUTER_API_KEY dans .env');
     }
     return this.aiApiKey;
   }
@@ -207,76 +205,43 @@ export class AiService {
     const startedAt = Date.now();
 
     try {
-      if (this.aiProvider === 'anthropic') {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 300,
-            system: EXTRACTION_PROMPT,
-            messages: [{ role: 'user', content: summaryText }],
-          }),
-        });
+      const response = await fetch(`${this.aiBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://psylib.eu',
+          'X-Title': 'PsyLib',
+        },
+        body: JSON.stringify({
+          model: this.modelFast,
+          max_tokens: 300,
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: EXTRACTION_PROMPT },
+            { role: 'user', content: summaryText },
+          ],
+        }),
+      });
 
-        if (!response.ok) {
-          this.logger.error(`Anthropic extraction API error: ${response.status}`);
-          return null;
-        }
-
-        const result = await response.json() as {
-          content: Array<{ text: string }>;
-          usage?: { input_tokens: number; output_tokens: number };
-        };
-
-        const text = result.content?.[0]?.text ?? '{}';
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        const parsed = JSON.parse(jsonMatch?.[0] ?? '{}') as Record<string, unknown>;
-        const tokens = (result.usage?.input_tokens ?? 0) + (result.usage?.output_tokens ?? 0);
-
-        await this.trackUsage(psychologistId, 'session_summary_extraction', tokens, startedAt, 'claude-haiku-4-5-20251001');
-
-        return { data: parsed, tokens };
-      } else {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            max_tokens: 300,
-            response_format: { type: 'json_object' },
-            messages: [
-              { role: 'system', content: EXTRACTION_PROMPT },
-              { role: 'user', content: summaryText },
-            ],
-          }),
-        });
-
-        if (!response.ok) {
-          this.logger.error(`OpenAI extraction API error: ${response.status}`);
-          return null;
-        }
-
-        const result = await response.json() as {
-          choices: Array<{ message: { content: string } }>;
-          usage?: { total_tokens: number };
-        };
-
-        const text = result.choices?.[0]?.message?.content ?? '{}';
-        const parsed = JSON.parse(text) as Record<string, unknown>;
-        const tokens = result.usage?.total_tokens ?? 0;
-
-        await this.trackUsage(psychologistId, 'session_summary_extraction', tokens, startedAt, 'gpt-4o-mini');
-
-        return { data: parsed, tokens };
+      if (!response.ok) {
+        this.logger.error(`OpenRouter extraction API error: ${response.status}`);
+        return null;
       }
+
+      const result = await response.json() as {
+        choices: Array<{ message: { content: string } }>;
+        usage?: { total_tokens: number };
+      };
+
+      const text = result.choices?.[0]?.message?.content ?? '{}';
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(jsonMatch?.[0] ?? '{}') as Record<string, unknown>;
+      const tokens = result.usage?.total_tokens ?? 0;
+
+      await this.trackUsage(psychologistId, 'session_summary_extraction', tokens, startedAt, this.modelFast);
+
+      return { data: parsed, tokens };
     } catch (error) {
       this.logger.error('Phase 3 extraction failed:', error);
       return null;
@@ -331,36 +296,35 @@ export class AiService {
 
     try {
       // Phase 2: Stream narrative summary
-      if (this.aiProvider === 'anthropic') {
-        await this.streamSummaryAnthropic(
-          userMessage,
-          systemPrompt,
-          res,
-          (tokens) => { totalTokens = tokens; },
-          (text) => { fullSummary += text; },
-        );
-      } else {
-        await this.streamSummaryOpenAI(
-          userMessage,
-          systemPrompt,
-          res,
-          (tokens) => { totalTokens = tokens; },
-          (text) => { fullSummary += text; },
-        );
-      }
+      await this.streamChat(
+        userMessage,
+        systemPrompt,
+        this.modelMain,
+        res,
+        (tokens) => { totalTokens = tokens; },
+        (text) => { fullSummary += text; },
+      );
 
-      const phase2Model = this.aiProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4o';
-      await this.trackUsage(psy.id, 'session_summary', totalTokens, startedAt, phase2Model);
+      await this.trackUsage(psy.id, 'session_summary', totalTokens, startedAt, this.modelMain);
 
       // Phase 3: Extract structured data
       if (fullSummary.length > 50) {
         const extraction = await this.extractStructuredData(fullSummary, psy.id);
         if (extraction) {
-          res.write(`data: ${JSON.stringify({ type: 'structured', data: { ...extraction.data, model: phase2Model } })}\n\n`);
+          res.write(`data: ${JSON.stringify({ type: 'structured', data: { ...extraction.data, model: this.modelMain } })}\n\n`);
         } else {
           res.write(`data: ${JSON.stringify({ type: 'structured_error' })}\n\n`);
         }
       }
+
+      // Notify psychologist that AI summary is ready
+      void this.notifications.createAndDispatch(
+        psychologistUserId,
+        'ai_complete',
+        'Résumé IA prêt',
+        `Le résumé de séance a été généré avec succès`,
+        { href: `/dashboard/sessions/${dto.sessionId}` },
+      );
 
     } catch (error) {
       this.logger.error('AI streaming error:', error);
@@ -411,24 +375,15 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
     let totalTokens = 0;
 
     try {
-      if (this.aiProvider === 'anthropic') {
-        await this.streamSummaryAnthropic(
-          prompt,
-          SYSTEM_PROMPTS.content,
-          res,
-          (tokens) => { totalTokens = tokens; },
-          () => {},
-        );
-      } else {
-        await this.streamSummaryOpenAI(
-          prompt,
-          SYSTEM_PROMPTS.content,
-          res,
-          (tokens) => { totalTokens = tokens; },
-          () => {},
-        );
-      }
-      await this.trackUsage(psy.id, 'marketing_content', totalTokens, startedAt);
+      await this.streamChat(
+        prompt,
+        SYSTEM_PROMPTS.content,
+        this.modelMain,
+        res,
+        (tokens) => { totalTokens = tokens; },
+        () => {},
+      );
+      await this.trackUsage(psy.id, 'marketing_content', totalTokens, startedAt, this.modelMain);
     } catch (error) {
       this.logger.error('AI content streaming error:', error);
       res.write(`data: ${JSON.stringify({ error: 'Erreur IA' })}\n\n`);
@@ -438,94 +393,29 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
     }
   }
 
-  private async streamSummaryAnthropic(
+  /**
+   * Unified streaming via OpenRouter (OpenAI-compatible SSE format)
+   */
+  private async streamChat(
     userMessage: string,
     systemPrompt: string,
+    model: string,
     res: Response,
     onComplete: (tokens: number) => void,
     onText: (text: string) => void,
   ): Promise<void> {
     const apiKey = this.requireAiKey();
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        stream: true,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-
-    if (!response.ok || !response.body) {
-      throw new Error(`Anthropic API error: ${response.status}`);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let inputTokens = 0;
-    let outputTokens = 0;
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n').filter((l) => l.startsWith('data: '));
-
-      for (const line of lines) {
-        const data = line.slice(6);
-        if (data === '[DONE]') continue;
-
-        try {
-          const parsed = JSON.parse(data) as {
-            type: string;
-            delta?: { type: string; text?: string };
-            usage?: { input_tokens: number; output_tokens: number };
-            message?: { usage: { input_tokens: number; output_tokens: number } };
-          };
-
-          if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
-            const text = parsed.delta.text ?? '';
-            res.write(`data: ${JSON.stringify({ text })}\n\n`);
-            onText(text);
-          }
-          if (parsed.type === 'message_start' && parsed.message?.usage) {
-            inputTokens = parsed.message.usage.input_tokens;
-          }
-          if (parsed.type === 'message_delta' && parsed.usage) {
-            outputTokens = parsed.usage.output_tokens;
-          }
-        } catch { /* ignore parse errors */ }
-      }
-    }
-
-    onComplete(inputTokens + outputTokens);
-  }
-
-  private async streamSummaryOpenAI(
-    userMessage: string,
-    systemPrompt: string,
-    res: Response,
-    onComplete: (tokens: number) => void,
-    onText: (text: string) => void,
-  ): Promise<void> {
-    const apiKey = this.requireAiKey();
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch(`${this.aiBaseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://psylib.eu',
+        'X-Title': 'PsyLib',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model,
         max_tokens: 2000,
         stream: true,
         stream_options: { include_usage: true },
@@ -537,7 +427,7 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
     });
 
     if (!response.ok || !response.body) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
     const reader = response.body.getReader();
@@ -629,102 +519,59 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
 
   private async callAiJson(prompt: string, system: string): Promise<object> {
     const apiKey = this.requireAiKey();
-    if (this.aiProvider === 'anthropic') {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1000,
-          system,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
-        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
-      }
-      const data = await res.json() as { content: Array<{ text: string }> };
-      const text = data.content?.[0]?.text ?? '{}';
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      return JSON.parse(jsonMatch?.[0] ?? '{}') as object;
-    } else {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          max_tokens: 1000,
-          response_format: { type: 'json_object' },
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: prompt },
-          ],
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
-        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
-      }
-      const data = await res.json() as { choices: Array<{ message: { content: string } }> };
-      const text = data.choices?.[0]?.message?.content ?? '{}';
-      return JSON.parse(text) as object;
+    const res = await fetch(`${this.aiBaseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://psylib.eu',
+        'X-Title': 'PsyLib',
+      },
+      body: JSON.stringify({
+        model: this.modelFast,
+        max_tokens: 1000,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
+      throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
     }
+    const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+    const text = data.choices?.[0]?.message?.content ?? '{}';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    return JSON.parse(jsonMatch?.[0] ?? '{}') as object;
   }
 
   private async callAiText(prompt: string, system: string): Promise<string> {
     const apiKey = this.requireAiKey();
-    if (this.aiProvider === 'anthropic') {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 2000,
-          system,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
-        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
-      }
-      const data = await res.json() as { content: Array<{ text: string }> };
-      return data.content?.[0]?.text ?? '';
-    } else {
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          max_tokens: 2000,
-          messages: [
-            { role: 'system', content: system },
-            { role: 'user', content: prompt },
-          ],
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
-        throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
-      }
-      const data = await res.json() as { choices: Array<{ message: { content: string } }> };
-      return data.choices?.[0]?.message?.content ?? '';
+    const res = await fetch(`${this.aiBaseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://psylib.eu',
+        'X-Title': 'PsyLib',
+      },
+      body: JSON.stringify({
+        model: this.modelMain,
+        max_tokens: 2000,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    });
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
+      throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
     }
+    const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+    return data.choices?.[0]?.message?.content ?? '';
   }
 
   private async trackUsage(
@@ -734,15 +581,17 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
     startedAt: number,
     model?: string,
   ): Promise<void> {
-    const resolvedModel = model ?? (this.aiProvider === 'anthropic' ? 'claude-haiku-4-5' : 'gpt-4o-mini');
+    const resolvedModel = model ?? this.modelFast;
 
+    // Cost per 1M tokens (blended input/output average via OpenRouter)
     const costMap: Record<string, number> = {
-      'claude-sonnet-4-6': 3.0,
-      'claude-haiku-4-5-20251001': 0.25,
-      'gpt-4o': 2.5,
-      'gpt-4o-mini': 0.15,
+      'anthropic/claude-sonnet-4': 3.0,
+      'anthropic/claude-haiku-4': 0.25,
+      'openai/gpt-4o': 2.5,
+      'openai/gpt-4o-mini': 0.15,
+      'google/gemini-2.5-flash': 0.15,
     };
-    const costPer1M = costMap[resolvedModel] ?? 0.25;
+    const costPer1M = costMap[resolvedModel] ?? 1.0;
     const costUsd = (tokens / 1_000_000) * costPer1M;
 
     try {
