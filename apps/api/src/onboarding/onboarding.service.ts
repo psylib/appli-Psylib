@@ -191,16 +191,27 @@ export class OnboardingService {
         ...(dto.reminderSmsEnabled !== undefined && { reminderSmsEnabled: dto.reminderSmsEnabled }),
         ...(dto.reminderTemplate !== undefined && { reminderTemplate: dto.reminderTemplate }),
         ...(dto.allowOnlinePayment !== undefined && { allowOnlinePayment: dto.allowOnlinePayment }),
-        ...(dto.acceptsMonSoutienPsy !== undefined && { acceptsMonSoutienPsy: dto.acceptsMonSoutienPsy }),
         ...(dto.autoInvoice !== undefined && { autoInvoice: dto.autoInvoice }),
         ...(dto.autoInvoiceEmail !== undefined && { autoInvoiceEmail: dto.autoInvoiceEmail }),
       },
     });
 
+    // acceptsMonSoutienPsy vit sur PsyNetworkProfile
+    if (dto.acceptsMonSoutienPsy !== undefined) {
+      await this.prisma.psyNetworkProfile.upsert({
+        where: { psychologistId: psy.id },
+        create: {
+          psychologistId: psy.id,
+          acceptsMonSoutienPsy: dto.acceptsMonSoutienPsy,
+        },
+        update: { acceptsMonSoutienPsy: dto.acceptsMonSoutienPsy },
+      });
+    }
+
     // Marquer l'étape profile comme complète
     await this.completeStep(userId, 'profile');
 
-    return updated;
+    return { ...updated, acceptsMonSoutienPsy: dto.acceptsMonSoutienPsy ?? false };
   }
 
   async markOnboarded(userId: string) {
@@ -227,24 +238,25 @@ export class OnboardingService {
   async getPsychologistProfile(userId: string) {
     const psy = await this.prisma.psychologist.findUnique({
       where: { userId },
-      include: { subscription: true },
+      include: { subscription: true, networkProfile: true },
     });
     if (!psy) {
       // Auto-créer le profil si inexistant (premier login Keycloak)
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
       if (!user) throw new NotFoundException('Utilisateur introuvable');
 
-      return this.prisma.psychologist.create({
+      const created = await this.prisma.psychologist.create({
         data: {
           userId,
           name: user.email.split('@')[0] ?? 'Nouveau praticien',
           slug: this.generateSlug(user.email.split('@')[0] ?? 'praticien'),
           isOnboarded: false,
         },
-        include: { subscription: true },
+        include: { subscription: true, networkProfile: true },
       });
+      return { ...created, acceptsMonSoutienPsy: false };
     }
-    return psy;
+    return { ...psy, acceptsMonSoutienPsy: psy.networkProfile?.acceptsMonSoutienPsy ?? false };
   }
 
   private async getPsychologist(userId: string) {
