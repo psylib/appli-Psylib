@@ -22,7 +22,7 @@ interface ConnectStatus {
   stripeOnboardingComplete: boolean;
 }
 
-export function PaymentSettings() {
+export function PaymentSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status: sessionStatus } = useSession();
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ export function PaymentSettings() {
   const [connecting, setConnecting] = useState(false);
   const [toggling, setToggling] = useState(false);
 
-  const token = session?.accessToken ?? '';
+  const token = tokenProp || session?.accessToken || '';
 
   useEffect(() => {
     if (sessionStatus === 'loading') return;

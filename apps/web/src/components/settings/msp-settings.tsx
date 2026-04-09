@@ -7,14 +7,14 @@ import { psychologistApi } from '@/lib/api/psychologist';
 import { consultationTypesApi, type ConsultationType } from '@/lib/api/consultation-types';
 import { Loader2, Shield, Info } from 'lucide-react';
 
-export function MspSettings() {
+export function MspSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
 
-  const token = session?.accessToken ?? '';
+  const token = tokenProp || session?.accessToken || '';
 
   useEffect(() => {
     if (status === 'loading') return;

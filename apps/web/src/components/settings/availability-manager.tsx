@@ -37,17 +37,19 @@ interface DayState {
 
 const DEFAULT_DAY: DayState = { isActive: false, startTime: '09:00', endTime: '18:00' };
 
-export function AvailabilityManager() {
+export function AvailabilityManager({ token: tokenProp }: { token?: string }) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [saved, setSaved] = useState(false);
+
+  const token = tokenProp || session?.accessToken || '';
 
   const [days, setDays] = useState<DayState[]>(DAYS.map(() => ({ ...DEFAULT_DAY })));
 
   const { data: slots, isLoading } = useQuery({
     queryKey: ['availability'],
-    queryFn: () => apiClient.get<AvailabilitySlot[]>('/availability', session?.accessToken ?? ''),
-    enabled: !!session?.accessToken,
+    queryFn: () => apiClient.get<AvailabilitySlot[]>('/availability', token),
+    enabled: !!token,
   });
 
   useEffect(() => {
@@ -74,7 +76,7 @@ export function AvailabilityManager() {
           isActive: true,
         };
       });
-      return apiClient.post('/availability', { slots: activeSlots }, session?.accessToken ?? '');
+      return apiClient.post('/availability', { slots: activeSlots }, token);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['availability'] });

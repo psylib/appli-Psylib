@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/toast';
 import { psychologistApi } from '@/lib/api/psychologist';
 import { Loader2, FileText } from 'lucide-react';
 
-export function InvoiceSettings() {
+export function InvoiceSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export function InvoiceSettings() {
   const [togglingInvoice, setTogglingInvoice] = useState(false);
   const [togglingEmail, setTogglingEmail] = useState(false);
 
-  const token = session?.accessToken ?? '';
+  const token = tokenProp || session?.accessToken || '';
 
   useEffect(() => {
     if (status === 'loading') return;

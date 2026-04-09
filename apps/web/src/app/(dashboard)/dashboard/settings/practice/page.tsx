@@ -17,6 +17,8 @@ export default async function PracticePage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
+  const token = session.accessToken;
+
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <div>
@@ -94,10 +96,10 @@ export default async function PracticePage() {
       </div>
 
       {/* Motifs de consultation */}
-      <ConsultationTypesSettings />
+      <ConsultationTypesSettings token={token} />
 
       {/* Mon Soutien Psy */}
-      <MspSettings />
+      <MspSettings token={token} />
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-4">
         <h2 className="text-base font-medium text-foreground">Informations de contact</h2>
@@ -116,19 +118,19 @@ export default async function PracticePage() {
       </div>
 
       {/* Visioconference */}
-      <VisioSettings />
+      <VisioSettings token={token} />
 
       {/* Disponibilites — prise de RDV en ligne */}
-      <AvailabilityManager />
+      <AvailabilityManager token={token} />
 
       {/* Rappels de rendez-vous */}
-      <ReminderSettings />
+      <ReminderSettings token={token} />
 
       {/* Paiement en ligne */}
-      <PaymentSettings />
+      <PaymentSettings token={token} />
 
       {/* Facturation automatique */}
-      <InvoiceSettings />
+      <InvoiceSettings token={token} />
 
       <p className="text-xs text-muted-foreground text-center">
         La gestion complete du cabinet est disponible depuis votre profil.

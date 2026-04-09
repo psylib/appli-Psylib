@@ -51,7 +51,7 @@ const EMPTY_FORM: FormState = {
   isPublic: true,
 };
 
-export function ConsultationTypesSettings() {
+export function ConsultationTypesSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [types, setTypes] = useState<ConsultationType[]>([]);
@@ -62,7 +62,7 @@ export function ConsultationTypesSettings() {
   const [saving, setSaving] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState<string | null>(null);
 
-  const token = session?.accessToken ?? '';
+  const token = tokenProp || session?.accessToken || '';
 
   const loadTypes = useCallback(async () => {
     if (!token) return;

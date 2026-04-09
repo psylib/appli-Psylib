@@ -10,14 +10,14 @@ interface NetworkProfile {
   offersVisio: boolean;
 }
 
-export function VisioSettings() {
+export function VisioSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
 
-  const token = session?.accessToken ?? '';
+  const token = tokenProp || session?.accessToken || '';
 
   useEffect(() => {
     if (status === 'loading') return;

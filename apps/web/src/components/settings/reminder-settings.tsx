@@ -37,7 +37,7 @@ const PREVIEW_VALUES: Record<string, string> = {
   '{motif}': 'Consultation individuelle',
 };
 
-export function ReminderSettings() {
+export function ReminderSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
@@ -50,7 +50,7 @@ export function ReminderSettings() {
   const [template, setTemplate] = useState(DEFAULT_TEMPLATE);
   const [showPreview, setShowPreview] = useState(false);
 
-  const token = session?.accessToken ?? '';
+  const token = tokenProp || session?.accessToken || '';
 
   useEffect(() => {
     if (status === 'loading') return;
