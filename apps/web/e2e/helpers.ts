@@ -1,4 +1,55 @@
-import { Page, Route } from '@playwright/test';
+import { Page, Route, BrowserContext } from '@playwright/test';
+import { encode } from 'next-auth/jwt';
+
+// Must match AUTH_SECRET in apps/web/.env.local
+const E2E_AUTH_SECRET =
+  process.env['AUTH_SECRET'] ??
+  'e2e-playwright-local-dev-secret-do-not-use-in-prod-xxxxxxxxxxxxxxxxxx';
+
+// next-auth v5 default cookie name (non-secure on http://localhost)
+const SESSION_COOKIE_NAME = 'authjs.session-token';
+
+/**
+ * Encode a next-auth JWT and set it as a session cookie on the browser context.
+ * This bypasses the real Keycloak OIDC flow entirely — the middleware's
+ * `auth()` call will decode this cookie and treat the user as authenticated.
+ */
+async function setSessionCookie(
+  context: BrowserContext,
+  payload: Record<string, unknown>,
+) {
+  const token = await encode({
+    token: {
+      ...payload,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 8 * 60 * 60,
+      jti: `e2e-${Math.random().toString(36).slice(2)}`,
+    },
+    secret: E2E_AUTH_SECRET,
+    salt: SESSION_COOKIE_NAME,
+  });
+
+  await context.addCookies([
+    {
+      name: SESSION_COOKIE_NAME,
+      value: token,
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
+    },
+  ]);
+
+  // Pre-accept cookie consent banner so it doesn't intercept clicks during tests
+  await context.addInitScript(() => {
+    try {
+      window.localStorage.setItem('psylib-cookie-consent', 'refused');
+    } catch {
+      /* noop */
+    }
+  });
+}
 
 /**
  * Mock API responses for authenticated E2E tests.
@@ -30,53 +81,32 @@ export function mockApi(page: Page, method: string, path: string, body: unknown,
 }
 
 /**
- * Inject a fake next-auth session cookie to simulate an authenticated user.
- * This bypasses Keycloak OIDC for E2E tests.
+ * Inject a signed next-auth JWT session cookie to simulate an authenticated
+ * psychologist. The middleware's auth() call will decode this cookie and
+ * treat the user as a logged-in psychologist, bypassing Keycloak OIDC.
  */
 export async function loginAsPsychologist(page: Page) {
-  // Mock the next-auth session endpoint
-  await page.route('**/api/auth/session', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        user: {
-          id: 'psy-001',
-          name: 'Dr. Test Dupont',
-          email: 'test@psylib.eu',
-          role: 'psychologist',
-        },
-        accessToken: 'fake-jwt-token-for-e2e',
-        role: 'psychologist',
-        expires: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-      }),
-    }),
-  );
+  await setSessionCookie(page.context(), {
+    sub: 'psy-001',
+    name: 'Dr. Test Dupont',
+    email: 'test@psylib.eu',
+    role: 'psychologist',
+    accessToken: 'fake-jwt-token-for-e2e',
+  });
 }
 
 /**
- * Same as loginAsPsychologist but marks the user as NOT onboarded.
+ * Same as loginAsPsychologist but the user is not yet onboarded.
  * Use for onboarding wizard tests.
  */
 export async function loginAsPsychologistNotOnboarded(page: Page) {
-  await page.route('**/api/auth/session', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        user: {
-          id: 'psy-new-001',
-          name: 'Dr. Nouveau',
-          email: 'new@psylib.eu',
-          role: 'psychologist',
-        },
-        accessToken: 'fake-jwt-token-for-e2e',
-        role: 'psychologist',
-        isOnboarded: false,
-        expires: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-      }),
-    }),
-  );
+  await setSessionCookie(page.context(), {
+    sub: 'psy-new-001',
+    name: 'Dr. Nouveau',
+    email: 'new@psylib.eu',
+    role: 'psychologist',
+    accessToken: 'fake-jwt-token-for-e2e',
+  });
 }
 
 /**
@@ -99,24 +129,14 @@ export async function mockSseStream(page: Page, urlPattern: string, chunks: stri
 }
 
 export async function loginAsPatient(page: Page) {
-  await page.route('**/api/auth/session', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        user: {
-          id: 'patient-001',
-          name: 'Marie Patient',
-          email: 'marie@example.com',
-          role: 'patient',
-        },
-        accessToken: 'fake-patient-jwt-for-e2e',
-        role: 'patient',
-        patientId: 'patient-001',
-        expires: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-      }),
-    }),
-  );
+  await setSessionCookie(page.context(), {
+    sub: 'patient-001',
+    name: 'Marie Patient',
+    email: 'marie@example.com',
+    role: 'patient',
+    patientId: 'patient-001',
+    accessToken: 'fake-patient-jwt-for-e2e',
+  });
 }
 
 // --- Fixtures ---
