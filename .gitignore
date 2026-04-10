@@ -47,6 +47,7 @@ coverage/
 
 # Docker
 docker/keycloak/data/
+docker/n8n-prod/.env
 
 # Secrets
 *.pem
@@ -73,3 +74,22 @@ terraform.tfstate.backup
 
 # RPPS extraction data (non versionné)
 tmp/
+
+# Claude Code local config
+.claude/
+apps/*/.claude/
+
+# Playwright artifacts
+.playwright-mcp/
+playwright-report/
+apps/web/playwright-report/
+test-results/
+apps/web/test-results/
+
+# Local notes & drafts (non versionné)
+BOOKING/
+Nouveau dossier/
+
+# Root screenshots (debug captures)
+/*.png
+apps/mobile/*.png
