@@ -5,7 +5,9 @@ set -euo pipefail
 # Usage: ./scripts/backup-postgres.sh
 # Cron: 0 2 * * * /opt/psyscale-api/scripts/backup-postgres.sh >> /var/log/psyscale-backup.log 2>&1
 #
-# Backups stockes dans /opt/psyscale-backups/ avec rotation 30 jours
+# Backups stockes dans /opt/psyscale-backups/ avec rotation 30 jours.
+# Si HEALTHCHECKS_BACKUP_URL est defini, ping de succes/echec envoye a healthchecks.io.
+# Si OVH_S3_* sont definis, sync automatique vers OVH Object Storage (cross-cloud HDS).
 
 BACKUP_DIR="/opt/psyscale-backups"
 CONTAINER_NAME="psyscale-api-postgres-1"
@@ -14,6 +16,19 @@ DB_NAME="${POSTGRES_DB:-psyscale}"
 RETENTION_DAYS=30
 DATE=$(date +%Y-%m-%d_%H%M%S)
 BACKUP_FILE="${BACKUP_DIR}/psyscale-${DATE}.sql.gz"
+
+# ── Heartbeat helper ─────────────────────────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+ping_heartbeat() {
+  local endpoint="${1:-}"  # "" = success, "/fail" = fail
+  if [ -n "${HEALTHCHECKS_BACKUP_URL:-}" ]; then
+    curl -fsS -m 10 --retry 3 -o /dev/null "${HEALTHCHECKS_BACKUP_URL}${endpoint}" || true
+  fi
+}
+
+# Trap pour ping fail si echec
+trap 'ping_heartbeat /fail; echo "[$(date)] Backup ECHEC"' ERR
 
 echo "[$(date)] Backup PostgreSQL demarrage..."
 
@@ -46,4 +61,17 @@ echo "[$(date)] Rotation: ${DELETED} anciens backups supprimes (>${RETENTION_DAY
 TOTAL=$(ls -1 "$BACKUP_DIR"/psyscale-*.dump 2>/dev/null | wc -l)
 echo "[$(date)] Total backups: ${TOTAL} dumps conserves"
 
+# ── Sync cross-cloud vers OVH Object Storage (si configure) ──────────────────
+if [ -n "${OVH_S3_ENDPOINT:-}" ] && [ -x "${SCRIPT_DIR}/sync-backups-to-ovh.sh" ]; then
+  echo "[$(date)] Sync vers OVH Object Storage..."
+  if "${SCRIPT_DIR}/sync-backups-to-ovh.sh"; then
+    echo "[$(date)] Sync OVH: OK"
+  else
+    echo "[$(date)] Sync OVH: ECHEC (non-fatal, backup local toujours disponible)"
+  fi
+fi
+
 echo "[$(date)] Backup termine."
+
+# ── Heartbeat de succes ──────────────────────────────────────────────────────
+ping_heartbeat ""
