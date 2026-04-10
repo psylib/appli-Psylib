@@ -1,17 +1,27 @@
 import { Page, Route } from '@playwright/test';
 
-const API_BASE = 'https://api.psylib.eu/api/v1';
-
 /**
  * Mock API responses for authenticated E2E tests.
- * Intercepts fetch calls to the NestJS API and returns fixture data.
+ * Intercepts fetch calls to the NestJS API (any origin: localhost:4000 in dev,
+ * api.psylib.eu in prod) and returns fixture data.
  */
 export function mockApi(page: Page, method: string, path: string, body: unknown, status = 200) {
-  return page.route(`**${API_BASE}${path}*`, (route: Route) => {
-    if (route.request().method() === method) {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+  };
+  return page.route(`**/api/v1${path}*`, (route: Route) => {
+    const reqMethod = route.request().method();
+    // Respond to CORS preflight
+    if (reqMethod === 'OPTIONS') {
+      return route.fulfill({ status: 204, headers: corsHeaders });
+    }
+    if (reqMethod === method) {
       return route.fulfill({
         status,
         contentType: 'application/json',
+        headers: corsHeaders,
         body: JSON.stringify(body),
       });
     }

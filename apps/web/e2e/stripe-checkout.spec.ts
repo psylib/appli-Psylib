@@ -62,7 +62,7 @@ test.describe('Stripe Checkout — booking API handling', () => {
 
     // Invoke the book API from the browser and capture the response
     const result = await page.evaluate(async () => {
-      const res = await fetch('https://api.psylib.eu/api/v1/public/psy/dr-test-dupont/book', {
+      const res = await fetch('/api/v1/public/psy/dr-test-dupont/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +93,7 @@ test.describe('Stripe Checkout — booking API handling', () => {
     await page.goto('/payment/success?appointmentId=seed');
 
     const result = await page.evaluate(async () => {
-      const res = await fetch('https://api.psylib.eu/api/v1/public/psy/dr-test-dupont/book', {
+      const res = await fetch('/api/v1/public/psy/dr-test-dupont/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
