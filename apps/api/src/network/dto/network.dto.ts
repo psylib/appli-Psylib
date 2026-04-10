@@ -10,6 +10,7 @@ export class UpsertNetworkProfileDto {
   @ApiPropertyOptional() @IsOptional() @IsArray() @IsString({ each: true }) specialties?: string[];
   @ApiPropertyOptional() @IsOptional() @IsArray() @IsString({ each: true }) languages?: string[];
   @ApiPropertyOptional() @IsOptional() @IsBoolean() acceptsReferrals?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() offersVisio?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() bio?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() websiteUrl?: string;
 }

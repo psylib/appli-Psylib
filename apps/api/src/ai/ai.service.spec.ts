@@ -19,11 +19,10 @@ function createPrismaMock() {
   };
 }
 
-function createConfigMock(anthropicKey?: string, openaiKey?: string) {
+function createConfigMock(openrouterKey?: string) {
   return {
     get: vi.fn().mockImplementation((key: string) => {
-      if (key === 'ANTHROPIC_API_KEY') return anthropicKey;
-      if (key === 'OPENAI_API_KEY') return openaiKey;
+      if (key === 'OPENROUTER_API_KEY') return openrouterKey;
       return undefined;
     }),
   };
@@ -55,9 +54,9 @@ describe('AiService', () => {
     vi.restoreAllMocks();
   });
 
-  function buildService(anthropicKey?: string, openaiKey?: string) {
+  function buildService(openrouterKey?: string) {
     const encryptionMock = { decrypt: vi.fn().mockReturnValue('decrypted text') };
-    const s = new AiService(prisma as any, createConfigMock(anthropicKey, openaiKey) as any, encryptionMock as any);
+    const s = new AiService(prisma as any, createConfigMock(openrouterKey) as any, encryptionMock as any);
     s.onModuleInit();
     return s;
   }
@@ -65,20 +64,21 @@ describe('AiService', () => {
   // ─── onModuleInit ──────────────────────────────────────────────────────────
 
   describe('onModuleInit', () => {
-    it('sets anthropic provider when ANTHROPIC_API_KEY is present', () => {
-      service = buildService('sk-ant-test');
+    it('sets OpenRouter when OPENROUTER_API_KEY is present', () => {
+      service = buildService('sk-or-v1-test');
       expect(() => (service as any).requireAiKey()).not.toThrow();
+      expect((service as any).aiApiKey).toBe('sk-or-v1-test');
     });
 
-    it('falls back to openai when only OPENAI_API_KEY is present', () => {
-      service = buildService(undefined, 'sk-openai-test');
-      expect((service as any).aiProvider).toBe('openai');
-      expect(() => (service as any).requireAiKey()).not.toThrow();
-    });
-
-    it('sets provider to null when no key is configured', () => {
+    it('sets API key to null when no key is configured', () => {
       service = buildService();
-      expect((service as any).aiProvider).toBeNull();
+      expect((service as any).aiApiKey).toBeNull();
+    });
+
+    it('uses default models when not configured', () => {
+      service = buildService('sk-or-v1-test');
+      expect((service as any).modelMain).toBe('anthropic/claude-sonnet-4');
+      expect((service as any).modelFast).toBe('anthropic/claude-haiku-4');
     });
   });
 
@@ -90,9 +90,9 @@ describe('AiService', () => {
       expect(() => (service as any).requireAiKey()).toThrow(BadRequestException);
     });
 
-    it('returns key when Anthropic is configured', () => {
-      service = buildService('sk-ant-test');
-      expect((service as any).requireAiKey()).toBe('sk-ant-test');
+    it('returns key when configured', () => {
+      service = buildService('sk-or-v1-test');
+      expect((service as any).requireAiKey()).toBe('sk-or-v1-test');
     });
   });
 
@@ -100,7 +100,7 @@ describe('AiService', () => {
 
   describe('generateExercise', () => {
     it('throws ForbiddenException when psychologist not found', async () => {
-      service = buildService('sk-ant-test');
+      service = buildService('sk-or-v1-test');
       prisma.psychologist.findUnique.mockResolvedValue(null);
       await expect(
         service.generateExercise('user-uuid', {
@@ -122,10 +122,10 @@ describe('AiService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('calls Anthropic API and returns parsed JSON exercise', async () => {
-      service = buildService('sk-ant-test');
+    it('calls OpenRouter API and returns parsed JSON exercise', async () => {
+      service = buildService('sk-or-v1-test');
       const exercisePayload = {
-        content: [{ text: '{"title":"Respiration 4-7-8","description":"Exercice","instructions":["étape1"],"duration":"5min","frequency":"2x/jour","disclaimer":"Consultez un médecin"}' }],
+        choices: [{ message: { content: '{"title":"Respiration 4-7-8","description":"Exercice","instructions":["étape1"],"duration":"5min","frequency":"2x/jour","disclaimer":"Consultez un médecin"}' } }],
       };
       global.fetch = buildFetchJsonMock(exercisePayload);
 
@@ -137,13 +137,13 @@ describe('AiService', () => {
 
       expect(global.fetch).toHaveBeenCalledOnce();
       const [url] = (global.fetch as any).mock.calls[0] as [string];
-      expect(url).toContain('anthropic.com');
+      expect(url).toContain('openrouter.ai');
       expect(result).toHaveProperty('title', 'Respiration 4-7-8');
     });
 
     it('returns empty object when API returns malformed JSON', async () => {
-      service = buildService('sk-ant-test');
-      global.fetch = buildFetchJsonMock({ content: [{ text: 'pas du JSON valide' }] });
+      service = buildService('sk-or-v1-test');
+      global.fetch = buildFetchJsonMock({ choices: [{ message: { content: 'pas du JSON valide' } }] });
 
       const result = await service.generateExercise('user-uuid', {
         patientContext: 'test',
@@ -159,7 +159,7 @@ describe('AiService', () => {
 
   describe('generateContent', () => {
     it('throws ForbiddenException when psychologist not found', async () => {
-      service = buildService('sk-ant-test');
+      service = buildService('sk-or-v1-test');
       prisma.psychologist.findUnique.mockResolvedValue(null);
       await expect(
         service.generateContent('user-uuid', { type: 'linkedin', theme: 'test' }),
@@ -167,8 +167,8 @@ describe('AiService', () => {
     });
 
     it('returns content with correct type for linkedin', async () => {
-      service = buildService('sk-ant-test');
-      global.fetch = buildFetchJsonMock({ content: [{ text: 'Post LinkedIn généré...' }] });
+      service = buildService('sk-or-v1-test');
+      global.fetch = buildFetchJsonMock({ choices: [{ message: { content: 'Post LinkedIn généré...' } }] });
 
       const result = await service.generateContent('user-uuid', {
         type: 'linkedin',
@@ -179,14 +179,14 @@ describe('AiService', () => {
       expect(result).toEqual({ content: 'Post LinkedIn généré...', type: 'linkedin' });
     });
 
-    it('calls Anthropic API with correct model for text generation', async () => {
-      service = buildService('sk-ant-test');
-      global.fetch = buildFetchJsonMock({ content: [{ text: 'Contenu blog' }] });
+    it('calls OpenRouter API with correct model', async () => {
+      service = buildService('sk-or-v1-test');
+      global.fetch = buildFetchJsonMock({ choices: [{ message: { content: 'Contenu blog' } }] });
 
       await service.generateContent('user-uuid', { type: 'blog', theme: 'TCC' });
 
       const body = JSON.parse((global.fetch as any).mock.calls[0][1].body as string) as { model: string };
-      expect(body.model).toContain('claude');
+      expect(body.model).toBe('anthropic/claude-sonnet-4');
     });
   });
 
@@ -194,7 +194,7 @@ describe('AiService', () => {
 
   describe('saveMarketingContent', () => {
     it('saves content to DB and returns the created record', async () => {
-      service = buildService('sk-ant-test');
+      service = buildService('sk-or-v1-test');
       const saved = { id: 'mc-1', type: 'linkedin', theme: 'test', tone: 'professional', content: 'Post...' };
       prisma.marketingContent.create.mockResolvedValue(saved);
 
@@ -214,7 +214,7 @@ describe('AiService', () => {
     });
 
     it('throws ForbiddenException when psychologist not found', async () => {
-      service = buildService('sk-ant-test');
+      service = buildService('sk-or-v1-test');
       prisma.psychologist.findUnique.mockResolvedValue(null);
 
       await expect(
