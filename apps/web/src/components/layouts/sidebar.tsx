@@ -24,6 +24,7 @@ import {
   GraduationCap,
   Gift,
   Video,
+  Megaphone,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
   { label: 'Visio', href: '/dashboard/video', icon: Video },
   { label: 'Liste d\'attente', href: '/dashboard/waitlist', icon: ClipboardList },
   { label: 'Assistant IA', href: '/dashboard/ai-assistant', icon: Sparkles },
+  { label: 'Marketing IA', href: '/dashboard/marketing', icon: Megaphone },
   { label: 'Formations', href: '/dashboard/courses', icon: BookOpen },
   { label: 'Analytiques', href: '/dashboard/analytics', icon: BarChart2 },
   { label: 'Paiements', href: '/dashboard/payments', icon: CreditCard },
