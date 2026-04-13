@@ -5,10 +5,18 @@ import {
   Sparkles,
   CreditCard,
   Shield,
+  Bell,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
-const features = [
+const features: {
+  icon: typeof FileText;
+  title: string;
+  description: string;
+  color: string;
+  border: string;
+  badge?: string;
+}[] = [
   {
     icon: FileText,
     title: 'Notes cliniques structurées',
@@ -32,17 +40,25 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: 'Assistant IA',
-    description: 'Résumés de séance, suggestions d\'exercices thérapeutiques. L\'IA reste un outil — vous restez le praticien.',
+    title: 'Assistant IA contextuel',
+    description: 'Résumé structuré de séance en streaming. Exercices thérapeutiques personnalisés par IA. Consentement patient explicite requis — zéro données envoyées sans votre accord.',
     color: 'text-terracotta bg-terracotta-50',
     border: 'border-terracotta-200',
+    badge: 'Consentement explicite',
   },
   {
     icon: CreditCard,
-    title: 'Paiements & zéro no-show',
-    description: 'Paiement Stripe à la réservation, rappels SMS/email automatiques, liste d\'attente qui fait tourner les annulations. Vos séances se remplissent toutes seules.',
+    title: 'Paiements, factures & zéro no-show',
+    description: 'Paiement Stripe à la réservation. Facture PDF auto-générée après chaque séance (numérotation séquentielle, TVA 0%). Rappels SMS/email, liste d\'attente automatique.',
     color: 'text-sage bg-sage-50',
     border: 'border-sage-200',
+  },
+  {
+    icon: Bell,
+    title: 'Notifications temps réel',
+    description: 'Nouveau RDV, paiement reçu, rappels patient, alertes humeur. Tout arrive instantanément dans votre dashboard — sans rafraîchir.',
+    color: 'text-terracotta bg-terracotta-50',
+    border: 'border-terracotta-200',
   },
   {
     icon: Shield,
@@ -74,14 +90,19 @@ export function FeaturesSection() {
 
         {/* Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map(({ icon: Icon, title, description, color, border }, i) => (
+          {features.map(({ icon: Icon, title, description, color, border, badge }, i) => (
             <ScrollReveal key={title} delay={i * 80}>
-              <div className={`group rounded-2xl bg-white border ${border} p-6 hover:shadow-md transition-shadow`}>
+              <div className={`group rounded-2xl bg-white border ${border} p-6 hover:shadow-md transition-shadow h-full`}>
                 <div className={`inline-flex p-2.5 rounded-xl ${color} mb-4`}>
                   <Icon size={20} aria-hidden="true" />
                 </div>
                 <h3 className="font-semibold text-charcoal text-lg mb-2">{title}</h3>
                 <p className="text-charcoal-400 text-sm leading-relaxed">{description}</p>
+                {badge && (
+                  <span className="inline-block mt-3 text-xs px-2.5 py-1 rounded-full bg-sage-50 text-sage-700 border border-sage-200 font-medium">
+                    {badge}
+                  </span>
+                )}
               </div>
             </ScrollReveal>
           ))}

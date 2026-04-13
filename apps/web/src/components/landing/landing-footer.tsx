@@ -5,10 +5,11 @@ import { NewsletterForm } from './newsletter-form';
 const footerLinks = {
   Produit: [
     { label: 'Fonctionnalités', href: '/fonctionnalites' },
+    { label: 'Visio-consultation', href: '/#visio' },
+    { label: 'Espace patient', href: '/#espace-patient' },
     { label: 'Tarifs', href: '/tarifs' },
     { label: 'Comparaison', href: '/comparaison' },
     { label: 'FAQ', href: '/faq' },
-    { label: 'Ressources gratuites', href: '/ressources' },
     { label: 'Blog', href: '/blog' },
     { label: 'Guides', href: '/guides' },
   ],

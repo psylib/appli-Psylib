@@ -12,6 +12,8 @@ import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FAQSection } from '@/components/landing/faq-section';
 import { BeforeAfterSection } from '@/components/landing/before-after-section';
 import { LeadNurtureCTA } from '@/components/landing/lead-nurture-cta';
+import { VisioSection } from '@/components/landing/visio-section';
+import { PatientPortalSection } from '@/components/landing/patient-portal-section';
 import { CTASection } from '@/components/landing/cta-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
 import { StickyCTA } from '@/components/landing/sticky-cta';
@@ -29,7 +31,7 @@ const jsonLd = {
         'Logiciel de gestion de cabinet tout-en-un pour psychologues liberaux. Dossiers patients securises, notes cliniques structurees, outcome tracking (PHQ-9/GAD-7), reseau professionnel, facturation. Conforme HDS France.',
       url: 'https://psylib.eu',
       featureList:
-        'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF conforme, Prise de rendez-vous en ligne, Paiement Stripe a la reservation, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Motifs de consultation configurables, Reseau professionnel entre psychologues, Espace patient securise, Supervision et intervision, Chiffrement AES-256-GCM',
+        'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA en streaming, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF automatique, Prise de rendez-vous en ligne, Paiement Stripe a la reservation, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Teleconsultation video HD integree HDS, Espace patient avec mood tracking et journal therapeutique, Exercices therapeutiques personnalises par IA, Notifications temps reel WebSocket, Reseau professionnel entre psychologues, Supervision et intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
         lowPrice: '43',
@@ -107,6 +109,30 @@ const jsonLd = {
             text: "14 jours d'acces complet au plan Pro, sans carte bancaire. A la fin de l'essai, vous choisissez votre plan ou votre compte est desactive. Vos donnees restent exportables.",
           },
         },
+        {
+          '@type': 'Question',
+          name: 'PsyLib propose-t-il la teleconsultation ?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "Oui. PsyLib integre la visio-consultation HD, hebergee sur infrastructure HDS certifiee en France. Pas besoin de Zoom ou Google Meet. Lien unique envoye au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Scale.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: "Comment fonctionne l'espace patient ?",
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "Chaque patient invite recoit un espace personnel securise : suivi d'humeur quotidien, journal therapeutique prive ou partage, et exercices assignes. Le praticien visualise l'evolution entre les seances dans son dashboard.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Les factures sont-elles generees automatiquement ?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "Oui. Apres chaque seance ou paiement Stripe, PsyLib genere automatiquement une facture PDF avec numerotation sequentielle et TVA 0% (exoneration psychologue). Configurable dans Parametres > Cabinet.",
+          },
+        },
       ],
     },
   ],
@@ -115,7 +141,7 @@ const jsonLd = {
 export const metadata: Metadata = {
   title: 'PsyLib — Gestion cabinet psychologue libéral | HDS',
   description:
-    'PsyLib : logiciel de gestion de cabinet pour psychologues liberaux en France. Dossiers patients securises (HDS), notes cliniques structurees, outcome tracking PHQ-9/GAD-7, facturation PDF, prise de RDV en ligne. Essai gratuit 14 jours.',
+    'PsyLib : logiciel de gestion de cabinet pour psychologues liberaux en France. Dossiers patients securises (HDS), notes cliniques structurees, outcome tracking PHQ-9/GAD-7, teleconsultation video HDS, espace patient, facturation automatique PDF. Essai gratuit 14 jours.',
   keywords: [
     'psychologue libéral',
     'logiciel cabinet psychologue',
@@ -125,11 +151,15 @@ export const metadata: Metadata = {
     'PHQ-9 GAD-7',
     'réseau psychologues France',
     'notes cliniques TCC ACT',
+    'téléconsultation psychologue HDS',
+    'visio psy conforme',
+    'espace patient psychologue',
+    'facturation automatique psychologue',
   ],
   openGraph: {
     title: 'PsyLib — L\'atelier numérique du psychologue libéral',
     description:
-      'Outcome tracking, réseau pro, notes structurées. Tout ce que Doctolib n\'offre pas. 100% conforme HDS France.',
+      'Outcome tracking, visio HDS, espace patient, réseau pro, notes structurées, facturation auto. Tout ce que Doctolib n\'offre pas. 100% conforme HDS France.',
     url: 'https://psylib.eu',
     siteName: 'PsyLib',
     locale: 'fr_FR',
@@ -138,7 +168,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'PsyLib — Gestion cabinet psychologue libéral',
-    description: 'Outcome tracking, réseau pro, notes cliniques. La plateforme spécifique pour psys libéraux.',
+    description: 'Outcome tracking, visio HDS, espace patient, réseau pro, facturation auto. La plateforme spécifique pour psys libéraux.',
   },
   alternates: {
     canonical: 'https://psylib.eu',
@@ -159,6 +189,8 @@ export default function HomePage() {
         <PainPointsSection />
         <FeaturesSection />
         <OutcomeSection />
+        <VisioSection />
+        <PatientPortalSection />
         <NetworkSection />
         <ComparisonSection />
         <BeforeAfterSection />

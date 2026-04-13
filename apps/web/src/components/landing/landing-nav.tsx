@@ -16,6 +16,7 @@ export function LandingNav() {
 
   const anchorLinks = [
     { label: 'Fonctionnalités', href: '#features' },
+    { label: 'Visio', href: '#visio' },
     { label: 'Tarifs', href: '#pricing' },
     { label: 'À propos', href: '#trust' },
   ];

@@ -37,6 +37,18 @@ const faqs = [
     q: 'Mes données sont-elles sécurisées ?',
     a: 'Toutes les données cliniques (notes, résumés, bilans) sont chiffrées avec AES-256-GCM côté serveur avant stockage. Les transmissions utilisent TLS 1.3. Aucune donnée patient ne quitte la France ni n\'est transmise à des tiers sans votre consentement explicite.',
   },
+  {
+    q: 'PsyLib propose-t-il la téléconsultation ?',
+    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Scale.',
+  },
+  {
+    q: 'Comment fonctionne l\'espace patient ?',
+    a: 'Chaque patient invité reçoit un espace personnel sécurisé : suivi d\'humeur quotidien (échelle 1-10), journal thérapeutique (privé ou partagé avec le psy), et exercices assignés (manuels ou générés par IA). Le praticien visualise l\'évolution entre les séances directement dans son dashboard.',
+  },
+  {
+    q: 'Les factures sont-elles générées automatiquement ?',
+    a: 'Oui. Après chaque séance marquée comme payée ou après un paiement Stripe, PsyLib génère automatiquement une facture PDF avec numérotation séquentielle et TVA 0% (exonération psychologue). Configurable dans Paramètres > Cabinet.',
+  },
 ];
 
 export function FAQSection() {
