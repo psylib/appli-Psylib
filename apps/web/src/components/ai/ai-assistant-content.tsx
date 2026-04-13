@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Sparkles,
   Dumbbell,
@@ -21,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api/client';
 import { cn, formatDateShort } from '@/lib/utils';
+import { billingApi } from '@/lib/api/billing';
+import { UsageIndicator } from '@/components/shared/usage-indicator';
 
 type ContentType = 'linkedin' | 'newsletter' | 'blog';
 type ExerciseType = 'breathing' | 'journaling' | 'exposure' | 'mindfulness' | 'cognitive';
@@ -80,6 +83,13 @@ interface SavedContent {
 export function AiAssistantContent() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<ActiveTab>('exercise');
+
+  const { data: usage } = useQuery({
+    queryKey: ['billing-usage'],
+    queryFn: () => billingApi.getUsage(session?.accessToken ?? ''),
+    enabled: !!session?.accessToken,
+    staleTime: 60_000,
+  });
 
   // Exercice
   const [exerciseType, setExerciseType] = useState<ExerciseType>('breathing');
@@ -287,6 +297,11 @@ export function AiAssistantContent() {
         <p className="text-muted-foreground">
           Générez des exercices thérapeutiques et du contenu professionnel
         </p>
+        {usage && (
+          <div className="mt-2">
+            <UsageIndicator label="Credits IA ce mois" used={usage.ai.used} limit={usage.ai.limit} />
+          </div>
+        )}
       </div>
 
       {/* Disclaimer */}
