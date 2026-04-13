@@ -59,4 +59,13 @@ export const coursesApi = {
 
   addModule: (courseId: string, data: CreateModuleData, token: string) =>
     apiClient.post<CourseModule>(`/courses/${courseId}/modules`, data, token),
+
+  updateModule: (courseId: string, moduleId: string, data: Partial<CreateModuleData>, token: string) =>
+    apiClient.put<CourseModule>(`/courses/${courseId}/modules/${moduleId}`, data, token),
+
+  deleteModule: (courseId: string, moduleId: string, token: string) =>
+    apiClient.delete<void>(`/courses/${courseId}/modules/${moduleId}`, token),
+
+  reorderModules: (courseId: string, order: { id: string; order: number }[], token: string) =>
+    apiClient.patch<void>(`/courses/${courseId}/modules/reorder`, { order }, token),
 };
