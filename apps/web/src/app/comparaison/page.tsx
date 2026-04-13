@@ -136,7 +136,7 @@ export default function ComparaisonPage() {
                     <th className="text-left py-4 px-5 font-medium text-charcoal-400 min-w-[220px]">Fonctionnalité</th>
                     <th className="text-center py-4 px-4 min-w-[100px]">
                       <div className="font-semibold text-sage">PsyLib</div>
-                      <div className="text-xs text-charcoal-300 mt-0.5">43€/mois</div>
+                      <div className="text-xs text-charcoal-300 mt-0.5">Gratuit puis 29€/mois</div>
                     </th>
                     <th className="text-center py-4 px-4 min-w-[100px]">
                       <div className="font-medium text-charcoal-400">Excel / Sheets</div>

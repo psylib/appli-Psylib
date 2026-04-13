@@ -24,7 +24,7 @@ export function StickyCTA() {
       <div className="bg-terracotta/95 backdrop-blur-sm px-4 py-3 flex items-center justify-between gap-3 shadow-lg">
         <div className="flex-1 min-w-0">
           <p className="text-white text-sm font-medium truncate">
-            Fondateurs — 43€/mois à vie (13 places)
+            Essai gratuit 14 jours — à partir de 29€/mois
           </p>
         </div>
         <Link

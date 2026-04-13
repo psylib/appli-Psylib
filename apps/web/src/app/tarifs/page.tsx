@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Tarifs | PsyLib — Logiciel pour psychologues",
   description:
-    "Decouvrez les tarifs PsyLib : a partir de 43 euros/mois pour gerer votre cabinet de psychologue liberal. Essai gratuit 14 jours sans carte bancaire. Plans Starter, Pro et Scale.",
+    "Decouvrez les tarifs PsyLib : plan gratuit puis a partir de 29 euros/mois pour gerer votre cabinet de psychologue liberal. Plans Free, Solo, Pro et Clinic.",
   keywords: [
     "tarifs psychologue",
     "prix logiciel psychologue",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tarifs PsyLib — Logiciel pour psychologues liberaux",
     description:
-      "Plans a partir de 43 euros/mois. Dossiers patients, notes cliniques, facturation, IA. 14 jours d\"essai gratuit.",
+      "Plan gratuit puis a partir de 29 euros/mois. Dossiers patients, notes cliniques, facturation, IA.",
     url: "https://psylib.eu/tarifs",
     type: "website",
     locale: "fr_FR",
@@ -40,45 +40,53 @@ const tarifsJsonLd = {
       offers: [
         {
           "@type": "Offer",
-          name: "Starter",
-          price: "43",
+          name: "Free",
+          price: "0",
+          priceCurrency: "EUR",
+          description:
+            "10 patients, 20 sessions/mois, notes cliniques, chiffrement HDS",
+        },
+        {
+          "@type": "Offer",
+          name: "Solo",
+          price: "29",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "43",
+            price: "29",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
           description:
-            "40 patients, 40 sessions/mois, 10 resumes IA, profil public",
+            "50 patients, sessions illimitees, 10 resumes IA/mois, visio basique",
         },
         {
           "@type": "Offer",
           name: "Pro",
-          price: "69",
+          price: "59",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "69",
+            price: "59",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
           description:
-            "Patients et sessions illimites, 100 resumes IA, supervision, facturation PDF",
+            "Patients illimites, IA illimitee, portail patient, facturation PDF, analytics",
         },
         {
           "@type": "Offer",
-          name: "Scale",
-          price: "119",
+          name: "Clinic",
+          price: "99",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "119",
+            price: "99",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
           description:
-            "Tout Pro + IA illimitee, multi-praticiens, support prioritaire, analytics avances",
+            "Tout Pro + multi-praticiens, support prioritaire, API, formations illimitees",
         },
       ],
     },
@@ -132,19 +140,37 @@ const tarifsJsonLd = {
 
 const plans = [
   {
-    name: "Starter",
-    description: "Pour demarrer votre pratique",
-    priceMonthly: 43,
-    priceAnnual: 40,
+    name: "Free",
+    description: "Pour decouvrir PsyLib",
+    priceMonthly: 0,
+    priceAnnual: 0,
     highlighted: false,
     features: [
-      "40 patients maximum",
-      "40 sessions par mois",
+      "10 patients maximum",
+      "20 sessions par mois",
+      "Notes cliniques SOAP / DAP",
+      "Dossiers patients securises",
+      "Chiffrement HDS AES-256",
+      "Profil public psylib.eu/psy/votre-nom",
+      "Prise de RDV en ligne",
+      "Support par email",
+    ],
+    cta: "Creer mon compte gratuit",
+  },
+  {
+    name: "Solo",
+    description: "Pour demarrer votre pratique",
+    priceMonthly: 29,
+    priceAnnual: 25,
+    highlighted: false,
+    features: [
+      "50 patients maximum",
+      "Sessions illimitees",
       "10 resumes IA par mois",
+      "Visio securisee (5/mois)",
       "Profil public psylib.eu/psy/votre-nom",
       "Prise de RDV en ligne",
       "Notes cliniques SOAP / DAP",
-      "Dossiers patients securises",
       "Chiffrement HDS AES-256",
       "Support par email",
     ],
@@ -153,16 +179,16 @@ const plans = [
   {
     name: "Pro",
     description: "Pour les praticiens etablis",
-    priceMonthly: 69,
-    priceAnnual: 65,
+    priceMonthly: 59,
+    priceAnnual: 49,
     highlighted: true,
     badge: "Le plus populaire",
     features: [
       "Patients illimites",
       "Sessions illimitees",
-      "100 resumes IA par mois",
+      "IA illimitee (resumes, exercices)",
+      "Visio illimitee",
       "5 formations incluses",
-      "Supervision / Intervision",
       "Facturation PDF automatique",
       "Outcome tracking (PHQ-9, GAD-7)",
       "Espace patient securise",
@@ -173,14 +199,13 @@ const plans = [
     cta: "Commencer l\"essai gratuit",
   },
   {
-    name: "Scale",
+    name: "Clinic",
     description: "Pour les cabinets multi-praticiens",
-    priceMonthly: 119,
-    priceAnnual: 110,
+    priceMonthly: 99,
+    priceAnnual: 89,
     highlighted: false,
     features: [
       "Tout le plan Pro inclus",
-      "Resumes IA illimites",
       "Multi-praticiens (jusqu\"a 10)",
       "Support prioritaire dedie",
       "Analytics avances et rapports",
@@ -194,24 +219,24 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { name: "Patients", starter: "40", pro: "Illimite", scale: "Illimite" },
-  { name: "Sessions / mois", starter: "40", pro: "Illimite", scale: "Illimite" },
-  { name: "Resumes IA / mois", starter: "10", pro: "100", scale: "Illimite" },
-  { name: "Notes cliniques SOAP / DAP", starter: true, pro: true, scale: true },
-  { name: "Profil public", starter: true, pro: true, scale: true },
-  { name: "Prise de RDV en ligne", starter: true, pro: true, scale: true },
-  { name: "Chiffrement HDS", starter: true, pro: true, scale: true },
-  { name: "Facturation PDF", starter: false, pro: true, scale: true },
-  { name: "Outcome tracking", starter: false, pro: true, scale: true },
-  { name: "Espace patient", starter: false, pro: true, scale: true },
-  { name: "Supervision / Intervision", starter: false, pro: true, scale: true },
-  { name: "Formations", starter: "0", pro: "5", scale: "Illimite" },
-  { name: "Messagerie psy-patient", starter: false, pro: true, scale: true },
-  { name: "Analytics de cabinet", starter: false, pro: true, scale: true },
-  { name: "Multi-praticiens", starter: false, pro: false, scale: true },
-  { name: "Support prioritaire dedie", starter: false, pro: false, scale: true },
-  { name: "API personnalisee", starter: false, pro: false, scale: true },
-  { name: "SLA garanti", starter: false, pro: false, scale: true },
+  { name: "Patients", free: "10", solo: "50", pro: "Illimite", clinic: "Illimite" },
+  { name: "Sessions / mois", free: "20", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
+  { name: "Resumes IA / mois", free: "0", solo: "10", pro: "Illimite", clinic: "Illimite" },
+  { name: "Visio securisee", free: false, solo: "5/mois", pro: "Illimite", clinic: "Illimite" },
+  { name: "Notes cliniques SOAP / DAP", free: true, solo: true, pro: true, clinic: true },
+  { name: "Profil public", free: true, solo: true, pro: true, clinic: true },
+  { name: "Prise de RDV en ligne", free: true, solo: true, pro: true, clinic: true },
+  { name: "Chiffrement HDS", free: true, solo: true, pro: true, clinic: true },
+  { name: "Facturation PDF", free: false, solo: false, pro: true, clinic: true },
+  { name: "Outcome tracking", free: false, solo: false, pro: true, clinic: true },
+  { name: "Espace patient", free: false, solo: false, pro: true, clinic: true },
+  { name: "Formations", free: "0", solo: "0", pro: "5", clinic: "Illimite" },
+  { name: "Messagerie psy-patient", free: false, solo: false, pro: true, clinic: true },
+  { name: "Analytics de cabinet", free: false, solo: false, pro: true, clinic: true },
+  { name: "Multi-praticiens", free: false, solo: false, pro: false, clinic: true },
+  { name: "Support prioritaire dedie", free: false, solo: false, pro: true, clinic: true },
+  { name: "API personnalisee", free: false, solo: false, pro: false, clinic: true },
+  { name: "SLA garanti", free: false, solo: false, pro: false, clinic: true },
 ];
 
 const faqs = [
@@ -257,8 +282,8 @@ export default function TarifsPage() {
             Des tarifs simples et transparents
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90">
-            Choisissez le plan adapte a votre pratique. Tous les plans incluent
-            14 jours d&apos;essai gratuit, sans carte bancaire.
+            Commencez gratuitement, evoluez quand vous etes pret. Tous les plans
+            payants incluent 14 jours d&apos;essai gratuit.
           </p>
         </div>
       </section>
@@ -276,7 +301,7 @@ export default function TarifsPage() {
 
       {/* Pricing cards */}
       <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -300,22 +325,31 @@ export default function TarifsPage() {
               <div className="mt-6">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-[#1E1B4B]">
-                    {plan.priceMonthly}&euro;
+                    {plan.priceMonthly === 0 ? "Gratuit" : `${plan.priceMonthly}\u20AC`}
                   </span>
-                  <span className="text-gray-500">/mois</span>
+                  {plan.priceMonthly > 0 && (
+                    <span className="text-gray-500">/mois</span>
+                  )}
                 </div>
-                <p className="mt-1 text-sm text-[#3D52A0] font-medium">
-                  ou {plan.priceAnnual}&euro;/mois en annuel{" "}
-                  <span className="text-xs text-gray-400">
-                    (economisez{" "}
-                    {Math.round(
-                      ((plan.priceMonthly - plan.priceAnnual) /
-                        plan.priceMonthly) *
-                        100
-                    )}
-                    %)
-                  </span>
-                </p>
+                {plan.priceMonthly > 0 && plan.priceAnnual > 0 && (
+                  <p className="mt-1 text-sm text-[#3D52A0] font-medium">
+                    ou {plan.priceAnnual}&euro;/mois en annuel{" "}
+                    <span className="text-xs text-gray-400">
+                      (economisez{" "}
+                      {Math.round(
+                        ((plan.priceMonthly - plan.priceAnnual) /
+                          plan.priceMonthly) *
+                          100
+                      )}
+                      %)
+                    </span>
+                  </p>
+                )}
+                {plan.priceMonthly === 0 && (
+                  <p className="mt-1 text-sm text-[#3D52A0] font-medium">
+                    Pour toujours, sans carte bancaire
+                  </p>
+                )}
               </div>
 
               {/* Features */}
@@ -358,7 +392,7 @@ export default function TarifsPage() {
         </div>
 
         <p className="mt-8 text-center text-sm text-gray-500">
-          14 jours d&apos;essai gratuit sur tous les plans. Sans carte bancaire.
+          Plan Free sans limite de duree. 14 jours d&apos;essai gratuit sur les plans payants.
           Sans engagement.
         </p>
       </section>
@@ -380,14 +414,17 @@ export default function TarifsPage() {
                   <th className="py-4 pr-4 font-semibold text-[#1E1B4B]">
                     Fonctionnalite
                   </th>
+                  <th className="px-4 py-4 text-center font-semibold text-gray-400">
+                    Free
+                  </th>
                   <th className="px-4 py-4 text-center font-semibold text-[#1E1B4B]">
-                    Starter
+                    Solo
                   </th>
                   <th className="px-4 py-4 text-center font-semibold text-[#3D52A0]">
                     Pro
                   </th>
                   <th className="px-4 py-4 text-center font-semibold text-[#1E1B4B]">
-                    Scale
+                    Clinic
                   </th>
                 </tr>
               </thead>
@@ -398,7 +435,7 @@ export default function TarifsPage() {
                     className="border-b border-gray-100 hover:bg-[#F8F7FF]"
                   >
                     <td className="py-3 pr-4 text-gray-700">{feature.name}</td>
-                    {(["starter", "pro", "scale"] as const).map((plan) => (
+                    {(["free", "solo", "pro", "clinic"] as const).map((plan) => (
                       <td key={plan} className="px-4 py-3 text-center">
                         {typeof feature[plan] === "boolean" ? (
                           feature[plan] ? (

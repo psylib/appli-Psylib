@@ -13,19 +13,19 @@ import { KpiCardSkeleton } from '@/components/ui/skeleton';
 const PLAN_CONFIG = {
   pro: {
     badge: 'Pro',
-    price: '69€/mois',
+    price: '59€/mois',
     highlights: [
       'Patients et séances illimités',
-      '100 résumés IA / mois',
+      'IA illimitée',
       'Analytics avancées',
-      'Supervision & intervision entre pairs',
+      'Portail patient sécurisé',
     ],
   },
   clinic: {
     badge: 'Clinic',
-    price: '119€/mois',
+    price: '99€/mois',
     highlights: [
-      'IA illimitée',
+      'Tout le plan Pro inclus',
       'Créer et vendre des formations en ligne',
       'Gestion multi-praticiens',
       'Support dédié',

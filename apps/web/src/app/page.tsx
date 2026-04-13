@@ -90,7 +90,7 @@ const jsonLd = {
           name: "Combien coute PsyLib ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "PsyLib propose trois formules : Starter a 43 EUR/mois, Pro a 69 EUR/mois et Scale a 119 EUR/mois. Un essai gratuit de 14 jours est disponible sans carte bancaire.",
+            text: "PsyLib propose quatre formules : Free (gratuit, 10 patients), Solo a 29 EUR/mois, Pro a 59 EUR/mois (IA illimitee) et Clinic a 99 EUR/mois (multi-praticiens). Les plans payants incluent 14 jours d'essai gratuit.",
           },
         },
         {

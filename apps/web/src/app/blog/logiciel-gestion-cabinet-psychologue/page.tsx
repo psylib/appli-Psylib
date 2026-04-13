@@ -268,7 +268,7 @@ export default function ArticleLogicielGestionCabinet() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-[#3D52A0]">PsyLib</td>
-                  <td className="px-4 py-3 font-medium text-[#3D52A0]">Dès 43 €/mois</td>
+                  <td className="px-4 py-3 font-medium text-[#3D52A0]">Gratuit puis 29 €/mois</td>
                   <td className="px-4 py-3">PHQ-9/GAD-7, templates TCC/ACT, réseau pro, IA HDS, espace patient</td>
                   <td className="px-4 py-3">Solution récente, base en croissance</td>
                 </tr>
@@ -313,7 +313,7 @@ export default function ArticleLogicielGestionCabinet() {
             ))}
           </ul>
           <p className="leading-relaxed">
-            Starter à 43€/mois, Pro à 69€/mois, Scale à 119€/mois. Essai gratuit 14 jours, sans carte bancaire.
+            Free gratuit, Solo à 29€/mois, Pro à 59€/mois, Clinic à 99€/mois. Plan gratuit sans limite de durée.
           </p>
         </section>
 
@@ -335,7 +335,7 @@ export default function ArticleLogicielGestionCabinet() {
             Accès complet au plan Pro. Sans carte bancaire. Conforme HDS.
           </p>
           <Link href="/beta" className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100">
-            Rejoindre les Fondateurs — 43€/mois à vie
+            Commencer gratuitement
           </Link>
         </section>
 

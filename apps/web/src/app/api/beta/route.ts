@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
                 Les places sont limitées à <strong>15 praticiens</strong>. En tant que Fondateur, vous bénéficierez :
               </p>
               <ul style="line-height: 1.8; color: #444; padding-left: 20px;">
-                <li><strong>Tarif gelé à vie</strong> — 43€/mois, même quand les prix augmentent</li>
+                <li><strong>Tarif gelé à vie</strong> — 29€/mois, même quand les prix augmentent</li>
                 <li><strong>Accès prioritaire</strong> à toutes les nouvelles fonctionnalités</li>
                 <li><strong>Ligne directe</strong> avec le fondateur pour façonner le produit</li>
                 <li><strong>Badge Fondateur</strong> visible sur votre profil</li>

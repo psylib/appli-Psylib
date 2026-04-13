@@ -291,19 +291,24 @@ export default function TermsPage() {
               </thead>
               <tbody className="text-gray-700">
                 <tr className="border-b border-gray-100">
-                  <td className="py-3 pr-4 font-medium">Starter</td>
-                  <td className="py-3 pr-4">43 euros HT</td>
-                  <td className="py-3">40 patients, 40 seances/mois, 10 resumes IA</td>
+                  <td className="py-3 pr-4 font-medium">Free</td>
+                  <td className="py-3 pr-4">0 euros</td>
+                  <td className="py-3">10 patients, 20 seances/mois, notes cliniques</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-3 pr-4 font-medium">Solo</td>
+                  <td className="py-3 pr-4">29 euros HT</td>
+                  <td className="py-3">50 patients, seances illimitees, 10 resumes IA</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Pro</td>
-                  <td className="py-3 pr-4">69 euros HT</td>
-                  <td className="py-3">Patients et seances illimites, 100 resumes IA, 5 formations</td>
+                  <td className="py-3 pr-4">59 euros HT</td>
+                  <td className="py-3">Patients illimites, IA illimitee, portail patient, 5 formations</td>
                 </tr>
                 <tr>
-                  <td className="py-3 pr-4 font-medium">Scale</td>
-                  <td className="py-3 pr-4">119 euros HT</td>
-                  <td className="py-3">Tout illimite, multi-praticiens, support prioritaire</td>
+                  <td className="py-3 pr-4 font-medium">Clinic</td>
+                  <td className="py-3 pr-4">99 euros HT</td>
+                  <td className="py-3">Tout illimite, multi-praticiens, support prioritaire, API</td>
                 </tr>
               </tbody>
             </table>

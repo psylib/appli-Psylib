@@ -227,7 +227,7 @@ export default function GuideRGPDHDSPage() {
           href="/beta"
           className="mt-6 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
         >
-          Devenir Fondateur — 43€/mois a vie
+          Commencer gratuitement
         </Link>
       </section>
     </main>

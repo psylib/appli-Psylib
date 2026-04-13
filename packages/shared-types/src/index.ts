@@ -467,17 +467,25 @@ export interface HealthCheckResponse {
 
 // Plan limits
 export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null }> = {
-  [SubscriptionPlan.FREE]: { patients: 5, sessions: 10, aiSummaries: 0, videoConsultations: 0, courses: 0 },
-  [SubscriptionPlan.STARTER]: { patients: 40, sessions: 40, aiSummaries: 10, videoConsultations: 0, courses: 0 },
-  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: 100, videoConsultations: null, courses: 5 },  // null = unlimited
+  [SubscriptionPlan.FREE]: { patients: 10, sessions: 20, aiSummaries: 0, videoConsultations: 0, courses: 0 },
+  [SubscriptionPlan.STARTER]: { patients: 50, sessions: null, aiSummaries: 10, videoConsultations: 5, courses: 0 },
+  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5 },  // null/-1 = unlimited
   [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null }, // -1 / null = illimité
 };
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.FREE]: 0,
-  [SubscriptionPlan.STARTER]: 29.99,
-  [SubscriptionPlan.PRO]: 69,
-  [SubscriptionPlan.CLINIC]: 119,
+  [SubscriptionPlan.STARTER]: 29,
+  [SubscriptionPlan.PRO]: 59,
+  [SubscriptionPlan.CLINIC]: 99,
+};
+
+// Display names for plans (enum values stay same for DB/Stripe compat)
+export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
+  [SubscriptionPlan.FREE]: 'Free',
+  [SubscriptionPlan.STARTER]: 'Solo',
+  [SubscriptionPlan.PRO]: 'Pro',
+  [SubscriptionPlan.CLINIC]: 'Clinic',
 };
 
 // =============================================================================

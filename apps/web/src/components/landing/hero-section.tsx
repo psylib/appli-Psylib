@@ -134,7 +134,7 @@ export function HeroSection() {
                   href="/beta"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-terracotta text-white font-medium hover:bg-terracotta-600 transition-colors shadow-sm"
                 >
-                  Devenir Fondateur — 43€/mois à vie
+                  Essai gratuit 14 jours
                   <ArrowRight size={16} />
                 </Link>
                 <Link

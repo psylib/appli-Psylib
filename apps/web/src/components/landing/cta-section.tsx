@@ -16,11 +16,11 @@ export function CTASection() {
 
             {/* Heading */}
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-white leading-tight">
-              15 places. Tarif gelé à vie. Rejoignez les Fondateurs.
+              Commencez gratuitement. Evoluez quand vous etes pret.
             </h2>
 
             <p className="text-sage-100 text-lg">
-              43€/mois pour toujours, même quand le prix passe à 69€. Plus que 13 places.
+              Plan Free pour toujours. Solo a 29€/mois. Pro a 59€/mois avec IA illimitee.
             </p>
 
             {/* Dual CTAs */}
