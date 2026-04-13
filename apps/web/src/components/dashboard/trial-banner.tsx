@@ -128,7 +128,7 @@ export function TrialBanner({ status, plan, trialDaysLeft }: TrialBannerProps) {
             Passez au plan Pro
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Patients illimités, séances illimitées, IA illimitée — 59€/mois.
+            Patients illimités, séances illimitées, IA illimitée — 50€/mois.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">

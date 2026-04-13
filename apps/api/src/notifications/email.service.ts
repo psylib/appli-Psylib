@@ -853,7 +853,7 @@ export class EmailService {
         &#10003; Messagerie s&eacute;curis&eacute;e<br/>
         &#10003; Facturation automatique</p>
       </div>
-      <p>Passez au plan Solo d&egrave;s <strong>29&euro;/mois</strong> pour continuer.</p>
+      <p>Passez au plan Solo d&egrave;s <strong>25&euro;/mois</strong> pour continuer.</p>
       <a href="${data.billingUrl}" class="btn">Choisir mon plan</a>`,
     );
     await this.send(to, `Plus que ${data.daysLeft} jours d'essai PsyLib`, html, 'sendPostTrialDay1');
@@ -901,7 +901,7 @@ export class EmailService {
         <p style="margin:0;font-size:15px;"><strong>3. Messagerie s&eacute;curis&eacute;e</strong><br/>
         Plus d'&eacute;changes chiffr&eacute;s avec vos patients entre les s&eacute;ances.</p>
       </div>
-      <p>Conservez tout &agrave; partir de <strong>29&euro;/mois</strong> &mdash; sans engagement.</p>
+      <p>Conservez tout &agrave; partir de <strong>25&euro;/mois</strong> &mdash; sans engagement.</p>
       <a href="${data.billingUrl}" class="btn">Garder mes fonctionnalit&eacute;s</a>`,
     );
     await this.send(to, 'Ce que vous perdrez sans abonnement PsyLib', html, 'sendPostTrialDay5');
@@ -927,7 +927,7 @@ export class EmailService {
         <p style="margin:0;font-size:15px;"><strong>Puis-je annuler &agrave; tout moment ?</strong><br/>
         Oui, sans engagement. Annulation en 1 clic depuis votre espace.</p>
       </div>
-      <p>Le plan Solo &agrave; <strong>29&euro;/mois</strong> revient &agrave; moins d'1&euro;/jour pour g&eacute;rer tout votre cabinet.</p>
+      <p>Le plan Solo &agrave; <strong>25&euro;/mois</strong> revient &agrave; moins d'1&euro;/jour pour g&eacute;rer tout votre cabinet.</p>
       <a href="${data.billingUrl}" class="btn">D&eacute;marrer maintenant</a>`,
     );
     await this.send(to, 'Vos questions sur PsyLib (FAQ)', html, 'sendPostTrialDay10');
@@ -1069,7 +1069,7 @@ export class EmailService {
         </p>
       </div>
       <p>
-        <strong>Il reste des places Fondateurs</strong> à 29€/mois (tarif gelé à vie).
+        <strong>Il reste des places Fondateurs</strong> à 25€/mois (tarif gelé à vie).
       </p>
       <div style="text-align:center;">
         <a href="${data.betaUrl}" class="btn">Voir l'offre Fondateurs</a>
@@ -1109,7 +1109,7 @@ export class EmailService {
         Comparez avec votre quotidien actuel : Word + Google Calendar + Excel + emails…
       </p>
       <p>
-        <strong>Tout ça pour 29€/mois</strong> (tarif Fondateur gelé à vie).
+        <strong>Tout ça pour 25€/mois</strong> (tarif Fondateur gelé à vie).
         C'est moins d'1€/jour. Moins que le café d'une salle d'attente.
       </p>
       <div style="text-align:center;">
@@ -1137,7 +1137,7 @@ export class EmailService {
           <strong style="color:#92400E;">Les places partent vite</strong><br />
           <span style="font-size:14px;color:#78350F;">
             Sur les 15 places Fondateurs, il n'en reste que ${data.spotsLeft}.
-            Une fois complètes, le tarif passera à 59€/mois.
+            Une fois complètes, le tarif passera à 50€/mois.
           </span>
         </div>
       </div>
@@ -1146,7 +1146,7 @@ export class EmailService {
       </p>
       <div class="info-box">
         <p style="margin:0;font-size:15px;line-height:1.8;color:#374151;">
-          🔒 <strong>29€/mois à vie</strong> (au lieu de 59€ — économie de 360€/an)<br />
+          🔒 <strong>25€/mois à vie</strong> (au lieu de 50€ — économie de 300€/an)<br />
           ⚡ <strong>Accès prioritaire</strong> aux nouvelles fonctionnalités<br />
           💬 <strong>Ligne directe</strong> avec moi pour façonner le produit<br />
           🏆 <strong>Badge Fondateur</strong> sur votre profil public
@@ -1157,7 +1157,7 @@ export class EmailService {
         à construire l'outil qui va simplifier le quotidien de milliers de psys.
       </p>
       <div style="text-align:center;">
-        <a href="${data.betaUrl}" class="btn" style="background:#C45D3E;">Devenir Fondateur — 29€/mois à vie</a>
+        <a href="${data.betaUrl}" class="btn" style="background:#C45D3E;">Devenir Fondateur — 25€/mois à vie</a>
       </div>
       <p style="font-size:14px;color:#6B7280;margin-top:24px;">
         Si PsyLib ne correspond pas à vos besoins, aucun souci.
@@ -1187,9 +1187,9 @@ export class EmailService {
       </div>
       <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>
       <div class="info-box">
-        <p style="margin:0;font-size:15px;"><strong>Solo</strong> &mdash; 29&euro;/mois (50 patients, IA incluse)<br/>
-        <strong>Pro</strong> &mdash; 59&euro;/mois (illimit&eacute;, formations)<br/>
-        <strong>Clinic</strong> &mdash; 99&euro;/mois (multi-praticiens)</p>
+        <p style="margin:0;font-size:15px;"><strong>Solo</strong> &mdash; 25&euro;/mois (50 patients, IA incluse)<br/>
+        <strong>Pro</strong> &mdash; 50&euro;/mois (illimit&eacute;, formations)<br/>
+        <strong>Clinic</strong> &mdash; 79&euro;/mois (multi-praticiens)</p>
       </div>
       <a href="${data.billingUrl}" class="btn">Conserver mon acc&egrave;s</a>
       <p style="font-size:13px;color:#6B7280;margin-top:24px;">Si PsyLib ne vous convient pas, aucun souci. Vos donn&eacute;es restent accessibles sur le plan gratuit.</p>`,

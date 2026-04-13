@@ -313,7 +313,7 @@ export default function ArticleLogicielGestionCabinet() {
             ))}
           </ul>
           <p className="leading-relaxed">
-            Free gratuit, Solo à 29€/mois, Pro à 59€/mois, Clinic à 99€/mois. Plan gratuit sans limite de durée.
+            Free gratuit, Solo à 25€/mois, Pro à 50€/mois, Clinic à 79€/mois. Plan gratuit sans limite de durée.
           </p>
         </section>
 

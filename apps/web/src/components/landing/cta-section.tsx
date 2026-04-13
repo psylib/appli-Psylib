@@ -20,7 +20,7 @@ export function CTASection() {
             </h2>
 
             <p className="text-sage-100 text-lg">
-              Plan Free pour toujours. Solo a 29€/mois. Pro a 59€/mois avec IA illimitee.
+              Plan Free pour toujours. Solo a 25€/mois. Pro a 50€/mois avec IA illimitee.
             </p>
 
             {/* Dual CTAs */}

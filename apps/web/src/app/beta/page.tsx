@@ -47,7 +47,7 @@ function FounderBenefits() {
   const benefits = [
     {
       icon: Lock,
-      title: '29€/mois à vie',
+      title: '25€/mois à vie',
       description: 'Prix gelé pour toujours sur le plan Solo, même quand les tarifs augmentent.',
     },
     {
@@ -223,7 +223,7 @@ function BetaForm() {
           <Loader2 size={18} className="animate-spin" />
         ) : (
           <>
-            Candidater — 29€/mois à vie
+            Candidater — 25€/mois à vie
             <ArrowRight size={16} />
           </>
         )}
@@ -285,12 +285,12 @@ export default function BetaPage() {
               {/* Price comparison */}
               <div className="flex items-center justify-center gap-4 pt-2">
                 <div className="text-center">
-                  <div className="text-charcoal-300 line-through text-sm">59€/mois</div>
+                  <div className="text-charcoal-300 line-through text-sm">50€/mois</div>
                   <div className="text-xs text-charcoal-300">tarif Pro standard</div>
                 </div>
                 <ArrowRight size={16} className="text-charcoal-200" />
                 <div className="text-center">
-                  <div className="font-dm-mono text-3xl font-bold text-terracotta">29€<span className="text-lg">/mois</span></div>
+                  <div className="font-dm-mono text-3xl font-bold text-terracotta">25€<span className="text-lg">/mois</span></div>
                   <div className="text-xs text-sage font-medium">à vie — prix gelé</div>
                 </div>
               </div>
@@ -365,7 +365,7 @@ export default function BetaPage() {
               },
               {
                 q: 'Que veut dire "prix gelé à vie" ?',
-                a: 'Le tarif de 29€/mois est garanti pour toujours sur votre compte, même quand les tarifs augmentent.',
+                a: 'Le tarif de 25€/mois est garanti pour toujours sur votre compte, même quand les tarifs augmentent.',
               },
               {
                 q: 'Pourquoi 15 places seulement ?',

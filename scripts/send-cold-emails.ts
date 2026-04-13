@@ -263,7 +263,7 @@ function template1(lead: Lead): { subject: string; html: string; text: string } 
 <p>L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée patient hébergée en ligne. En pratique, ~80% des psys utilisent aujourd'hui des outils non conformes (Drive, Dropbox, Excel, SaaS hébergés hors France) — souvent sans le savoir. Sanction CNIL potentielle : jusqu'à 20 M€ ou 4% du CA.</p>
 <p>PsyLib combine tout ce que Doctolib ne fait <em>pas</em> :<br />
 agenda + notes de séance structurées + outcome tracking PHQ-9/GAD-7 + facturation + IA clinique + paiement Stripe + espace patient — 100% HDS France.</p>
-<p><strong>Prix : 29€/mois à vie</strong> pour l'offre Fondateurs (15 places, ~10 restantes).</p>
+<p><strong>Prix : 25€/mois à vie</strong> pour l'offre Fondateurs (15 places, ~10 restantes).</p>
 <p>Auriez-vous 15 minutes cette semaine pour une démo courte ?</p>
 <p>Cordialement,<br />
 <strong>Tony</strong><br />
@@ -282,7 +282,7 @@ L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée pat
 
 PsyLib combine tout ce que Doctolib ne fait PAS : agenda + notes de séance + outcome tracking PHQ-9/GAD-7 + facturation + IA clinique + paiement Stripe + espace patient - 100% HDS France.
 
-Prix : 29€/mois à vie pour l'offre Fondateurs (15 places, ~10 restantes).
+Prix : 25€/mois à vie pour l'offre Fondateurs (15 places, ~10 restantes).
 
 15 minutes cette semaine pour une démo ?
 
@@ -365,7 +365,7 @@ function template3(lead: Lead): { subject: string; html: string; text: string } 
   <li>100% conforme HDS (hébergement France + chiffrement AES-256-GCM applicatif)</li>
   <li>Alternative à Doctolib (139€+/mois) et aux 3-4 outils que vous cumulez probablement</li>
 </ul>
-<p><strong>Offre Fondateurs : 29€/mois garantis à vie</strong>, prix gelé même quand on passera à 59€/mois. Il reste 7 places sur 15.</p>
+<p><strong>Offre Fondateurs : 25€/mois garantis à vie</strong>, prix gelé même quand on passera à 50€/mois. Il reste 7 places sur 15.</p>
 <p>Je ferme l'offre dans quelques jours.</p>
 <p style="margin:24px 0;"><a href="${betaUrl}" style="background:#D97757;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Candidater Fondateur (2 min) →</a></p>
 <p>Si rien ne vous intéresse, c'est OK — désabonnez-vous sans culpabilité avec le lien en bas.</p>
@@ -380,7 +380,7 @@ ${footerHtml(unsub)}
 Promis, c'est mon dernier email.
 
 PsyLib = logiciel tout-en-un pour psys libéraux, 100% HDS.
-Offre Fondateurs : 29€/mois à vie, 7 places restantes sur 15.
+Offre Fondateurs : 25€/mois à vie, 7 places restantes sur 15.
 
 Je ferme l'offre dans quelques jours.
 

@@ -475,9 +475,9 @@ export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; se
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.FREE]: 0,
-  [SubscriptionPlan.STARTER]: 29,
-  [SubscriptionPlan.PRO]: 59,
-  [SubscriptionPlan.CLINIC]: 99,
+  [SubscriptionPlan.STARTER]: 25,
+  [SubscriptionPlan.PRO]: 50,
+  [SubscriptionPlan.CLINIC]: 79,
 };
 
 // Display names for plans (enum values stay same for DB/Stripe compat)

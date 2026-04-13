@@ -24,14 +24,14 @@ export default function OgImage() {
           PsyLib — Tarifs
         </p>
         <h1 style={{ fontSize: '56px', fontWeight: 800, color: 'white', margin: '0 0 32px 0' }}>
-          Gratuit puis 29€/mois
+          Gratuit puis 25€/mois
         </h1>
         <div style={{ display: 'flex', gap: '24px' }}>
           {[
             { name: 'Free', price: '0€' },
-            { name: 'Solo', price: '29€' },
-            { name: 'Pro', price: '59€' },
-            { name: 'Clinic', price: '99€' },
+            { name: 'Solo', price: '25€' },
+            { name: 'Pro', price: '50€' },
+            { name: 'Clinic', price: '79€' },
           ].map((plan) => (
             <div
               key={plan.name}

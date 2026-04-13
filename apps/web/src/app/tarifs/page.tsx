@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Tarifs | PsyLib — Logiciel pour psychologues",
   description:
-    "Decouvrez les tarifs PsyLib : plan gratuit puis a partir de 29 euros/mois pour gerer votre cabinet de psychologue liberal. Plans Free, Solo, Pro et Clinic.",
+    "Decouvrez les tarifs PsyLib : plan gratuit puis a partir de 25 euros/mois pour gerer votre cabinet de psychologue liberal. Plans Free, Solo, Pro et Clinic.",
   keywords: [
     "tarifs psychologue",
     "prix logiciel psychologue",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tarifs PsyLib — Logiciel pour psychologues liberaux",
     description:
-      "Plan gratuit puis a partir de 29 euros/mois. Dossiers patients, notes cliniques, facturation, IA.",
+      "Plan gratuit puis a partir de 25 euros/mois. Dossiers patients, notes cliniques, facturation, IA.",
     url: "https://psylib.eu/tarifs",
     type: "website",
     locale: "fr_FR",
@@ -49,11 +49,11 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Solo",
-          price: "29",
+          price: "25",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "29",
+            price: "25",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
@@ -63,11 +63,11 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Pro",
-          price: "59",
+          price: "50",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "59",
+            price: "50",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
@@ -77,11 +77,11 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Clinic",
-          price: "99",
+          price: "79",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "99",
+            price: "79",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
@@ -160,8 +160,8 @@ const plans = [
   {
     name: "Solo",
     description: "Pour demarrer votre pratique",
-    priceMonthly: 29,
-    priceAnnual: 25,
+    priceMonthly: 25,
+    priceAnnual: 22,
     highlighted: false,
     features: [
       "50 patients maximum",
@@ -179,8 +179,8 @@ const plans = [
   {
     name: "Pro",
     description: "Pour les praticiens etablis",
-    priceMonthly: 59,
-    priceAnnual: 49,
+    priceMonthly: 50,
+    priceAnnual: 45,
     highlighted: true,
     badge: "Le plus populaire",
     features: [
@@ -201,8 +201,8 @@ const plans = [
   {
     name: "Clinic",
     description: "Pour les cabinets multi-praticiens",
-    priceMonthly: 99,
-    priceAnnual: 89,
+    priceMonthly: 79,
+    priceAnnual: 69,
     highlighted: false,
     features: [
       "Tout le plan Pro inclus",
