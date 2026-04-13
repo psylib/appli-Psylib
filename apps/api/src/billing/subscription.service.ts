@@ -274,6 +274,34 @@ export class SubscriptionService {
     }
   }
 
+  async checkCourseLimit(psychologistId: string): Promise<void> {
+    const sub = await this.prisma.subscription.findUnique({ where: { psychologistId } });
+    const plan = (sub?.plan ?? SubscriptionPlan.FREE) as SubscriptionPlan;
+    const limits = PLAN_LIMITS[plan];
+
+    if (limits.courses === null) return; // unlimited
+
+    if (limits.courses === 0) {
+      throw new ForbiddenException({
+        code: 'COURSE_LIMIT',
+        currentPlan: plan,
+        message: 'Les formations ne sont pas disponibles sur votre plan. Passez au plan Pro.',
+      });
+    }
+
+    const count = await this.prisma.course.count({ where: { psychologistId } });
+
+    if (count >= limits.courses) {
+      throw new ForbiddenException({
+        code: 'COURSE_LIMIT',
+        currentPlan: plan,
+        currentUsage: count,
+        limit: limits.courses,
+        message: `Limite de ${limits.courses} formations atteinte. Passez au plan Clinic pour continuer.`,
+      });
+    }
+  }
+
   // --- Webhook handlers ---
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {

@@ -34,7 +34,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { SubscriptionGuard } from '../billing/guards/subscription.guard';
-import { RequirePlan } from '../billing/decorators/require-plan.decorator';
+import { RequirePlan, RequireFeature } from '../billing/decorators/require-plan.decorator';
 import { PatientJwtGuard } from '../patient-portal/guards/patient-jwt.guard';
 import { SubscriptionPlan } from '@psyscale/shared-types';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
@@ -55,6 +55,7 @@ export class CoursesController {
   @Post()
   @UseGuards(SubscriptionGuard)
   @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequireFeature('courses')
   @ApiOperation({ summary: 'Créer une formation (plan PRO requis)' })
   @ApiResponse({ status: 201, description: 'Formation créée' })
   create(

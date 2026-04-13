@@ -30,6 +30,8 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { SubscriptionGuard } from '../billing/guards/subscription.guard';
+import { RequireFeature } from '../billing/decorators/require-plan.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 class SessionSummaryRequestDto implements SessionSummaryDto {
@@ -143,6 +145,8 @@ export class AiController {
   }
 
   @Post('generate-content')
+  @UseGuards(SubscriptionGuard)
+  @RequireFeature('ai_summary')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Générer du contenu marketing (LinkedIn, newsletter, blog)',
@@ -157,6 +161,8 @@ export class AiController {
 
   @Post('stream-content')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(SubscriptionGuard)
+  @RequireFeature('ai_summary')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Génération streaming de contenu marketing (SSE)' })
   async streamContent(
