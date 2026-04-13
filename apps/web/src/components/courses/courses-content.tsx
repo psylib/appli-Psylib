@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { coursesApi, type Course } from '@/lib/api/courses';
+import { billingApi } from '@/lib/api/billing';
+import { UsageIndicator } from '@/components/shared/usage-indicator';
 
 // ---------------------------------------------------------------------------
 // Create course dialog (modal without external lib)
@@ -302,6 +304,19 @@ export function CoursesContent() {
     enabled: !!token,
   });
 
+  const { data: usage } = useQuery({
+    queryKey: ['billing-usage'],
+    queryFn: () => billingApi.getUsage(token),
+    enabled: !!token,
+    staleTime: 60_000,
+  });
+
+  const courseLimitReached =
+    usage?.courses.limit !== null &&
+    usage?.courses.limit !== undefined &&
+    usage.courses.limit >= 0 &&
+    usage.courses.used >= usage.courses.limit;
+
   const handleCreated = () => {
     void queryClient.invalidateQueries({ queryKey: ['courses'] });
   };
@@ -324,13 +339,25 @@ export function CoursesContent() {
               Créez et gérez vos formations en ligne pour monétiser votre expertise
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateDialog(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
-          >
-            <Plus size={16} />
-            Créer une formation
-          </button>
+          <div className="flex items-center gap-4">
+            {usage && (
+              <UsageIndicator label="Formations" used={usage.courses.used} limit={usage.courses.limit} />
+            )}
+            <button
+              onClick={() => setShowCreateDialog(true)}
+              disabled={courseLimitReached}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm',
+                courseLimitReached
+                  ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary/90',
+              )}
+              title={courseLimitReached ? 'Limite de formations atteinte pour votre plan' : undefined}
+            >
+              <Plus size={16} />
+              Créer une formation
+            </button>
+          </div>
         </div>
 
         {/* Content */}

@@ -45,6 +45,12 @@ export interface PaymentsResponse {
   };
 }
 
+export interface UsageData {
+  ai: { used: number; limit: number };
+  courses: { used: number; limit: number | null };
+  plan: string;
+}
+
 export const billingApi = {
   createCheckout: (plan: SubscriptionPlan, token: string) =>
     apiClient.post<{ url: string }>('/billing/checkout', { plan }, token),
@@ -54,6 +60,9 @@ export const billingApi = {
 
   getSubscription: (token: string) =>
     apiClient.get<SubscriptionDetails>('/billing/subscription', token),
+
+  getUsage: (token: string) =>
+    apiClient.get<UsageData>('/billing/usage', token),
 
   getInvoices: (token: string) =>
     apiClient.get<InvoiceItem[]>('/billing/invoices', token),

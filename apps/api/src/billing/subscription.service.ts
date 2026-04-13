@@ -1016,4 +1016,35 @@ export class SubscriptionService {
     };
     return map[status] ?? SubscriptionStatus.ACTIVE;
   }
+
+  async getUsage(userId: string) {
+    const psy = await this.getPsychologist(userId);
+    const sub = await this.prisma.subscription.findUnique({ where: { psychologistId: psy.id } });
+
+    const plan = (sub?.plan ?? SubscriptionPlan.FREE) as SubscriptionPlan;
+    const limits = PLAN_LIMITS[plan];
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [aiUsageCount, courseCount] = await Promise.all([
+      this.prisma.aiUsage.count({
+        where: { psychologistId: psy.id, createdAt: { gte: startOfMonth } },
+      }),
+      this.prisma.course.count({ where: { psychologistId: psy.id } }),
+    ]);
+
+    return {
+      ai: {
+        used: aiUsageCount,
+        limit: limits.aiSummaries, // -1 = unlimited, 0 = none
+      },
+      courses: {
+        used: courseCount,
+        limit: limits.courses, // null = unlimited, 0 = none
+      },
+      plan,
+    };
+  }
 }
