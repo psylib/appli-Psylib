@@ -32,8 +32,11 @@ async function bootstrap() {
   const isProd = process.env['NODE_ENV'] === 'production';
   const app = await NestFactory.create(AppModule, {
     rawBody: true, // Requis pour valider les signatures Stripe webhooks
-    logger: isProd ? ['error', 'warn'] : ['error', 'warn', 'log', 'debug'],
+    logger: isProd ? ['error', 'warn', 'log'] : ['error', 'warn', 'log', 'debug'],
   });
+
+  // Graceful shutdown — ferme proprement Prisma, Redis, Bull avant arrêt
+  app.enableShutdownHooks();
 
   // Sentry global exception filter — capture toutes les erreurs 5xx
   app.useGlobalFilters(new SentryExceptionFilter());

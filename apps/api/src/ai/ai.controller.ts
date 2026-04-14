@@ -16,7 +16,7 @@ import {
   ApiBearerAuth,
   ApiResponse,
 } from '@nestjs/swagger';
-import { IsString, IsEnum, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import {
@@ -45,7 +45,7 @@ class SessionSummaryRequestDto implements SessionSummaryDto {
   @MaxLength(2000)
   context?: string;
 
-  @IsString()
+  @IsUUID()
   sessionId!: string;
 }
 

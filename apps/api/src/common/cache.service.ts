@@ -19,7 +19,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       enableReadyCheck: false,
       maxRetriesPerRequest: 0,
     });
-    this.redis.on('error', (err) => this.logger.warn(`Redis cache error: ${String(err)}`));
+    this.redis.on('error', (err) => this.logger.error(`Redis cache error — JWT blacklist may be non-functional: ${String(err)}`));
   }
 
   async onModuleDestroy() {

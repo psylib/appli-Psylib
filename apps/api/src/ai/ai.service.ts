@@ -205,8 +205,11 @@ export class AiService {
     const startedAt = Date.now();
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
       const response = await fetch(`${this.aiBaseUrl}/chat/completions`, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
@@ -223,6 +226,7 @@ export class AiService {
           ],
         }),
       });
+      clearTimeout(timeout);
 
       if (!response.ok) {
         this.logger.error(`OpenRouter extraction API error: ${response.status}`);
@@ -308,12 +312,14 @@ export class AiService {
       await this.trackUsage(psy.id, 'session_summary', totalTokens, startedAt, this.modelMain);
 
       // Phase 3: Extract structured data
-      if (fullSummary.length > 50) {
+      if (fullSummary.length > 50 && !res.writableEnded) {
         const extraction = await this.extractStructuredData(fullSummary, psy.id);
-        if (extraction) {
-          res.write(`data: ${JSON.stringify({ type: 'structured', data: { ...extraction.data, model: this.modelMain } })}\n\n`);
-        } else {
-          res.write(`data: ${JSON.stringify({ type: 'structured_error' })}\n\n`);
+        if (!res.writableEnded) {
+          if (extraction) {
+            res.write(`data: ${JSON.stringify({ type: 'structured', data: { ...extraction.data, model: this.modelMain } })}\n\n`);
+          } else {
+            res.write(`data: ${JSON.stringify({ type: 'structured_error' })}\n\n`);
+          }
         }
       }
 
@@ -328,10 +334,12 @@ export class AiService {
 
     } catch (error) {
       this.logger.error('AI streaming error:', error);
-      res.write(`data: ${JSON.stringify({ error: 'Erreur IA' })}\n\n`);
+      if (!res.writableEnded) res.write(`data: ${JSON.stringify({ error: 'Erreur IA' })}\n\n`);
     } finally {
-      res.write('data: [DONE]\n\n');
-      res.end();
+      if (!res.writableEnded) {
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
     }
   }
 
@@ -386,10 +394,12 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
       await this.trackUsage(psy.id, 'marketing_content', totalTokens, startedAt, this.modelMain);
     } catch (error) {
       this.logger.error('AI content streaming error:', error);
-      res.write(`data: ${JSON.stringify({ error: 'Erreur IA' })}\n\n`);
+      if (!res.writableEnded) res.write(`data: ${JSON.stringify({ error: 'Erreur IA' })}\n\n`);
     } finally {
-      res.write('data: [DONE]\n\n');
-      res.end();
+      if (!res.writableEnded) {
+        res.write('data: [DONE]\n\n');
+        res.end();
+      }
     }
   }
 
@@ -406,8 +416,11 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
   ): Promise<void> {
     const apiKey = this.requireAiKey();
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000); // 60s for streaming
     const response = await fetch(`${this.aiBaseUrl}/chat/completions`, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
@@ -425,6 +438,7 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
         ],
       }),
     });
+    clearTimeout(timeout);
 
     if (!response.ok || !response.body) {
       throw new Error(`OpenRouter API error: ${response.status}`);
@@ -452,6 +466,7 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
           };
           const text = parsed.choices[0]?.delta?.content;
           if (text) {
+            if (res.writableEnded) break;
             res.write(`data: ${JSON.stringify({ text })}\n\n`);
             onText(text);
           }
@@ -519,8 +534,11 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
 
   private async callAiJson(prompt: string, system: string): Promise<object> {
     const apiKey = this.requireAiKey();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     const res = await fetch(`${this.aiBaseUrl}/chat/completions`, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
@@ -537,6 +555,7 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
         ],
       }),
     });
+    clearTimeout(timeout);
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
       throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
@@ -549,8 +568,11 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
 
   private async callAiText(prompt: string, system: string): Promise<string> {
     const apiKey = this.requireAiKey();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     const res = await fetch(`${this.aiBaseUrl}/chat/completions`, {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
@@ -566,6 +588,7 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
         ],
       }),
     });
+    clearTimeout(timeout);
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({})) as { error?: { message?: string } };
       throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
