@@ -11,6 +11,9 @@ export interface PsychologistProfile {
   adeliNumber: string | null;
   isOnboarded: boolean;
   createdAt: string;
+  // Practice settings
+  defaultSessionRate: number | null;
+  defaultSessionDuration: number | null;
   // Reminder settings
   reminderDelay: number;
   reminderEmailEnabled: boolean;
@@ -34,6 +37,9 @@ export interface UpdateProfileData {
   phone?: string;
   address?: string;
   adeliNumber?: string;
+  // Practice settings
+  defaultSessionRate?: number;
+  defaultSessionDuration?: number;
   // Reminder settings
   reminderDelay?: number;
   reminderEmailEnabled?: boolean;

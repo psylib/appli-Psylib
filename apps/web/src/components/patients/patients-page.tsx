@@ -146,7 +146,7 @@ export function PatientsPageContent() {
       </div>
 
       {/* Liste */}
-      <div className="rounded-xl border border-border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-xl border border-border bg-white shadow-sm">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => <PatientRowSkeleton key={i} />)
         ) : isError ? (
@@ -168,6 +168,7 @@ export function PatientsPageContent() {
             {data.data.map((patient, i) => {
               const status = STATUS_LABELS[patient.status];
               const canInvite = !!patient.email && patient.portalStatus === 'none';
+              const isNearBottom = i >= data.data.length - 2;
               return (
                 <li key={patient.id} className={i < data.data.length - 1 ? 'border-b border-border' : ''}>
                   <div className="flex items-center gap-4 p-4 hover:bg-surface transition-colors">
@@ -203,7 +204,7 @@ export function PatientsPageContent() {
                       {openMenu === patient.id && (
                         <>
                           <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
-                          <div className="absolute right-0 top-full mt-1 z-20 w-52 rounded-lg border border-border bg-white shadow-lg py-1">
+                          <div className={`absolute right-0 z-20 w-52 rounded-lg border border-border bg-white shadow-lg py-1 ${isNearBottom ? 'bottom-full mb-1' : 'top-full mt-1'}`}>
                             <button
                               onClick={() => { setOpenMenu(null); router.push(`/dashboard/patients/${patient.id}`); }}
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-surface transition-colors"

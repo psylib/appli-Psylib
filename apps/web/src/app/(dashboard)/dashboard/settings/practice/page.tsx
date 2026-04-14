@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import { PracticeInfoSettings } from '@/components/settings/practice-info-settings';
 import { AvailabilityManager } from '@/components/settings/availability-manager';
 import { ConsultationTypesSettings } from '@/components/settings/consultation-types-settings';
 import { MspSettings } from '@/components/settings/msp-settings';
@@ -28,94 +29,14 @@ export default async function PracticePage() {
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
-        <h2 className="text-base font-medium text-foreground">Adresse du cabinet</h2>
-        <div className="grid gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Adresse
-            </label>
-            <input
-              type="text"
-              placeholder="12 rue de la Paix"
-              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                Code postal
-              </label>
-              <input
-                type="text"
-                placeholder="75001"
-                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-                Ville
-              </label>
-              <input
-                type="text"
-                placeholder="Paris"
-                className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
-        <h2 className="text-base font-medium text-foreground">Tarifs</h2>
-        <div className="grid gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Tarif de consultation (EUR)
-            </label>
-            <input
-              type="number"
-              placeholder="60"
-              min={0}
-              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Duree de seance par defaut (minutes)
-            </label>
-            <input
-              type="number"
-              placeholder="50"
-              min={15}
-              step={5}
-              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-            />
-          </div>
-        </div>
-      </div>
+      {/* Adresse, tarifs, contact — câblé à l'API */}
+      <PracticeInfoSettings token={token} />
 
       {/* Motifs de consultation */}
       <ConsultationTypesSettings token={token} />
 
       {/* Mon Soutien Psy */}
       <MspSettings token={token} />
-
-      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
-        <h2 className="text-base font-medium text-foreground">Informations de contact</h2>
-        <div className="grid gap-4">
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1.5">
-              Telephone
-            </label>
-            <input
-              type="tel"
-              placeholder="+33 6 00 00 00 00"
-              className="w-full px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-            />
-          </div>
-        </div>
-      </div>
 
       {/* Visioconference */}
       <VisioSettings token={token} />
