@@ -4,20 +4,26 @@
 
 **Titre LinkedIn :**
 ```
-Créateur de PsyLib — SaaS conforme HDS pour psychologues libéraux | Ex-dev, converti à la e-santé
+Ma compagne est psy libérale — j'ai construit l'outil qui lui manquait | Créateur de PsyLib, SaaS conforme HDS
 ```
 
 **Section "À propos" :**
 
-Je construis PsyLib, un outil de gestion de cabinet pensé pour les psychologues libéraux en France.
+Ma compagne est psychologue libérale.
 
-L'idée est née d'un constat simple : les psys passent un temps fou sur l'administratif. Notes de séance sur Word, agenda sur Google Calendar, facturation sur Excel, données patients sur des outils non sécurisés. Chaque outil est un bout de ficelle. Rien ne communique. Et surtout, rien n'est conforme à la réglementation HDS (Hébergement de Données de Santé), qui est pourtant obligatoire dès qu'on manipule des données patients.
+Chaque soir, je la voyais passer des heures sur de l'administratif. Rédiger ses notes de séance sur Word. Jongler entre Google Calendar et un fichier Excel pour la facturation. Stocker des données sensibles sur des outils grand public qui ne respectent même pas la réglementation.
 
-Je viens du développement logiciel. Quand j'ai découvert ce marché, j'ai été frappé par le décalage entre les exigences légales et la réalité du terrain. 30 000 psys libéraux en France, et la plupart bricolent avec des outils grand public qui ne protègent pas les données de leurs patients.
+Un jour, je lui ai demandé : "Et si tout ça était dans un seul outil, sécurisé, pensé pour ton métier ?"
 
-PsyLib, c'est une plateforme unique : gestion patients, notes structurées, suivi thérapeutique, assistant IA, facturation. Le tout hébergé en France sur infrastructure certifiée HDS, chiffré de bout en bout.
+Sa réponse : "Ça n'existe pas."
 
-Mon approche : construire avec les psys, pas pour eux. Chaque fonctionnalité part d'un vrai besoin terrain.
+Je suis développeur. Quand j'ai entendu ça, j'ai creusé. 30 000 psychologues libéraux en France. La plupart bricolent avec 5 ou 6 outils qui ne communiquent pas entre eux. Et surtout, aucun ne respecte l'obligation légale d'hébergement de données de santé (HDS).
+
+Alors j'ai construit PsyLib.
+
+Gestion patients, notes structurées, suivi thérapeutique, assistant IA, facturation automatique. Le tout hébergé en France sur infrastructure certifiée HDS, chiffré de bout en bout.
+
+Je ne suis pas psy. Mais je vis avec une psy. Et c'est exactement pour ça que chaque fonctionnalité part d'un vrai besoin terrain — pas d'une idée de développeur dans sa bulle.
 
 Je partage ici l'aventure en toute transparence — les avancées, les galères, les apprentissages.
 
@@ -25,43 +31,42 @@ Je partage ici l'aventure en toute transparence — les avancées, les galères,
 
 ## Post 1 — Lancement (Publier mardi ou jeudi 8h-9h)
 
-Un psychologue libéral passe en moyenne 8 à 10 heures par semaine sur de l'administratif.
+Ma compagne est psychologue libérale.
 
-Huit heures.
+Chaque soir, après une journée à écouter, accompagner, porter des histoires lourdes... elle s'assoit devant son ordi et passe encore 1h30 sur de l'administratif.
 
-C'est l'équivalent de 8 séances patients qui ne sont jamais réalisées.
+Notes de séance sur Word. Facturation sur Excel. Agenda sur Google Calendar. Données patients sur des outils qui ne sont même pas conformes.
 
-J'ai découvert ça en échangeant avec des psys libéraux ces derniers mois. Et plus je creusais, plus le tableau s'assombrissait.
+Un soir, je l'ai vue galérer à numéroter manuellement ses factures. J'ai dit : "Mais il n'y a pas un outil qui fait tout ça ?"
 
-Les notes de séance ? Sur Word ou un carnet papier.
-L'agenda ? Google Calendar, parfois partagé avec le compte perso.
-La facturation ? Un fichier Excel bricolé un dimanche soir.
-Le suivi patient entre deux séances ? Quasi inexistant.
-La conformité données de santé ? "On verra plus tard."
+Elle m'a regardé et m'a répondu : "Non. Rien qui soit adapté à mon métier."
 
-Sauf que "plus tard", c'est maintenant. La réglementation HDS impose que toute donnée patient soit hébergée sur une infrastructure certifiée. Pas sur Google Drive. Pas sur Notion. Pas sur un outil américain sans garantie.
+Je suis développeur. Quand j'entends "ça n'existe pas", ça me démange.
 
-Et les solutions qui existent ? Soit elles sont pensées pour les médecins généralistes et pas adaptées à la pratique psy. Soit elles ignorent complètement la conformité.
+Alors j'ai commencé à creuser. Et plus je creusais, plus le constat était accablant :
+
+→ 30 000 psys libéraux en France
+→ La majorité utilise des outils grand public non sécurisés
+→ La réglementation HDS impose un hébergement certifié pour les données patients
+→ Les solutions existantes ? Pensées pour les médecins, pas pour les psys
 
 Alors j'ai commencé à construire PsyLib.
 
-Un outil unique qui regroupe tout : gestion patients, notes structurées, suivi thérapeutique, facturation. Hébergé en France, chiffré, conforme.
+Un seul outil : gestion patients, notes structurées, suivi thérapeutique, facturation, assistant IA. Hébergé en France, chiffré, conforme HDS.
 
-Je ne vais pas vous faire un pitch commercial. Le produit n'est pas encore entre toutes les mains. Mais l'aventure est lancée, et je la construis en échangeant directement avec des praticiens.
+Ma compagne est ma première utilisatrice. Et sa première remarque : "Enfin un truc pensé pour nous."
 
-Si vous êtes psy libéral, j'ai une vraie question :
+Si vous êtes psy libéral, j'ai une vraie question : qu'est-ce qui vous prend le plus de temps en dehors des séances ?
 
-Qu'est-ce qui vous prend le plus de temps chaque semaine en dehors des séances ?
-
-#psychologue #liberal #HDS #santé #cabinet
+#psychologue #liberal #HDS #santé #cabinet #SaaS
 
 ---
 
 ## Post 2 — Carrousel "5 galères admin" (3-4 jours après post 1)
 
 **Texte du post :**
-J'ai parlé avec des dizaines de psys libéraux ces dernières semaines.
-5 galères revenaient à chaque conversation. Les voici dans ce carrousel.
+Ma compagne est psy libérale.
+5 galères qu'elle vit au quotidien — et que beaucoup de psys reconnaîtront.
 Laquelle vous parle le plus ? Je lis tous les commentaires.
 #psychologue #liberal #gestioncabinet #HDS #santé
 
@@ -72,11 +77,15 @@ Laquelle vous parle le plus ? Je lis tous les commentaires.
 4. Galère 3 — Le suivi entre les séances (silence radio jusqu'au prochain RDV)
 5. Galère 4 — La conformité données de santé (Google Drive = illégal pour données patients)
 6. Galère 5 — Jongler entre 6 outils (rien ne communique)
-7. Conclusion : C'est pour ça que je construis PsyLib. Un seul outil, conforme HDS.
+7. Conclusion : C'est pour ça que je construis PsyLib. Un seul outil, conforme HDS. Pensé avec une psy, pour les psys.
 
 ---
 
 ## Post 3 — Sondage (semaine 2, mardi)
+
+Je vis avec une psy libérale. Et je la vois noter ses séances... sur Word.
+
+Mais je ne veux pas généraliser à partir d'un seul cas.
 
 Question aux psys libéraux :
 
@@ -87,7 +96,7 @@ Quel outil utilisez-vous principalement pour vos notes de séance ?
 - Un logiciel métier (lequel ? dites-le en commentaire)
 - Autre (je suis curieux)
 
-Je développe un outil de gestion de cabinet spécifiquement pour les psychologues, et je veux partir de vos usages réels, pas de mes suppositions.
+Je construis PsyLib, un outil de gestion de cabinet spécifiquement pour les psychologues. Et je veux partir de vos usages réels, pas de mes suppositions de développeur.
 
 Chaque réponse m'aide à construire quelque chose d'utile. Merci de jouer le jeu !
 
@@ -97,17 +106,21 @@ Chaque réponse m'aide à construire quelque chose d'utile. Merci de jouer le je
 
 ## Post 4 — "Ce que j'ai appris en parlant à 10 psys" (après les appels découverte)
 
+Quand ma compagne m'a dit que rien n'existait pour les psys libéraux, j'ai voulu vérifier.
+
 J'ai passé les deux dernières semaines au téléphone avec des psychologues libéraux.
 
 10 appels. Entre 30 et 60 minutes chacun.
 
 Voici ce que j'ai appris :
 
-1. Le temps administratif est le premier facteur de frustration.
-2. La plupart savent que leurs données ne sont pas en sécurité. Mais pas d'alternative simple.
-3. Le suivi entre les séances est un angle mort.
+1. Le temps administratif est le premier facteur de frustration. Tous disent la même chose.
+2. La plupart savent que leurs données ne sont pas en sécurité. Mais ils n'ont pas d'alternative simple.
+3. Le suivi entre les séances est un angle mort. Aucun outil ne fait le pont.
 4. Personne ne veut "un Doctolib pour psys". Ils veulent un outil qui comprend leur métier.
 5. L'IA intéresse, mais "où vont mes données ?" revient à chaque fois.
+
+Ma compagne avait raison. Et maintenant, je construis PsyLib pour elle — et pour tous les psys qui galèrent.
 
 Si vous êtes psy et voulez partager votre quotidien, mes DM sont ouverts. 30 minutes, sans engagement.
 
@@ -117,18 +130,22 @@ Si vous êtes psy et voulez partager votre quotidien, mes DM sont ouverts. 30 mi
 
 ## Post 5 — Offre Fondateurs (semaine 3-4, quand l'audience est chauffée)
 
-PsyLib ouvre ses portes à ses 15 premiers utilisateurs.
+Ma compagne est psy libérale. C'est pour elle que j'ai construit PsyLib.
 
-Aujourd'hui, je lance l'offre Fondateurs.
+Aujourd'hui, PsyLib ouvre ses portes à ses 15 premiers utilisateurs.
 
-— Tarif bloqué à vie (43€/mois, même quand le prix augmente)
+L'offre Fondateurs :
+
+— Tarif bloqué à vie (25€/mois, même quand le prix augmente)
 — Accès prioritaire aux nouvelles fonctionnalités
 — Ligne directe avec moi pour façonner le produit
 — 15 places, pas une de plus
 
 Pourquoi 15 ? Pour accompagner chaque fondateur personnellement.
 
-Si vous êtes psy libéral et que vous en avez assez de jongler entre 6 outils non sécurisés, c'est le moment.
+PsyLib, c'est : gestion patients, notes de séance structurées, facturation automatique, assistant IA — le tout conforme HDS.
+
+C'est l'outil que ma compagne attendait depuis des années. Si vous êtes psy libéral et que vous en avez assez de jongler entre 6 outils non sécurisés, c'est le moment.
 
 Le lien est en commentaire. Les 15 places partiront vite.
 

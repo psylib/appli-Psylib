@@ -50,8 +50,10 @@ Format JSON :
   "disclaimer": "Texte de disclaimer médical"
 }`,
 
-  content: `Tu es un assistant marketing pour psychologues libéraux.
-Génère du contenu professionnel et bienveillant.
+  content: `Tu es un assistant marketing pour le fondateur de PsyLib, un SaaS de gestion de cabinet pour psychologues libéraux.
+Le fondateur n'est PAS psychologue — sa compagne est psychologue libérale, et c'est en la voyant galérer avec l'administratif qu'il a décidé de construire PsyLib.
+L'angle éditorial : authenticité, proximité avec le terrain, compréhension du métier de psy via le vécu quotidien avec sa compagne.
+Ton : humain, transparent, jamais corporate. On raconte une vraie histoire, pas un pitch.
 RÈGLE ABSOLUE : N'utilise JAMAIS de données patients, même anonymisées.`,
 };
 
@@ -357,14 +359,14 @@ export class AiService {
     this.requireAiKey();
 
     const typePrompts: Record<string, string> = {
-      linkedin: 'Génère un post LinkedIn professionnel (max 300 mots, avec hashtags pertinents) pour un psychologue libéral.',
-      newsletter: 'Génère un article de newsletter (500-800 mots, avec titre accrocheur, introduction, corps structuré et conclusion) informatif pour des patients.',
-      blog: 'Génère un article de blog SEO-optimisé (800-1200 mots, avec titre H1, sous-titres H2, introduction et conclusion) sur la psychologie.',
+      linkedin: 'Génère un post LinkedIn (max 300 mots, avec hashtags pertinents) pour le fondateur de PsyLib. Il n\'est pas psy — sa compagne est psychologue libérale. Il parle de son expérience en tant que développeur qui vit avec une psy et qui construit un SaaS pour les psys. Ton authentique et humain.',
+      newsletter: 'Génère un article de newsletter (500-800 mots, avec titre accrocheur, introduction, corps structuré et conclusion) pour PsyLib, SaaS de gestion de cabinet pour psychologues. Angle : le fondateur dont la compagne est psy.',
+      blog: 'Génère un article de blog SEO-optimisé (800-1200 mots, avec titre H1, sous-titres H2, introduction et conclusion) pour PsyLib. Le fondateur n\'est pas psy mais sa compagne l\'est — cet angle humanise le contenu.',
     };
 
     const toneGuide: Record<string, string> = {
-      professional: 'Ton professionnel et expert, vocabulaire précis.',
-      warm: 'Ton chaleureux et bienveillant, proche du lecteur.',
+      professional: 'Ton professionnel mais accessible. Pas corporate.',
+      warm: 'Ton chaleureux et authentique, comme si tu racontais à un ami.',
       educational: 'Ton pédagogique et clair, vulgarisation accessible.',
     };
 
@@ -372,6 +374,7 @@ export class AiService {
 Thème : ${dto.theme}
 ${toneGuide[dto.tone ?? 'professional']}
 
+CONTEXTE : Le fondateur de PsyLib est développeur. Sa compagne est psychologue libérale. C'est en la voyant galérer chaque soir avec l'administratif qu'il a décidé de construire PsyLib.
 RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
 
     res.setHeader('Content-Type', 'text/event-stream');
@@ -517,15 +520,16 @@ Génère un exercice thérapeutique adapté au format JSON demandé.`;
     await this.getPsychologist(psychologistUserId);
 
     const typePrompts: Record<string, string> = {
-      linkedin: 'Génère un post LinkedIn professionnel (max 300 mots) pour un psychologue.',
-      newsletter: 'Génère un article de newsletter (500-800 mots) informatif pour patients.',
-      blog: 'Génère un article de blog SEO-optimisé (800-1200 mots) sur la psychologie.',
+      linkedin: 'Génère un post LinkedIn (max 300 mots) pour le fondateur de PsyLib, dont la compagne est psy libérale. Ton authentique, pas un pitch.',
+      newsletter: 'Génère un article de newsletter (500-800 mots) pour PsyLib, SaaS pour psys. Le fondateur vit avec une psy.',
+      blog: 'Génère un article de blog SEO-optimisé (800-1200 mots) pour PsyLib. Angle : fondateur dev, compagne psy libérale.',
     };
 
     const prompt = `${typePrompts[dto.type] ?? typePrompts['linkedin']}
 Thème: ${dto.theme}
 Ton: ${dto.tone ?? 'professional'}
 
+CONTEXTE : Le fondateur est développeur. Sa compagne est psychologue libérale. C'est son vécu quotidien qui inspire PsyLib.
 RAPPEL : N'utilise JAMAIS de données patients réels.`;
 
     const content = await this.callAiText(prompt, SYSTEM_PROMPTS.content);
