@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
   Users,
@@ -28,25 +29,62 @@ import {
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 
-const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
-  { label: 'Patients', href: '/dashboard/patients', icon: Users },
-  { label: 'Séances', href: '/dashboard/sessions', icon: CalendarCheck },
-  { label: 'Templates notes', href: '/dashboard/note-templates', icon: FileText },
-  { label: 'Réseau Pro', href: '/dashboard/network', icon: Network },
-  { label: 'Supervision', href: '/dashboard/supervision', icon: GraduationCap },
-  { label: 'Outcomes', href: '/dashboard/outcomes', icon: Target },
-  { label: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
-  { label: 'Calendrier', href: '/dashboard/calendar', icon: Calendar },
-  { label: 'Visio', href: '/dashboard/video', icon: Video },
-  { label: 'Liste d\'attente', href: '/dashboard/waitlist', icon: ClipboardList },
-  { label: 'Assistant IA', href: '/dashboard/ai-assistant', icon: Sparkles },
-  { label: 'Marketing IA', href: '/dashboard/marketing', icon: Megaphone },
-  { label: 'Formations', href: '/dashboard/courses', icon: BookOpen },
-  { label: 'Analytiques', href: '/dashboard/analytics', icon: BarChart2 },
-  { label: 'Paiements', href: '/dashboard/payments', icon: CreditCard },
-  { label: 'Factures', href: '/dashboard/invoices', icon: Receipt },
-  { label: 'Parrainage', href: '/dashboard/referral', icon: Gift },
+interface NavItem {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  exact?: boolean;
+}
+
+interface NavGroup {
+  label?: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    // Pas de label — section principale toujours visible
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
+      { label: 'Patients', href: '/dashboard/patients', icon: Users },
+      { label: 'Séances', href: '/dashboard/sessions', icon: CalendarCheck },
+      { label: 'Calendrier', href: '/dashboard/calendar', icon: Calendar },
+    ],
+  },
+  {
+    label: 'Communication',
+    items: [
+      { label: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
+      { label: 'Visio', href: '/dashboard/video', icon: Video },
+      { label: 'Liste d\'attente', href: '/dashboard/waitlist', icon: ClipboardList },
+    ],
+  },
+  {
+    label: 'Clinique',
+    items: [
+      { label: 'Templates notes', href: '/dashboard/note-templates', icon: FileText },
+      { label: 'Outcomes', href: '/dashboard/outcomes', icon: Target },
+      { label: 'Réseau Pro', href: '/dashboard/network', icon: Network },
+      { label: 'Supervision', href: '/dashboard/supervision', icon: GraduationCap },
+    ],
+  },
+  {
+    label: 'IA & Contenu',
+    items: [
+      { label: 'Assistant IA', href: '/dashboard/ai-assistant', icon: Sparkles },
+      { label: 'Marketing IA', href: '/dashboard/marketing', icon: Megaphone },
+      { label: 'Formations', href: '/dashboard/courses', icon: BookOpen },
+    ],
+  },
+  {
+    label: 'Gestion',
+    items: [
+      { label: 'Paiements', href: '/dashboard/payments', icon: CreditCard },
+      { label: 'Factures', href: '/dashboard/invoices', icon: Receipt },
+      { label: 'Analytiques', href: '/dashboard/analytics', icon: BarChart2 },
+      { label: 'Parrainage', href: '/dashboard/referral', icon: Gift },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -74,31 +112,42 @@ export function Sidebar({ userEmail, userName }: SidebarProps) {
         </Link>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto" aria-label="Navigation principale">
-        {NAV_ITEMS.map((item) => {
-          const active = isActive(item.href, item.exact);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px]',
-                active
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-surface hover:text-foreground',
-              )}
-              aria-current={active ? 'page' : undefined}
-            >
-              <item.icon
-                size={18}
-                className={active ? 'text-primary' : 'text-muted-foreground'}
-                aria-hidden
-              />
-              {item.label}
-            </Link>
-          );
-        })}
+      {/* Navigation groupée */}
+      <nav className="flex-1 px-3 py-2 overflow-y-auto" aria-label="Navigation principale">
+        {NAV_GROUPS.map((group, gi) => (
+          <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
+            {group.label && (
+              <p className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = isActive(item.href, item.exact);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px]',
+                      active
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-muted-foreground hover:bg-surface hover:text-foreground',
+                    )}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <item.icon
+                      size={17}
+                      className={active ? 'text-primary' : 'text-muted-foreground'}
+                      aria-hidden
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       {/* Footer */}
@@ -106,39 +155,31 @@ export function Sidebar({ userEmail, userName }: SidebarProps) {
         <Link
           href="/dashboard/settings/profile"
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px]',
+            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px]',
             isActive('/dashboard/settings/profile')
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-surface hover:text-foreground',
           )}
           aria-current={isActive('/dashboard/settings/profile') ? 'page' : undefined}
         >
-          <UserCircle size={18} aria-hidden />
+          <UserCircle size={17} aria-hidden />
           Mon profil
         </Link>
         <Link
-          href="/dashboard/settings/billing"
+          href="/dashboard/settings"
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px]',
-            isActive('/dashboard/settings/billing')
+            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px]',
+            isActive('/dashboard/settings') && !isActive('/dashboard/settings/profile') && !isActive('/dashboard/settings/billing')
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-surface hover:text-foreground',
           )}
-          aria-current={isActive('/dashboard/settings/billing') ? 'page' : undefined}
         >
-          <CreditCard size={18} aria-hidden />
-          Abonnement
-        </Link>
-        <Link
-          href="/dashboard/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-surface hover:text-foreground transition-colors min-h-[44px]"
-        >
-          <Settings size={18} aria-hidden />
+          <Settings size={17} aria-hidden />
           Réglages
         </Link>
 
         {/* User */}
-        <div className="flex items-center gap-3 px-3 py-2.5">
+        <div className="flex items-center gap-3 px-3 py-2">
           <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <span className="text-xs font-semibold text-primary">
               {getInitials(userName || userEmail)}
