@@ -4,7 +4,7 @@ import { SubscriptionPlan } from '@psyscale/shared-types';
 export const PLAN_KEY = 'required_plan';
 export const FEATURE_KEY = 'required_feature';
 
-export type BillingFeature = 'patients' | 'sessions' | 'ai_summary' | 'video' | 'courses';
+export type BillingFeature = 'patients' | 'sessions' | 'ai_summary' | 'video' | 'courses' | 'expenses';
 
 /** Exige un plan minimum pour accéder à la route */
 export const RequirePlan = (...plans: SubscriptionPlan[]) => SetMetadata(PLAN_KEY, plans);

@@ -302,6 +302,31 @@ export class SubscriptionService {
     }
   }
 
+  async checkExpenseLimit(psychologistId: string): Promise<void> {
+    const sub = await this.prisma.subscription.findUnique({ where: { psychologistId } });
+    const plan = (sub?.plan ?? SubscriptionPlan.FREE) as SubscriptionPlan;
+    const limits = PLAN_LIMITS[plan];
+    if (limits.expenses === null || limits.expenses === undefined) return; // unlimited
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const count = await this.prisma.expense.count({
+      where: { psychologistId, deletedAt: null, createdAt: { gte: startOfMonth } },
+    });
+
+    if (count >= limits.expenses) {
+      throw new ForbiddenException({
+        code: 'EXPENSE_LIMIT',
+        currentPlan: plan,
+        currentUsage: count,
+        limit: limits.expenses,
+        message: `Limite de ${limits.expenses} dépenses ce mois atteinte. Passez au plan Solo pour continuer.`,
+      });
+    }
+  }
+
   // --- Webhook handlers ---
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {

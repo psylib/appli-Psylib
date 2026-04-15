@@ -38,6 +38,7 @@ import { WaitlistModule } from './waitlist/waitlist.module';
 import { ReminderModule } from './reminder/reminder.module';
 import { VideoModule } from './video/video.module';
 import { AccountingModule } from './accounting/accounting.module';
+import { ExpensesModule } from './expenses/expenses.module';
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { AccountingModule } from './accounting/accounting.module';
     ReminderModule,
     VideoModule,
     AccountingModule,
+    ExpensesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
