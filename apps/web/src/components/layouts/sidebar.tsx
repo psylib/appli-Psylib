@@ -26,6 +26,7 @@ import {
   Gift,
   Video,
   Megaphone,
+  Calculator,
 } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
 
@@ -81,6 +82,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Paiements', href: '/dashboard/payments', icon: CreditCard },
       { label: 'Factures', href: '/dashboard/invoices', icon: Receipt },
+      { label: 'Comptabilité', href: '/dashboard/accounting', icon: Calculator },
       { label: 'Analytiques', href: '/dashboard/analytics', icon: BarChart2 },
       { label: 'Parrainage', href: '/dashboard/referral', icon: Gift },
     ],
