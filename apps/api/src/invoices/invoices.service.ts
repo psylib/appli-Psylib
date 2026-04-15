@@ -6,10 +6,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Response } from 'express';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { PaymentCompletedEvent } from '../accounting/events/payment-completed.event';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import type {
   Invoice,
@@ -31,6 +33,7 @@ export class InvoicesService {
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
     private readonly config: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -288,6 +291,31 @@ export class InvoicesService {
       },
     });
 
+    // Emit invoice.paid event for accounting ledger entry
+    if (isPaid && invoice) {
+      try {
+        const patient = await this.prisma.patient.findUnique({
+          where: { id: data.patientId },
+          select: { name: true },
+        });
+        this.eventEmitter.emit(
+          'invoice.paid',
+          new PaymentCompletedEvent(
+            data.psychologistId,
+            data.internalPaymentId ?? '',
+            invoice.id,
+            patient?.name ?? 'Patient',
+            data.amount,
+            new Date(data.sessionDate),
+            'online',
+            invoice.invoiceNumber,
+          ),
+        );
+      } catch (error) {
+        this.logger.error(`Failed to emit invoice.paid event for auto-invoice ${invoice.id}: ${error}`);
+      }
+    }
+
     return invoice;
   }
 
@@ -304,13 +332,34 @@ export class InvoicesService {
       throw new BadRequestException('Invoice is already paid');
     }
 
-    return this.prisma.invoice.update({
+    const updatedInvoice = await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
         status: 'paid',
         paidAt: new Date(),
       },
+      include: { patient: true },
     });
+
+    try {
+      this.eventEmitter.emit(
+        'invoice.paid',
+        new PaymentCompletedEvent(
+          psychologist.id,
+          '',  // paymentId unknown here
+          invoiceId,
+          updatedInvoice.patient?.name ?? 'Patient',
+          Number(updatedInvoice.amountTtc),
+          new Date(),
+          'manual',  // paid manually via markAsPaid
+          updatedInvoice.invoiceNumber,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(`Failed to emit invoice.paid event for invoice ${invoiceId}: ${error}`);
+    }
+
+    return updatedInvoice;
   }
 
   /** Public accessor for auto-invoice processor */

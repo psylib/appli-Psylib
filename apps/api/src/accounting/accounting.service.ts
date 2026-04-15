@@ -33,6 +33,15 @@ export interface CreateIncomeEntryData {
   pieceRef?: string | null;
 }
 
+export interface BookQuery {
+  page: number;
+  limit: number;
+  type?: 'income' | 'expense';
+  dateFrom?: string;
+  dateTo?: string;
+  category?: string;
+}
+
 @Injectable()
 export class AccountingService {
   private readonly logger = new Logger(AccountingService.name);
@@ -41,6 +50,287 @@ export class AccountingService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
   ) {}
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  private async resolvePsychologistId(userId: string): Promise<string> {
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
+    return psy.id;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Query methods (Part A)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * GET /accounting/book — paginated accounting entries (livre des recettes / depenses)
+   */
+  async getBook(userId: string, query: BookQuery) {
+    const psychologistId = await this.resolvePsychologistId(userId);
+
+    const page = Math.max(1, query.page || 1);
+    const limit = Math.min(100, Math.max(1, query.limit || 20));
+    const skip = (page - 1) * limit;
+
+    const where: Record<string, unknown> = {
+      psychologistId,
+      deletedAt: null,
+    };
+
+    if (query.type) {
+      where.entryType = query.type === 'income'
+        ? AccountingEntryType.income
+        : AccountingEntryType.expense;
+    }
+
+    if (query.dateFrom || query.dateTo) {
+      const dateFilter: Record<string, Date> = {};
+      if (query.dateFrom) dateFilter.gte = new Date(query.dateFrom);
+      if (query.dateTo) dateFilter.lte = new Date(query.dateTo);
+      where.date = dateFilter;
+    }
+
+    if (query.category) {
+      where.category = query.category;
+    }
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.accountingEntry.findMany({
+        where: where as never,
+        orderBy: [{ date: 'desc' }, { ecritureNum: 'desc' }],
+        skip,
+        take: limit,
+        include: {
+          expense: { select: { id: true, label: true } },
+          invoice: { select: { id: true, invoiceNumber: true } },
+          payment: { select: { id: true, type: true } },
+        },
+      }),
+      this.prisma.accountingEntry.count({ where: where as never }),
+    ]);
+
+    return {
+      data: data.map((entry) => ({
+        id: entry.id,
+        date: entry.date,
+        entryType: entry.entryType,
+        label: entry.label,
+        debit: Number(entry.debit),
+        credit: Number(entry.credit),
+        category: entry.category,
+        paymentMethod: entry.paymentMethod,
+        counterpart: entry.counterpart,
+        pieceRef: entry.pieceRef,
+        ecritureNum: entry.ecritureNum,
+        fiscalYear: entry.fiscalYear,
+        expense: entry.expense,
+        invoice: entry.invoice,
+        payment: entry.payment,
+        createdAt: entry.createdAt,
+      })),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  /**
+   * GET /accounting/summary — income/expense summary by period
+   */
+  async getSummary(userId: string, dateFrom?: string, dateTo?: string) {
+    const psychologistId = await this.resolvePsychologistId(userId);
+
+    const baseWhere: Record<string, unknown> = {
+      psychologistId,
+      deletedAt: null,
+    };
+
+    if (dateFrom || dateTo) {
+      const dateFilter: Record<string, Date> = {};
+      if (dateFrom) dateFilter.gte = new Date(dateFrom);
+      if (dateTo) dateFilter.lte = new Date(dateTo);
+      baseWhere.date = dateFilter;
+    }
+
+    // Income aggregates
+    const incomeAgg = await this.prisma.accountingEntry.aggregate({
+      _sum: { credit: true },
+      _count: true,
+      where: {
+        ...baseWhere,
+        entryType: AccountingEntryType.income,
+      } as never,
+    });
+
+    // Expense aggregates
+    const expenseAgg = await this.prisma.accountingEntry.aggregate({
+      _sum: { debit: true },
+      _count: true,
+      where: {
+        ...baseWhere,
+        entryType: AccountingEntryType.expense,
+      } as never,
+    });
+
+    // Expenses grouped by category
+    const expensesByCategory = await this.prisma.accountingEntry.groupBy({
+      by: ['category'],
+      _sum: { debit: true },
+      where: {
+        ...baseWhere,
+        entryType: AccountingEntryType.expense,
+      } as never,
+    });
+
+    const incomeTotal = Number(incomeAgg._sum.credit ?? 0);
+    const expenseTotal = Number(expenseAgg._sum.debit ?? 0);
+
+    const byCategory: Record<string, number> = {};
+    for (const group of expensesByCategory) {
+      byCategory[group.category] = Number(group._sum.debit ?? 0);
+    }
+
+    return {
+      period: {
+        from: dateFrom ?? null,
+        to: dateTo ?? null,
+      },
+      income: {
+        total: incomeTotal,
+        count: incomeAgg._count,
+      },
+      expenses: {
+        total: expenseTotal,
+        count: expenseAgg._count,
+        byCategory,
+      },
+      netResult: incomeTotal - expenseTotal,
+    };
+  }
+
+  /**
+   * GET /accounting/dashboard — monthly P&L for last 12 months, YTD totals, expenses by category
+   */
+  async getDashboard(userId: string) {
+    const psychologistId = await this.resolvePsychologistId(userId);
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const ytdStart = new Date(currentYear, 0, 1); // Jan 1st of current year
+
+    // Monthly P&L for last 12 months
+    const monthlyPnl: Array<{
+      month: string;
+      income: number;
+      expenses: number;
+      net: number;
+    }> = [];
+
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+      const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+      const monthLabel = monthStart.toISOString().slice(0, 7); // YYYY-MM
+
+      const [incomeAgg, expenseAgg] = await this.prisma.$transaction([
+        this.prisma.accountingEntry.aggregate({
+          _sum: { credit: true },
+          where: {
+            psychologistId,
+            deletedAt: null,
+            entryType: AccountingEntryType.income,
+            date: { gte: monthStart, lte: monthEnd },
+          },
+        }),
+        this.prisma.accountingEntry.aggregate({
+          _sum: { debit: true },
+          where: {
+            psychologistId,
+            deletedAt: null,
+            entryType: AccountingEntryType.expense,
+            date: { gte: monthStart, lte: monthEnd },
+          },
+        }),
+      ]);
+
+      const income = Number(incomeAgg._sum.credit ?? 0);
+      const expenses = Number(expenseAgg._sum.debit ?? 0);
+
+      monthlyPnl.push({
+        month: monthLabel,
+        income,
+        expenses,
+        net: income - expenses,
+      });
+    }
+
+    // Expenses by category YTD
+    const expensesByCategory = await this.prisma.accountingEntry.groupBy({
+      by: ['category'],
+      _sum: { debit: true },
+      where: {
+        psychologistId,
+        deletedAt: null,
+        entryType: AccountingEntryType.expense,
+        date: { gte: ytdStart },
+      },
+    });
+
+    const categoryBreakdown: Record<string, number> = {};
+    for (const group of expensesByCategory) {
+      categoryBreakdown[group.category] = Number(group._sum.debit ?? 0);
+    }
+
+    // YTD totals
+    const [ytdIncomeAgg, ytdExpenseAgg] = await this.prisma.$transaction([
+      this.prisma.accountingEntry.aggregate({
+        _sum: { credit: true },
+        _count: true,
+        where: {
+          psychologistId,
+          deletedAt: null,
+          entryType: AccountingEntryType.income,
+          date: { gte: ytdStart },
+        },
+      }),
+      this.prisma.accountingEntry.aggregate({
+        _sum: { debit: true },
+        _count: true,
+        where: {
+          psychologistId,
+          deletedAt: null,
+          entryType: AccountingEntryType.expense,
+          date: { gte: ytdStart },
+        },
+      }),
+    ]);
+
+    const ytdIncome = Number(ytdIncomeAgg._sum.credit ?? 0);
+    const ytdExpenses = Number(ytdExpenseAgg._sum.debit ?? 0);
+
+    return {
+      monthlyPnl,
+      expensesByCategory: categoryBreakdown,
+      ytd: {
+        income: ytdIncome,
+        expenses: ytdExpenses,
+        netResult: ytdIncome - ytdExpenses,
+        incomeCount: ytdIncomeAgg._count,
+        expenseCount: ytdExpenseAgg._count,
+      },
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Expense entry CRUD (existing)
+  // ---------------------------------------------------------------------------
 
   /**
    * Creates an AccountingEntry of type `expense` when an expense is created.
@@ -269,18 +559,48 @@ export class AccountingService {
   }
 
   // ---------------------------------------------------------------------------
-  // Event listeners (STUB — Task 4 full will wire these)
+  // Event listeners (Part B — wired to createIncomeEntry)
   // ---------------------------------------------------------------------------
 
   @OnEvent('invoice.paid')
   async handleInvoicePaid(event: PaymentCompletedEvent) {
-    // TODO: Task 4 full — wire income entry creation
-    this.logger.debug(`[STUB] invoice.paid event received paymentId=${event.paymentId}`);
+    try {
+      await this.createIncomeEntry(event.psychologistId, {
+        date: event.date,
+        label: `Honoraires — ${event.patientName}`,
+        amount: event.amount,
+        paymentMethod: event.paymentMethod,
+        invoiceId: event.invoiceId,
+        paymentId: event.paymentId || undefined,
+        patientName: event.patientName,
+        pieceRef: event.pieceRef,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to create income entry for invoice.paid: ${error}`);
+    }
   }
 
   @OnEvent('payment.completed')
   async handlePaymentCompleted(event: PaymentCompletedEvent) {
-    // TODO: Task 4 full — wire income entry creation
-    this.logger.debug(`[STUB] payment.completed event received paymentId=${event.paymentId}`);
+    try {
+      // Skip if this payment has an associated invoice — the invoice.paid event will handle it
+      if (event.invoiceId) {
+        this.logger.debug(
+          `Skipping payment.completed — invoice.paid will handle invoiceId=${event.invoiceId}`,
+        );
+        return;
+      }
+      await this.createIncomeEntry(event.psychologistId, {
+        date: event.date,
+        label: `Honoraires — ${event.patientName}`,
+        amount: event.amount,
+        paymentMethod: event.paymentMethod,
+        paymentId: event.paymentId || undefined,
+        patientName: event.patientName,
+        pieceRef: event.pieceRef,
+      });
+    } catch (error) {
+      this.logger.error(`Failed to create income entry for payment.completed: ${error}`);
+    }
   }
 }

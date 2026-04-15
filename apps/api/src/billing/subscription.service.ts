@@ -2,12 +2,14 @@ import { Injectable, Logger, ForbiddenException, NotFoundException, BadRequestEx
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../common/prisma.service';
 import { StripeService } from './stripe.service';
 import { EmailService } from '../notifications/email.service';
 import { AuditService } from '../common/audit.service';
 import { SubscriptionPlan, SubscriptionStatus, PLAN_LIMITS } from '@psyscale/shared-types';
 import { ReferralService } from '../referral/referral.service';
+import { PaymentCompletedEvent } from '../accounting/events/payment-completed.event';
 import type { ConnectSettingsDto } from './dto/connect-settings.dto';
 import type { PaymentLinkDto } from './dto/payment-link.dto';
 import type Stripe from 'stripe';
@@ -24,6 +26,7 @@ export class SubscriptionService {
     private readonly email: EmailService,
     private readonly referral: ReferralService,
     private readonly audit: AuditService,
+    private readonly eventEmitter: EventEmitter2,
     @InjectQueue(INVOICE_GENERATION_QUEUE)
     private readonly invoiceQueue: Queue<GenerateInvoiceJobData>,
   ) {}
@@ -544,6 +547,29 @@ export class SubscriptionService {
 
     this.logger.log(`Booking payment completed for appointment ${appointmentId}`);
 
+    // Emit payment.completed event for accounting ledger
+    try {
+      const patientForEvent = await this.prisma.patient.findUnique({
+        where: { id: appointment.patientId! },
+        select: { name: true },
+      });
+      this.eventEmitter.emit(
+        'payment.completed',
+        new PaymentCompletedEvent(
+          appointment.psychologistId,
+          '',
+          null,
+          patientForEvent?.name ?? 'Patient',
+          Number(session.amount_total ?? 0) / 100,
+          new Date(),
+          'stripe',
+          null,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(`Failed to emit payment.completed for booking payment: ${error}`);
+    }
+
     // Auto-invoice for booking payment
     const psychologist = await this.prisma.psychologist.findUnique({
       where: { id: appointment.psychologistId },
@@ -630,6 +656,25 @@ export class SubscriptionService {
     }
 
     this.logger.log(`Payment link completed for appointment ${appointmentId}`);
+
+    // Emit payment.completed event for accounting ledger
+    try {
+      this.eventEmitter.emit(
+        'payment.completed',
+        new PaymentCompletedEvent(
+          appointment?.psychologistId ?? '',
+          payment?.id ?? '',
+          null,
+          appointment?.patient?.name ?? 'Patient',
+          Number(session.amount_total ?? 0) / 100,
+          new Date(),
+          'stripe',
+          null,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(`Failed to emit payment.completed for payment link: ${error}`);
+    }
 
     // Auto-invoice for payment link
     if (appointment) {
@@ -948,6 +993,25 @@ export class SubscriptionService {
         },
       }),
     ]);
+
+    // Emit payment.completed event for accounting ledger
+    try {
+      this.eventEmitter.emit(
+        'payment.completed',
+        new PaymentCompletedEvent(
+          psy.id,
+          '',  // payment id from transaction not easily accessible
+          null,  // no invoice yet (auto-invoice may be generated separately)
+          appointment.patient?.name ?? 'Patient',
+          amount ?? 0,
+          new Date(),
+          'on_site',
+          null,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(`Failed to emit payment.completed event for markPaidOnSite: ${error}`);
+    }
 
     this.logger.log(`Marked paid on site for appointment ${appointmentId}`);
     return { success: true, appointmentId };

@@ -1,40 +1,48 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
+import { AccountingService } from './accounting.service';
 
-/**
- * AccountingController — Skeleton routes for accounting book, summary and dashboard.
- * Full implementation: Task 4 full.
- */
 @Controller('accounting')
 @UseGuards(KeycloakGuard, RolesGuard)
 @Roles('psychologist')
 export class AccountingController {
-  /**
-   * GET /accounting/book
-   * TODO: Task 4 full — return paginated accounting entries (livre des recettes / dépenses)
-   */
+  constructor(private readonly accountingService: AccountingService) {}
+
   @Get('book')
-  getBook() {
-    return [];
+  getBook(
+    @CurrentUser() user: KeycloakUser,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('type') type?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('category') category?: string,
+  ) {
+    return this.accountingService.getBook(user.sub, {
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 20,
+      type: type as 'income' | 'expense' | undefined,
+      dateFrom,
+      dateTo,
+      category,
+    });
   }
 
-  /**
-   * GET /accounting/summary
-   * TODO: Task 4 full — return income/expense summary by period and category
-   */
   @Get('summary')
-  getSummary() {
-    return {};
+  getSummary(
+    @CurrentUser() user: KeycloakUser,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    return this.accountingService.getSummary(user.sub, dateFrom, dateTo);
   }
 
-  /**
-   * GET /accounting/dashboard
-   * TODO: Task 4 full — return accounting dashboard KPIs
-   */
   @Get('dashboard')
-  getDashboard() {
-    return {};
+  getDashboard(@CurrentUser() user: KeycloakUser) {
+    return this.accountingService.getDashboard(user.sub);
   }
 }
