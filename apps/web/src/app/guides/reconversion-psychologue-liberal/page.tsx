@@ -137,7 +137,7 @@ export default function PageReconversion() {
 
         <section className="mb-10 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">Démarrez votre cabinet avec PsyLib</h2>
-          <p className="mb-6 text-white/80">Agenda, dossiers patients, facturation, profil public. Opérationnel en 1 heure. 14 jours gratuits.</p>
+          <p className="mb-6 text-white/80">Agenda, dossiers patients, facturation, profil public. Opérationnel en 1 heure. Commencez gratuitement.</p>
           <Link href="/login" className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100">
             Créer mon cabinet en ligne
           </Link>

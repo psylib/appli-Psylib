@@ -265,13 +265,13 @@ export default function ComparaisonPage() {
               Prêt à passer à un outil conçu pour vous ?
             </h2>
             <p className="text-sage-100 text-lg">
-              14 jours gratuits. Sans carte bancaire. Sans engagement.
+              Commencez gratuitement. Sans carte bancaire. Sans engagement.
             </p>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-terracotta text-white font-medium hover:bg-terracotta-600 transition-colors shadow-sm"
             >
-              Démarrer l'essai gratuit
+              Commencer gratuitement
               <ArrowRight size={18} />
             </Link>
           </div>

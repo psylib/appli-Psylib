@@ -37,11 +37,11 @@ const faqCategories = [
       },
       {
         q: "A qui s\"adresse PsyLib ?",
-        a: "PsyLib s\"adresse a tous les psychologues liberaux en France, qu\"ils soient en debut de carriere ou praticiens etablis. Le plan Starter convient aux jeunes installes (jusqu\"a 40 patients), le plan Pro aux praticiens avec une patientele etablie, et le plan Scale aux cabinets multi-praticiens.",
+        a: "PsyLib s\"adresse a tous les psychologues liberaux en France, qu\"ils soient en debut de carriere ou praticiens etablis. Le plan Free permet de decouvrir l\"outil (10 patients), le plan Solo convient aux jeunes installes (50 patients), le plan Pro aux praticiens avec une patientele etablie, et le plan Clinic aux cabinets multi-praticiens.",
       },
       {
         q: "Puis-je essayer PsyLib gratuitement ?",
-        a: "Oui, tous les plans incluent 14 jours d\"essai gratuit, sans carte bancaire requise. Vous avez acces a toutes les fonctionnalites du plan Pro pendant votre essai pour decouvrir l\"ensemble des outils.",
+        a: "Oui, le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut 10 patients et 20 sessions par mois. Passez a un plan payant quand vous etes pret.",
       },
       {
         q: "Comment demarrer avec PsyLib ?",
@@ -96,11 +96,11 @@ const faqCategories = [
     questions: [
       {
         q: "Quels sont les plans disponibles ?",
-        a: "PsyLib propose quatre plans : Free (gratuit, 10 patients), Solo (25 euros/mois ou 22 euros/mois en annuel, 50 patients), Pro (50 euros/mois ou 45 euros/mois en annuel, patients illimites et IA illimitee), et Clinic (79 euros/mois ou 69 euros/mois en annuel, multi-praticiens). Les plans payants incluent 14 jours d\"essai gratuit.",
+        a: "PsyLib propose quatre plans : Free (gratuit, 10 patients), Solo (25 euros/mois ou 22 euros/mois en annuel, 50 patients), Pro (40 euros/mois ou 36 euros/mois en annuel, patients illimites et IA illimitee), et Clinic (79 euros/mois ou 69 euros/mois en annuel, multi-praticiens).",
       },
       {
-        q: "Que se passe-t-il a la fin de l\"essai gratuit ?",
-        a: "A la fin des 14 jours, vous choisissez le plan qui vous convient. Si vous ne souscrivez pas, votre compte passe en mode lecture seule : vous conservez l\"acces a vos donnees existantes mais ne pouvez plus creer de sessions ou de patients. Aucune donnee n\"est supprimee.",
+        q: "Comment fonctionne le plan gratuit ?",
+        a: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut 10 patients et 20 sessions par mois. Si vous avez besoin de plus, passez a un plan payant a tout moment depuis votre espace de facturation.",
       },
       {
         q: "Puis-je resilier a tout moment ?",
@@ -117,11 +117,11 @@ const faqCategories = [
     questions: [
       {
         q: "Comment contacter le support ?",
-        a: "Vous pouvez nous contacter par email a support@psylib.eu, via le chat en direct integre dans votre tableau de bord (Crisp), ou consulter notre centre d\"aide. Les utilisateurs du plan Scale beneficient d\"un support prioritaire dedie.",
+        a: "Vous pouvez nous contacter par email a support@psylib.eu, via le chat en direct integre dans votre tableau de bord (Crisp), ou consulter notre centre d\"aide. Les utilisateurs du plan Clinic beneficient d\"un support prioritaire dedie.",
       },
       {
         q: "Quel est le delai de reponse du support ?",
-        a: "Nous nous engageons a repondre sous 24 heures ouvrees pour tous les plans. Les utilisateurs Scale beneficient d\"un support prioritaire avec un delai garanti de 4 heures ouvrees. Les incidents critiques (indisponibilite du service) sont traites en priorite absolue.",
+        a: "Nous nous engageons a repondre sous 24 heures ouvrees pour tous les plans. Les utilisateurs Clinic beneficient d\"un support prioritaire avec un delai garanti de 4 heures ouvrees. Les incidents critiques (indisponibilite du service) sont traites en priorite absolue.",
       },
       {
         q: "Puis-je exporter mes donnees ?",
@@ -297,7 +297,7 @@ export default function FaqPage() {
           href="/register"
           className="mt-6 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
         >
-          Commencer l&apos;essai gratuit
+          Commencer gratuitement
         </Link>
       </section>
     </main>

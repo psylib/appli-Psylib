@@ -298,7 +298,7 @@ export default function ContactPage() {
             </h3>
             <p className="mt-2 text-sm text-gray-600">
               Du lundi au vendredi, de 9h a 18h (heure de Paris).
-              Les utilisateurs du plan Scale beneficient d&apos;un
+              Les utilisateurs du plan Clinic beneficient d&apos;un
               support prioritaire avec un delai garanti de 4h ouvrees.
             </p>
           </div>
@@ -368,7 +368,7 @@ export default function ContactPage() {
           Essayez PsyLib gratuitement
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-white/90">
-          14 jours d&apos;essai gratuit, sans carte bancaire.
+          Gratuit pour toujours, sans carte bancaire.
           Dossiers patients, notes cliniques, facturation — tout en un,
           conforme HDS.
         </p>
@@ -376,7 +376,7 @@ export default function ContactPage() {
           href="/register"
           className="mt-6 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
         >
-          Commencer l&apos;essai gratuit
+          Commencer gratuitement
         </Link>
       </section>
     </main>

@@ -34,10 +34,10 @@ const jsonLd = {
         'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA en streaming, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF automatique, Prise de rendez-vous en ligne, Paiement Stripe a la reservation, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Teleconsultation video HD integree HDS, Espace patient avec mood tracking et journal therapeutique, Exercices therapeutiques personnalises par IA, Notifications temps reel WebSocket, Reseau professionnel entre psychologues, Supervision et intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
-        lowPrice: '43',
-        highPrice: '119',
+        lowPrice: '0',
+        highPrice: '79',
         priceCurrency: 'EUR',
-        offerCount: '3',
+        offerCount: '4',
       },
     },
     {
@@ -90,7 +90,7 @@ const jsonLd = {
           name: "Combien coute PsyLib ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "PsyLib propose quatre formules : Free (gratuit, 10 patients), Solo a 29 EUR/mois, Pro a 59 EUR/mois (IA illimitee) et Clinic a 99 EUR/mois (multi-praticiens). Les plans payants incluent 14 jours d'essai gratuit.",
+            text: "PsyLib propose quatre formules : Free (gratuit, 10 patients), Solo a 25 EUR/mois, Pro a 40 EUR/mois (IA illimitee) et Clinic a 79 EUR/mois (multi-praticiens).",
           },
         },
         {
@@ -103,10 +103,10 @@ const jsonLd = {
         },
         {
           '@type': 'Question',
-          name: "Comment fonctionne l'essai gratuit ?",
+          name: "Comment fonctionne le plan gratuit ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "14 jours d'acces complet au plan Pro, sans carte bancaire. A la fin de l'essai, vous choisissez votre plan ou votre compte est desactive. Vos donnees restent exportables.",
+            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut 10 patients et 20 sessions par mois. Passez a un plan payant quand vous le souhaitez. Vos donnees restent exportables.",
           },
         },
         {
@@ -114,7 +114,7 @@ const jsonLd = {
           name: 'PsyLib propose-t-il la teleconsultation ?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "Oui. PsyLib integre la visio-consultation HD, hebergee sur infrastructure HDS certifiee en France. Pas besoin de Zoom ou Google Meet. Lien unique envoye au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Scale.",
+            text: "Oui. PsyLib integre la visio-consultation HD, hebergee sur infrastructure HDS certifiee en France. Pas besoin de Zoom ou Google Meet. Lien unique envoye au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Clinic.",
           },
         },
         {
@@ -141,7 +141,7 @@ const jsonLd = {
 export const metadata: Metadata = {
   title: 'PsyLib — Gestion cabinet psychologue libéral | HDS',
   description:
-    'PsyLib : logiciel de gestion de cabinet pour psychologues liberaux en France. Dossiers patients securises (HDS), notes cliniques structurees, outcome tracking PHQ-9/GAD-7, teleconsultation video HDS, espace patient, facturation automatique PDF. Essai gratuit 14 jours.',
+    'PsyLib : logiciel de gestion de cabinet pour psychologues liberaux en France. Dossiers patients securises (HDS), notes cliniques structurees, outcome tracking PHQ-9/GAD-7, teleconsultation video HDS, espace patient, facturation automatique PDF. Commencez gratuitement.',
   keywords: [
     'psychologue libéral',
     'logiciel cabinet psychologue',

@@ -66,7 +66,7 @@ export function BillingPage() {
           </h2>
           <PlanSelector subscription={subscription} />
           <p className="text-xs text-muted-foreground text-center mt-4">
-            14 jours d&apos;essai gratuit · Sans engagement · Annulation possible à tout moment
+            Gratuit pour toujours · Sans engagement · Annulation possible à tout moment
           </p>
         </section>
       )}

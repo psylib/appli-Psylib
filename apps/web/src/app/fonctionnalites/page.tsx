@@ -44,7 +44,7 @@ const fonctionnalitesJsonLd = {
           name: 'Quel est le meilleur logiciel de gestion pour psychologue liberal ?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'PsyLib est le logiciel de gestion de cabinet concu specifiquement pour les psychologues liberaux en France. Il propose des dossiers patients securises (HDS), des notes cliniques structurees (SOAP, DAP, narratif), de l\'outcome tracking avec PHQ-9, GAD-7 et CORE-OM, la facturation PDF conforme, et un reseau professionnel entre psychologues. Essai gratuit 14 jours sans carte bancaire.',
+            text: 'PsyLib est le logiciel de gestion de cabinet concu specifiquement pour les psychologues liberaux en France. Il propose des dossiers patients securises (HDS), des notes cliniques structurees (SOAP, DAP, narratif), de l\'outcome tracking avec PHQ-9, GAD-7 et CORE-OM, la facturation PDF conforme, et un reseau professionnel entre psychologues. Commencez gratuitement sans carte bancaire.',
           },
         },
         {
@@ -146,7 +146,7 @@ export default function FonctionnalitesPage() {
           href="/register"
           className="mt-6 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
         >
-          Commencer l&apos;essai gratuit
+          Commencer gratuitement
         </Link>
       </section>
     </main>

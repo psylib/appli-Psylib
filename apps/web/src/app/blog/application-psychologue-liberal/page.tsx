@@ -88,11 +88,11 @@ const jsonLd = {
         },
         {
           '@type': 'Question',
-          name: "PsyLib propose-t-il un essai gratuit ?",
+          name: "PsyLib est-il gratuit ?",
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              "Oui. PsyLib propose 14 jours d'essai gratuit sur le plan Pro, sans carte bancaire requise. Toutes les fonctionnalités sont disponibles pendant la période d'essai : dossier patient, agenda, facturation PDF, notes avec templates, outcome tracking.",
+              "Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte bancaire. Il inclut dossier patient, agenda, facturation PDF, notes avec templates. Passez a un plan payant pour debloquer l'IA et la visio.",
           },
         },
       ],
@@ -299,7 +299,7 @@ export default function ArticleApplicationPsychologue() {
           </p>
           <p className="mb-4 leading-relaxed">
             Hébergement France certifié HDS. Authentification OIDC sécurisée. Chiffrement
-            AES-256-GCM des données sensibles au niveau applicatif. Essai gratuit 14 jours
+            AES-256-GCM des données sensibles au niveau applicatif. Commencez gratuitement
             sans carte bancaire.
           </p>
         </section>
@@ -364,12 +364,12 @@ export default function ArticleApplicationPsychologue() {
 
             <details className="rounded-xl border border-gray-200 p-5">
               <summary className="cursor-pointer font-semibold text-[#1E1B4B]">
-                PsyLib propose-t-il un essai gratuit ?
+                PsyLib est-il gratuit ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Oui. PsyLib propose 14 jours d'essai gratuit sur le plan Pro, sans carte
-                bancaire requise. Toutes les fonctionnalités sont disponibles : dossier patient,
-                agenda, facturation PDF, notes avec templates, outcome tracking.
+                Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte
+                bancaire. Dossier patient, agenda, facturation PDF, notes avec templates
+                inclus. Passez à un plan payant pour l&apos;IA et la visio.
               </p>
             </details>
           </div>

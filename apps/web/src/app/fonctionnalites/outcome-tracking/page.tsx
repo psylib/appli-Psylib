@@ -386,7 +386,7 @@ export default function OutcomeTrackingPage() {
             Mesurez les progrès de vos patients dès aujourd&apos;hui
           </h2>
           <p className="mb-6 text-white/80">
-            PHQ-9, GAD-7, CORE-OM inclus dans tous les plans. 14 jours d&apos;essai gratuit.
+            PHQ-9, GAD-7, CORE-OM inclus dans tous les plans. Gratuit pour toujours.
           </p>
           <Link
             href="/login"

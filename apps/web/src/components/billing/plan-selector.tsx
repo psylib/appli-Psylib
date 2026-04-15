@@ -32,7 +32,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Séances illimitées',
     'IA illimitée',
     'Multi-praticiens',
-    'Formations illimitées',
     'Support dédié',
   ],
 };
@@ -89,7 +88,7 @@ export function PlanSelector({ subscription }: PlanSelectorProps) {
                   <span className="text-3xl font-bold text-foreground">{price}€</span>
                   <span className="text-sm text-muted-foreground">/mois</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">14 jours d&apos;essai gratuit</p>
+                <p className="text-xs text-muted-foreground mt-1">Sans engagement</p>
               </div>
 
               <ul className="space-y-2">

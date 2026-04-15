@@ -134,14 +134,14 @@ export function HeroSection() {
                   href="/beta"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-terracotta text-white font-medium hover:bg-terracotta-600 transition-colors shadow-sm"
                 >
-                  Essai gratuit 14 jours
+                  Commencez gratuitement
                   <ArrowRight size={16} />
                 </Link>
                 <Link
                   href="/register"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal text-charcoal font-medium hover:bg-charcoal hover:text-white transition-colors"
                 >
-                  Essai gratuit 14 jours
+                  Commencez gratuitement
                 </Link>
               </div>
 
@@ -149,7 +149,7 @@ export function HeroSection() {
               <div className="flex items-center gap-6 pt-2">
                 {[
                   { value: '15', label: 'places Fondateurs' },
-                  { value: '14j', label: 'essai gratuit' },
+                  { value: '0€', label: 'pour commencer' },
                   { value: 'HDS', label: 'certifié France' },
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">

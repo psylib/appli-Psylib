@@ -13,7 +13,7 @@ import { KpiCardSkeleton } from '@/components/ui/skeleton';
 const PLAN_CONFIG = {
   pro: {
     badge: 'Pro',
-    price: '50€/mois',
+    price: '40€/mois',
     highlights: [
       'Patients et séances illimités',
       'IA illimitée',
@@ -113,7 +113,7 @@ export function FeatureLock({
           </Link>
 
           <p className="text-xs text-muted-foreground mt-3">
-            14 jours d&apos;essai gratuit · Résiliation à tout moment
+            Gratuit pour toujours · Résiliation à tout moment
           </p>
         </div>
       </div>

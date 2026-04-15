@@ -267,14 +267,13 @@ export default function TermsPage() {
           </h2>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            7.1. Periode d&apos;essai
+            7.1. Plan gratuit
           </h3>
           <p className="mb-4 leading-relaxed">
-            Tout nouvel utilisateur beneficie d&apos;une periode d&apos;essai gratuite de
-            <strong> 14 jours</strong> sans engagement et sans carte bancaire. A l&apos;issue
-            de cette periode, l&apos;utilisateur doit souscrire un abonnement pour continuer
-            a utiliser le service. En l&apos;absence de souscription, l&apos;acces aux
-            fonctionnalites est restreint mais les donnees sont conservees pendant 90 jours.
+            Tout nouvel utilisateur beneficie d&apos;un plan Free gratuit pour toujours,
+            sans engagement et sans carte bancaire. Ce plan inclut 10 patients et 20
+            sessions par mois. Pour acceder aux fonctionnalites avancees (IA, visio,
+            patients illimites), l&apos;utilisateur peut souscrire un abonnement payant a tout moment.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -302,8 +301,8 @@ export default function TermsPage() {
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Pro</td>
-                  <td className="py-3 pr-4">50 euros HT</td>
-                  <td className="py-3">Patients illimites, IA illimitee, portail patient, 5 formations</td>
+                  <td className="py-3 pr-4">40 euros HT</td>
+                  <td className="py-3">Patients illimites, IA illimitee, portail patient, analytics</td>
                 </tr>
                 <tr>
                   <td className="py-3 pr-4 font-medium">Clinic</td>
@@ -549,7 +548,7 @@ export default function TermsPage() {
             href="/login"
             className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
           >
-            Commencer l&apos;essai gratuit
+            Commencer gratuitement
           </Link>
         </section>
 

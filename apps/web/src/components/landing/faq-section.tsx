@@ -26,8 +26,8 @@ const faqs = [
     a: 'Oui. PsyLib suit automatiquement les 12 séances annuelles du dispositif Mon Soutien Psy par patient, avec alerte lorsque le quota approche (10/12). Vous configurez le tarif conventionné (50€) et le motif dédié en 1 clic depuis les motifs de consultation.',
   },
   {
-    q: 'Comment fonctionne l\'essai gratuit ?',
-    a: '14 jours d\'accès complet au plan Pro — sans carte bancaire. À la fin de l\'essai, vous choisissez votre plan ou votre compte est simplement désactivé. Vos données restent exportables pendant 30 jours.',
+    q: 'Comment fonctionne le plan gratuit ?',
+    a: 'Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut 10 patients et 20 sessions par mois. Passez à un plan payant quand vous le souhaitez. Vos données restent exportables à tout moment.',
   },
   {
     q: 'Puis-je annuler à tout moment ?',
@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     q: 'PsyLib propose-t-il la téléconsultation ?',
-    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Scale.',
+    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Clinic.',
   },
   {
     q: 'Comment fonctionne l\'espace patient ?',

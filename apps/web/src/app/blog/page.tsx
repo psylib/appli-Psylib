@@ -163,7 +163,7 @@ export default function BlogPage() {
           Prêt à simplifier la gestion de votre cabinet ?
         </h2>
         <p className="mb-6 text-white/80">
-          14 jours d'essai gratuit sur le plan Pro. Sans carte bancaire.
+          Plan Free gratuit pour toujours. Sans carte bancaire.
         </p>
         <a
           href="https://psylib.eu/login"

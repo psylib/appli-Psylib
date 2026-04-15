@@ -558,7 +558,7 @@ export default function PrivacyPage() {
             href="/login"
             className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
           >
-            Commencer l&apos;essai gratuit
+            Commencer gratuitement
           </Link>
         </section>
 

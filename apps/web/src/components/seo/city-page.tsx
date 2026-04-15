@@ -198,7 +198,7 @@ export function CityPage({ city }: { city: CityConfig }) {
             Vous êtes psychologue à {city.name} ?
           </h2>
           <p className="mb-6 text-white/80">
-            Rejoignez PsyLib pour gérer votre cabinet et être visible en ligne. 14 jours d&apos;essai gratuit.
+            Rejoignez PsyLib pour gérer votre cabinet et être visible en ligne. Gratuit pour toujours.
           </p>
           <Link
             href="/login"

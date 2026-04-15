@@ -354,7 +354,7 @@ export default function ReseauProfessionnelPage() {
             Rejoignez le réseau des psychologues libéraux
           </h2>
           <p className="mb-6 text-white/80">
-            Adressages sécurisés, intervision, profil public. 14 jours d&apos;essai gratuit.
+            Adressages sécurisés, intervision, profil public. Gratuit pour toujours.
           </p>
           <Link
             href="/login"

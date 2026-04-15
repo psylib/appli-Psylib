@@ -156,13 +156,13 @@ export default function RessourcesPage() {
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-white/90">
           Dossiers patients securises, notes cliniques, facturation, agenda — tout en un.
-          Conforme HDS. Essai gratuit 14 jours.
+          Conforme HDS. Commencez gratuitement.
         </p>
         <Link
           href="/login"
           className="mt-6 inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
         >
-          Commencer l&apos;essai gratuit
+          Commencer gratuitement
         </Link>
       </section>
     </main>

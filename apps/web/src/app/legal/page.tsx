@@ -356,13 +356,13 @@ export default function LegalPage() {
           </h2>
           <p className="mb-6 text-white/80">
             Le logiciel de gestion de cabinet concu pour les psychologues liberaux.
-            Conforme HDS, securise, intuitif. Essai gratuit 14 jours.
+            Conforme HDS, securise, intuitif. Commencez gratuitement.
           </p>
           <Link
             href="/login"
             className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
           >
-            Commencer l&apos;essai gratuit
+            Commencer gratuitement
           </Link>
         </section>
 

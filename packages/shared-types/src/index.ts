@@ -476,7 +476,7 @@ export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; se
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.FREE]: 0,
   [SubscriptionPlan.STARTER]: 25,
-  [SubscriptionPlan.PRO]: 50,
+  [SubscriptionPlan.PRO]: 40,
   [SubscriptionPlan.CLINIC]: 79,
 };
 

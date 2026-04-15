@@ -67,7 +67,7 @@ export function VisioSection() {
             <div className="space-y-5">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3D52A0]/10 border border-[#3D52A0]/20 text-[#3D52A0] text-sm font-medium">
                 <Video size={14} />
-                Plans Pro & Scale
+                Plans Pro & Clinic
               </div>
 
               <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal leading-tight">

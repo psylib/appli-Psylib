@@ -6,7 +6,7 @@ export function GET() {
 
 > PsyLib est une plateforme SaaS tout-en-un concue specifiquement pour les psychologues liberaux en France.
 > Site web : https://psylib.eu
-> Essai gratuit : 14 jours sans carte bancaire
+> Plan Free gratuit pour toujours, sans carte bancaire
 
 ## Qu'est-ce que PsyLib ?
 
@@ -60,10 +60,10 @@ PsyLib est un logiciel de gestion de cabinet pour psychologues liberaux, conform
 |------|------|-------------|
 | Free | 0 EUR/mois | 10 patients, 20 seances/mois, notes cliniques |
 | Solo | 25 EUR/mois | 50 patients, seances illimitees, 10 resumes IA |
-| Pro | 50 EUR/mois | Patients illimites, IA illimitee, portail patient, 5 formations |
+| Pro | 40 EUR/mois | Patients illimites, IA illimitee, portail patient, analytics |
 | Clinic | 79 EUR/mois | Tout illimite, multi-praticiens, API |
 
-Plan Free sans limite de duree. Essai gratuit de 14 jours sur les plans payants.
+Plan Free gratuit pour toujours. Sans engagement, sans carte bancaire.
 
 ## Securite et conformite
 

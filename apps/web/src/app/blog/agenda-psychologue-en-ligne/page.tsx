@@ -357,9 +357,9 @@ export default function ArticleAgendaPsychologue() {
                 Peut-on tester PsyLib sans engagement ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Oui. PsyLib propose 14 jours d'essai gratuit sur le plan Pro, sans carte
-                bancaire requise. Toutes les fonctionnalités sont accessibles pendant la
-                période d'essai et les données restent exportables à tout moment.
+                Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte
+                bancaire. 10 patients et 20 sessions par mois inclus.
+                Données exportables à tout moment.
               </p>
             </details>
           </div>

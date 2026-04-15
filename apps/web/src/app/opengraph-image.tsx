@@ -114,7 +114,7 @@ export default function OgImage() {
             color: '#6B7280',
           }}
         >
-          psylib.eu — 14 jours gratuits, sans carte bancaire
+          psylib.eu — Commencez gratuitement, sans carte bancaire
         </p>
       </div>
     ),

@@ -90,7 +90,7 @@ const jsonLd = {
           name: 'Peut-on tester PsyLib sans engagement ?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "Oui. PsyLib propose 14 jours d'essai gratuit sur le plan Pro, sans carte bancaire. Toutes les fonctionnalités sont disponibles et les données restent exportables.",
+            text: "Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte bancaire. 10 patients et 20 sessions par mois inclus. Données exportables à tout moment.",
           },
         },
       ],
@@ -268,7 +268,7 @@ export default function ArticleLogicielGestionCabinet() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium text-[#3D52A0]">PsyLib</td>
-                  <td className="px-4 py-3 font-medium text-[#3D52A0]">Gratuit puis 29 €/mois</td>
+                  <td className="px-4 py-3 font-medium text-[#3D52A0]">Gratuit puis 25 €/mois</td>
                   <td className="px-4 py-3">PHQ-9/GAD-7, templates TCC/ACT, réseau pro, IA HDS, espace patient</td>
                   <td className="px-4 py-3">Solution récente, base en croissance</td>
                 </tr>
@@ -313,7 +313,7 @@ export default function ArticleLogicielGestionCabinet() {
             ))}
           </ul>
           <p className="leading-relaxed">
-            Free gratuit, Solo à 25€/mois, Pro à 50€/mois, Clinic à 79€/mois. Plan gratuit sans limite de durée.
+            Free gratuit, Solo à 25€/mois, Pro à 40€/mois, Clinic à 79€/mois. Plan gratuit sans limite de durée.
           </p>
         </section>
 
@@ -348,7 +348,7 @@ export default function ArticleLogicielGestionCabinet() {
               { q: 'Quelle différence entre Doctolib et un logiciel de gestion ?', a: 'Doctolib gère la prise de rendez-vous et la visibilité. Un logiciel de gestion couvre dossiers patients, notes cliniques, facturation, suivi thérapeutique. Les deux sont complémentaires.' },
               { q: "Coût moyen d'un logiciel pour psychologue libéral ?", a: 'Entre 25 et 200 euros/mois selon les fonctionnalités. Les solutions complètes intègrent notes structurées, outcome tracking et assistant IA.' },
               { q: 'Peut-on utiliser Word ou Excel pour gérer ses patients ?', a: "Techniquement oui, mais stocker des données de santé dans un cloud non certifié HDS (Google Drive, Dropbox) est une violation RGPD et de l'article L.1111-8." },
-              { q: 'Peut-on tester PsyLib sans engagement ?', a: "Oui. 14 jours d'essai gratuit sur le plan Pro, sans carte bancaire. Données exportables à tout moment." },
+              { q: 'Peut-on tester PsyLib sans engagement ?', a: "Oui. Plan Free gratuit pour toujours, sans carte bancaire. Données exportables à tout moment." },
             ].map(({ q, a }) => (
               <details key={q} className="rounded-xl border border-gray-200 p-5">
                 <summary className="cursor-pointer font-semibold">{q}</summary>

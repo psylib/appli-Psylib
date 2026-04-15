@@ -63,11 +63,11 @@ const tarifsJsonLd = {
         {
           "@type": "Offer",
           name: "Pro",
-          price: "50",
+          price: "40",
           priceCurrency: "EUR",
           priceSpecification: {
             "@type": "UnitPriceSpecification",
-            price: "50",
+            price: "40",
             priceCurrency: "EUR",
             billingDuration: "P1M",
           },
@@ -86,7 +86,7 @@ const tarifsJsonLd = {
             billingDuration: "P1M",
           },
           description:
-            "Tout Pro + multi-praticiens, support prioritaire, API, formations illimitees",
+            "Tout Pro + multi-praticiens, support prioritaire, API, analytics avances",
         },
       ],
     },
@@ -103,10 +103,10 @@ const tarifsJsonLd = {
         },
         {
           "@type": "Question",
-          name: "Que se passe-t-il apres les 14 jours d\"essai gratuit ?",
+          name: "Comment fonctionne le plan Free ?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "A la fin de l\"essai gratuit, vous choisissez le plan qui vous convient. Si vous ne souscrivez pas, votre compte passe en mode lecture seule. Aucune donnee n\"est supprimee.",
+            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut 10 patients et 20 sessions par mois. Si vous avez besoin de plus, passez a un plan payant a tout moment.",
           },
         },
         {
@@ -174,13 +174,13 @@ const plans = [
       "Chiffrement HDS AES-256",
       "Support par email",
     ],
-    cta: "Commencer l\"essai gratuit",
+    cta: "Commencer maintenant",
   },
   {
     name: "Pro",
     description: "Pour les praticiens etablis",
-    priceMonthly: 50,
-    priceAnnual: 45,
+    priceMonthly: 40,
+    priceAnnual: 36,
     highlighted: true,
     badge: "Le plus populaire",
     features: [
@@ -188,7 +188,6 @@ const plans = [
       "Sessions illimitees",
       "IA illimitee (resumes, exercices)",
       "Visio illimitee",
-      "5 formations incluses",
       "Facturation PDF automatique",
       "Outcome tracking (PHQ-9, GAD-7)",
       "Espace patient securise",
@@ -196,7 +195,7 @@ const plans = [
       "Analytics de cabinet",
       "Support prioritaire",
     ],
-    cta: "Commencer l\"essai gratuit",
+    cta: "Commencer maintenant",
   },
   {
     name: "Clinic",
@@ -210,7 +209,6 @@ const plans = [
       "Support prioritaire dedie",
       "Analytics avances et rapports",
       "API personnalisee",
-      "Formations illimitees",
       "Onboarding personnalise",
       "SLA garanti 99.9%",
     ],
@@ -230,7 +228,6 @@ const comparisonFeatures = [
   { name: "Facturation PDF", free: false, solo: false, pro: true, clinic: true },
   { name: "Outcome tracking", free: false, solo: false, pro: true, clinic: true },
   { name: "Espace patient", free: false, solo: false, pro: true, clinic: true },
-  { name: "Formations", free: "0", solo: "0", pro: "5", clinic: "Illimite" },
   { name: "Messagerie psy-patient", free: false, solo: false, pro: true, clinic: true },
   { name: "Analytics de cabinet", free: false, solo: false, pro: true, clinic: true },
   { name: "Multi-praticiens", free: false, solo: false, pro: false, clinic: true },
@@ -246,9 +243,9 @@ const faqs = [
       "Oui, vous pouvez passer a un plan superieur ou inferieur a tout moment depuis votre espace de facturation. Le changement prend effet immediatement et le prorata est calcule automatiquement par Stripe.",
   },
   {
-    question: "Que se passe-t-il apres les 14 jours d\"essai gratuit ?",
+    question: "Comment fonctionne le plan gratuit ?",
     answer:
-      "A la fin de votre essai, vous choisissez le plan qui correspond a votre pratique. Si vous ne souscrivez pas, votre compte passe en mode lecture seule : vous conservez l\"acces a vos donnees mais ne pouvez plus creer de sessions ou de patients. Aucune donnee n\"est jamais supprimee.",
+      "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut 10 patients et 20 sessions par mois. Si vous depassez les limites, il vous suffit de passer a un plan payant. Aucune donnee n\"est jamais supprimee.",
   },
   {
     question: "Y a-t-il un engagement de duree ?",
@@ -282,8 +279,8 @@ export default function TarifsPage() {
             Des tarifs simples et transparents
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90">
-            Commencez gratuitement, evoluez quand vous etes pret. Tous les plans
-            payants incluent 14 jours d&apos;essai gratuit.
+            Commencez gratuitement, evoluez quand vous etes pret. Sans engagement,
+            sans carte bancaire.
           </p>
         </div>
       </section>
@@ -392,8 +389,7 @@ export default function TarifsPage() {
         </div>
 
         <p className="mt-8 text-center text-sm text-gray-500">
-          Plan Free sans limite de duree. 14 jours d&apos;essai gratuit sur les plans payants.
-          Sans engagement.
+          Plan Free gratuit pour toujours. Sans engagement, sans carte bancaire.
         </p>
       </section>
 
@@ -558,10 +554,10 @@ export default function TarifsPage() {
       {/* Final CTA */}
       <section className="bg-gradient-to-r from-[#3D52A0] to-[#7B9CDA] py-16 text-center text-white">
         <h2 className="font-playfair text-2xl font-bold md:text-3xl">
-          14 jours d&apos;essai gratuit — sans carte bancaire
+          Commencez gratuitement — sans carte bancaire
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-white/90">
-          Testez toutes les fonctionnalites de PsyLib sans engagement.
+          Creez votre compte en 30 secondes et gerez votre cabinet sans engagement.
           Vos donnees sont securisees et hebergees en France (HDS).
         </p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -569,7 +565,7 @@ export default function TarifsPage() {
             href="/register"
             className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
           >
-            Commencer l&apos;essai gratuit
+            Commencer gratuitement
           </Link>
           <Link
             href="/comparaison"

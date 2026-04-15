@@ -81,7 +81,7 @@ const jsonLd = {
           name: "Combien coûte une alternative à Doctolib pour psychologue ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "Les alternatives sérieuses se situent entre 24€/mois (Mon Cabinet Libéral) et 79€/mois (Maiia Solo). PsyLib propose un plan gratuit, un plan Solo à 25€/mois et un plan Pro à 50€/mois, avec toutes les fonctionnalités cliniques spécifiques aux psychologues incluses. Doctolib commence à 139€/mois pour un praticien solo.",
+            text: "Les alternatives sérieuses se situent entre 24€/mois (Mon Cabinet Libéral) et 79€/mois (Maiia Solo). PsyLib propose un plan gratuit, un plan Solo à 25€/mois et un plan Pro à 40€/mois, avec toutes les fonctionnalités cliniques spécifiques aux psychologues incluses. Doctolib commence à 139€/mois pour un praticien solo.",
           },
         },
         {
@@ -178,7 +178,7 @@ export default function ArticleAlternativeDoctolib() {
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold">5 raisons de chercher une alternative</h2>
           <ol className="space-y-3 list-decimal list-inside">
-            <li className="leading-relaxed"><strong>Réduire la charge fixe.</strong> Passer de 139€ à 0-50€/mois libère 89 à 139€/mois — soit un à deux patients complets par mois.</li>
+            <li className="leading-relaxed"><strong>Réduire la charge fixe.</strong> Passer de 139€ à 0-40€/mois libère 99 à 139€/mois — soit un à deux patients complets par mois.</li>
             <li className="leading-relaxed"><strong>Centraliser agenda + dossier + facturation.</strong> Un seul outil métier au lieu de quatre abonnements disparates.</li>
             <li className="leading-relaxed"><strong>Travailler en conformité HDS de bout en bout.</strong> Notes de séance et dossiers patients chiffrés, pas seulement hébergés sur infrastructure HDS.</li>
             <li className="leading-relaxed"><strong>Accéder aux outils métier spécifiques.</strong> Templates TCC, ACT, psychodynamique, questionnaires validés, espace patient.</li>
@@ -313,7 +313,7 @@ export default function ArticleAlternativeDoctolib() {
             <li className="rounded-xl border border-gray-200 p-4">
               <p className="font-semibold">3. Le périmètre fonctionnel</p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Agenda seul ? Agenda + facturation ? Agenda + dossier + facturation + paiement en ligne + IA ? Clarifiez vos besoins avant de comparer — un outil complet à 50€/mois peut remplacer 3 abonnements à 30€ chacun.
+                Agenda seul ? Agenda + facturation ? Agenda + dossier + facturation + paiement en ligne + IA ? Clarifiez vos besoins avant de comparer — un outil complet à 40€/mois peut remplacer 3 abonnements à 30€ chacun.
               </p>
             </li>
             <li className="rounded-xl border border-gray-200 p-4">
@@ -323,9 +323,9 @@ export default function ArticleAlternativeDoctolib() {
               </p>
             </li>
             <li className="rounded-xl border border-gray-200 p-4">
-              <p className="font-semibold">5. L'essai gratuit sans carte bancaire</p>
+              <p className="font-semibold">5. Un plan gratuit sans carte bancaire</p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Un vrai essai (14-30 jours, sans CB) permet de tester l'outil sur votre pratique réelle. Méfiez-vous des "démos" qui imposent un appel commercial avant tout accès.
+                Un vrai plan gratuit (sans CB, sans limite de durée) permet de tester l&apos;outil sur votre pratique réelle. Méfiez-vous des &quot;démos&quot; qui imposent un appel commercial avant tout accès.
               </p>
             </li>
           </ol>
@@ -369,7 +369,7 @@ export default function ArticleAlternativeDoctolib() {
             ))}
           </ul>
           <p className="leading-relaxed">
-            Tarifs : <strong>Free gratuit</strong>, Solo 25€/mois, Pro 50€/mois, Clinic 79€/mois. Plan gratuit sans limite de duree. Export de toutes vos données à tout moment.
+            Tarifs : <strong>Free gratuit</strong>, Solo 25€/mois, Pro 40€/mois, Clinic 79€/mois. Plan gratuit sans limite de duree. Export de toutes vos données à tout moment.
           </p>
         </section>
 
@@ -392,7 +392,7 @@ export default function ArticleAlternativeDoctolib() {
             Testez PsyLib gratuitement pendant 14 jours. Accès complet, sans carte bancaire, conforme HDS.
           </p>
           <Link href="/beta" className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100">
-            Essai gratuit — commencer maintenant
+            Commencer gratuitement
           </Link>
         </section>
 
@@ -404,7 +404,7 @@ export default function ArticleAlternativeDoctolib() {
               { q: 'Pourquoi chercher une alternative à Doctolib en tant que psychologue libéral ?', a: "Trois raisons : le tarif (139-298€/mois), une couverture limitée à la prise de rendez-vous sans gestion clinique, et un outil pensé pour les médecins généralistes. De nombreux psychologues cherchent une solution complète à un tarif plus adapté." },
               { q: 'Quelle est la meilleure alternative à Doctolib pour un psychologue en 2026 ?', a: "Cela dépend du besoin. Pour un outil vitrine + agenda, Maiia et Docorga sont crédibles. Pour une gestion complète (agenda + notes + facturation + outcome tracking + espace patient), PsyLib est conçu spécifiquement pour les psychologues libéraux." },
               { q: 'Quelle alternative à Doctolib est réellement conforme HDS ?', a: "Doctolib, Maiia, Docorga et PsyLib sont hébergés HDS. Attention : certains logiciels revendiquent HDS alors qu'ils héritent seulement de leur hébergeur, sans chiffrement applicatif des données cliniques." },
-              { q: 'Combien coûte une alternative à Doctolib pour psychologue ?', a: "Entre 24€/mois (Mon Cabinet Libéral) et 79€/mois (Maiia Solo). PsyLib propose un plan gratuit, Solo 25€/mois et Pro 50€/mois avec toutes les fonctionnalités métier psychologie incluses." },
+              { q: 'Combien coûte une alternative à Doctolib pour psychologue ?', a: "Entre 24€/mois (Mon Cabinet Libéral) et 79€/mois (Maiia Solo). PsyLib propose un plan gratuit, Solo 25€/mois et Pro 40€/mois avec toutes les fonctionnalités métier psychologie incluses." },
               { q: 'Peut-on quitter Doctolib et garder ses rendez-vous existants ?', a: "Oui. Exportez vos données via demande RGPD à Doctolib, puis importez-les dans votre nouvelle solution. Prévenez vos patients du changement avec un email informatif." },
             ].map(({ q, a }) => (
               <details key={q} className="rounded-xl border border-gray-200 p-5">

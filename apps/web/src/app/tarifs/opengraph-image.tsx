@@ -30,7 +30,7 @@ export default function OgImage() {
           {[
             { name: 'Free', price: '0€' },
             { name: 'Solo', price: '25€' },
-            { name: 'Pro', price: '50€' },
+            { name: 'Pro', price: '40€' },
             { name: 'Clinic', price: '79€' },
           ].map((plan) => (
             <div
@@ -55,7 +55,7 @@ export default function OgImage() {
           ))}
         </div>
         <p style={{ position: 'absolute', bottom: '32px', fontSize: '14px', color: 'rgba(255,255,255,0.6)' }}>
-          14 jours gratuits — sans carte bancaire
+          Commencez gratuitement — sans carte bancaire
         </p>
       </div>
     ),

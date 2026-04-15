@@ -7,55 +7,65 @@ import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 const plans = [
   {
-    name: 'Starter',
-    monthly: 43,
-    annual: 40,
+    name: 'Free',
+    monthly: 0,
+    annual: 0,
+    description: 'Pour découvrir PsyLib',
+    features: [
+      '10 patients',
+      '20 séances / mois',
+      'Notes cliniques',
+      'Chiffrement HDS',
+    ],
+    cta: 'Commencer gratuitement',
+    highlighted: false,
+  },
+  {
+    name: 'Solo',
+    monthly: 25,
+    annual: 22,
     description: 'Idéal pour démarrer',
     features: [
-      '40 patients',
-      '40 séances / mois',
+      '50 patients',
+      'Séances illimitées',
       '10 résumés IA / mois',
-      'Notes structurées',
+      'Visio sécurisée (5/mois)',
       'Agenda & rappels SMS/email',
-      'Conformité HDS',
+      'Facturation PDF',
     ],
-    cta: 'Démarrer gratuitement',
+    cta: 'Commencer maintenant',
     highlighted: false,
   },
   {
     name: 'Pro',
-    monthly: 69,
-    annual: 65,
+    monthly: 40,
+    annual: 36,
     description: 'Pour une pratique complète',
     features: [
       'Patients illimités',
       'Séances illimitées',
-      '100 résumés IA / mois',
+      'IA illimitée + AI Scribe',
+      'Visio illimitée',
+      'Portail patient',
       'Outcome Tracking (PHQ-9, GAD-7…)',
-      'Réseau Professionnel',
-      'Templates tous orientations',
       'Paiement en ligne Stripe',
-      'Liste d\'attente automatisée',
-      'Facturation PDF',
       'Support prioritaire',
     ],
-    cta: 'Démarrer gratuitement',
+    cta: 'Commencer maintenant',
     highlighted: true,
     badge: 'Recommandé',
   },
   {
-    name: 'Scale',
-    monthly: 119,
-    annual: 110,
+    name: 'Clinic',
+    monthly: 79,
+    annual: 69,
     description: 'Cabinet multi-praticiens',
     features: [
       'Tout le plan Pro',
       'Multi-praticiens illimité',
-      'IA illimitée',
-      'Supervision en ligne',
-      'Analytics cabinet',
+      'Analytics avancées',
+      'Accès API',
       'Onboarding dédié',
-      'SLA 99,9%',
     ],
     cta: 'Contacter l\'équipe',
     highlighted: false,
@@ -78,7 +88,7 @@ export function PricingSection() {
               Simple et transparent
             </h2>
             <p className="text-charcoal-400 text-lg mb-6">
-              Essai gratuit 14 jours — aucune carte bancaire requise.
+              Plan gratuit pour toujours — aucune carte bancaire requise.
             </p>
 
             {/* Toggle */}
@@ -107,7 +117,7 @@ export function PricingSection() {
         </ScrollReveal>
 
         {/* Plans */}
-        <div className="grid md:grid-cols-3 gap-6 items-stretch">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {plans.map(({ name, monthly, annual: annualPrice, description, features, cta, highlighted, badge }, i) => {
             const price = annual ? annualPrice : monthly;
             return (
@@ -134,13 +144,15 @@ export function PricingSection() {
                     </p>
                     <div className="mt-4 flex items-end gap-1">
                       <span className={`font-dm-mono text-4xl font-bold ${highlighted ? 'text-white' : 'text-charcoal'}`}>
-                        {price}€
+                        {price === 0 ? 'Gratuit' : `${price}€`}
                       </span>
-                      <span className={`text-sm mb-1 ${highlighted ? 'text-charcoal-200' : 'text-charcoal-400'}`}>
-                        /mois
-                      </span>
+                      {price > 0 && (
+                        <span className={`text-sm mb-1 ${highlighted ? 'text-charcoal-200' : 'text-charcoal-400'}`}>
+                          /mois
+                        </span>
+                      )}
                     </div>
-                    {annual && (
+                    {annual && price > 0 && (
                       <p className={`text-xs mt-1 ${highlighted ? 'text-charcoal-200' : 'text-charcoal-400'}`}>
                         Facturé {price * 12}€ / an
                       </p>

@@ -179,7 +179,7 @@ export default function PagePsychologueAutoentrepreneur() {
 
         <section className="mb-10 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">Gérez votre comptabilité libérale avec PsyLib</h2>
-          <p className="mb-6 text-white/80">Facturation, suivi des recettes, notes d&apos;honoraires conformes. 14 jours gratuits.</p>
+          <p className="mb-6 text-white/80">Facturation, suivi des recettes, notes d&apos;honoraires conformes. Commencez gratuitement.</p>
           <Link href="/login" className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100">
             Essayer PsyLib gratuitement
           </Link>
