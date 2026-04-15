@@ -466,11 +466,11 @@ export interface HealthCheckResponse {
 }
 
 // Plan limits
-export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null }> = {
-  [SubscriptionPlan.FREE]: { patients: 10, sessions: 20, aiSummaries: 0, videoConsultations: 0, courses: 0 },
-  [SubscriptionPlan.STARTER]: { patients: 50, sessions: null, aiSummaries: 10, videoConsultations: 5, courses: 0 },
-  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5 },  // null/-1 = unlimited
-  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null }, // -1 / null = illimité
+export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null; expenses: number | null }> = {
+  [SubscriptionPlan.FREE]: { patients: 10, sessions: 20, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30 },
+  [SubscriptionPlan.STARTER]: { patients: 50, sessions: null, aiSummaries: 10, videoConsultations: 5, courses: 0, expenses: null },
+  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null },  // null/-1 = unlimited
+  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null }, // -1 / null = illimité
 };
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
@@ -577,3 +577,178 @@ export interface PreferredSlots {
 
 export const MON_SOUTIEN_PSY_RATE = 50.00;
 export const MON_SOUTIEN_PSY_MAX_SESSIONS = 12;
+
+// =============================================================================
+// Accounting Module
+// =============================================================================
+
+export enum ExpenseCategory {
+  RENT = 'rent',
+  INSURANCE = 'insurance',
+  EQUIPMENT = 'equipment',
+  IT_SOFTWARE = 'it_software',
+  PHONE_INTERNET = 'phone_internet',
+  TRAINING = 'training',
+  SUPERVISION = 'supervision',
+  PROFESSIONAL_FEES = 'professional_fees',
+  TRANSPORT = 'transport',
+  OFFICE_SUPPLIES = 'office_supplies',
+  TESTS_TOOLS = 'tests_tools',
+  BANK_FEES = 'bank_fees',
+  ACCOUNTING = 'accounting',
+  CLEANING = 'cleaning',
+  OTHER = 'other',
+}
+
+export const EXPENSE_CATEGORY_LABELS: Record<ExpenseCategory, string> = {
+  [ExpenseCategory.RENT]: 'Loyer et charges',
+  [ExpenseCategory.INSURANCE]: 'Assurances',
+  [ExpenseCategory.EQUIPMENT]: 'Matériel professionnel',
+  [ExpenseCategory.IT_SOFTWARE]: 'Informatique et logiciels',
+  [ExpenseCategory.PHONE_INTERNET]: 'Téléphone et Internet',
+  [ExpenseCategory.TRAINING]: 'Formation continue',
+  [ExpenseCategory.SUPERVISION]: 'Supervision',
+  [ExpenseCategory.PROFESSIONAL_FEES]: 'Cotisations professionnelles',
+  [ExpenseCategory.TRANSPORT]: 'Déplacements',
+  [ExpenseCategory.OFFICE_SUPPLIES]: 'Fournitures de bureau',
+  [ExpenseCategory.TESTS_TOOLS]: 'Tests et outils',
+  [ExpenseCategory.BANK_FEES]: 'Frais bancaires',
+  [ExpenseCategory.ACCOUNTING]: 'Comptabilité / AGA',
+  [ExpenseCategory.CLEANING]: 'Entretien locaux',
+  [ExpenseCategory.OTHER]: 'Autres charges',
+};
+
+export enum ExpensePaymentMethod {
+  CASH = 'cash',
+  CHECK = 'check',
+  CARD = 'card',
+  TRANSFER = 'transfer',
+  DIRECT_DEBIT = 'direct_debit',
+  STRIPE = 'stripe',
+  OTHER = 'other_pm',
+}
+
+export const EXPENSE_PAYMENT_METHOD_LABELS: Record<ExpensePaymentMethod, string> = {
+  [ExpensePaymentMethod.CASH]: 'Espèces',
+  [ExpensePaymentMethod.CHECK]: 'Chèque',
+  [ExpensePaymentMethod.CARD]: 'Carte bancaire',
+  [ExpensePaymentMethod.TRANSFER]: 'Virement',
+  [ExpensePaymentMethod.DIRECT_DEBIT]: 'Prélèvement',
+  [ExpensePaymentMethod.STRIPE]: 'Paiement en ligne',
+  [ExpensePaymentMethod.OTHER]: 'Autre',
+};
+
+export enum RecurringFrequency {
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  YEARLY = 'yearly',
+}
+
+export const RECURRING_FREQUENCY_LABELS: Record<RecurringFrequency, string> = {
+  [RecurringFrequency.MONTHLY]: 'Mensuel',
+  [RecurringFrequency.QUARTERLY]: 'Trimestriel',
+  [RecurringFrequency.YEARLY]: 'Annuel',
+};
+
+export enum AccountingEntryType {
+  INCOME = 'income',
+  EXPENSE = 'expense',
+}
+
+// Accounting interfaces
+export interface ExpenseRecord {
+  id: string;
+  date: string;
+  label: string;
+  amount: number;
+  amountHt: number | null;
+  vatRate: number | null;
+  category: ExpenseCategory;
+  subcategory: string | null;
+  paymentMethod: ExpensePaymentMethod;
+  supplier: string | null;
+  receiptUrl: string | null;
+  isDeductible: boolean;
+  notes: string | null;
+  recurringExpenseId: string | null;
+  createdAt: string;
+}
+
+export interface RecurringExpenseRecord {
+  id: string;
+  label: string;
+  amount: number;
+  category: ExpenseCategory;
+  paymentMethod: ExpensePaymentMethod;
+  supplier: string | null;
+  frequency: RecurringFrequency;
+  dayOfMonth: number;
+  startDate: string;
+  endDate: string | null;
+  isActive: boolean;
+  lastGeneratedAt: string | null;
+}
+
+export interface AccountingEntryRecord {
+  id: string;
+  date: string;
+  entryType: AccountingEntryType;
+  label: string;
+  debit: number;
+  credit: number;
+  category: string;
+  paymentMethod: string | null;
+  counterpart: string | null;
+  pieceRef: string | null;
+  ecritureNum: number | null;
+  fiscalYear: number;
+}
+
+export interface AccountingSummary {
+  period: { from: string; to: string };
+  income: { total: number; count: number };
+  expenses: { total: number; count: number; byCategory: Record<string, number> };
+  netResult: number;
+}
+
+export interface AccountingDashboard {
+  monthlyPnL: Array<{ month: string; income: number; expenses: number; net: number }>;
+  expensesByCategory: Array<{ category: string; label: string; amount: number; percentage: number }>;
+  yearToDate: { income: number; expenses: number; net: number };
+  previousYear: { income: number; expenses: number; net: number };
+}
+
+export interface TaxPrep2035 {
+  year: number;
+  honoraires: number;
+  achats: number;
+  loyersCharges: number;
+  impotsTaxes: number;
+  csgDeductible: number;
+  autresFrais: number;
+  transports: number;
+  chargesSociales: number;
+  fournitures: number;
+  fraisActes: number;
+  autresDepenses: number;
+  totalDepenses: number;
+  beneficeNet: number;
+  disclaimer: string;
+}
+
+export interface SocialChargesEstimate {
+  urssaf: {
+    maladie: number;
+    allocationsFamiliales: number;
+    csgCrds: number;
+    cfp: number;
+  };
+  cipav: {
+    retraiteBase: number;
+    retraiteComplementaire: number;
+    invaliditeDeces: number;
+  };
+  total: number;
+  monthlyProvision: number;
+  disclaimer: string;
+}
