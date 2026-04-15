@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { HealthModule } from './health/health.module';
@@ -36,6 +37,7 @@ import { MonSoutienPsyModule } from './mon-soutien-psy/mon-soutien-psy.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
 import { ReminderModule } from './reminder/reminder.module';
 import { VideoModule } from './video/video.module';
+import { AccountingModule } from './accounting/accounting.module';
 
 @Module({
   imports: [
@@ -64,6 +66,9 @@ import { VideoModule } from './video/video.module';
 
     // Scheduler (cron jobs)
     ScheduleModule.forRoot(),
+
+    // Event emitter (domain events between modules)
+    EventEmitterModule.forRoot(),
 
     // Infrastructure
     CommonModule,
@@ -100,6 +105,7 @@ import { VideoModule } from './video/video.module';
     WaitlistModule,
     ReminderModule,
     VideoModule,
+    AccountingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
