@@ -39,6 +39,7 @@ import { ReminderModule } from './reminder/reminder.module';
 import { VideoModule } from './video/video.module';
 import { AccountingModule } from './accounting/accounting.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { ExpensesModule } from './expenses/expenses.module';
     VideoModule,
     AccountingModule,
     ExpensesModule,
+    RecurringExpensesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
