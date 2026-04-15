@@ -55,7 +55,7 @@ export class AccountingService {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  private async resolvePsychologistId(userId: string): Promise<string> {
+  async resolvePsychologistId(userId: string): Promise<string> {
     const psy = await this.prisma.psychologist.findUnique({
       where: { userId },
       select: { id: true },
