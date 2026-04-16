@@ -271,9 +271,9 @@ export default function TermsPage() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Tout nouvel utilisateur beneficie d&apos;un plan Free gratuit pour toujours,
-            sans engagement et sans carte bancaire. Ce plan inclut 10 patients et 20
-            sessions par mois. Pour acceder aux fonctionnalites avancees (IA, visio,
-            patients illimites), l&apos;utilisateur peut souscrire un abonnement payant a tout moment.
+            sans engagement et sans carte bancaire. Ce plan inclut patients et sessions
+            illimites. Pour acceder aux fonctionnalites avancees (IA, visio,
+            portail patient), l&apos;utilisateur peut souscrire un abonnement payant a tout moment.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -292,12 +292,12 @@ export default function TermsPage() {
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Free</td>
                   <td className="py-3 pr-4">0 euros</td>
-                  <td className="py-3">10 patients, 20 seances/mois, notes cliniques</td>
+                  <td className="py-3">Patients illimites, sessions illimitees, notes cliniques</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Solo</td>
                   <td className="py-3 pr-4">25 euros HT</td>
-                  <td className="py-3">50 patients, seances illimitees, 10 resumes IA</td>
+                  <td className="py-3">Patients illimites, sessions illimitees, 10 resumes IA, visio illimitee</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Pro</td>

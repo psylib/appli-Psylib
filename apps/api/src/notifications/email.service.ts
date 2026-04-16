@@ -1182,12 +1182,12 @@ export class EmailService {
         <span style="font-size:24px;">&#128680;</span>
         <div>
           <strong>Votre essai gratuit expire aujourd'hui.</strong>
-          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan Free (10 patients max, sans IA).</p>
+          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan Free (patients et sessions illimit&eacute;s, sans IA ni visio).</p>
         </div>
       </div>
       <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>
       <div class="info-box">
-        <p style="margin:0;font-size:15px;"><strong>Solo</strong> &mdash; 25&euro;/mois (50 patients, IA incluse)<br/>
+        <p style="margin:0;font-size:15px;"><strong>Solo</strong> &mdash; 25&euro;/mois (patients illimit&eacute;s, IA + visio incluses)<br/>
         <strong>Pro</strong> &mdash; 50&euro;/mois (illimit&eacute;, formations)<br/>
         <strong>Clinic</strong> &mdash; 79&euro;/mois (multi-praticiens)</p>
       </div>

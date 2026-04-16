@@ -90,7 +90,7 @@ const jsonLd = {
           name: 'Peut-on tester PsyLib sans engagement ?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte bancaire. 10 patients et 20 sessions par mois inclus. Données exportables à tout moment.",
+            text: "Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte bancaire. Patients et sessions illimites. Données exportables à tout moment.",
           },
         },
       ],

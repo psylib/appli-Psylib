@@ -358,7 +358,7 @@ export default function ArticleAgendaPsychologue() {
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
                 Oui. PsyLib propose un plan Free gratuit pour toujours, sans carte
-                bancaire. 10 patients et 20 sessions par mois inclus.
+                bancaire. Patients et sessions illimités.
                 Données exportables à tout moment.
               </p>
             </details>
