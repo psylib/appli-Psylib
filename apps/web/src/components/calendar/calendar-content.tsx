@@ -45,11 +45,6 @@ interface Appointment {
   } | null;
 }
 
-interface AppointmentsResponse {
-  data: Appointment[];
-  total: number;
-}
-
 const STATUS_CONFIG = {
   scheduled: { label: 'Planifié', color: 'bg-blue-100 text-blue-700', icon: Clock },
   confirmed: { label: 'Confirmé', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
@@ -98,16 +93,16 @@ export function CalendarContent() {
   const { year, month } = currentMonth;
 
   // Fetch appointments for the current month
-  const startDate = new Date(year, month, 1).toISOString();
-  const endDate = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+  const from = new Date(year, month, 1).toISOString();
+  const to = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
 
   const queryClient = useQueryClient();
 
   const { data: appointmentsData, isLoading } = useQuery({
     queryKey: ['appointments', year, month],
     queryFn: () =>
-      apiClient.get<AppointmentsResponse>(
-        `/appointments?startDate=${startDate}&endDate=${endDate}&limit=200`,
+      apiClient.get<Appointment[]>(
+        `/appointments?from=${from}&to=${to}&limit=100`,
         session?.accessToken,
       ),
     enabled: !!session?.accessToken,
@@ -145,7 +140,7 @@ export function CalendarContent() {
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  const appointments = appointmentsData?.data ?? [];
+  const appointments = appointmentsData ?? [];
 
   // Group appointments by date
   const appointmentsByDate = new Map<string, Appointment[]>();
