@@ -68,7 +68,7 @@ export default function OgImage() {
             fontWeight: 500,
           }}
         >
-          L&apos;atelier numérique du psychologue libéral
+          L&apos;atelier numérique du psy libéral
         </p>
 
         {/* Features */}

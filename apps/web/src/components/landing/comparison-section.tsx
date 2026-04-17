@@ -19,6 +19,7 @@ const rows: { feature: string; psylib: CellValue; generic: CellValue; files: Cel
   { feature: 'Visio-consultation intégrée HDS', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Espace patient (humeur, journal, exercices)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Factures PDF automatiques', psylib: 'yes', generic: 'partial', files: 'no' },
+  { feature: 'Comptabilité intégrée (recettes, dépenses, FEC, 2035)', psylib: 'yes', generic: 'no', files: 'no' },
 ];
 
 function Cell({ value, highlight }: { value: CellValue; highlight?: boolean }) {

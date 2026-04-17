@@ -119,13 +119,13 @@ export function HeroSection() {
               {/* H1 */}
               <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight tracking-tight">
                 L'atelier numérique du{' '}
-                <em className="not-italic text-sage">psychologue libéral</em>
+                <em className="not-italic text-sage">psy libéral</em>
               </h1>
 
               {/* Subtitle */}
               <p className="text-lg md:text-xl text-charcoal-400 leading-relaxed max-w-lg">
                 Gérez votre cabinet sans la paperasse.{' '}
-                <strong className="text-charcoal font-medium">Notes, patients, facturation, IA — tout en un, conforme HDS.</strong>
+                <strong className="text-charcoal font-medium">Notes, patients, facturation, comptabilité, IA — tout en un, conforme HDS.</strong>
               </p>
 
               {/* CTAs */}

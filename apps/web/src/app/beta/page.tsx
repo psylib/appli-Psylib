@@ -388,7 +388,7 @@ export default function BetaPage() {
         <footer className="bg-white border-t border-cream-200 py-8">
           <div className="max-w-4xl mx-auto px-6 text-center space-y-2">
             <p className="text-sm text-charcoal-400">
-              PsyLib — L'atelier numérique du psychologue libéral
+              PsyLib — L'atelier numérique du psy libéral
             </p>
             <div className="flex items-center justify-center gap-4 text-xs text-charcoal-300">
               <Link href="/privacy" className="hover:text-charcoal-500 transition-colors">Confidentialité</Link>

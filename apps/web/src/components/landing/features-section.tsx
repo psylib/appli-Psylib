@@ -6,6 +6,7 @@ import {
   CreditCard,
   Shield,
   Bell,
+  Calculator,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
@@ -59,6 +60,14 @@ const features: {
     description: 'Nouveau RDV, paiement reçu, rappels patient, alertes humeur. Tout arrive instantanément dans votre dashboard — sans rafraîchir.',
     color: 'text-terracotta bg-terracotta-50',
     border: 'border-terracotta-200',
+  },
+  {
+    icon: Calculator,
+    title: 'Comptabilité intégrée',
+    description: 'Suivi recettes & dépenses, charges sociales estimées, export FEC pour votre comptable, préparation 2035. Tout inclus, même en plan gratuit.',
+    color: 'text-sage bg-sage-50',
+    border: 'border-sage-200',
+    badge: 'Inclus tous plans',
   },
   {
     icon: Shield,
