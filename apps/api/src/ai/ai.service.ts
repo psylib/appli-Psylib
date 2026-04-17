@@ -76,7 +76,7 @@ export class AiService {
     this.aiApiKey = this.config.get<string>('OPENROUTER_API_KEY') ?? null;
     this.aiBaseUrl = this.config.get<string>('OPENROUTER_BASE_URL') ?? 'https://openrouter.ai/api/v1';
     this.modelMain = this.config.get<string>('OPENROUTER_MODEL_MAIN') ?? 'anthropic/claude-sonnet-4';
-    this.modelFast = this.config.get<string>('OPENROUTER_MODEL_FAST') ?? 'anthropic/claude-haiku-4';
+    this.modelFast = this.config.get<string>('OPENROUTER_MODEL_FAST') ?? 'anthropic/claude-haiku-4.5';
     if (!this.aiApiKey) {
       this.logger.warn('Aucune cle IA configuree (OPENROUTER_API_KEY)');
     }

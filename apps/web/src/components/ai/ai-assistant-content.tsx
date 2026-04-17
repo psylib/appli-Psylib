@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -17,12 +17,16 @@ import {
   BookmarkCheck,
   Library,
   Trash2,
+  Send,
+  Search,
+  UserCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api/client';
 import { cn, formatDateShort } from '@/lib/utils';
 import { billingApi } from '@/lib/api/billing';
+import { patientsApi } from '@/lib/api/patients';
 import { UsageIndicator } from '@/components/shared/usage-indicator';
 
 type ContentType = 'linkedin' | 'newsletter' | 'blog';
@@ -115,6 +119,27 @@ export function AiAssistantContent() {
   const [libraryContents, setLibraryContents] = useState<SavedContent[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Assignation exercice → patient
+  const [selectedPatientId, setSelectedPatientId] = useState('');
+  const [patientSearch, setPatientSearch] = useState('');
+  const [assigning, setAssigning] = useState(false);
+  const [assigned, setAssigned] = useState(false);
+
+  const { data: patientsData } = useQuery({
+    queryKey: ['patients', 'active-for-exercise'],
+    queryFn: () => patientsApi.list({ limit: 200, status: 'active' }, session?.accessToken ?? ''),
+    enabled: !!session?.accessToken,
+    staleTime: 120_000,
+  });
+
+  const patients = patientsData?.data ?? [];
+
+  const filteredPatients = useMemo(() => {
+    if (!patientSearch.trim()) return patients;
+    const q = patientSearch.toLowerCase();
+    return patients.filter((p) => p.name.toLowerCase().includes(q));
+  }, [patients, patientSearch]);
 
   // Copier
   const [copiedExercise, setCopiedExercise] = useState(false);
@@ -282,6 +307,42 @@ export function AiAssistantContent() {
     await navigator.clipboard.writeText(content);
     setCopiedLibraryId(id);
     setTimeout(() => setCopiedLibraryId(null), 2000);
+  };
+
+  const handleAssignExercise = async () => {
+    if (!session?.accessToken || !generatedExercise || !selectedPatientId) return;
+    setAssigning(true);
+    setExerciseError('');
+    try {
+      const description = [
+        generatedExercise.description,
+        '',
+        'Instructions :',
+        ...generatedExercise.instructions.map((s, i) => `${i + 1}. ${s}`),
+        '',
+        `Durée : ${generatedExercise.duration}`,
+        `Fréquence : ${generatedExercise.frequency}`,
+      ].join('\n');
+
+      await patientsApi.createExercise(
+        selectedPatientId,
+        {
+          title: generatedExercise.title,
+          description,
+          createdByAi: true,
+        },
+        session.accessToken,
+      );
+      setAssigned(true);
+      setTimeout(() => {
+        setAssigned(false);
+        setSelectedPatientId('');
+      }, 3000);
+    } catch (err) {
+      setExerciseError(err instanceof Error ? err.message : 'Erreur lors de l\'assignation');
+    } finally {
+      setAssigning(false);
+    }
   };
 
   const formatDate = (iso: string) => formatDateShort(iso);
@@ -467,6 +528,85 @@ export function AiAssistantContent() {
                 {generatedExercise.disclaimer && (
                   <p className="text-xs text-amber-700 bg-amber-50 rounded p-2">{generatedExercise.disclaimer}</p>
                 )}
+
+                {/* Assigner au patient */}
+                <div className="border-t border-accent/20 pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                    Assigner à un patient
+                  </p>
+
+                  {assigned ? (
+                    <div className="flex items-center gap-2 text-sm text-accent font-medium">
+                      <UserCheck size={16} />
+                      Exercice assigné avec succès !
+                    </div>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                          type="text"
+                          placeholder="Rechercher un patient..."
+                          value={patientSearch}
+                          onChange={(e) => {
+                            setPatientSearch(e.target.value);
+                            if (selectedPatientId) setSelectedPatientId('');
+                          }}
+                          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+                      </div>
+
+                      {selectedPatientId ? (
+                        <div className="flex items-center justify-between rounded-lg bg-primary/5 border border-primary/20 px-3 py-2">
+                          <span className="text-sm font-medium text-foreground">
+                            {patients.find((p) => p.id === selectedPatientId)?.name}
+                          </span>
+                          <button
+                            onClick={() => { setSelectedPatientId(''); setPatientSearch(''); }}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Changer
+                          </button>
+                        </div>
+                      ) : patientSearch.trim() && (
+                        <div className="max-h-36 overflow-y-auto rounded-lg border border-border bg-white divide-y divide-border">
+                          {filteredPatients.length === 0 ? (
+                            <p className="px-3 py-2 text-xs text-muted-foreground">Aucun patient trouvé</p>
+                          ) : (
+                            filteredPatients.slice(0, 8).map((p) => (
+                              <button
+                                key={p.id}
+                                onClick={() => { setSelectedPatientId(p.id); setPatientSearch(p.name); }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-surface transition-colors"
+                              >
+                                {p.name}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+
+                      <Button
+                        onClick={() => void handleAssignExercise()}
+                        disabled={!selectedPatientId || assigning}
+                        variant="default"
+                        className="w-full"
+                      >
+                        {assigning ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Assignation...
+                          </>
+                        ) : (
+                          <>
+                            <Send size={16} />
+                            Assigner l&apos;exercice
+                          </>
+                        )}
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
