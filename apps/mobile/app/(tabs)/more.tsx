@@ -23,6 +23,8 @@ export default function MoreScreen() {
   const menuItems: MenuItem[] = [
     { icon: '🔔', label: 'Notifications', route: '/notifications', badge: unreadCount },
     { icon: '💬', label: 'Messages', route: '/messages', color: Colors.accent },
+    { icon: '📒', label: 'Comptabilite', route: '/accounting', color: Colors.success },
+    { icon: '📹', label: 'Visio', route: '/video', color: Colors.primary },
     { icon: '📊', label: 'Analytics', route: '/analytics', color: Colors.warm },
     { icon: '🧾', label: 'Factures', route: '/invoices', color: Colors.primary },
     { icon: '🤖', label: 'Assistant IA', route: '/ai-summary', color: Colors.accent },

@@ -88,6 +88,13 @@ export default function RootLayout() {
               <Stack.Screen name="ai-summary" options={{ title: 'Resume IA' }} />
               <Stack.Screen name="ai-exercise" options={{ title: 'Exercice IA' }} />
               <Stack.Screen
+                name="accounting/index"
+                options={{ title: 'Comptabilite', headerBackTitle: 'Retour' }}
+              />
+              <Stack.Screen name="accounting/expenses" options={{ title: 'Depenses' }} />
+              <Stack.Screen name="accounting/reports" options={{ title: 'Rapports' }} />
+              <Stack.Screen name="video" options={{ title: 'Visio' }} />
+              <Stack.Screen
                 name="settings/index"
                 options={{ title: 'Parametres', headerBackTitle: 'Retour' }}
               />

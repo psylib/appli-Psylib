@@ -1,8 +1,17 @@
 /**
- * Settings — Profile, subscription, logout
+ * Settings — Profile, subscription with plan details, logout
  */
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Switch, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Switch,
+  StyleSheet,
+  Alert,
+  Linking,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
@@ -18,11 +27,42 @@ interface SettingsItem {
   danger?: boolean;
 }
 
+// Plan configuration with colors and limits
+const PLAN_CONFIG: Record<string, { label: string; color: string; bg: string; limits: string }> = {
+  free: {
+    label: 'Free',
+    color: Colors.muted,
+    bg: `${Colors.muted}15`,
+    limits: 'Patients et seances illimites · Pas d\'IA · Pas de visio',
+  },
+  solo: {
+    label: 'Solo',
+    color: Colors.primary,
+    bg: `${Colors.primary}15`,
+    limits: '10 resumes IA/mois · Visio illimitee · Comptabilite',
+  },
+  pro: {
+    label: 'Pro',
+    color: Colors.accent,
+    bg: `${Colors.accent}15`,
+    limits: 'IA illimitee · AI Scribe audio · Portail patient · Comptabilite',
+  },
+  clinic: {
+    label: 'Clinic',
+    color: Colors.warm,
+    bg: `${Colors.warm}15`,
+    limits: 'Multi-praticiens · Analytics avancees · API · Tout illimite',
+  },
+};
+
 export default function SettingsScreen() {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, getValidToken } = useAuth();
   const { name, email, plan } = useAuthStore();
   const biometrics = useBiometrics();
+
+  const planKey = (plan ?? 'free').toLowerCase();
+  const planConfig = PLAN_CONFIG[planKey] ?? PLAN_CONFIG['free']!;
 
   const handleLogout = () => {
     Alert.alert('Deconnexion', 'Voulez-vous vraiment vous deconnecter ?', [
@@ -35,12 +75,23 @@ export default function SettingsScreen() {
     ]);
   };
 
+  const handleManageSubscription = async () => {
+    try {
+      const token = await getValidToken();
+      if (!token) return;
+      // Open Stripe portal in browser
+      await Linking.openURL('https://app.psylib.eu/dashboard/settings/billing');
+    } catch {
+      Alert.alert('Erreur', 'Impossible d\'ouvrir la gestion d\'abonnement');
+    }
+  };
+
   const items: SettingsItem[] = [
     { icon: '👤', label: 'Mon profil', onPress: () => router.push('/settings/profile') },
-    { icon: '💳', label: 'Abonnement', onPress: () => {} },
+    { icon: '💳', label: 'Gerer mon abonnement', onPress: handleManageSubscription },
     { icon: '🔔', label: 'Notifications', onPress: () => {} },
     { icon: '🔒', label: 'Securite', onPress: () => {} },
-    { icon: '📄', label: 'Mentions legales', onPress: () => {} },
+    { icon: '📄', label: 'Mentions legales', onPress: () => void Linking.openURL('https://psylib.eu/legal') },
     { icon: '🚪', label: 'Deconnexion', onPress: handleLogout, danger: true },
   ];
 
@@ -57,10 +108,26 @@ export default function SettingsScreen() {
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{name ?? 'Psychologue'}</Text>
             <Text style={styles.profileEmail}>{email ?? ''}</Text>
-            <View style={styles.planBadge}>
-              <Text style={styles.planText}>{plan ?? 'free'}</Text>
+            <View style={[styles.planBadge, { backgroundColor: planConfig.bg }]}>
+              <Text style={[styles.planText, { color: planConfig.color }]}>{planConfig.label}</Text>
             </View>
           </View>
+        </Card>
+
+        {/* Plan details */}
+        <Card style={styles.planCard}>
+          <View style={styles.planHeader}>
+            <Text style={styles.planTitle}>Plan {planConfig.label}</Text>
+            {planKey === 'free' && (
+              <TouchableOpacity
+                style={styles.upgradeBtn}
+                onPress={handleManageSubscription}
+              >
+                <Text style={styles.upgradeBtnText}>Upgrader</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <Text style={styles.planLimits}>{planConfig.limits}</Text>
         </Card>
 
         {/* Settings list */}
@@ -109,6 +176,8 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.bg },
   scroll: { flex: 1 },
   content: { padding: 20, gap: 20, paddingBottom: 100 },
+
+  // Profile
   profileCard: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 20 },
   avatar: {
     width: 56, height: 56, borderRadius: 28,
@@ -119,10 +188,22 @@ const styles = StyleSheet.create({
   profileName: { fontSize: 18, fontFamily: 'DMSans_700Bold', color: Colors.text },
   profileEmail: { fontSize: 13, color: Colors.muted },
   planBadge: {
-    alignSelf: 'flex-start', backgroundColor: `${Colors.accent}15`,
+    alignSelf: 'flex-start',
     paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12, marginTop: 4,
   },
-  planText: { fontSize: 12, fontFamily: 'DMSans_500Medium', color: Colors.accent, textTransform: 'capitalize' },
+  planText: { fontSize: 12, fontFamily: 'DMSans_600SemiBold', textTransform: 'capitalize' },
+
+  // Plan details
+  planCard: { padding: 16, gap: 8 },
+  planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  planTitle: { fontSize: 15, fontFamily: 'DMSans_600SemiBold', color: Colors.text },
+  planLimits: { fontSize: 13, color: Colors.muted, lineHeight: 18 },
+  upgradeBtn: {
+    backgroundColor: Colors.primary, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16,
+  },
+  upgradeBtnText: { color: '#FFF', fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
+
+  // List
   list: {
     backgroundColor: Colors.surfaceElevated, borderRadius: 14,
     borderWidth: 1, borderColor: Colors.border, overflow: 'hidden',
