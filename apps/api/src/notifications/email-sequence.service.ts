@@ -349,29 +349,60 @@ export class EmailSequenceService {
       include: {
         patient: { select: { name: true, email: true } },
         psychologist: { select: { name: true } },
+        participants: {
+          where: { videoLinkSentAt: null },
+          include: { patient: { select: { name: true, email: true } } },
+        },
       },
     });
 
     for (const appt of appointments) {
-      if (!appt.patient.email) continue;
-      const joinUrl = `${this.frontendUrl}/patient-portal/video/${appt.videoJoinToken}`;
+      // Send to primary patient
+      if (appt.patient.email) {
+        const joinUrl = `${this.frontendUrl}/patient-portal/video/${appt.videoJoinToken}`;
 
-      try {
-        await this.email.sendVideoConsultationLink(appt.patient.email, {
-          patientName: appt.patient.name,
-          psychologistName: appt.psychologist.name,
-          scheduledAt: appt.scheduledAt,
-          joinUrl,
-        });
+        try {
+          await this.email.sendVideoConsultationLink(appt.patient.email, {
+            patientName: appt.patient.name,
+            psychologistName: appt.psychologist.name,
+            scheduledAt: appt.scheduledAt,
+            joinUrl,
+          });
 
-        await this.prisma.appointment.update({
-          where: { id: appt.id },
-          data: { videoLinkSentAt: new Date() },
-        });
+          await this.prisma.appointment.update({
+            where: { id: appt.id },
+            data: { videoLinkSentAt: new Date() },
+          });
 
-        this.logger.log(`[VideoLink] Lien visio envoyé → ${appt.patient.email} (RDV ${appt.id})`);
-      } catch (err) {
-        this.logger.error(`[VideoLink] Échec envoi lien visio ${appt.id}: ${(err as Error).message}`);
+          this.logger.log(`[VideoLink] Lien visio envoyé → ${appt.patient.email} (RDV ${appt.id})`);
+        } catch (err) {
+          this.logger.error(`[VideoLink] Échec envoi lien visio ${appt.id}: ${(err as Error).message}`);
+        }
+      }
+
+      // Send to additional participants
+      for (const participant of appt.participants) {
+        if (participant.patient.email && participant.videoJoinToken) {
+          const participantJoinUrl = `${this.frontendUrl}/patient-portal/video/${participant.videoJoinToken}`;
+
+          try {
+            await this.email.sendVideoConsultationLink(participant.patient.email, {
+              patientName: participant.patient.name,
+              psychologistName: appt.psychologist.name,
+              scheduledAt: appt.scheduledAt,
+              joinUrl: participantJoinUrl,
+            });
+
+            await this.prisma.appointmentParticipant.update({
+              where: { id: participant.id },
+              data: { videoLinkSentAt: new Date() },
+            });
+
+            this.logger.log(`[VideoLink] Lien visio participant envoyé → ${participant.patient.email} (RDV ${appt.id})`);
+          } catch (err) {
+            this.logger.error(`[VideoLink] Échec envoi lien visio participant ${participant.id}: ${(err as Error).message}`);
+          }
+        }
       }
     }
   }
