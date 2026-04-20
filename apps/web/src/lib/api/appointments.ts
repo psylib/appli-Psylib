@@ -23,9 +23,20 @@ export interface CreateAppointmentData {
   paymentAmount?: number;
 }
 
+export interface CreateGroupAppointmentData {
+  patientId: string;
+  participantIds: string[];
+  scheduledAt: string;
+  duration: number;
+  consultationTypeId?: string;
+}
+
 export const appointmentsApi = {
   create: (data: CreateAppointmentData, token: string) =>
     apiClient.post<{ id: string; status: string }>('/appointments', data, token),
+
+  createGroup: (data: CreateGroupAppointmentData, token: string) =>
+    apiClient.post<{ id: string; status: string; participantCount: number }>('/appointments/group', data, token),
 
   getPending: (token: string) =>
     apiClient.get<PendingAppointment[]>('/appointments/pending', token),

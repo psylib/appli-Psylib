@@ -12,6 +12,7 @@ import { appointmentsApi } from '@/lib/api/appointments';
 import { patientsApi } from '@/lib/api/patients';
 import { psychologistApi } from '@/lib/api/psychologist';
 import { cn } from '@/lib/utils';
+import { ParticipantMultiSelect } from './participant-multi-select';
 
 interface CreateAppointmentDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ export function CreateAppointmentDialog({
   const [duration, setDuration] = useState(50);
   const [search, setSearch] = useState('');
   const [isOnline, setIsOnline] = useState(false);
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
   const [paymentMode, setPaymentMode] = useState<'none' | 'prepayment' | 'post_session'>('none');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -70,12 +72,24 @@ export function CreateAppointmentDialog({
   }, [patients, search]);
 
   const createMutation = useMutation({
-    mutationFn: (data: { patientId: string; scheduledAt: string; duration: number; isOnline?: boolean; paymentMode?: 'none' | 'prepayment' | 'post_session'; paymentAmount?: number }) =>
-      appointmentsApi.create(data, session?.accessToken ?? ''),
+    mutationFn: (data: { patientId: string; scheduledAt: string; duration: number; isOnline?: boolean; paymentMode?: 'none' | 'prepayment' | 'post_session'; paymentAmount?: number; participantIds?: string[] }) => {
+      if (data.isOnline && data.participantIds && data.participantIds.length > 0) {
+        return appointmentsApi.createGroup({
+          patientId: data.patientId,
+          participantIds: data.participantIds,
+          scheduledAt: data.scheduledAt,
+          duration: data.duration,
+        }, session?.accessToken ?? '');
+      }
+      return appointmentsApi.create(data, session?.accessToken ?? '');
+    },
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
       const patient = patients.find((p) => p.id === patientId);
-      if (variables.paymentMode === 'prepayment') {
+      if (variables.participantIds && variables.participantIds.length > 0) {
+        const totalParticipants = variables.participantIds.length + 1;
+        success(`RDV groupe planifié avec ${totalParticipants} participants`);
+      } else if (variables.paymentMode === 'prepayment') {
         success(`RDV créé — lien de paiement envoyé${patient ? ` à ${patient.name}` : ''}`);
       } else if (variables.paymentMode === 'post_session') {
         success(`RDV planifié${patient ? ` avec ${patient.name}` : ''} — vous enverrez le lien de paiement après la séance`);
@@ -96,6 +110,7 @@ export function CreateAppointmentDialog({
     setDuration(50);
     setSearch('');
     setIsOnline(false);
+    setParticipantIds([]);
     setPaymentMode('none');
     setPaymentAmount('');
     setError(null);
@@ -127,6 +142,7 @@ export function CreateAppointmentDialog({
       isOnline,
       paymentMode: paymentMode !== 'none' ? paymentMode : undefined,
       paymentAmount: amount,
+      participantIds: isOnline && participantIds.length > 0 ? participantIds : undefined,
     });
   };
 
@@ -143,7 +159,7 @@ export function CreateAppointmentDialog({
               <span className="text-sm font-medium">{selectedPatient.name}</span>
               <button
                 type="button"
-                onClick={() => setPatientId('')}
+                onClick={() => { setPatientId(''); setParticipantIds([]); }}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
                 Changer
@@ -234,7 +250,10 @@ export function CreateAppointmentDialog({
             type="checkbox"
             id="isOnline"
             checked={isOnline}
-            onChange={(e) => setIsOnline(e.target.checked)}
+            onChange={(e) => {
+              setIsOnline(e.target.checked);
+              if (!e.target.checked) setParticipantIds([]);
+            }}
             className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
           />
           <label htmlFor="isOnline" className="text-sm text-muted-foreground flex items-center gap-1.5">
@@ -242,6 +261,21 @@ export function CreateAppointmentDialog({
             Consultation en visio
           </label>
         </div>
+
+        {/* Group participants (visio only) */}
+        {isOnline && patientId && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">
+              Participants supplementaires (optionnel)
+            </label>
+            <ParticipantMultiSelect
+              patients={patients}
+              excludePatientId={patientId}
+              selected={participantIds}
+              onChange={setParticipantIds}
+            />
+          </div>
+        )}
 
         {/* Payment mode */}
         <div className="space-y-2 pt-1">
