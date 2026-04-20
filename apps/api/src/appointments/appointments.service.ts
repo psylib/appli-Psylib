@@ -12,6 +12,7 @@ import {
   AppointmentQueryDto,
   SendPaymentLinkDto,
 } from './dto/appointment.dto';
+import { CreateGroupAppointmentDto } from './dto/create-group-appointment.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import type { Appointment } from '@prisma/client';
 
@@ -533,6 +534,90 @@ export class AppointmentsService {
     });
 
     return { success: true, checkoutUrl: checkoutSession.url };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Group appointment (multi-participant video)
+  // ---------------------------------------------------------------------------
+
+  async createGroup(userId: string, dto: CreateGroupAppointmentDto) {
+    const psy = await this.getPsychologist(userId);
+
+    // Validate: no duplicate patient IDs
+    const allPatientIds = [dto.patientId, ...dto.participantIds];
+    const uniqueIds = new Set(allPatientIds);
+    if (uniqueIds.size !== allPatientIds.length) {
+      throw new BadRequestException('Le patient principal ne peut pas figurer parmi les participants, et il ne doit pas y avoir de doublons');
+    }
+
+    // Validate: all patients belong to this psychologist
+    const patients = await this.prisma.patient.findMany({
+      where: { id: { in: allPatientIds }, psychologistId: psy.id },
+      select: { id: true, name: true, email: true },
+    });
+
+    if (patients.length !== allPatientIds.length) {
+      const foundIds = new Set(patients.map((p) => p.id));
+      const missing = allPatientIds.filter((id) => !foundIds.has(id));
+      throw new BadRequestException(`Patient(s) introuvable(s) ou non autorisé(s) : ${missing.join(', ')}`);
+    }
+
+    // Create appointment (always online for group)
+    const appointment = await this.prisma.appointment.create({
+      data: {
+        psychologistId: psy.id,
+        patientId: dto.patientId,
+        scheduledAt: new Date(dto.scheduledAt),
+        duration: dto.duration,
+        status: 'scheduled',
+        isOnline: true,
+        videoJoinToken: randomUUID(),
+        source: 'internal',
+        ...(dto.consultationTypeId && { consultationTypeId: dto.consultationTypeId }),
+      },
+    });
+
+    // Create participant rows with individual video join tokens
+    const participantData = dto.participantIds.map((patientId) => ({
+      appointmentId: appointment.id,
+      patientId,
+      videoJoinToken: randomUUID(),
+    }));
+
+    await this.prisma.appointmentParticipant.createMany({
+      data: participantData,
+    });
+
+    // Fetch created participants for response
+    const participants = await this.prisma.appointmentParticipant.findMany({
+      where: { appointmentId: appointment.id },
+      include: { patient: { select: { id: true, name: true, email: true } } },
+    });
+
+    // Identify participants without email (for warning)
+    const participantsWithoutEmail = patients
+      .filter((p) => dto.participantIds.includes(p.id) && !p.email)
+      .map((p) => ({ id: p.id, name: p.name }));
+
+    // Audit log
+    void this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'CREATE',
+      entityType: 'appointment',
+      entityId: appointment.id,
+      metadata: {
+        isGroup: true,
+        primaryPatientId: dto.patientId,
+        participantIds: dto.participantIds,
+      },
+    });
+
+    return {
+      appointment,
+      participants,
+      participantsWithoutEmail,
+    };
   }
 
   private async getPsychologist(userId: string) {

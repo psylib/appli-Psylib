@@ -20,10 +20,14 @@ import {
   AppointmentQueryDto,
   SendPaymentLinkDto,
 } from './dto/appointment.dto';
+import { CreateGroupAppointmentDto } from './dto/create-group-appointment.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { RequirePlan } from '../billing/decorators/require-plan.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { SubscriptionPlan } from '@psyscale/shared-types';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 @ApiTags('Appointments')
@@ -38,6 +42,18 @@ export class AppointmentsController {
   @ApiOperation({ summary: 'Créer un RDV' })
   async create(@Body() dto: CreateAppointmentDto, @CurrentUser() user: KeycloakUser) {
     return this.appointmentsService.create(user.sub, dto);
+  }
+
+  @Post('group')
+  @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
+  @Roles('psychologist', 'admin')
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @ApiOperation({ summary: 'Créer un RDV de groupe multi-participants' })
+  async createGroup(
+    @Body() dto: CreateGroupAppointmentDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.appointmentsService.createGroup(user.sub, dto);
   }
 
   @Get()
