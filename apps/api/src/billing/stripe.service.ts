@@ -212,6 +212,7 @@ export class StripeService implements OnModuleInit {
     motif: string;
     successUrl: string;
     cancelUrl: string;
+    expiresInSeconds?: number; // default 35 min, set 86400 for 24h (email-based)
   }): Promise<Stripe.Checkout.Session> {
     return this.stripe.checkout.sessions.create({
       mode: 'payment',
@@ -243,7 +244,7 @@ export class StripeService implements OnModuleInit {
         appointment_id: params.appointmentId,
         type: 'booking_payment',
       },
-      expires_at: Math.floor(Date.now() / 1000) + 35 * 60, // 35 minutes from now
+      expires_at: Math.floor(Date.now() / 1000) + (params.expiresInSeconds ?? 35 * 60),
     });
   }
 }

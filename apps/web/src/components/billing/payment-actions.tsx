@@ -15,6 +15,7 @@ interface PaymentActionsAppointment {
   bookingPaymentStatus?: 'none' | 'pending_payment' | 'paid' | 'payment_failed' | string;
   paidOnline?: boolean;
   paymentIntentId?: string;
+  paymentAmount?: number | null;
 }
 
 interface PaymentActionsProps {
@@ -31,7 +32,7 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
   const paymentLinkMutation = useMutation({
     mutationFn: () =>
       billingApi.createPaymentLink(
-        { appointmentId: appointment.id },
+        { appointmentId: appointment.id, amount: appointment.paymentAmount ?? undefined },
         session!.accessToken,
       ),
     onSuccess: (data) => {

@@ -18,6 +18,9 @@ export interface CreateAppointmentData {
   patientId: string;
   scheduledAt: string;
   duration: number;
+  isOnline?: boolean;
+  paymentMode?: 'none' | 'prepayment' | 'post_session';
+  paymentAmount?: number;
 }
 
 export const appointmentsApi = {
@@ -38,4 +41,7 @@ export const appointmentsApi = {
 
   update: (id: string, data: { scheduledAt?: string; duration?: number; status?: string }, token: string) =>
     apiClient.put<{ id: string; status: string }>(`/appointments/${id}`, data, token),
+
+  sendPaymentLink: (id: string, data: { amount?: number }, token: string) =>
+    apiClient.post<{ success: boolean; checkoutUrl: string }>(`/appointments/${id}/send-payment-link`, data, token),
 };

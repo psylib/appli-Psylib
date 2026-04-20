@@ -574,6 +574,8 @@ model Appointment {
   cancelToken          String?              @unique @map("cancel_token")
   consultationTypeId   String?              @map("consultation_type_id")
   paymentIntentId      String?              @map("payment_intent_id")
+  paymentAmount        Decimal?             @map("payment_amount") @db.Decimal(10, 2)
+  paymentMode          String               @default("none") @map("payment_mode") // "none" | "prepayment" | "post_session"
   paidOnline           Boolean              @default(false) @map("paid_online")
   bookingPaymentStatus BookingPaymentStatus @default(none) @map("booking_payment_status")
   isOnline             Boolean              @default(false) @map("is_online")

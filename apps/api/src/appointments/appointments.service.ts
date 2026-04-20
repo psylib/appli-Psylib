@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import { Injectable, NotFoundException, ForbiddenException, Inject, forwardRef, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { AuditService } from '../common/audit.service';
 import { EmailService } from '../notifications/email.service';
@@ -9,6 +10,7 @@ import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
   AppointmentQueryDto,
+  SendPaymentLinkDto,
 } from './dto/appointment.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import type { Appointment } from '@prisma/client';
@@ -26,9 +28,10 @@ export class AppointmentsService {
     @Inject(forwardRef(() => WaitlistService))
     private readonly waitlistService: WaitlistService,
     private readonly notifications: NotificationsService,
+    private readonly config: ConfigService,
   ) {}
 
-  async create(userId: string, dto: CreateAppointmentDto): Promise<Appointment> {
+  async create(userId: string, dto: CreateAppointmentDto): Promise<Appointment & { checkoutUrl?: string }> {
     const psy = await this.getPsychologist(userId);
 
     const patient = await this.prisma.patient.findFirst({
@@ -36,6 +39,19 @@ export class AppointmentsService {
       select: { name: true, email: true },
     });
     if (!patient) throw new NotFoundException('Patient introuvable ou non autorisé');
+
+    const paymentMode = dto.paymentMode ?? 'none';
+    const hasPayment = paymentMode !== 'none' && dto.paymentAmount && dto.paymentAmount > 0;
+
+    // Validate payment prerequisites
+    if (hasPayment) {
+      if (!psy.stripeAccountId || !psy.stripeOnboardingComplete) {
+        throw new BadRequestException('Stripe Connect non configuré — activez les paiements en ligne dans Paramètres > Cabinet');
+      }
+      if (!patient.email) {
+        throw new BadRequestException('Le patient n\'a pas d\'email — impossible d\'envoyer le lien de paiement');
+      }
+    }
 
     const appointment = await this.prisma.appointment.create({
       data: {
@@ -46,10 +62,88 @@ export class AppointmentsService {
         status: 'scheduled',
         isOnline: dto.isOnline ?? false,
         videoJoinToken: dto.isOnline ? randomUUID() : undefined,
+        source: 'internal',
+        paymentMode,
+        paymentAmount: hasPayment ? dto.paymentAmount : null,
+        bookingPaymentStatus: paymentMode === 'prepayment' && hasPayment ? 'pending_payment' : 'none',
       },
     });
 
-    // Email de confirmation au patient (si il a un email)
+    // --- Prepayment flow: send link immediately ---
+    if (paymentMode === 'prepayment' && hasPayment && patient.email) {
+      const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+      const amountCents = Math.round(dto.paymentAmount! * 100);
+
+      try {
+        const checkoutSession = await this.stripeService.createBookingCheckoutSession({
+          psyStripeAccountId: psy.stripeAccountId!,
+          amount: amountCents,
+          patientEmail: patient.email,
+          psyName: psy.name,
+          appointmentId: appointment.id,
+          motif: 'Consultation',
+          successUrl: `${frontendUrl}/appointments/payment-success?appointment=${appointment.id}`,
+          cancelUrl: `${frontendUrl}/appointments/payment-cancel?appointment=${appointment.id}`,
+          expiresInSeconds: 24 * 60 * 60, // 24h — patient receives link by email
+        });
+
+        await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: { paymentIntentId: (checkoutSession.payment_intent as string) ?? null },
+        });
+
+        void this.email.sendPrepaymentLink(patient.email, {
+          patientName: patient.name,
+          psychologistName: psy.name,
+          scheduledAt: appointment.scheduledAt,
+          duration: appointment.duration,
+          amount: dto.paymentAmount!,
+          checkoutUrl: checkoutSession.url!,
+        });
+
+        void this.notifications.createAndDispatch(
+          userId,
+          'appointment_update',
+          'Nouveau rendez-vous (prépaiement)',
+          `RDV avec ${patient.name} — lien de paiement de ${dto.paymentAmount}€ envoyé`,
+          { href: '/dashboard/calendar' },
+        );
+
+        return { ...appointment, checkoutUrl: checkoutSession.url! };
+      } catch (err) {
+        this.logger.error(
+          `Prepayment checkout failed for appointment ${appointment.id}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: { bookingPaymentStatus: 'none' },
+        });
+      }
+    }
+
+    // --- Post-session mode: just confirm RDV, psy will send link later ---
+    if (paymentMode === 'post_session' && hasPayment) {
+      if (patient.email) {
+        void this.email.sendAppointmentConfirmation(patient.email, {
+          patientName: patient.name,
+          psychologistName: psy.name,
+          scheduledAt: appointment.scheduledAt,
+          duration: appointment.duration,
+        });
+      }
+
+      void this.notifications.createAndDispatch(
+        userId,
+        'appointment_update',
+        'Nouveau rendez-vous',
+        `RDV avec ${patient.name} — paiement de ${dto.paymentAmount}€ à envoyer après la séance`,
+        { href: '/dashboard/calendar' },
+      );
+
+      return appointment;
+    }
+
+    // --- Normal flow (no payment) ---
     if (patient.email) {
       void this.email.sendAppointmentConfirmation(patient.email, {
         patientName: patient.name,
@@ -59,7 +153,6 @@ export class AppointmentsService {
       });
     }
 
-    // In-app notification for psychologist
     void this.notifications.createAndDispatch(
       userId,
       'appointment_update',
@@ -369,6 +462,77 @@ export class AppointmentsService {
     );
 
     return { success: true, refunded, withinDelay };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Send payment link (post-session or manual trigger)
+  // ---------------------------------------------------------------------------
+
+  async sendPaymentLink(userId: string, appointmentId: string, dto: SendPaymentLinkDto) {
+    const psy = await this.getPsychologist(userId);
+
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+      include: { patient: { select: { name: true, email: true } } },
+    });
+    if (!appointment) throw new NotFoundException('RDV introuvable');
+
+    if (!appointment.patient.email) {
+      throw new BadRequestException('Le patient n\'a pas d\'email');
+    }
+    if (!psy.stripeAccountId || !psy.stripeOnboardingComplete) {
+      throw new BadRequestException('Stripe Connect non configuré');
+    }
+    if (appointment.bookingPaymentStatus === 'paid') {
+      throw new BadRequestException('Ce RDV est déjà payé');
+    }
+    if (appointment.bookingPaymentStatus === 'pending_payment') {
+      throw new BadRequestException('Un lien de paiement est déjà en attente');
+    }
+
+    // Determine amount: override from DTO > stored paymentAmount > default rate
+    const amount = dto.amount
+      ?? (appointment.paymentAmount ? Number(appointment.paymentAmount) : null)
+      ?? (psy.defaultSessionRate ? Number(psy.defaultSessionRate) : null);
+
+    if (!amount || amount <= 0) {
+      throw new BadRequestException('Montant manquant — précisez un montant');
+    }
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    const amountCents = Math.round(amount * 100);
+
+    const checkoutSession = await this.stripeService.createBookingCheckoutSession({
+      psyStripeAccountId: psy.stripeAccountId!,
+      amount: amountCents,
+      patientEmail: appointment.patient.email,
+      psyName: psy.name,
+      appointmentId: appointment.id,
+      motif: 'Consultation',
+      successUrl: `${frontendUrl}/appointments/payment-success?appointment=${appointment.id}`,
+      cancelUrl: `${frontendUrl}/appointments/payment-cancel?appointment=${appointment.id}`,
+      expiresInSeconds: 24 * 60 * 60, // 24h
+    });
+
+    await this.prisma.appointment.update({
+      where: { id: appointment.id },
+      data: {
+        bookingPaymentStatus: 'pending_payment',
+        paymentIntentId: (checkoutSession.payment_intent as string) ?? null,
+        paymentAmount: amount,
+      },
+    });
+
+    void this.email.sendPrepaymentLink(appointment.patient.email, {
+      patientName: appointment.patient.name,
+      psychologistName: psy.name,
+      scheduledAt: appointment.scheduledAt,
+      duration: appointment.duration,
+      amount,
+      checkoutUrl: checkoutSession.url!,
+    });
+
+    return { success: true, checkoutUrl: checkoutSession.url };
   }
 
   private async getPsychologist(userId: string) {

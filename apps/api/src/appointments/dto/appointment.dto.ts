@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsEnum,
   IsBoolean,
+  IsIn,
   Min,
   Max,
 } from 'class-validator';
@@ -30,6 +31,18 @@ export class CreateAppointmentDto {
   @IsBoolean()
   @IsOptional()
   isOnline?: boolean;
+
+  @ApiPropertyOptional({ description: 'Mode de paiement', enum: ['none', 'prepayment', 'post_session'] })
+  @IsIn(['none', 'prepayment', 'post_session'])
+  @IsOptional()
+  paymentMode?: 'none' | 'prepayment' | 'post_session';
+
+  @ApiPropertyOptional({ description: 'Montant du paiement en euros', example: 70 })
+  @IsNumber()
+  @Min(1)
+  @Max(1000)
+  @IsOptional()
+  paymentAmount?: number;
 }
 
 export class UpdateAppointmentDto {
@@ -66,4 +79,13 @@ export class AppointmentQueryDto {
   @Min(1)
   @Max(100)
   limit?: number;
+}
+
+export class SendPaymentLinkDto {
+  @ApiPropertyOptional({ description: 'Override le montant stocké (euros)', example: 70 })
+  @IsNumber()
+  @Min(1)
+  @Max(1000)
+  @IsOptional()
+  amount?: number;
 }

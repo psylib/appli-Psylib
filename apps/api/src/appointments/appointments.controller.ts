@@ -18,6 +18,7 @@ import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
   AppointmentQueryDto,
+  SendPaymentLinkDto,
 } from './dto/appointment.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -78,5 +79,15 @@ export class AppointmentsController {
   @ApiOperation({ summary: 'Refuser un RDV (source public)' })
   async decline(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: KeycloakUser) {
     return this.appointmentsService.declineAppointment(user.sub, id);
+  }
+
+  @Post(':id/send-payment-link')
+  @ApiOperation({ summary: 'Envoyer un lien de paiement au patient' })
+  async sendPaymentLink(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SendPaymentLinkDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.appointmentsService.sendPaymentLink(user.sub, id, dto);
   }
 }

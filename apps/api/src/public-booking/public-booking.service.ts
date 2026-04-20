@@ -436,6 +436,16 @@ export class PublicBookingService {
           dashboardUrl: `${FRONTEND_URL}/dashboard/calendar`,
         });
 
+        // Send booking received email to patient WITH checkout link as backup
+        void this.email.sendBookingReceivedToPatient(dto.patientEmail, {
+          patientName: dto.patientName,
+          psychologistName: psy.name,
+          scheduledAt,
+          duration,
+          checkoutUrl: checkoutSession.url ?? undefined,
+          cancelUrl: `${FRONTEND_URL}/appointments/cancel/${cancelToken}`,
+        });
+
         return {
           success: true,
           appointmentId: appointment.id,
@@ -479,16 +489,23 @@ export class PublicBookingService {
 
   // ---------------------------------------------------------------------------
   // Ghost appointment cleanup — runs every 5 minutes
+  // Uses different thresholds based on source:
+  //   - public (patient booked online): 35 min (Stripe checkout expires)
+  //   - internal (psy sent link by email): 24h (patient needs time)
   // ---------------------------------------------------------------------------
 
   @Cron('0 */5 * * * *')
   async cleanupExpiredPayments(): Promise<void> {
-    const threshold = new Date(Date.now() - 35 * 60 * 1000); // 35 minutes ago
+    const publicThreshold = new Date(Date.now() - 35 * 60 * 1000); // 35 min
+    const internalThreshold = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24h
 
     const expired = await this.prisma.appointment.findMany({
       where: {
         bookingPaymentStatus: 'pending_payment',
-        createdAt: { lt: threshold },
+        OR: [
+          { source: 'public', createdAt: { lt: publicThreshold } },
+          { source: 'internal', createdAt: { lt: internalThreshold } },
+        ],
       },
       select: { id: true },
     });

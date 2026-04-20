@@ -34,6 +34,8 @@ interface Appointment {
   isOnline?: boolean;
   paidOnline?: boolean;
   bookingPaymentStatus?: 'none' | 'pending_payment' | 'paid' | 'payment_failed';
+  paymentMode?: 'none' | 'prepayment' | 'post_session';
+  paymentAmount?: number | null;
   patient: {
     id: string;
     name: string;
@@ -442,6 +444,10 @@ export function CalendarContent() {
                           ) : appt.bookingPaymentStatus === 'payment_failed' ? (
                             <span className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-700">
                               Paiement échoué
+                            </span>
+                          ) : appt.paymentMode === 'post_session' ? (
+                            <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                              {appt.paymentAmount ? `${appt.paymentAmount}€ à envoyer` : 'Lien à envoyer'}
                             </span>
                           ) : (
                             <span className="inline-flex items-center rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-medium text-muted-foreground">

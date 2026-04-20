@@ -153,6 +153,64 @@ export class EmailService {
     );
   }
 
+  // ─── PRÉPAIEMENT RDV ─────────────────────────────────────────────────────────
+
+  async sendPrepaymentLink(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      scheduledAt: Date;
+      duration: number;
+      amount: number; // euros
+      checkoutUrl: string;
+    },
+  ): Promise<void> {
+    const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+    const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
+      hour: '2-digit', minute: '2-digit',
+    });
+
+    const html = emailLayout(
+      'Confirmez votre rendez-vous',
+      `<h1>Bonjour ${data.patientName},</h1>
+      <p>
+        <strong>${data.psychologistName}</strong> vous a programmé un rendez-vous.
+        Pour confirmer votre créneau, merci de procéder au paiement ci-dessous.
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;">
+          <strong>${dateFormatted}</strong><br />
+          <span style="color:#6B7280;">à ${timeFormatted} · durée ${data.duration} min</span>
+        </p>
+        <p style="margin:12px 0 0;font-size:18px;font-weight:700;color:#1E1B4B;">
+          ${data.amount}€
+        </p>
+      </div>
+      <div style="text-align:center;">
+        <a href="${data.checkoutUrl}" class="btn" style="background:#0D9488;">
+          Confirmer et payer ${data.amount}€
+        </a>
+      </div>
+      <p style="font-size:14px;color:#6B7280;margin-top:16px;">
+        Le paiement sécurise votre créneau. Si vous ne pouvez pas honorer ce rendez-vous,
+        contactez directement votre praticien.
+      </p>
+      <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
+        Ce lien de paiement est valable 24 heures. Passé ce délai, le créneau pourra être libéré.
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      `Confirmez votre RDV avec ${data.psychologistName} — paiement de ${data.amount}€`,
+      html,
+      'sendPrepaymentLink',
+    );
+  }
+
   // ─── ABONNEMENT ACTIVÉ ───────────────────────────────────────────────────────
 
   async sendSubscriptionActivated(
@@ -483,6 +541,7 @@ export class EmailService {
       scheduledAt: Date;
       duration: number;
       cancelUrl?: string;
+      checkoutUrl?: string;
     },
   ): Promise<void> {
     const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
@@ -491,6 +550,17 @@ export class EmailService {
     const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
       hour: '2-digit', minute: '2-digit',
     });
+
+    const paymentHtml = data.checkoutUrl
+      ? `<div style="text-align:center;margin:24px 0;">
+          <a href="${data.checkoutUrl}" class="btn" style="background:#0D9488;">
+            Payer maintenant
+          </a>
+        </div>
+        <p style="font-size:14px;color:#6B7280;">
+          Le paiement sécurise votre créneau. Ce lien est valable 35 minutes.
+        </p>`
+      : '';
 
     const cancelHtml = data.cancelUrl
       ? `<p style="font-size:14px;color:#6B7280;margin-top:16px;">
@@ -511,7 +581,7 @@ export class EmailService {
       <div class="badge badge-warning">En attente de confirmation</div>
       <p>
         Votre demande de rendez-vous avec <strong>${data.psychologistName}</strong> a bien été reçue.
-        Vous recevrez une confirmation dès que le praticien aura validé le créneau.
+        ${data.checkoutUrl ? 'Merci de procéder au paiement pour confirmer votre créneau.' : 'Vous recevrez une confirmation dès que le praticien aura validé le créneau.'}
       </p>
       <div class="info-box">
         <p style="margin:0;font-size:15px;">
@@ -519,6 +589,7 @@ export class EmailService {
           <span style="color:#6B7280;">à ${timeFormatted} · durée ${data.duration} min</span>
         </p>
       </div>
+      ${paymentHtml}
       ${cancelHtml}`,
     );
 

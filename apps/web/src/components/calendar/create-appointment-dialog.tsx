@@ -3,13 +3,14 @@
 import { useState, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Video } from 'lucide-react';
+import { Search, Video, CreditCard } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { appointmentsApi } from '@/lib/api/appointments';
 import { patientsApi } from '@/lib/api/patients';
+import { psychologistApi } from '@/lib/api/psychologist';
 import { cn } from '@/lib/utils';
 
 interface CreateAppointmentDialogProps {
@@ -35,6 +36,8 @@ export function CreateAppointmentDialog({
   const [duration, setDuration] = useState(50);
   const [search, setSearch] = useState('');
   const [isOnline, setIsOnline] = useState(false);
+  const [paymentMode, setPaymentMode] = useState<'none' | 'prepayment' | 'post_session'>('none');
+  const [paymentAmount, setPaymentAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   // Reset form when dialog opens with a new default date
@@ -49,6 +52,15 @@ export function CreateAppointmentDialog({
     enabled: open && !!session?.accessToken,
   });
 
+  // Fetch psy profile for Stripe status + default rate
+  const { data: psyProfile } = useQuery({
+    queryKey: ['psychologist', 'profile'],
+    queryFn: () => psychologistApi.getProfile(session?.accessToken ?? ''),
+    enabled: open && !!session?.accessToken,
+  });
+
+  const canRequestPayment = psyProfile?.stripeOnboardingComplete === true;
+
   const patients = patientsData?.data ?? [];
 
   const filteredPatients = useMemo(() => {
@@ -58,12 +70,18 @@ export function CreateAppointmentDialog({
   }, [patients, search]);
 
   const createMutation = useMutation({
-    mutationFn: (data: { patientId: string; scheduledAt: string; duration: number; isOnline?: boolean }) =>
+    mutationFn: (data: { patientId: string; scheduledAt: string; duration: number; isOnline?: boolean; paymentMode?: 'none' | 'prepayment' | 'post_session'; paymentAmount?: number }) =>
       appointmentsApi.create(data, session?.accessToken ?? ''),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
       const patient = patients.find((p) => p.id === patientId);
-      success(`RDV planifié${patient ? ` avec ${patient.name}` : ''}`);
+      if (variables.paymentMode === 'prepayment') {
+        success(`RDV créé — lien de paiement envoyé${patient ? ` à ${patient.name}` : ''}`);
+      } else if (variables.paymentMode === 'post_session') {
+        success(`RDV planifié${patient ? ` avec ${patient.name}` : ''} — vous enverrez le lien de paiement après la séance`);
+      } else {
+        success(`RDV planifié${patient ? ` avec ${patient.name}` : ''}`);
+      }
       handleClose();
     },
     onError: (e: Error) => {
@@ -78,6 +96,8 @@ export function CreateAppointmentDialog({
     setDuration(50);
     setSearch('');
     setIsOnline(false);
+    setPaymentMode('none');
+    setPaymentAmount('');
     setError(null);
     onClose();
   };
@@ -98,7 +118,16 @@ export function CreateAppointmentDialog({
 
     const scheduledAt = new Date(`${selectedDate}T${time}:00`).toISOString();
     setError(null);
-    createMutation.mutate({ patientId, scheduledAt, duration, isOnline });
+
+    const amount = paymentMode !== 'none' && paymentAmount ? Number(paymentAmount) : undefined;
+    createMutation.mutate({
+      patientId,
+      scheduledAt,
+      duration,
+      isOnline,
+      paymentMode: paymentMode !== 'none' ? paymentMode : undefined,
+      paymentAmount: amount,
+    });
   };
 
   const selectedPatient = patients.find((p) => p.id === patientId);
@@ -212,6 +241,85 @@ export function CreateAppointmentDialog({
             <Video className="h-4 w-4" />
             Consultation en visio
           </label>
+        </div>
+
+        {/* Payment mode */}
+        <div className="space-y-2 pt-1">
+          <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            <CreditCard className="h-4 w-4" />
+            Paiement en ligne
+          </label>
+          {!canRequestPayment ? (
+            <p className="text-xs text-muted-foreground/60 ml-5">
+              Stripe non configuré — activez les paiements dans Paramètres &gt; Cabinet
+            </p>
+          ) : (
+            <div className="space-y-1.5 ml-1">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value="none"
+                  checked={paymentMode === 'none'}
+                  onChange={() => setPaymentMode('none')}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-muted-foreground">Pas de paiement en ligne</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value="prepayment"
+                  checked={paymentMode === 'prepayment'}
+                  onChange={() => {
+                    setPaymentMode('prepayment');
+                    if (!paymentAmount && psyProfile?.defaultSessionRate) {
+                      setPaymentAmount(String(psyProfile.defaultSessionRate));
+                    }
+                  }}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-muted-foreground">Prépaiement (lien envoyé maintenant)</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="paymentMode"
+                  value="post_session"
+                  checked={paymentMode === 'post_session'}
+                  onChange={() => {
+                    setPaymentMode('post_session');
+                    if (!paymentAmount && psyProfile?.defaultSessionRate) {
+                      setPaymentAmount(String(psyProfile.defaultSessionRate));
+                    }
+                  }}
+                  className="h-4 w-4 text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-muted-foreground">Après la séance (vous enverrez le lien)</span>
+              </label>
+            </div>
+          )}
+          {paymentMode !== 'none' && canRequestPayment && (
+            <div className="ml-6 mt-2">
+              <Input
+                label="Montant (€)"
+                type="number"
+                min={1}
+                max={1000}
+                step="any"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="ex: 70"
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {paymentMode === 'prepayment'
+                  ? 'Le lien de paiement sera envoyé par email au patient immédiatement'
+                  : 'Vous pourrez envoyer le lien depuis le calendrier après la séance'}
+              </p>
+            </div>
+          )}
         </div>
 
         {error && (
