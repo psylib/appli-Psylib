@@ -2,7 +2,6 @@
 
 import {
   LiveKitRoom,
-  VideoTrack,
   useTracks,
   useRoomContext,
   RoomAudioRenderer,
@@ -10,8 +9,8 @@ import {
 import { Track, RoomEvent } from 'livekit-client';
 import { useVideoCall } from '@/hooks/use-video-call';
 import { VideoControls } from './video-controls';
+import { VideoGrid } from './video-grid';
 import { useState, useEffect } from 'react';
-import { User } from 'lucide-react';
 
 interface VideoRoomProps {
   token: string;
@@ -58,24 +57,7 @@ function VideoLayout({ plannedDurationMin, notesPanel, onCallEnd }: Omit<VideoRo
             </div>
           )}
 
-          {/* Remote participant (patient) */}
-          {remoteTracks.length > 0 && remoteTracks[0]?.publication ? (
-            <VideoTrack trackRef={remoteTracks[0]!} className="w-full h-full object-cover" />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center text-white/60">
-                <User className="h-20 w-20 mx-auto mb-4 opacity-40" />
-                <p className="text-lg">En attente du patient...</p>
-              </div>
-            </div>
-          )}
-
-          {/* Local participant (psy) PiP */}
-          {localTrack?.publication && (
-            <div className="absolute bottom-4 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg">
-              <VideoTrack trackRef={localTrack} className="w-full h-full object-cover" />
-            </div>
-          )}
+          <VideoGrid remoteTracks={remoteTracks} localTrack={localTrack} />
         </div>
 
         <VideoControls
