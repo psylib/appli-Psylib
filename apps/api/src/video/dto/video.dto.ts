@@ -28,4 +28,7 @@ export interface TodayVideoRoom {
   duration: number;
   status: 'upcoming' | 'ready' | 'patient_waiting' | 'active' | 'ended';
   roomId: string | null;
+  participantCount: number;
+  participantsJoined: number;
+  participantNames: string[];
 }

@@ -72,8 +72,18 @@ export class VideoService {
       throw new BadRequestException('La visio ne peut être démarrée que 10 min avant le RDV');
     }
 
+    // Check if this is a group appointment
+    const participantCount = await this.prisma.appointmentParticipant.count({
+      where: { appointmentId },
+    });
+    const isGroup = participantCount > 0;
+
     const roomName = `psylib-${appointmentId}`;
-    await this.roomService.createRoom({ name: roomName, emptyTimeout: 300 });
+    await this.roomService.createRoom({
+      name: roomName,
+      emptyTimeout: isGroup ? 600 : 300,
+      maxParticipants: isGroup ? 6 : undefined,
+    });
 
     const videoRoom = await this.prisma.videoRoom.create({
       data: {
@@ -151,12 +161,15 @@ export class VideoService {
 
   /**
    * Generates a LiveKit access token for the patient, using the videoJoinToken.
+   * Supports both primary patient (appointment.videoJoinToken) and secondary
+   * participants (appointmentParticipant.videoJoinToken).
    * Returns { needsConsent: true } if the patient has not yet consented to video.
    */
   async generatePatientToken(
     joinToken: string,
   ): Promise<VideoTokenResponse & { needsConsent?: boolean }> {
-    const appointment = await this.prisma.appointment.findFirst({
+    // First: check primary patient token on appointment
+    let appointment = await this.prisma.appointment.findFirst({
       where: { videoJoinToken: joinToken },
       include: {
         videoRoom: true,
@@ -165,16 +178,46 @@ export class VideoService {
       },
     });
 
-    if (!appointment) throw new UnauthorizedException('Lien de visio invalide ou expiré');
-    if (!appointment.videoRoom)
+    let patientId: string;
+    let patientName: string;
+    let psychologistName: string;
+
+    if (appointment) {
+      patientId = appointment.patient.id;
+      patientName = appointment.patient.name;
+      psychologistName = appointment.psychologist.name;
+    } else {
+      // Second: check participant token
+      const participant = await this.prisma.appointmentParticipant.findFirst({
+        where: { videoJoinToken: joinToken },
+        include: {
+          patient: { select: { id: true, name: true } },
+          appointment: {
+            include: {
+              videoRoom: true,
+              psychologist: { select: { name: true } },
+            },
+          },
+        },
+      });
+
+      if (!participant) throw new UnauthorizedException('Lien de visio invalide ou expiré');
+
+      appointment = participant.appointment as any;
+      patientId = participant.patient.id;
+      patientName = participant.patient.name;
+      psychologistName = participant.appointment.psychologist.name;
+    }
+
+    if (!appointment!.videoRoom)
       throw new BadRequestException("La salle de visio n'est pas encore prête");
-    if (appointment.videoRoom.status === 'ended')
+    if (appointment!.videoRoom.status === 'ended')
       throw new BadRequestException('Cette consultation est terminée');
 
-    // Check GDPR consent for video consultation
+    // Check GDPR consent for THIS specific participant
     const consent = await this.prisma.gdprConsent.findFirst({
       where: {
-        patientId: appointment.patientId,
+        patientId,
         type: 'video_consultation',
         withdrawnAt: null,
       },
@@ -186,16 +229,16 @@ export class VideoService {
         token: '',
         wsUrl: '',
         roomName: '',
-        patientName: appointment.patient.name,
-        psychologistName: appointment.psychologist.name,
+        patientName,
+        psychologistName,
       } as any;
     }
 
-    const room = appointment.videoRoom;
+    const room = appointment!.videoRoom!;
     const token = new AccessToken(this.livekitApiKey, this.livekitApiSecret, {
-      identity: `patient-${appointment.patientId}`,
-      name: appointment.patient.name || 'Patient',
-      ttl: (appointment.duration + 30) * 60,
+      identity: `patient-${patientId}`,
+      name: patientName || 'Patient',
+      ttl: (appointment!.duration + 30) * 60,
     });
     const grant: VideoGrant = {
       room: room.roomName,
@@ -205,6 +248,7 @@ export class VideoService {
     };
     token.addGrant(grant);
 
+    // Update join tracking - first participant sets VideoRoom.patientJoinedAt
     if (!room.patientJoinedAt) {
       await this.prisma.videoRoom.update({
         where: { id: room.id },
@@ -212,8 +256,16 @@ export class VideoService {
       });
     }
 
+    // If this is a secondary participant, update their joinedAt
+    if (patientId !== appointment!.patientId) {
+      await this.prisma.appointmentParticipant.updateMany({
+        where: { appointmentId: appointment!.id, patientId },
+        data: { joinedAt: new Date() },
+      });
+    }
+
     await this.audit.log({
-      actorId: appointment.patientId,
+      actorId: patientId,
       actorType: 'patient',
       action: 'VIDEO_PATIENT_JOIN',
       entityType: 'video_room',
@@ -229,16 +281,35 @@ export class VideoService {
 
   /**
    * Records GDPR consent for video consultation from a patient.
+   * Supports both primary patient and secondary participants.
    */
   async recordConsent(joinToken: string, ipAddress?: string) {
+    // Check primary patient token
     const appointment = await this.prisma.appointment.findFirst({
       where: { videoJoinToken: joinToken },
     });
-    if (!appointment) throw new UnauthorizedException('Lien invalide');
+
+    if (appointment) {
+      await this.prisma.gdprConsent.create({
+        data: {
+          patientId: appointment.patientId,
+          type: 'video_consultation',
+          version: '2026-04-v1',
+          ipAddress,
+        },
+      });
+      return;
+    }
+
+    // Check participant token
+    const participant = await this.prisma.appointmentParticipant.findFirst({
+      where: { videoJoinToken: joinToken },
+    });
+    if (!participant) throw new UnauthorizedException('Lien invalide');
 
     await this.prisma.gdprConsent.create({
       data: {
-        patientId: appointment.patientId,
+        patientId: participant.patientId,
         type: 'video_consultation',
         version: '2026-04-v1',
         ipAddress,
@@ -282,6 +353,13 @@ export class VideoService {
       data: { status: 'completed' },
     });
 
+    // Get participant IDs for group sessions
+    const participants = await this.prisma.appointmentParticipant.findMany({
+      where: { appointmentId },
+      select: { patientId: true },
+    });
+    const participantIds = participants.map((p) => p.patientId);
+
     // Auto-create session if none linked
     if (!room.appointment.sessionId) {
       const session = await this.prisma.session.create({
@@ -290,9 +368,10 @@ export class VideoService {
           psychologistId: psy.id,
           date: startTime,
           duration: durationMinutes,
-          type: 'online',
+          type: participantIds.length > 0 ? 'group' : 'online',
           notes: '',
           paymentStatus: 'pending',
+          participantIds,
         },
       });
       await this.prisma.appointment.update({
@@ -334,6 +413,13 @@ export class VideoService {
       include: {
         patient: { select: { name: true } },
         videoRoom: true,
+        participants: {
+          select: {
+            patientId: true,
+            joinedAt: true,
+            patient: { select: { name: true } },
+          },
+        },
       },
       orderBy: { scheduledAt: 'asc' },
     });
@@ -353,6 +439,11 @@ export class VideoService {
         status = 'ready';
       }
 
+      const participantCount = 1 + appt.participants.length;
+      const secondaryJoined = appt.participants.filter((p) => p.joinedAt).length;
+      const primaryJoined = appt.videoRoom?.patientJoinedAt ? 1 : 0;
+      const participantsJoined = secondaryJoined + primaryJoined;
+
       return {
         appointmentId: appt.id,
         patientName: appt.patient.name,
@@ -360,6 +451,9 @@ export class VideoService {
         duration: appt.duration,
         status,
         roomId: appt.videoRoom?.id ?? null,
+        participantCount,
+        participantsJoined,
+        participantNames: appt.participants.map((p) => p.patient.name),
       };
     });
   }
