@@ -24,9 +24,12 @@ EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- Convert appointments.payment_mode from String to enum
+-- Must drop default first, convert, then re-add default
+ALTER TABLE "appointments" ALTER COLUMN "payment_mode" DROP DEFAULT;
 ALTER TABLE "appointments"
   ALTER COLUMN "payment_mode" TYPE "AppointmentPaymentMode"
   USING "payment_mode"::"AppointmentPaymentMode";
+ALTER TABLE "appointments" ALTER COLUMN "payment_mode" SET DEFAULT 'none';
 
 -- ─── 4. Add missing FK indexes ──────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS "idx_availability_psy" ON "availability"("psychologist_id");
