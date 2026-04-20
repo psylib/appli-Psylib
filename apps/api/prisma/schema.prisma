@@ -428,6 +428,7 @@ model Patient {
   invoices               Invoice[]
   assessments            Assessment[]
   monSoutienPsyTrackings MonSoutienPsyTracking[]
+  appointmentParticipations AppointmentParticipant[]
 
   @@index([psychologistId], name: "idx_patients_psychologist")
   @@map("patients")
@@ -445,6 +446,7 @@ model Session {
   tags           String[]
   rate           Decimal?             @db.Decimal(10, 2)
   paymentStatus  SessionPaymentStatus @default(pending) @map("payment_status")
+  participantIds String[]             @default([]) @map("participant_ids")
   orientation    TherapyOrientation?
   templateId     String?              @map("template_id")
   aiMetadata     Json?                @map("ai_metadata")
@@ -601,6 +603,7 @@ model Appointment {
   consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id])
   payments         Payment[]
   videoRoom        VideoRoom?
+  participants     AppointmentParticipant[]
 
   @@index([psychologistId, scheduledAt], name: "idx_appointments_psy_date")
   @@index([patientId], name: "idx_appointments_patient")
@@ -623,6 +626,24 @@ model VideoRoom {
 
   @@index([psychologistId, status])
   @@map("video_rooms")
+}
+
+model AppointmentParticipant {
+  id              String    @id @default(uuid())
+  appointmentId   String    @map("appointment_id")
+  patientId       String    @map("patient_id")
+  videoJoinToken  String?   @unique @map("video_join_token")
+  videoLinkSentAt DateTime? @map("video_link_sent_at")
+  joinedAt        DateTime? @map("joined_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patient     Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([appointmentId, patientId])
+  @@index([patientId])
+  @@index([videoJoinToken])
+  @@map("appointment_participants")
 }
 
 // =============================================================================
