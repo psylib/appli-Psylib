@@ -322,7 +322,7 @@ export class SessionsService {
     psychologistUserId: string,
     sessionId: string,
     notes: string,
-    actorId: string,
+    _actorId: string,
   ): Promise<{ saved: boolean; at: string }> {
     const psy = await this.getPsychologist(psychologistUserId);
 

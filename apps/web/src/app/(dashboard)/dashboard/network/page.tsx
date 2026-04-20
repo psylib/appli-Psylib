@@ -475,7 +475,7 @@ function ProfilePanel({ open, onClose, profile, onSaved, token }: ProfilePanelPr
         <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
           <div>
             <h2 className="text-base font-semibold text-foreground">Mon profil réseau</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">Visible dans l'annuaire des psys</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Visible dans l&apos;annuaire des psys</p>
           </div>
           <button
             onClick={onClose}

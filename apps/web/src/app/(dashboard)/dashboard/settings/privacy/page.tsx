@@ -22,7 +22,7 @@ export default async function PrivacyPage() {
       <div className="rounded-xl border border-border bg-white p-6 space-y-4">
         <h2 className="text-base font-medium text-foreground">Vos données</h2>
         <p className="text-sm text-muted-foreground">
-          Vos données sont hébergées en France sur une infrastructure certifiée HDS (Hébergeur de Données de Santé), conformément à l'article L.1111-8 du Code de la santé publique.
+          Vos données sont hébergées en France sur une infrastructure certifiée HDS (Hébergeur de Données de Santé), conformément à l&apos;article L.1111-8 du Code de la santé publique.
         </p>
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li className="flex items-start gap-2">
@@ -39,7 +39,7 @@ export default async function PrivacyPage() {
           </li>
           <li className="flex items-start gap-2">
             <span className="mt-0.5 h-4 w-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
-            Journal d'audit complet de tous les accès
+            Journal d&apos;audit complet de tous les accès
           </li>
         </ul>
       </div>
@@ -85,7 +85,7 @@ export default async function PrivacyPage() {
       <div className="rounded-xl border border-border bg-white p-6 space-y-4">
         <h2 className="text-base font-medium text-foreground">Droits RGPD</h2>
         <p className="text-sm text-muted-foreground">
-          Conformément au RGPD, vous disposez des droits d'accès, de rectification, de portabilité et d'effacement de vos données.
+          Conformément au RGPD, vous disposez des droits d&apos;accès, de rectification, de portabilité et d&apos;effacement de vos données.
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <button

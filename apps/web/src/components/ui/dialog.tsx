@@ -64,7 +64,7 @@ export function Dialog({ open, onClose, title, description, children, className 
             className="rounded-lg p-1.5 hover:bg-surface text-muted-foreground hover:text-foreground transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Fermer"
           >
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            
             {React.createElement(X as any, { size: 18 })}
           </button>
         </div>

@@ -230,7 +230,7 @@ function BetaForm() {
       </button>
 
       <p className="text-xs text-charcoal-400 text-center">
-        Aucun paiement maintenant. On vous contacte d'abord pour un appel de 15 min.
+        Aucun paiement maintenant. On vous contacte d&apos;abord pour un appel de 15 min.
         <br />
         <Link href="/privacy" className="underline hover:text-charcoal-500">
           Conforme RGPD
@@ -310,7 +310,7 @@ export default function BetaPage() {
 
                 {/* Trust */}
                 <div className="bg-cream-50 rounded-2xl border border-cream-200 p-5 space-y-3">
-                  <h4 className="font-medium text-charcoal text-sm">Inclus dans l'offre Fondateurs</h4>
+                  <h4 className="font-medium text-charcoal text-sm">Inclus dans l&apos;offre Fondateurs</h4>
                   <ul className="space-y-2">
                     {[
                       'Toutes les fonctionnalités du plan Pro',
@@ -388,7 +388,7 @@ export default function BetaPage() {
         <footer className="bg-white border-t border-cream-200 py-8">
           <div className="max-w-4xl mx-auto px-6 text-center space-y-2">
             <p className="text-sm text-charcoal-400">
-              PsyLib — L'atelier numérique du psy libéral
+              PsyLib — L&apos;atelier numérique du psy libéral
             </p>
             <div className="flex items-center justify-center gap-4 text-xs text-charcoal-300">
               <Link href="/privacy" className="hover:text-charcoal-500 transition-colors">Confidentialité</Link>

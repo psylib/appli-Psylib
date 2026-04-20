@@ -1,4 +1,4 @@
-import { IsInt, Min, Max, IsString, IsOptional, IsArray, IsBoolean, IsDateString } from 'class-validator';
+import { IsInt, Min, Max, IsString, IsOptional, IsArray, IsBoolean } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateMoodDto {

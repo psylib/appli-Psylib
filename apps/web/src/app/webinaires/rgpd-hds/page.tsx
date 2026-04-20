@@ -61,7 +61,7 @@ function WebinarForm() {
         </h3>
         <p className="text-charcoal-400 text-sm leading-relaxed max-w-md mx-auto">
           Merci {form.name} ! Vous recevrez le lien Zoom par email 48h avant le webinaire,
-          ainsi qu'un rappel 1h avant.
+          ainsi qu&apos;un rappel 1h avant.
         </p>
         <p className="text-xs text-charcoal-300">
           Vérifiez vos spams — et ajoutez noreply@psylib.eu à vos contacts.
@@ -77,7 +77,7 @@ function WebinarForm() {
     >
       <div>
         <h3 className="font-playfair text-lg font-bold text-charcoal mb-1">
-          S'inscrire au webinaire
+          S&apos;inscrire au webinaire
         </h3>
         <p className="text-sm text-charcoal-400">
           Gratuit. Replay envoyé à tous les inscrits.
@@ -345,19 +345,19 @@ export default function WebinarRgpdHdsPage() {
             <div className="space-y-4 text-charcoal-500 leading-relaxed">
               <p>
                 Les notes de séance, les dossiers patients, les messages échangés avec vos
-                patients sont des <strong>données de santé</strong> au sens de l'article
+                patients sont des <strong>données de santé</strong> au sens de l&apos;article
                 L.1111-8 du Code de la santé publique. Leur hébergement en ligne est
                 soumis à la certification HDS (Hébergeur de Données de Santé).
               </p>
               <p>
-                En pratique, la majorité des psychologues libéraux utilisent aujourd'hui
+                En pratique, la majorité des psychologues libéraux utilisent aujourd&apos;hui
                 des outils <strong>non conformes</strong> — sans le savoir : Google Drive,
                 Dropbox, Excel, SaaS hébergés hors France, tableaux partagés.
               </p>
               <p>
-                La sanction CNIL potentielle : jusqu'à{' '}
-                <strong className="text-terracotta">20 millions d'euros ou 4% du CA</strong>.
-                Et ce n'est pas théorique : des professionnels de santé ont déjà été
+                La sanction CNIL potentielle : jusqu&apos;à{' '}
+                <strong className="text-terracotta">20 millions d&apos;euros ou 4% du CA</strong>.
+                Et ce n&apos;est pas théorique : des professionnels de santé ont déjà été
                 sanctionnés en 2024-2026.
               </p>
               <p>
@@ -371,8 +371,8 @@ export default function WebinarRgpdHdsPage() {
               <p className="text-sm text-charcoal-500 leading-relaxed">
                 <strong className="text-charcoal">Animé par Tony, fondateur de PsyLib</strong> —
                 le premier logiciel tout-en-un 100% HDS pour psychologues libéraux.
-                Ce webinaire est gratuit et sans engagement. Ce n'est pas un pitch produit :
-                c'est de l'information pratique.
+                Ce webinaire est gratuit et sans engagement. Ce n&apos;est pas un pitch produit :
+                c&apos;est de l&apos;information pratique.
               </p>
             </div>
           </div>
@@ -414,7 +414,7 @@ export default function WebinarRgpdHdsPage() {
         <footer className="bg-white border-t border-cream-200 py-8">
           <div className="max-w-4xl mx-auto px-6 text-center space-y-2">
             <p className="text-sm text-charcoal-400">
-              PsyLib — L'atelier numérique du psy libéral
+              PsyLib — L&apos;atelier numérique du psy libéral
             </p>
             <div className="flex items-center justify-center gap-4 text-xs text-charcoal-300">
               <Link href="/privacy" className="hover:text-charcoal-500 transition-colors">

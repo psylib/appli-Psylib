@@ -127,7 +127,7 @@ export default function ArticleLogicielGestionCabinet() {
             Logiciel de gestion de cabinet psychologue : le guide complet 2026
           </h1>
           <p className="mt-4 text-lg text-gray-600">
-            Critères de choix, fonctionnalités essentielles, conformité HDS et comparatif des solutions françaises — tout ce qu'un psychologue libéral doit savoir avant de choisir son outil.
+            Critères de choix, fonctionnalités essentielles, conformité HDS et comparatif des solutions françaises — tout ce qu&apos;un psychologue libéral doit savoir avant de choisir son outil.
           </p>
           <p className="mt-2 text-sm text-gray-400">Mis à jour le 27 mars 2026 · 10 min de lecture</p>
         </header>
@@ -135,10 +135,10 @@ export default function ArticleLogicielGestionCabinet() {
         {/* Introduction */}
         <section className="mb-10 rounded-2xl bg-[#F1F0F9] p-6">
           <p className="leading-relaxed">
-            Exercer en libéral, c'est assumer deux rôles simultanément : celui de praticien et celui de chef d'entreprise. Entre la tenue des dossiers patients, la rédaction des notes de séance, la facturation, la gestion de l'agenda et la conformité réglementaire, le temps administratif peut rapidement empiéter sur le temps clinique.
+            Exercer en libéral, c&apos;est assumer deux rôles simultanément : celui de praticien et celui de chef d&apos;entreprise. Entre la tenue des dossiers patients, la rédaction des notes de séance, la facturation, la gestion de l&apos;agenda et la conformité réglementaire, le temps administratif peut rapidement empiéter sur le temps clinique.
           </p>
           <p className="mt-4 leading-relaxed">
-            Un logiciel de gestion de cabinet psychologue bien choisi réduit cette charge — à condition qu'il soit réellement conçu pour les psychologues, et non pour l'ensemble des professions de santé. Ce guide présente les critères indispensables, les fonctionnalités à vérifier, le cadre réglementaire et un comparatif des solutions disponibles.
+            Un logiciel de gestion de cabinet psychologue bien choisi réduit cette charge — à condition qu&apos;il soit réellement conçu pour les psychologues, et non pour l&apos;ensemble des professions de santé. Ce guide présente les critères indispensables, les fonctionnalités à vérifier, le cadre réglementaire et un comparatif des solutions disponibles.
           </p>
         </section>
 
@@ -146,10 +146,10 @@ export default function ArticleLogicielGestionCabinet() {
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold">Pourquoi un logiciel dédié aux psychologues ?</h2>
           <p className="mb-4 leading-relaxed">
-            La première tentation est de s'appuyer sur des outils existants : un tableur pour les finances, Word pour les notes, Google Agenda pour les rendez-vous. Cette approche révèle rapidement ses limites dès que le carnet de patients s'étoffe.
+            La première tentation est de s&apos;appuyer sur des outils existants : un tableur pour les finances, Word pour les notes, Google Agenda pour les rendez-vous. Cette approche révèle rapidement ses limites dès que le carnet de patients s&apos;étoffe.
           </p>
           <p className="mb-4 leading-relaxed">
-            Les outils généralistes créent une fragmentation des données : informations éparpillées, aucune vue d'ensemble sur le suivi d'un patient, risque de pertes. Surtout, ils ne répondent pas aux obligations légales spécifiques à la pratique psychologique.
+            Les outils généralistes créent une fragmentation des données : informations éparpillées, aucune vue d&apos;ensemble sur le suivi d&apos;un patient, risque de pertes. Surtout, ils ne répondent pas aux obligations légales spécifiques à la pratique psychologique.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold">Les besoins spécifiques de la pratique</h3>
@@ -160,7 +160,7 @@ export default function ArticleLogicielGestionCabinet() {
           <div className="my-6 rounded-xl border-l-4 border-[#3D52A0] bg-[#F1F0F9] px-5 py-4">
             <p className="font-semibold">Point réglementaire essentiel</p>
             <p className="mt-2 text-sm leading-relaxed">
-              Les notes de séance d'un psychologue sont des données de santé au sens de l'article L.1111-8 du Code de la santé publique. Toute solution qui les héberge en ligne doit être certifiée <strong>HDS</strong> (Hébergeur de Données de Santé). Utiliser un service non certifié — Google Drive, Dropbox, un hébergeur standard — expose le praticien à des sanctions CNIL pouvant atteindre <strong>20 millions d'euros</strong>.
+              Les notes de séance d&apos;un psychologue sont des données de santé au sens de l&apos;article L.1111-8 du Code de la santé publique. Toute solution qui les héberge en ligne doit être certifiée <strong>HDS</strong> (Hébergeur de Données de Santé). Utiliser un service non certifié — Google Drive, Dropbox, un hébergeur standard — expose le praticien à des sanctions CNIL pouvant atteindre <strong>20 millions d&apos;euros</strong>.
             </p>
           </div>
         </section>
@@ -171,7 +171,7 @@ export default function ArticleLogicielGestionCabinet() {
 
           <h3 className="mb-2 font-playfair text-lg font-semibold">1. Dossier patient numérique et sécurisé</h3>
           <p className="mb-4 leading-relaxed">
-            Centralise les informations administratives, l'historique des séances et les notes cliniques. Les données sensibles doivent être chiffrées AES-256-GCM au niveau applicatif.
+            Centralise les informations administratives, l&apos;historique des séances et les notes cliniques. Les données sensibles doivent être chiffrées AES-256-GCM au niveau applicatif.
           </p>
 
           <h3 className="mb-2 font-playfair text-lg font-semibold">2. Notes de séance structurées par orientation</h3>
@@ -186,17 +186,17 @@ export default function ArticleLogicielGestionCabinet() {
 
           <h3 className="mb-2 font-playfair text-lg font-semibold">4. Facturation conforme</h3>
           <p className="mb-4 leading-relaxed">
-            Notes d'honoraires avec mention d'exonération TVA (article 261-4-1° du CGI), numéro ADELI, SIRET, numérotation séquentielle. Compatible Mon Soutien Psy.
+            Notes d&apos;honoraires avec mention d&apos;exonération TVA (article 261-4-1° du CGI), numéro ADELI, SIRET, numérotation séquentielle. Compatible Mon Soutien Psy.
           </p>
 
           <h3 className="mb-2 font-playfair text-lg font-semibold">5. Outcome tracking (PHQ-9, GAD-7, CORE-OM)</h3>
           <p className="mb-4 leading-relaxed">
-            Administration régulière de questionnaires standardisés et visualisation de l'évolution sur des graphiques longitudinaux. Recommandé dans le cadre du dispositif Mon Soutien Psy depuis juin 2024.
+            Administration régulière de questionnaires standardisés et visualisation de l&apos;évolution sur des graphiques longitudinaux. Recommandé dans le cadre du dispositif Mon Soutien Psy depuis juin 2024.
           </p>
 
           <h3 className="mb-2 font-playfair text-lg font-semibold">6. Espace patient inter-séances</h3>
           <p className="mb-4 leading-relaxed">
-            Portail patient pour exercices thérapeutiques, suivi de l'humeur et messagerie sécurisée. Améliore l'engagement et réduit les abandons de suivi.
+            Portail patient pour exercices thérapeutiques, suivi de l&apos;humeur et messagerie sécurisée. Améliore l&apos;engagement et réduit les abandons de suivi.
           </p>
 
           <h3 className="mb-2 font-playfair text-lg font-semibold">7. Assistant IA clinique conforme HDS</h3>
@@ -223,7 +223,7 @@ export default function ArticleLogicielGestionCabinet() {
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-1 font-bold text-[#3D52A0]">&#10003;</span>
-              <span><strong>Export RGPD + droit à l'effacement</strong> — export complet et purge sur demande</span>
+              <span><strong>Export RGPD + droit à l&apos;effacement</strong> — export complet et purge sur demande</span>
             </li>
           </ul>
         </section>
@@ -246,13 +246,13 @@ export default function ArticleLogicielGestionCabinet() {
                   <td className="px-4 py-3 font-medium">Docorga</td>
                   <td className="px-4 py-3">Sur devis</td>
                   <td className="px-4 py-3">Base utilisateurs établie, dossier patient</td>
-                  <td className="px-4 py-3">Pas d'outcome tracking, interface vieillissante</td>
+                  <td className="px-4 py-3">Pas d&apos;outcome tracking, interface vieillissante</td>
                 </tr>
                 <tr className="bg-gray-50">
                   <td className="px-4 py-3 font-medium">Scriboupsy</td>
                   <td className="px-4 py-3">27 €/mois</td>
                   <td className="px-4 py-3">Dédié psychothérapeutes, prix accessible</td>
-                  <td className="px-4 py-3">Fonctionnalités limitées, pas d'IA</td>
+                  <td className="px-4 py-3">Fonctionnalités limitées, pas d&apos;IA</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium">Mon Cabinet Libéral</td>
@@ -282,8 +282,8 @@ export default function ArticleLogicielGestionCabinet() {
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold">5 questions à poser avant de vous engager</h2>
           <ol className="space-y-3 list-decimal list-inside">
-            <li className="leading-relaxed"><strong>L'hébergement est-il certifié HDS en France ?</strong> — Premier critère non négociable.</li>
-            <li className="leading-relaxed"><strong>Le logiciel est-il conçu pour les psychologues ?</strong> — Pas un outil généraliste "professions de santé".</li>
+            <li className="leading-relaxed"><strong>L&apos;hébergement est-il certifié HDS en France ?</strong> — Premier critère non négociable.</li>
+            <li className="leading-relaxed"><strong>Le logiciel est-il conçu pour les psychologues ?</strong> — Pas un outil généraliste &quot;professions de santé&quot;.</li>
             <li className="leading-relaxed"><strong>Essai gratuit sans carte bancaire ?</strong> — 14 à 30 jours pour tester avant engagement.</li>
             <li className="leading-relaxed"><strong>Données exportables à tout moment ?</strong> — Droit RGPD et exigence pratique.</li>
             <li className="leading-relaxed"><strong>Support en français et réactif ?</strong> — Délai sous 24h minimum.</li>
@@ -361,7 +361,7 @@ export default function ArticleLogicielGestionCabinet() {
         {/* Footer */}
         <footer className="border-t border-gray-200 pt-8 text-sm text-gray-500">
           <p>
-            Article rédigé par l'équipe PsyLib — mis à jour mars 2026.{' '}
+            Article rédigé par l&apos;équipe PsyLib — mis à jour mars 2026.{' '}
             <Link href="/" className="text-[#3D52A0] hover:underline">Accueil</Link>
             {' | '}
             <Link href="/blog" className="text-[#3D52A0] hover:underline">Tous les articles</Link>

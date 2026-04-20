@@ -60,7 +60,7 @@ function CreateRecurringDialog({ token, onClose }: { token: string; onClose: () 
     handleSubmit,
     formState: { errors },
   } = useForm<CreateForm>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(createSchema as any),
     defaultValues: {
       dayOfMonth: 1,

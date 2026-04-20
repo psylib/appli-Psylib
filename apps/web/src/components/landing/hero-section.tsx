@@ -118,7 +118,7 @@ export function HeroSection() {
 
               {/* H1 */}
               <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight tracking-tight">
-                L'atelier numérique du{' '}
+                L&apos;atelier numérique du{' '}
                 <em className="not-italic text-sage">psy libéral</em>
               </h1>
 

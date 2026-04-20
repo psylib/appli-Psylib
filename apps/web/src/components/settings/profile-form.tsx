@@ -61,7 +61,7 @@ export function ProfileForm() {
     reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<ProfileFormValues>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(profileSchema as any),
     defaultValues: {
       name: '',
@@ -226,7 +226,7 @@ export function ProfileForm() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">Doctolib</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Ajoutez votre lien PsyLib dans le champ <strong>"Site web"</strong> de votre profil Doctolib.
+                    Ajoutez votre lien PsyLib dans le champ <strong>&quot;Site web&quot;</strong> de votre profil Doctolib.
                     Vous pouvez aussi l&apos;ajouter dans votre <strong>description / présentation</strong> avec un texte du type :
                   </p>
                   <p className="text-xs text-muted-foreground mt-1 italic bg-white rounded px-2 py-1.5 border border-border">
@@ -243,8 +243,8 @@ export function ProfileForm() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">Google My Business</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Dans votre fiche Google, ajoutez votre lien PsyLib comme <strong>"Lien de prise de rendez-vous"</strong> ou
-                    dans la section <strong>"Site web"</strong> de votre établissement.
+                    Dans votre fiche Google, ajoutez votre lien PsyLib comme <strong>&quot;Lien de prise de rendez-vous&quot;</strong> ou
+                    dans la section <strong>&quot;Site web&quot;</strong> de votre établissement.
                   </p>
                 </div>
               </div>

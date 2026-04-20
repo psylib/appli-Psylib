@@ -20,7 +20,7 @@ function nextWithPathname(req: NextRequest) {
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }; expires: string } | null }) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
@@ -83,7 +83,7 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
   }
 
   return nextWithPathname(req);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 }) as unknown as import('next/server').NextMiddleware;
 
 export default middleware;

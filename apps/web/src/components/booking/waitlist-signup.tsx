@@ -75,10 +75,10 @@ export function WaitlistSignup({ slug, consultationTypeId, defaultOpen = false }
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-center">
         <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
         <p className="text-sm font-medium text-emerald-900">
-          Vous êtes inscrit(e) sur la liste d'attente
+          Vous êtes inscrit(e) sur la liste d&apos;attente
         </p>
         <p className="text-xs text-emerald-700 mt-1">
-          Vous recevrez un email dès qu'un créneau se libère.
+          Vous recevrez un email dès qu&apos;un créneau se libère.
         </p>
       </div>
     );
@@ -100,7 +100,7 @@ export function WaitlistSignup({ slug, consultationTypeId, defaultOpen = false }
               Pas de créneau qui convient ?
             </p>
             <p className="text-xs text-muted-foreground">
-              Inscrivez-vous sur la liste d'attente
+              Inscrivez-vous sur la liste d&apos;attente
             </p>
           </div>
         </div>
@@ -239,7 +239,7 @@ export function WaitlistSignup({ slug, consultationTypeId, defaultOpen = false }
             className="w-full bg-primary text-white py-2.5 rounded-lg font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            M'inscrire sur la liste d'attente
+            M&apos;inscrire sur la liste d&apos;attente
           </button>
 
           <p className="text-[11px] text-muted-foreground text-center">

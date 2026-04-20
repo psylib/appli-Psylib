@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { AuditService } from '../common/audit.service';
 import { RoomServiceClient, AccessToken, VideoGrant } from 'livekit-server-sdk';
@@ -15,15 +16,20 @@ import { VideoTokenResponse, TodayVideoRoom } from './dto/video.dto';
 @Injectable()
 export class VideoService {
   private readonly logger = new Logger(VideoService.name);
-  private readonly livekitApiKey = process.env.LIVEKIT_API_KEY!;
-  private readonly livekitApiSecret = process.env.LIVEKIT_API_SECRET!;
-  private readonly livekitWsUrl = process.env.LIVEKIT_WS_URL!;
+  private readonly livekitApiKey: string;
+  private readonly livekitApiSecret: string;
+  private readonly livekitWsUrl: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly roomService: RoomServiceClient,
-  ) {}
+    private readonly config: ConfigService,
+  ) {
+    this.livekitApiKey = this.config.get<string>('LIVEKIT_API_KEY', '');
+    this.livekitApiSecret = this.config.get<string>('LIVEKIT_API_SECRET', '');
+    this.livekitWsUrl = this.config.get<string>('LIVEKIT_WS_URL', '');
+  }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────────
 

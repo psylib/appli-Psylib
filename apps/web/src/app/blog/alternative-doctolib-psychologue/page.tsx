@@ -134,7 +134,7 @@ export default function ArticleAlternativeDoctolib() {
         {/* Introduction */}
         <section className="mb-10 rounded-2xl bg-[#F1F0F9] p-6">
           <p className="leading-relaxed">
-            Doctolib est devenu un réflexe pour les professionnels de santé français — 60 millions de visiteurs mensuels, une notoriété patient écrasante, un outil éprouvé. Mais pour un psychologue libéral, c'est aussi un outil pensé d'abord pour les médecins généralistes, à un tarif qui commence à <strong>139€/mois</strong>, sans gestion de dossier clinique, sans notes de séance, sans facturation intégrée, sans outcome tracking.
+            Doctolib est devenu un réflexe pour les professionnels de santé français — 60 millions de visiteurs mensuels, une notoriété patient écrasante, un outil éprouvé. Mais pour un psychologue libéral, c&apos;est aussi un outil pensé d&apos;abord pour les médecins généralistes, à un tarif qui commence à <strong>139€/mois</strong>, sans gestion de dossier clinique, sans notes de séance, sans facturation intégrée, sans outcome tracking.
           </p>
           <p className="mt-4 leading-relaxed">
             De plus en plus de psychologues cherchent une alternative : un outil moins cher, plus complet, conçu pour leur pratique. Ce guide compare les 6 solutions françaises les plus sérieuses en 2026 — avec un focus sur la conformité HDS, le prix, et les fonctionnalités cliniques.
@@ -163,13 +163,13 @@ export default function ArticleAlternativeDoctolib() {
 
           <h3 className="mb-2 mt-6 font-playfair text-lg font-semibold">3. Un positionnement médical généraliste</h3>
           <p className="mb-4 leading-relaxed">
-            Doctolib est d'abord pensé pour les médecins. Les fonctionnalités spécifiques à la psychologie — orientation thérapeutique (TCC, psychodynamique, ACT), exercices inter-séances, espace patient, intégration Mon Soutien Psy — ne sont pas couvertes.
+            Doctolib est d&apos;abord pensé pour les médecins. Les fonctionnalités spécifiques à la psychologie — orientation thérapeutique (TCC, psychodynamique, ACT), exercices inter-séances, espace patient, intégration Mon Soutien Psy — ne sont pas couvertes.
           </p>
 
           <div className="my-6 rounded-xl border-l-4 border-[#3D52A0] bg-[#F1F0F9] px-5 py-4">
             <p className="font-semibold">Le bon usage de Doctolib pour un psychologue</p>
             <p className="mt-2 text-sm leading-relaxed">
-              Doctolib reste pertinent comme <strong>canal d'acquisition patient</strong> — vitrine publique et prise de rendez-vous. Mais il ne remplace pas un logiciel de gestion de cabinet complet. La plupart des psychologues le combinent avec un outil métier dédié. Reste à savoir si les deux sont nécessaires, ou si une alternative unifiée suffit.
+              Doctolib reste pertinent comme <strong>canal d&apos;acquisition patient</strong> — vitrine publique et prise de rendez-vous. Mais il ne remplace pas un logiciel de gestion de cabinet complet. La plupart des psychologues le combinent avec un outil métier dédié. Reste à savoir si les deux sont nécessaires, ou si une alternative unifiée suffit.
             </p>
           </div>
         </section>
@@ -258,7 +258,7 @@ export default function ArticleAlternativeDoctolib() {
             Alternative la plus directe à Doctolib. Annuaire patient national, prise de rendez-vous en ligne, téléconsultation intégrée, rappels SMS. Tarif plus accessible que Doctolib (79€/mois en Solo) et infrastructure HDS en France.
           </p>
           <p className="mb-4 leading-relaxed">
-            <strong>Pour qui :</strong> les psychologues qui veulent une vitrine patient similaire à Doctolib, avec téléconsultation, à un tarif 40% moins cher. <strong>Limite :</strong> pas de gestion dossier clinique spécifique à la psychologie, pas de questionnaires validés, pas d'espace patient inter-séances.
+            <strong>Pour qui :</strong> les psychologues qui veulent une vitrine patient similaire à Doctolib, avec téléconsultation, à un tarif 40% moins cher. <strong>Limite :</strong> pas de gestion dossier clinique spécifique à la psychologie, pas de questionnaires validés, pas d&apos;espace patient inter-séances.
           </p>
 
           <h3 className="mb-2 mt-6 font-playfair text-xl font-semibold">Docorga</h3>
@@ -266,23 +266,23 @@ export default function ArticleAlternativeDoctolib() {
             Solution française certifiée HDS, positionnée comme alternative praticiens réglementés à Doctolib. Tarif unique 54,90€/mois incluant agenda, SMS illimités, téléconsultation, dossier patient basique. Quatre outils gratuits (agenda, fiches, messagerie, RGPD) en freemium.
           </p>
           <p className="mb-4 leading-relaxed">
-            <strong>Pour qui :</strong> les praticiens multi-santé qui veulent une solution HDS à prix fixe. <strong>Limite :</strong> pas d'IA, pas d'espace patient, pas de paiement en ligne intégré, pas de formations, interface généraliste.
+            <strong>Pour qui :</strong> les praticiens multi-santé qui veulent une solution HDS à prix fixe. <strong>Limite :</strong> pas d&apos;IA, pas d&apos;espace patient, pas de paiement en ligne intégré, pas de formations, interface généraliste.
           </p>
 
           <h3 className="mb-2 mt-6 font-playfair text-xl font-semibold">Terapiz</h3>
           <p className="mb-4 leading-relaxed">
-            Outil de gestion agenda + facturation pour praticiens bien-être et santé, hébergé en France. Prix d'entrée attractif (29-49€/mois), interface simple, agenda en ligne avec rappels SMS.
+            Outil de gestion agenda + facturation pour praticiens bien-être et santé, hébergé en France. Prix d&apos;entrée attractif (29-49€/mois), interface simple, agenda en ligne avec rappels SMS.
           </p>
           <p className="mb-4 leading-relaxed">
-            <strong>Pour qui :</strong> les psychologues cherchant un outil minimaliste agenda + facturation à petit prix. <strong>Limite :</strong> dossier clinique limité, pas d'outcome tracking, pas de templates par orientation, pas d'IA, base utilisateurs modeste.
+            <strong>Pour qui :</strong> les psychologues cherchant un outil minimaliste agenda + facturation à petit prix. <strong>Limite :</strong> dossier clinique limité, pas d&apos;outcome tracking, pas de templates par orientation, pas d&apos;IA, base utilisateurs modeste.
           </p>
 
           <h3 className="mb-2 mt-6 font-playfair text-xl font-semibold">Mon Cabinet Libéral</h3>
           <p className="mb-4 leading-relaxed">
-            Solution française multi-pro santé avec dossier patient, agenda, facturation, comptabilité. Tarif d'entrée 24€/mois, jusqu'à 59€/mois pour la version complète.
+            Solution française multi-pro santé avec dossier patient, agenda, facturation, comptabilité. Tarif d&apos;entrée 24€/mois, jusqu&apos;à 59€/mois pour la version complète.
           </p>
           <p className="mb-4 leading-relaxed">
-            <strong>Pour qui :</strong> les psychologues qui veulent centraliser gestion administrative + comptable à petit budget. <strong>Limite :</strong> pas de templates spécifiques psychologie, pas de questionnaires validés, interface orientée comptabilité, pas d'IA.
+            <strong>Pour qui :</strong> les psychologues qui veulent centraliser gestion administrative + comptable à petit budget. <strong>Limite :</strong> pas de templates spécifiques psychologie, pas de questionnaires validés, interface orientée comptabilité, pas d&apos;IA.
           </p>
 
           <h3 className="mb-2 mt-6 font-playfair text-xl font-semibold">PsyLib</h3>
@@ -301,13 +301,13 @@ export default function ArticleAlternativeDoctolib() {
             <li className="rounded-xl border border-gray-200 p-4">
               <p className="font-semibold">1. La conformité HDS réelle, pas juste revendiquée</p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Beaucoup de logiciels revendiquent "HDS" alors qu'ils héritent seulement de la certification de leur hébergeur. Exigez : hébergement certifié HDS en France + chiffrement applicatif des données sensibles + MFA obligatoire + audit des accès + export RGPD.
+                Beaucoup de logiciels revendiquent &quot;HDS&quot; alors qu&apos;ils héritent seulement de la certification de leur hébergeur. Exigez : hébergement certifié HDS en France + chiffrement applicatif des données sensibles + MFA obligatoire + audit des accès + export RGPD.
               </p>
             </li>
             <li className="rounded-xl border border-gray-200 p-4">
               <p className="font-semibold">2. La spécificité métier psychologie</p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Templates de notes par orientation thérapeutique, questionnaires validés, intégration Mon Soutien Psy, espace patient avec exercices inter-séances. Un outil généraliste "professions de santé" ne couvre pas ces besoins.
+                Templates de notes par orientation thérapeutique, questionnaires validés, intégration Mon Soutien Psy, espace patient avec exercices inter-séances. Un outil généraliste &quot;professions de santé&quot; ne couvre pas ces besoins.
               </p>
             </li>
             <li className="rounded-xl border border-gray-200 p-4">
@@ -319,7 +319,7 @@ export default function ArticleAlternativeDoctolib() {
             <li className="rounded-xl border border-gray-200 p-4">
               <p className="font-semibold">4. Le mode de récupération des patients existants</p>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                Vérifiez l'import CSV patients, l'import historique de rendez-vous, la possibilité de rediriger vos patients Doctolib vers votre nouvelle page de prise de rendez-vous.
+                Vérifiez l&apos;import CSV patients, l&apos;import historique de rendez-vous, la possibilité de rediriger vos patients Doctolib vers votre nouvelle page de prise de rendez-vous.
               </p>
             </li>
             <li className="rounded-xl border border-gray-200 p-4">
@@ -335,17 +335,17 @@ export default function ArticleAlternativeDoctolib() {
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold">Comment migrer de Doctolib vers une alternative ?</h2>
           <ol className="space-y-3 list-decimal list-inside">
-            <li className="leading-relaxed"><strong>Exporter vos données Doctolib.</strong> Utilisez votre droit RGPD : demandez l'export complet de vos patients et rendez-vous via le support Doctolib (délai légal 30 jours).</li>
+            <li className="leading-relaxed"><strong>Exporter vos données Doctolib.</strong> Utilisez votre droit RGPD : demandez l&apos;export complet de vos patients et rendez-vous via le support Doctolib (délai légal 30 jours).</li>
             <li className="leading-relaxed"><strong>Tester la nouvelle solution en parallèle.</strong> Pendant 14 à 30 jours, gardez Doctolib actif et ajoutez vos nouveaux patients dans la nouvelle solution.</li>
             <li className="leading-relaxed"><strong>Importer vos patients existants.</strong> Via le fichier CSV exporté de Doctolib.</li>
             <li className="leading-relaxed"><strong>Prévenir vos patients du changement.</strong> Email informatif avec le nouveau lien de prise de rendez-vous.</li>
-            <li className="leading-relaxed"><strong>Résilier Doctolib.</strong> Une fois la transition stable (environ 1 mois), désactiver l'abonnement Doctolib.</li>
+            <li className="leading-relaxed"><strong>Résilier Doctolib.</strong> Une fois la transition stable (environ 1 mois), désactiver l&apos;abonnement Doctolib.</li>
           </ol>
         </section>
 
         {/* Section PsyLib */}
         <section className="mb-10">
-          <h2 className="mb-4 font-playfair text-2xl font-bold">Pourquoi PsyLib est l'alternative la plus complète</h2>
+          <h2 className="mb-4 font-playfair text-2xl font-bold">Pourquoi PsyLib est l&apos;alternative la plus complète</h2>
           <p className="mb-4 leading-relaxed">
             PsyLib est la seule plateforme française 100% pensée pour les psychologues libéraux, combinant toutes les fonctionnalités que Doctolib ne couvre pas :
           </p>
@@ -418,7 +418,7 @@ export default function ArticleAlternativeDoctolib() {
         {/* Footer */}
         <footer className="border-t border-gray-200 pt-8 text-sm text-gray-500">
           <p>
-            Article rédigé par l'équipe PsyLib — avril 2026.{' '}
+            Article rédigé par l&apos;équipe PsyLib — avril 2026.{' '}
             <Link href="/" className="text-[#3D52A0] hover:underline">Accueil</Link>
             {' | '}
             <Link href="/blog" className="text-[#3D52A0] hover:underline">Tous les articles</Link>

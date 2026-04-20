@@ -57,7 +57,7 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
               <div>
                 <p className="text-sm font-semibold text-emerald-800 mb-1">Paiement confirmé</p>
                 <p className="text-sm text-emerald-700 leading-relaxed">
-                  Un reçu vous a été envoyé par email. Aucune autre action n'est requise de votre part.
+                  Un reçu vous a été envoyé par email. Aucune autre action n&apos;est requise de votre part.
                 </p>
               </div>
             </div>

@@ -62,7 +62,7 @@ function CreateInvoiceModal({
     formState: { errors },
     setValue,
   } = useForm<CreateForm>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(createSchema as any),
     defaultValues: {
       patientId: '',
@@ -133,7 +133,7 @@ function CreateInvoiceModal({
 
           {/* Date */}
           <div className="space-y-1">
-            <label className="text-sm font-medium text-foreground">Date d'émission</label>
+            <label className="text-sm font-medium text-foreground">Date d&apos;émission</label>
             <Input type="date" {...register('issuedAt')} />
             {errors.issuedAt && (
               <p className="text-xs text-destructive">{errors.issuedAt.message}</p>

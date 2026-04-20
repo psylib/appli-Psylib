@@ -202,12 +202,12 @@ export default function ComparaisonPage() {
             </h2>
             <div className="prose prose-charcoal text-charcoal-400">
               <p>
-                Beaucoup de psychologues commencent avec un tableur. C'est gratuit, flexible... mais pas adapté.
-                Excel ne chiffre pas vos données patients, ne génère pas de factures conformes, et n'est pas certifié HDS.
+                Beaucoup de psychologues commencent avec un tableur. C&apos;est gratuit, flexible... mais pas adapté.
+                Excel ne chiffre pas vos données patients, ne génère pas de factures conformes, et n&apos;est pas certifié HDS.
               </p>
               <p>
                 <strong>Risque légal :</strong> stocker des données de santé sur Google Drive ou OneDrive non-HDS
-                expose à des sanctions CNIL pouvant aller jusqu'à 20 millions d'euros.
+                expose à des sanctions CNIL pouvant aller jusqu&apos;à 20 millions d&apos;euros.
               </p>
               <p>
                 PsyLib remplace votre tableur par un outil professionnel : dossiers structurés, notes cliniques
@@ -223,7 +223,7 @@ export default function ComparaisonPage() {
             <div className="prose prose-charcoal text-charcoal-400">
               <p>
                 Doctolib est excellent pour la prise de rendez-vous et la visibilité en ligne.
-                Mais Doctolib n'est pas un outil de gestion de cabinet.
+                Mais Doctolib n&apos;est pas un outil de gestion de cabinet.
               </p>
               <p>
                 <strong>Ce que Doctolib ne fait pas :</strong> notes cliniques structurées, outcome tracking

@@ -141,7 +141,7 @@ export function WaitlistContent() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Liste d'attente</h1>
+          <h1 className="text-2xl font-bold text-foreground">Liste d&apos;attente</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {isLoading ? '…' : `${filtered.length} patient${filtered.length > 1 ? 's' : ''}`}
           </p>

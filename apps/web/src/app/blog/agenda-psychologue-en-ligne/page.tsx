@@ -130,7 +130,7 @@ export default function ArticleAgendaPsychologue() {
             Agenda psychologue en ligne : pourquoi passer au numérique en 2026 ?
           </h1>
           <p className="mt-4 text-lg text-gray-600">
-            Gain de temps, réduction des no-shows, conformité HDS — ce que l'agenda numérique
+            Gain de temps, réduction des no-shows, conformité HDS — ce que l&apos;agenda numérique
             apporte concrètement à un cabinet libéral.
           </p>
         </header>
@@ -140,8 +140,8 @@ export default function ArticleAgendaPsychologue() {
           <p className="leading-relaxed">
             Chaque semaine, un psychologue libéral consacre en moyenne deux à trois heures à
             la gestion téléphonique de son agenda. Confirmations, annulations, rappels manuels...
-            Ces tâches s'accumulent entre les séances. S'y ajoutent les rendez-vous oubliés
-            qui représentent 15 à 20 % du planning d'un cabinet non équipé de rappels
+            Ces tâches s&apos;accumulent entre les séances. S&apos;y ajoutent les rendez-vous oubliés
+            qui représentent 15 à 20 % du planning d&apos;un cabinet non équipé de rappels
             automatiques.
           </p>
         </section>
@@ -149,17 +149,17 @@ export default function ArticleAgendaPsychologue() {
         {/* Section 1 */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            Les limites de l'agenda papier
+            Les limites de l&apos;agenda papier
           </h2>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
             Temps téléphonique et interruptions de séance
           </h3>
           <p className="mb-4 leading-relaxed">
-            L'agenda papier exige une présence téléphonique permanente. Un patient qui cherche
-            à prendre rendez-vous en dehors des heures de bureau reçoit un répondeur. S'il ne
+            L&apos;agenda papier exige une présence téléphonique permanente. Un patient qui cherche
+            à prendre rendez-vous en dehors des heures de bureau reçoit un répondeur. S&apos;il ne
             rappelle pas, il consulte un autre praticien. Sur une semaine avec vingt nouveaux
-            contacts, cela peut représenter jusqu'à deux heures de travail non rémunéré en
+            contacts, cela peut représenter jusqu&apos;à deux heures de travail non rémunéré en
             rappels et confirmations.
           </p>
 
@@ -169,16 +169,16 @@ export default function ArticleAgendaPsychologue() {
           <p className="mb-4 leading-relaxed">
             A 65 euros la séance, deux no-shows par semaine représentent 130 euros de manque
             à gagner, soit plus de 6 000 euros par an. Les rappels automatiques réduisent ce
-            taux de 30 à 50 %. L'agenda numérique s'autofinance rapidement — souvent en moins
-            d'un mois.
+            taux de 30 à 50 %. L&apos;agenda numérique s&apos;autofinance rapidement — souvent en moins
+            d&apos;un mois.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
             Le risque de conformité légale
           </h3>
           <p className="mb-4 leading-relaxed">
-            Un agenda papier stocké dans le cabinet n'est pas soumis aux mêmes obligations
-            qu'un agenda numérique. Mais dès lors que le praticien utilise un outil en ligne
+            Un agenda papier stocké dans le cabinet n&apos;est pas soumis aux mêmes obligations
+            qu&apos;un agenda numérique. Mais dès lors que le praticien utilise un outil en ligne
             pour gérer ses rendez-vous, les données de santé associées doivent être hébergées
             sur une infrastructure certifiée HDS. Utiliser Google Calendar ou un agenda grand
             public constitue une infraction aux obligations légales.
@@ -188,7 +188,7 @@ export default function ArticleAgendaPsychologue() {
         {/* Section 2 */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            Les avantages d'un agenda psychologue en ligne
+            Les avantages d&apos;un agenda psychologue en ligne
           </h2>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -196,17 +196,17 @@ export default function ArticleAgendaPsychologue() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Avec un agenda en ligne, le patient choisit son créneau depuis une interface
-            dédiée, à n'importe quelle heure. Le psychologue paramètre ses disponibilités une
-            fois, et l'agenda se remplit de manière autonome. Les plages horaires sont
+            dédiée, à n&apos;importe quelle heure. Le psychologue paramètre ses disponibilités une
+            fois, et l&apos;agenda se remplit de manière autonome. Les plages horaires sont
             automatiquement bloquées après réservation, sans risque de double réservation.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            Rappels automatiques : l'arme anti no-shows
+            Rappels automatiques : l&apos;arme anti no-shows
           </h3>
           <p className="mb-4 leading-relaxed">
-            L'envoi automatique d'un rappel par e-mail 24 à 48 heures avant le rendez-vous
-            est la fonctionnalité la plus rentable d'un agenda en ligne. Elle ne demande
+            L&apos;envoi automatique d&apos;un rappel par e-mail 24 à 48 heures avant le rendez-vous
+            est la fonctionnalité la plus rentable d&apos;un agenda en ligne. Elle ne demande
             aucune action du praticien une fois configurée, et son impact sur la réduction
             des absences est documenté par de nombreuses études dans le secteur de la santé.
           </p>
@@ -215,7 +215,7 @@ export default function ArticleAgendaPsychologue() {
             Synchronisation multi-supports
           </h3>
           <p className="mb-4 leading-relaxed">
-            Un agenda en ligne synchronisé permet de consulter son planning depuis n'importe
+            Un agenda en ligne synchronisé permet de consulter son planning depuis n&apos;importe
             quel appareil — ordinateur de bureau, tablette ou smartphone — en temps réel.
             Les annulations et modifications de dernière minute sont visibles instantanément
             depuis le cabinet comme en déplacement.
@@ -226,9 +226,9 @@ export default function ArticleAgendaPsychologue() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Un agenda intégré à la plateforme de gestion du cabinet permet de passer
-            directement d'un rendez-vous au dossier patient, puis à la note de séance,
-            sans changer d'outil. Cette continuité réduit les frictions administratives
-            et le risque d'erreur de saisie.
+            directement d&apos;un rendez-vous au dossier patient, puis à la note de séance,
+            sans changer d&apos;outil. Cette continuité réduit les frictions administratives
+            et le risque d&apos;erreur de saisie.
           </p>
         </section>
 
@@ -238,16 +238,16 @@ export default function ArticleAgendaPsychologue() {
             La conformité HDS : une obligation légale non négociable
           </h2>
           <p className="mb-4 leading-relaxed">
-            Toute donnée de santé — y compris les métadonnées d'un rendez-vous associé à
-            l'identité d'un patient — doit être hébergée chez un prestataire certifié HDS
-            (Hébergement de Données de Santé). Cette obligation découle de l'article L.1111-8
+            Toute donnée de santé — y compris les métadonnées d&apos;un rendez-vous associé à
+            l&apos;identité d&apos;un patient — doit être hébergée chez un prestataire certifié HDS
+            (Hébergement de Données de Santé). Cette obligation découle de l&apos;article L.1111-8
             du Code de la santé publique.
           </p>
           <p className="mb-4 leading-relaxed">
             Utiliser un Google Calendar, un agenda iCloud ou tout autre outil grand public
-            expose le psychologue à des sanctions CNIL pouvant atteindre 20 millions d'euros
-            ou 4 % du chiffre d'affaires annuel. La certification HDS doit être le premier
-            critère de sélection d'un outil de gestion de cabinet.
+            expose le psychologue à des sanctions CNIL pouvant atteindre 20 millions d&apos;euros
+            ou 4 % du chiffre d&apos;affaires annuel. La certification HDS doit être le premier
+            critère de sélection d&apos;un outil de gestion de cabinet.
           </p>
         </section>
 
@@ -280,7 +280,7 @@ export default function ArticleAgendaPsychologue() {
         {/* Section 5 : PsyLib */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            L'agenda PsyLib
+            L&apos;agenda PsyLib
           </h2>
           <p className="mb-4 leading-relaxed">
             PsyLib propose un agenda en ligne conçu pour les psychologues libéraux, hébergé
@@ -288,9 +288,9 @@ export default function ArticleAgendaPsychologue() {
             intégrée, rappels automatiques par e-mail, synchronisation en temps réel.
           </p>
           <p className="mb-4 leading-relaxed">
-            L'agenda fait partie d'un écosystème complet : dossier patient, notes de séance
+            L&apos;agenda fait partie d&apos;un écosystème complet : dossier patient, notes de séance
             avec templates par orientation clinique, facturation PDF et outcome tracking
-            (PHQ-9, GAD-7, CORE-OM). Un seul outil pour l'ensemble du cabinet.
+            (PHQ-9, GAD-7, CORE-OM). Un seul outil pour l&apos;ensemble du cabinet.
           </p>
         </section>
 
@@ -322,10 +322,10 @@ export default function ArticleAgendaPsychologue() {
                 Un agenda psychologue en ligne doit-il être certifié HDS ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Oui. Les données de rendez-vous associées à l'identité d'un patient constituent
+                Oui. Les données de rendez-vous associées à l&apos;identité d&apos;un patient constituent
                 des données de santé. Leur hébergement doit être réalisé chez un prestataire
                 certifié HDS. Utiliser un agenda grand public expose le praticien à des sanctions
-                CNIL pouvant atteindre 20 millions d'euros.
+                CNIL pouvant atteindre 20 millions d&apos;euros.
               </p>
             </details>
 
@@ -346,7 +346,7 @@ export default function ArticleAgendaPsychologue() {
                 Peut-on utiliser Google Calendar comme psychologue ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Non. Google Calendar n'est pas certifié HDS et ne garantit pas la conformité
+                Non. Google Calendar n&apos;est pas certifié HDS et ne garantit pas la conformité
                 RGPD pour les données de santé. Un psychologue libéral doit utiliser un outil
                 certifié HDS pour la gestion de son planning patient.
               </p>
@@ -368,9 +368,9 @@ export default function ArticleAgendaPsychologue() {
         {/* Conclusion */}
         <footer className="border-t border-gray-200 pt-8 text-sm text-gray-500">
           <p>
-            Article rédigé par l'équipe PsyLib — Mars 2026.{' '}
+            Article rédigé par l&apos;équipe PsyLib — Mars 2026.{' '}
             <Link href="/" className="text-[#3D52A0] hover:underline">
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
             {' '}|{' '}
             <Link href="/blog" className="text-[#3D52A0] hover:underline">

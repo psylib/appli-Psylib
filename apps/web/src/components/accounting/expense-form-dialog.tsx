@@ -53,7 +53,7 @@ export function ExpenseFormDialog({ token, expense, onClose }: Props) {
     watch,
     setValue,
   } = useForm<FormValues>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(schema as any),
     defaultValues: {
       date:          expense?.date ?? new Date().toISOString().split('T')[0],

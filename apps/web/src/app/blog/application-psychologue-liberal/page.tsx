@@ -148,7 +148,7 @@ export default function ArticleApplicationPsychologue() {
         <section className="mb-10 rounded-2xl bg-[#F1F0F9] p-6">
           <p className="leading-relaxed">
             La transformation numérique des cabinets libéraux a produit une offre pléthorique
-            d'outils de gestion. Le psychologue libéral qui cherche à s'équiper se retrouve
+            d&apos;outils de gestion. Le psychologue libéral qui cherche à s&apos;équiper se retrouve
             face à des solutions souvent incompatibles, parfois inadaptées à ses obligations
             légales. Ce guide présente les cinq fonctionnalités indispensables et les critères
             de sécurité non négociables.
@@ -171,7 +171,7 @@ export default function ArticleApplicationPsychologue() {
             Au-delà de la conformité, la pratique psychologique implique des besoins
             fonctionnels spécifiques absents des outils généralistes : notes structurées
             par orientation thérapeutique, suivi longitudinal des résultats, outils
-            d'évaluation standardisés, réseau professionnel pour les adressages entre
+            d&apos;évaluation standardisés, réseau professionnel pour les adressages entre
             confrères.
           </p>
         </section>
@@ -187,17 +187,17 @@ export default function ArticleApplicationPsychologue() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Le dossier patient numérique doit centraliser toutes les informations : identité,
-            antécédents, historique des séances, documents. L'accès doit être protégé par
+            antécédents, historique des séances, documents. L&apos;accès doit être protégé par
             authentification forte et les données chiffrées au repos comme en transit.
             Une bonne application permet de filtrer, rechercher et archiver les dossiers
             en quelques secondes, avec chiffrement applicatif des champs sensibles.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            2. L'agenda avec prise de rendez-vous en ligne
+            2. L&apos;agenda avec prise de rendez-vous en ligne
           </h3>
           <p className="mb-4 leading-relaxed">
-            L'agenda intégré doit permettre la gestion du planning et offrir une interface
+            L&apos;agenda intégré doit permettre la gestion du planning et offrir une interface
             de réservation en ligne. Les rappels automatiques par e-mail réduisent les
             no-shows de 30 à 50 %. Un agenda intégré à la plateforme évite les frictions
             de saisie entre outils séparés.
@@ -209,7 +209,7 @@ export default function ArticleApplicationPsychologue() {
           <p className="mb-4 leading-relaxed">
             La génération automatique de factures conformes — mentions obligatoires,
             numérotation séquentielle, TVA exonérée, numéro ADELI — est un gain de temps
-            significatif. L'envoi direct au patient et le suivi des paiements (brouillon,
+            significatif. L&apos;envoi direct au patient et le suivi des paiements (brouillon,
             envoyée, payée) sont essentiels pour la gestion financière du cabinet.
           </p>
 
@@ -220,17 +220,17 @@ export default function ArticleApplicationPsychologue() {
             Une application adaptée propose des modèles structurés par orientation
             thérapeutique (TCC, psychodynamique, ACT, systémique). Ces templates réduisent
             le temps de rédaction sans sacrifier la rigueur clinique. Le stockage des notes
-            doit être séparé des informations administratives avec des règles d'accès
+            doit être séparé des informations administratives avec des règles d&apos;accès
             renforcées et chiffrement AES-256-GCM au niveau applicatif.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            5. L'outcome tracking et le suivi des progrès
+            5. L&apos;outcome tracking et le suivi des progrès
           </h3>
           <p className="mb-4 leading-relaxed">
-            L'administration numérique de questionnaires validés (PHQ-9, GAD-7, CORE-OM)
-            à intervalles réguliers permet de visualiser l'évolution du patient sous forme
-            de graphiques. C'est la fonctionnalité qui transforme une impression clinique
+            L&apos;administration numérique de questionnaires validés (PHQ-9, GAD-7, CORE-OM)
+            à intervalles réguliers permet de visualiser l&apos;évolution du patient sous forme
+            de graphiques. C&apos;est la fonctionnalité qui transforme une impression clinique
             en donnée objective, et qui réduit de 65 % le risque de détérioration non
             détectée selon les méta-analyses.
           </p>
@@ -242,9 +242,9 @@ export default function ArticleApplicationPsychologue() {
             La sécurité des données : priorité absolue
           </h2>
           <p className="mb-4 leading-relaxed">
-            L'article L.1111-8 du Code de la santé publique impose que toute donnée de santé
-            soit hébergée chez un prestataire certifié HDS. Vérifiez que l'éditeur mentionne
-            explicitement son hébergement HDS, que les serveurs sont en France ou dans l'UE,
+            L&apos;article L.1111-8 du Code de la santé publique impose que toute donnée de santé
+            soit hébergée chez un prestataire certifié HDS. Vérifiez que l&apos;éditeur mentionne
+            explicitement son hébergement HDS, que les serveurs sont en France ou dans l&apos;UE,
             et que le contrat de sous-traitance RGPD est disponible sur demande.
           </p>
 
@@ -275,13 +275,13 @@ export default function ArticleApplicationPsychologue() {
           </h2>
           <p className="mb-4 leading-relaxed">
             Les solutions sérieuses se situent entre 30 et 60 euros par mois. Rapporté au
-            nombre de séances d'un cabinet en activité normale (80 à 100 séances par mois),
+            nombre de séances d&apos;un cabinet en activité normale (80 à 100 séances par mois),
             cela représente moins de 2 euros par séance pour une infrastructure conforme.
           </p>
           <p className="mb-4 leading-relaxed">
             Les offres gratuites comportent souvent des compromis sur la sécurité des données,
-            les fonctionnalités cliniques ou la conformité légale. Le coût d'une mise en
-            conformité après incident CNIL dépasse largement celui d'un abonnement à une
+            les fonctionnalités cliniques ou la conformité légale. Le coût d&apos;une mise en
+            conformité après incident CNIL dépasse largement celui d&apos;un abonnement à une
             solution adaptée.
           </p>
         </section>
@@ -289,7 +289,7 @@ export default function ArticleApplicationPsychologue() {
         {/* Section 5 : PsyLib */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            PsyLib : l'application conçue pour les psychologues libéraux
+            PsyLib : l&apos;application conçue pour les psychologues libéraux
           </h2>
           <p className="mb-4 leading-relaxed">
             PsyLib intègre les cinq fonctionnalités : dossier patient sécurisé, agenda avec
@@ -334,8 +334,8 @@ export default function ArticleApplicationPsychologue() {
               <p className="mt-3 leading-relaxed text-gray-700">
                 Les données traitées par un psychologue libéral sont des données de santé
                 soumises à des obligations légales strictes (HDS, RGPD). Les outils généralistes
-                ne garantissent pas cette conformité et manquent des fonctionnalités spécifiques
-                : notes structurées par orientation, outcome tracking, réseau professionnel.
+                ne garantissent pas cette conformité et manquent des fonctionnalités spécifiques :
+                notes structurées par orientation, outcome tracking, réseau professionnel.
               </p>
             </details>
 
@@ -355,10 +355,10 @@ export default function ArticleApplicationPsychologue() {
                 La certification HDS est-elle obligatoire ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Oui. L'article L.1111-8 du Code de la santé publique impose que toute donnée
+                Oui. L&apos;article L.1111-8 du Code de la santé publique impose que toute donnée
                 de santé soit hébergée chez un prestataire certifié HDS. Un psychologue qui
-                utilise une application non certifiée s'expose à des sanctions CNIL pouvant
-                atteindre 20 millions d'euros.
+                utilise une application non certifiée s&apos;expose à des sanctions CNIL pouvant
+                atteindre 20 millions d&apos;euros.
               </p>
             </details>
 
@@ -378,9 +378,9 @@ export default function ArticleApplicationPsychologue() {
         {/* Conclusion */}
         <footer className="border-t border-gray-200 pt-8 text-sm text-gray-500">
           <p>
-            Article rédigé par l'équipe PsyLib — Mars 2026.{' '}
+            Article rédigé par l&apos;équipe PsyLib — Mars 2026.{' '}
             <Link href="/" className="text-[#3D52A0] hover:underline">
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
             {' '}|{' '}
             <Link href="/blog" className="text-[#3D52A0] hover:underline">

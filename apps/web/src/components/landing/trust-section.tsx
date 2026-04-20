@@ -39,7 +39,7 @@ export function TrustSection() {
               Conformité & Sécurité
             </p>
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal mb-4">
-              La conformité HDS n'est pas une option
+              La conformité HDS n&apos;est pas une option
             </h2>
             <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
               En France, stocker des données de santé sur une infrastructure non certifiée HDS est une infraction. PsyLib est la seule plateforme psy conçue de zéro pour respecter ce cadre légal.

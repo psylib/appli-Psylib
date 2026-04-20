@@ -111,7 +111,7 @@ export function OutcomeSection() {
               </h2>
 
               <p className="text-charcoal-400 text-lg leading-relaxed">
-                Intégrez PHQ-9, GAD-7 et CORE-OM directement dans votre pratique. Visualisez l'évolution de chaque patient sur des graphiques cliniques clairs.
+                Intégrez PHQ-9, GAD-7 et CORE-OM directement dans votre pratique. Visualisez l&apos;évolution de chaque patient sur des graphiques cliniques clairs.
               </p>
 
               <ul className="space-y-3">

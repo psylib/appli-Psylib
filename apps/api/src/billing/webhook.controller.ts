@@ -10,7 +10,7 @@ import {
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { ApiTags, ApiOperation, ApiExcludeEndpoint } from '@nestjs/swagger';
+import { ApiTags, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../common/prisma.service';

@@ -137,7 +137,7 @@ export function OutcomesOverviewContent() {
           <div className="p-8 text-center space-y-2">
             <Target size={32} className="mx-auto text-muted-foreground/40" />
             <p className="text-muted-foreground text-sm">Aucune évaluation encore.</p>
-            <p className="text-xs text-muted-foreground">Ouvrez la fiche d'un patient pour démarrer une évaluation.</p>
+            <p className="text-xs text-muted-foreground">Ouvrez la fiche d&apos;un patient pour démarrer une évaluation.</p>
           </div>
         ) : (
           <div className="divide-y divide-border">

@@ -528,22 +528,22 @@ export function OnboardingWizard({ currentStep, currentStepIndex, totalSteps: _t
   const [direction, setDirection] = useState(getNavDirection);
 
   const profileForm = useForm<ProfileData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(profileSchema as any),
     defaultValues: { name: '', specialization: '', adeliNumber: '', bio: '' },
   });
   const practiceForm = useForm<PracticeData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(practiceSchema as any),
     defaultValues: { address: '', phone: '' },
   });
   const preferencesForm = useForm<PreferencesData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(preferencesSchema as any),
     defaultValues: { sessionDuration: 50, sessionRate: 80 },
   });
   const firstPatientForm = useForm<FirstPatientData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(firstPatientSchema as any),
     defaultValues: { name: '', email: '' },
   });

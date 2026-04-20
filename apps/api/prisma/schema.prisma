@@ -117,6 +117,12 @@ enum ConsultationCategory {
   mon_soutien_psy
 }
 
+enum AppointmentPaymentMode {
+  none
+  prepayment
+  post_session
+}
+
 enum BookingPaymentStatus {
   none
   pending_payment
@@ -183,9 +189,11 @@ enum ExpensePaymentMethod {
   check
   card
   transfer
+  bank_transfer
   direct_debit
   stripe
-  other_pm
+  paypal
+  other
 }
 
 enum RecurringFrequency {
@@ -289,6 +297,7 @@ model Psychologist {
   expenses                 Expense[]
   recurringExpenses        RecurringExpense[]
   accountingEntries        AccountingEntry[]
+  fecSequences             FecSequence[]
 
   @@map("psychologists")
 }
@@ -303,6 +312,7 @@ model Availability {
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 
+  @@index([psychologistId], name: "idx_availability_psy")
   @@map("availability")
 }
 
@@ -465,6 +475,7 @@ model NoteTemplate {
 
   psychologist Psychologist? @relation(fields: [psychologistId], references: [id], onDelete: SetNull)
 
+  @@index([psychologistId], name: "idx_note_templates_psy")
   @@map("note_templates")
 }
 
@@ -542,6 +553,7 @@ model NetworkGroup {
   owner   Psychologist         @relation("NetworkGroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members NetworkGroupMember[]
 
+  @@index([ownerId], name: "idx_network_groups_owner")
   @@map("network_groups")
 }
 
@@ -575,7 +587,7 @@ model Appointment {
   consultationTypeId   String?              @map("consultation_type_id")
   paymentIntentId      String?              @map("payment_intent_id")
   paymentAmount        Decimal?             @map("payment_amount") @db.Decimal(10, 2)
-  paymentMode          String               @default("none") @map("payment_mode") // "none" | "prepayment" | "post_session"
+  paymentMode          AppointmentPaymentMode @default(none) @map("payment_mode")
   paidOnline           Boolean              @default(false) @map("paid_online")
   bookingPaymentStatus BookingPaymentStatus @default(none) @map("booking_payment_status")
   isOnline             Boolean              @default(false) @map("is_online")
@@ -610,7 +622,6 @@ model VideoRoom {
   createdAt       DateTime        @default(now()) @map("created_at")
 
   @@index([psychologistId, status])
-  @@index([appointmentId])
   @@map("video_rooms")
 }
 
@@ -644,6 +655,7 @@ model Exercise {
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
+  @@index([patientId], name: "idx_exercises_patient")
   @@map("exercises")
 }
 
@@ -658,6 +670,7 @@ model JournalEntry {
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
+  @@index([patientId], name: "idx_journal_entries_patient")
   @@map("journal_entries")
 }
 
@@ -711,6 +724,7 @@ model Course {
   modules      CourseModule[]
   enrollments  CourseEnrollment[]
 
+  @@index([psychologistId], name: "idx_courses_psy")
   @@map("courses")
 }
 
@@ -724,6 +738,7 @@ model CourseModule {
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
+  @@index([courseId], name: "idx_course_modules_course")
   @@map("course_modules")
 }
 
@@ -739,6 +754,7 @@ model CourseEnrollment {
   user   User   @relation(fields: [userId], references: [id])
 
   @@unique([courseId, userId])
+  @@index([userId], name: "idx_course_enrollments_user")
   @@map("course_enrollments")
 }
 
@@ -766,6 +782,7 @@ model Payment {
   accountingEntries AccountingEntry[]
 
   @@index([appointmentId])
+  @@index([patientId], name: "idx_payments_patient")
   @@index([psychologistId, status], name: "idx_payments_psy_status")
   @@map("payments")
 }
@@ -790,6 +807,9 @@ model Invoice {
   payment           Payment?          @relation(fields: [paymentId], references: [id])
   accountingEntries AccountingEntry[]
 
+  @@index([psychologistId], name: "idx_invoices_psy")
+  @@index([patientId], name: "idx_invoices_patient")
+  @@index([paymentId], name: "idx_invoices_payment")
   @@index([sessionId], name: "idx_invoices_session")
   @@map("invoices")
 }
@@ -835,6 +855,7 @@ model GdprConsent {
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
+  @@index([patientId], name: "idx_gdpr_consents_patient")
   @@map("gdpr_consents")
 }
 
@@ -931,6 +952,8 @@ model PatientInvitation {
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
+  @@index([psychologistId], name: "idx_patient_invitations_psy")
+  @@index([patientId], name: "idx_patient_invitations_patient")
   @@map("patient_invitations")
 }
 
@@ -960,6 +983,7 @@ model MarketingContent {
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 
+  @@index([psychologistId], name: "idx_marketing_contents_psy")
   @@map("marketing_contents")
 }
 
@@ -1054,6 +1078,7 @@ model CaseStudy {
   presenter Psychologist       @relation("CaseStudyPresenter", fields: [presenterId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
+  @@index([presenterId], name: "idx_case_studies_presenter")
   @@map("case_studies")
 }
 
@@ -1151,10 +1176,12 @@ model AccountingEntry {
 }
 
 model FecSequence {
-  id             String @id @default(uuid())
-  psychologistId String @map("psychologist_id")
+  id             String       @id @default(uuid())
+  psychologistId String       @map("psychologist_id")
   year           Int
-  lastNumber     Int    @default(0) @map("last_number")
+  lastNumber     Int          @default(0) @map("last_number")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 
   @@unique([psychologistId, year])
   @@map("fec_sequences")
@@ -1177,6 +1204,5 @@ model ReferralInvite {
   referred Psychologist? @relation("InviteTo", fields: [referredId], references: [id])
 
   @@index([referrerId])
-  @@index([code])
   @@map("referral_invites")
 }

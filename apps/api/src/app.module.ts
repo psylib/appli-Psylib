@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { z } from 'zod';
 import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -46,6 +47,20 @@ import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
+      validate: (config: Record<string, unknown>) => {
+        const schema = z.object({
+          DATABASE_URL: z.string().min(1),
+          ENCRYPTION_KEY: z.string().min(1),
+          JWT_SECRET: z.string().optional(),
+          KEYCLOAK_URL: z.string().optional(),
+          KEYCLOAK_REALM: z.string().optional(),
+          STRIPE_SECRET_KEY: z.string().optional(),
+          STRIPE_WEBHOOK_SECRET: z.string().optional(),
+          OPENROUTER_API_KEY: z.string().optional(),
+          REDIS_HOST: z.string().optional(),
+        });
+        return schema.parse(config);
+      },
     }),
 
     ThrottlerModule.forRoot([

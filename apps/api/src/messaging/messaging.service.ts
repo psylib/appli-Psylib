@@ -132,7 +132,7 @@ export class MessagingService {
       unreadGroups.map((g) => [g.conversationId, g._count.id]),
     );
 
-    return conversations.map((conv, index) => {
+    return conversations.map((conv) => {
       const lastRaw = conv.messages[0] ?? null;
       let lastMessage: MessageDto | null = null;
 

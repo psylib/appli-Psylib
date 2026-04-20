@@ -94,7 +94,7 @@ function AssessmentForm({
     return (
       <div className="text-center space-y-4 py-6">
         <CheckCircle2 size={48} className="mx-auto text-green-500" />
-        <h3 className="text-lg font-semibold text-foreground">Merci, c'est enregistré !</h3>
+        <h3 className="text-lg font-semibold text-foreground">Merci, c&apos;est enregistré !</h3>
         <div className="bg-surface rounded-xl p-4 inline-block">
           <div className="text-3xl font-mono font-bold text-primary">{result.score}</div>
           <div className="text-sm text-muted-foreground">/ {assessment.template.maxScore}</div>
@@ -272,7 +272,7 @@ export function PatientAssessmentsContent() {
           {assessments.length === 0 && (
             <div className="bg-white rounded-xl border border-border p-10 text-center space-y-2">
               <ClipboardList size={32} className="mx-auto text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">Aucun questionnaire pour l'instant.</p>
+              <p className="text-sm text-muted-foreground">Aucun questionnaire pour l&apos;instant.</p>
               <p className="text-xs text-muted-foreground">Votre psychologue vous enverra des évaluations ici.</p>
             </div>
           )}

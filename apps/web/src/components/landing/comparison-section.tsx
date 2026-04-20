@@ -55,7 +55,7 @@ export function ComparisonSection() {
               Comparatif
             </p>
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal mb-4">
-              Pourquoi PsyLib plutôt qu'un outil générique ?
+              Pourquoi PsyLib plutôt qu&apos;un outil générique ?
             </h2>
             <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
               Les agendas médicaux généralistes ne sont pas conçus pour la spécificité de la pratique

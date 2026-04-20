@@ -42,7 +42,7 @@ export function NetworkSection() {
                 <em className="not-italic text-sage">sécurisé</em>
               </h2>
               <p className="text-charcoal-400 text-lg leading-relaxed">
-                Trouvez un collègue pour un adressage, rejoignez des groupes d'intervision, collaborez en toute confidentialité. Tout reste confidentiel et chiffré.
+                Trouvez un collègue pour un adressage, rejoignez des groupes d&apos;intervision, collaborez en toute confidentialité. Tout reste confidentiel et chiffré.
               </p>
 
               <div className="space-y-4">

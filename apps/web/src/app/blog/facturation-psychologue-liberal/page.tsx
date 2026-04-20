@@ -149,7 +149,7 @@ export default function ArticleFacturationPsychologue() {
           </h1>
           <p className="mt-4 text-lg text-gray-600">
             Mentions obligatoires, exonération de TVA, numéro ADELI, statut juridique —
-            tout ce qu'il faut savoir pour facturer correctement en libéral, avec ou sans
+            tout ce qu&apos;il faut savoir pour facturer correctement en libéral, avec ou sans
             logiciel.
           </p>
         </header>
@@ -164,8 +164,8 @@ export default function ArticleFacturationPsychologue() {
         {/* Introduction */}
         <section className="mb-10 rounded-2xl bg-[#F1F0F9] p-6">
           <p className="leading-relaxed">
-            La facturation est l'une des premières questions pratiques que se posent
-            les psychologues qui s'installent en libéral. Quelle forme doit prendre
+            La facturation est l&apos;une des premières questions pratiques que se posent
+            les psychologues qui s&apos;installent en libéral. Quelle forme doit prendre
             la facture ? Quelles informations sont obligatoires ? Faut-il facturer la
             TVA ? Comment gérer la comptabilité simplement sans y consacrer des heures ?
           </p>
@@ -187,34 +187,34 @@ export default function ArticleFacturationPsychologue() {
           </h2>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            L'exonération de TVA — article 261-4-1° du CGI
+            L&apos;exonération de TVA — article 261-4-1° du CGI
           </h3>
           <p className="mb-4 leading-relaxed">
-            Les psychologues libéraux sont exonérés de TVA sur l'ensemble de leurs
-            prestations de soins. Cette exonération est prévue par l'article 261-4-1°
+            Les psychologues libéraux sont exonérés de TVA sur l&apos;ensemble de leurs
+            prestations de soins. Cette exonération est prévue par l&apos;article 261-4-1°
             du Code général des impôts, qui dispose que les prestations de soins à
             la personne effectuées par les membres des professions réglementées de
             santé — dont les psychologues — sont exonérées de taxe sur la valeur ajoutée.
           </p>
           <p className="mb-4 leading-relaxed">
-            Cette exonération s'applique quel que soit le montant du chiffre d'affaires
+            Cette exonération s&apos;applique quel que soit le montant du chiffre d&apos;affaires
             annuel et quel que soit le statut juridique du praticien (entreprise
             individuelle, EIRL, SELAS, etc.). Il est impossible — et illégal — de
             facturer de la TVA sur des séances de psychologie.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            La mention obligatoire d'exonération
+            La mention obligatoire d&apos;exonération
           </h3>
           <p className="mb-4 leading-relaxed">
-            Toutes les factures et notes d'honoraires doivent comporter la mention
-            suivante, conformément à l'article 293 B du CGI :
+            Toutes les factures et notes d&apos;honoraires doivent comporter la mention
+            suivante, conformément à l&apos;article 293 B du CGI :
           </p>
           <div className="my-4 rounded-lg border border-gray-200 bg-gray-50 px-5 py-4 font-mono text-sm text-gray-700">
-            TVA non applicable selon l'article 261-4-1° du Code Général des Impôts
+            TVA non applicable selon l&apos;article 261-4-1° du Code Général des Impôts
           </div>
           <p className="mb-4 leading-relaxed">
-            L'omission de cette mention est l'une des erreurs les plus fréquentes
+            L&apos;omission de cette mention est l&apos;une des erreurs les plus fréquentes
             constatées lors des contrôles fiscaux. Un logiciel de facturation intègre
             automatiquement cette mention sur chaque document généré.
           </p>
@@ -223,7 +223,7 @@ export default function ArticleFacturationPsychologue() {
             Cas particuliers : formations et supervision
           </h3>
           <p className="mb-4 leading-relaxed">
-            L'exonération de TVA s'applique aux prestations de soin. Si le psychologue
+            L&apos;exonération de TVA s&apos;applique aux prestations de soin. Si le psychologue
             exerce également une activité de formation professionnelle ou de supervision
             de confrères, ces prestations peuvent, selon les cas, être soumises à la TVA
             ou exonérées au titre de la formation professionnelle continue (article 261-4-4°
@@ -235,10 +235,10 @@ export default function ArticleFacturationPsychologue() {
         {/* Section 2 */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            Mentions obligatoires sur la facture d'un psychologue
+            Mentions obligatoires sur la facture d&apos;un psychologue
           </h2>
           <p className="mb-4 leading-relaxed">
-            Pour toute prestation d'un montant supérieur à 25 euros, l'émission d'une
+            Pour toute prestation d&apos;un montant supérieur à 25 euros, l&apos;émission d&apos;une
             facture est une obligation légale. Le document doit comporter les informations
             suivantes :
           </p>
@@ -264,14 +264,14 @@ export default function ArticleFacturationPsychologue() {
             <div className="rounded-xl border border-[#3D52A0]/20 bg-[#F1F0F9] p-5">
               <h3 className="mb-3 font-semibold text-[#3D52A0]">Informations de la facture</h3>
               <ul className="space-y-2 text-sm leading-relaxed">
-                <li>Date d'émission de la facture</li>
+                <li>Date d&apos;émission de la facture</li>
                 <li>
                   <strong>Numéro de facture</strong> unique et séquentiel (ex. : PSY-2026-0045)
                 </li>
-                <li>Description de la prestation (ex. : "Séance de psychologie individuelle")</li>
+                <li>Description de la prestation (ex. : &quot;Séance de psychologie individuelle&quot;)</li>
                 <li>Date(s) de séance(s) facturée(s)</li>
                 <li>Montant total (HT = TTC, TVA exonérée)</li>
-                <li>Mention d'exonération de TVA (art. 261-4-1° CGI)</li>
+                <li>Mention d&apos;exonération de TVA (art. 261-4-1° CGI)</li>
               </ul>
             </div>
           </div>
@@ -280,15 +280,15 @@ export default function ArticleFacturationPsychologue() {
             Le numéro ADELI : un identifiant professionnel obligatoire
           </h3>
           <p className="mb-4 leading-relaxed">
-            Le numéro ADELI est l'identifiant national attribué par l'Agence régionale
-            de santé (ARS) à chaque psychologue titulaire d'un diplôme reconnu par l'Etat.
-            Il est obtenu lors de l'inscription au répertoire ADELI, démarche obligatoire
+            Le numéro ADELI est l&apos;identifiant national attribué par l&apos;Agence régionale
+            de santé (ARS) à chaque psychologue titulaire d&apos;un diplôme reconnu par l&apos;Etat.
+            Il est obtenu lors de l&apos;inscription au répertoire ADELI, démarche obligatoire
             avant toute exercice légal du titre de psychologue.
           </p>
           <p className="mb-4 leading-relaxed">
             Ce numéro doit figurer sur tous les documents professionnels : factures, notes
-            d'honoraires, en-tête de courriers et site internet. Il atteste du droit légal
-            à l'usage du titre protégé de psychologue et constitue une mention indispensable
+            d&apos;honoraires, en-tête de courriers et site internet. Il atteste du droit légal
+            à l&apos;usage du titre protégé de psychologue et constitue une mention indispensable
             pour la déductibilité des frais par les patients et pour les remboursements
             par les mutuelles.
           </p>
@@ -305,14 +305,14 @@ export default function ArticleFacturationPsychologue() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Chaque facture doit porter un numéro unique et chronologique. La séquence
-            ne doit comporter aucun "trou" — supprimer ou modifier a posteriori une
+            ne doit comporter aucun &quot;trou&quot; — supprimer ou modifier a posteriori une
             facture émise est interdit. Une numérotation courante est de la forme
             PSY-AAAA-NNNN (ex. : PSY-2026-0001, PSY-2026-0002, etc.).
           </p>
           <p className="mb-4 leading-relaxed">
             Un logiciel de facturation gère automatiquement cette numérotation et garantit
-            l'intégrité de la séquence. La génération manuelle, dans un tableur ou un
-            traitement de texte, est une source fréquente d'erreurs.
+            l&apos;intégrité de la séquence. La génération manuelle, dans un tableur ou un
+            traitement de texte, est une source fréquente d&apos;erreurs.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -320,9 +320,9 @@ export default function ArticleFacturationPsychologue() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Les factures et documents comptables doivent être conservés pendant 10 ans
-            à compter de la clôture de l'exercice comptable. Cette obligation s'applique
+            à compter de la clôture de l&apos;exercice comptable. Cette obligation s&apos;applique
             aux originaux ou aux copies numériques, à condition que celles-ci soient
-            fidèles à l'original et lisibles sur toute la durée de conservation.
+            fidèles à l&apos;original et lisibles sur toute la durée de conservation.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -330,10 +330,10 @@ export default function ArticleFacturationPsychologue() {
           </h3>
           <p className="mb-4 leading-relaxed">
             La majorité des psychologues libéraux relèvent du régime micro-BNC (Bénéfices
-            Non Commerciaux) tant que leur chiffre d'affaires annuel ne dépasse pas le seuil
+            Non Commerciaux) tant que leur chiffre d&apos;affaires annuel ne dépasse pas le seuil
             légal (77 700 euros en 2026). Ce régime simplifié ne nécessite pas de bilan
-            comptable complet, mais impose la tenue d'un livre de recettes chronologique
-            mentionnant, pour chaque encaissement : la date, l'identité du client, la nature
+            comptable complet, mais impose la tenue d&apos;un livre de recettes chronologique
+            mentionnant, pour chaque encaissement : la date, l&apos;identité du client, la nature
             de la prestation et le montant perçu.
           </p>
         </section>
@@ -346,7 +346,7 @@ export default function ArticleFacturationPsychologue() {
           <p className="mb-4 leading-relaxed">
             Le dispositif Mon Soutien Psy, opérationnel depuis 2022 et renforcé en
             juin 2024, permet aux patients de bénéficier de 12 séances par an
-            prises en charge par l'Assurance Maladie, sans ordonnance préalable.
+            prises en charge par l&apos;Assurance Maladie, sans ordonnance préalable.
           </p>
           <p className="mb-4 leading-relaxed">
             Pour les psychologues conventionnés dans ce dispositif, la facturation
@@ -358,7 +358,7 @@ export default function ArticleFacturationPsychologue() {
               conventionné).
             </li>
             <li className="leading-relaxed">
-              L'Assurance Maladie rembourse <strong>60 % du tarif</strong>, soit
+              L&apos;Assurance Maladie rembourse <strong>60 % du tarif</strong>, soit
               30 euros, directement au praticien (tiers-payant).
             </li>
             <li className="leading-relaxed">
@@ -366,16 +366,16 @@ export default function ArticleFacturationPsychologue() {
               totalement pris en charge par sa mutuelle complémentaire.
             </li>
             <li className="leading-relaxed">
-              La facturation s'effectue via la <strong>feuille de soins
+              La facturation s&apos;effectue via la <strong>feuille de soins
               électronique</strong> (FSE) transmise à la CPAM, et non par une
-              note d'honoraires classique.
+              note d&apos;honoraires classique.
             </li>
           </ul>
           <p className="mb-4 leading-relaxed">
-            La coexistence des séances "Mon Soutien Psy" et des séances au tarif libre
+            La coexistence des séances &quot;Mon Soutien Psy&quot; et des séances au tarif libre
             nécessite une organisation comptable distincte pour chaque type de
             prestation. Un logiciel de gestion adapté permet de catégoriser les séances
-            et d'assurer un suivi clair des remboursements.
+            et d&apos;assurer un suivi clair des remboursements.
           </p>
         </section>
 
@@ -389,10 +389,10 @@ export default function ArticleFacturationPsychologue() {
             tableur présente trois risques principaux : des erreurs dans les mentions
             obligatoires, une numérotation non conforme et une perte de temps
             considérable. Un logiciel de facturation dédié supprime ces trois risques
-            en automatisant l'ensemble du processus.
+            en automatisant l&apos;ensemble du processus.
           </p>
           <p className="mb-4 leading-relaxed">
-            Avec PsyLib, la génération d'une facture PDF prend moins de 10 secondes.
+            Avec PsyLib, la génération d&apos;une facture PDF prend moins de 10 secondes.
             Le logiciel :
           </p>
           <ul className="mb-4 space-y-2 pl-6">
@@ -405,7 +405,7 @@ export default function ArticleFacturationPsychologue() {
               depuis le dossier patient.
             </li>
             <li className="leading-relaxed">
-              Applique systématiquement la mention d'exonération de TVA.
+              Applique systématiquement la mention d&apos;exonération de TVA.
             </li>
             <li className="leading-relaxed">
               Attribue automatiquement un numéro de facture séquentiel.
@@ -490,20 +490,20 @@ export default function ArticleFacturationPsychologue() {
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
                 Non. Les prestations de soins à la personne réalisées par les psychologues
-                sont exonérées de TVA en application de l'article 261-4-1° du Code général
-                des impôts. Les factures doivent comporter la mention : "TVA non applicable
-                selon l'article 261-4-1° du Code Général des Impôts".
+                sont exonérées de TVA en application de l&apos;article 261-4-1° du Code général
+                des impôts. Les factures doivent comporter la mention : &quot;TVA non applicable
+                selon l&apos;article 261-4-1° du Code Général des Impôts&quot;.
               </p>
             </details>
 
             <details className="rounded-xl border border-gray-200 p-5">
               <summary className="cursor-pointer font-semibold text-[#1E1B4B]">
-                Quelles sont les mentions obligatoires sur la facture d'un psychologue ?
+                Quelles sont les mentions obligatoires sur la facture d&apos;un psychologue ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
                 Les mentions obligatoires sont : nom et adresse du praticien, numéro ADELI,
-                numéro SIRET, date d'émission, numéro de facture séquentiel, description
-                de la prestation, date de séance, montant TTC, et mention d'exonération
+                numéro SIRET, date d&apos;émission, numéro de facture séquentiel, description
+                de la prestation, date de séance, montant TTC, et mention d&apos;exonération
                 de TVA (article 261-4-1° CGI).
               </p>
             </details>
@@ -513,8 +513,8 @@ export default function ArticleFacturationPsychologue() {
                 Un psychologue doit-il obligatoirement émettre une facture ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Oui, pour toute prestation d'un montant supérieur à 25 euros. La facture
-                (ou note d'honoraires) est une obligation légale pour tous les
+                Oui, pour toute prestation d&apos;un montant supérieur à 25 euros. La facture
+                (ou note d&apos;honoraires) est une obligation légale pour tous les
                 professionnels libéraux. Les documents comptables doivent être conservés
                 pendant 10 ans.
               </p>
@@ -525,9 +525,9 @@ export default function ArticleFacturationPsychologue() {
                 Les séances Mon Soutien Psy sont-elles facturées différemment ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Oui. Dans le cadre du dispositif Mon Soutien Psy, la facturation s'effectue
+                Oui. Dans le cadre du dispositif Mon Soutien Psy, la facturation s&apos;effectue
                 via la feuille de soins électronique (FSE) transmise à la CPAM, au tarif
-                conventionné de 50 euros. L'Assurance Maladie rembourse 30 euros (60 %),
+                conventionné de 50 euros. L&apos;Assurance Maladie rembourse 30 euros (60 %),
                 le patient règle le reste, potentiellement couvert par sa mutuelle.
               </p>
             </details>
@@ -541,6 +541,7 @@ export default function ArticleFacturationPsychologue() {
                 conformes à partir des données du dossier patient. Les documents sont
                 envoyés par email au patient et archivés dans la plateforme avec gestion
                 des statuts (brouillon, envoyée, payée).
+
               </p>
             </details>
           </div>
@@ -549,11 +550,11 @@ export default function ArticleFacturationPsychologue() {
         {/* Conclusion */}
         <footer className="border-t border-gray-200 pt-8 text-sm text-gray-500">
           <p>
-            Article rédigé par l'équipe PsyLib — Mars 2026. Les informations fiscales
+            Article rédigé par l&apos;équipe PsyLib — Mars 2026. Les informations fiscales
             présentées sont données à titre indicatif et ne constituent pas un conseil
             juridique ou comptable.{' '}
             <Link href="/" className="text-[#3D52A0] hover:underline">
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
             {' '}|{' '}
             <Link href="/blog" className="text-[#3D52A0] hover:underline">

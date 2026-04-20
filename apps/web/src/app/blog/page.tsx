@@ -151,7 +151,7 @@ export default function BlogPage() {
               href={`/blog/${article.slug}`}
               className="text-sm font-medium text-[#3D52A0] hover:underline"
             >
-              Lire l'article
+              Lire l&apos;article
             </Link>
           </article>
         ))}

@@ -136,7 +136,7 @@ export default function ArticleOutcomeTracking() {
             Pratique clinique — Mars 2026
           </p>
           <h1 className="font-playfair text-3xl font-bold leading-tight text-[#1E1B4B] md:text-4xl">
-            L'outcome tracking en psychothérapie : mesurer les progrès de vos patients
+            L&apos;outcome tracking en psychothérapie : mesurer les progrès de vos patients
           </h1>
           <p className="mt-4 text-lg text-gray-600">
             PHQ-9, GAD-7, CORE-OM — comment le suivi systématique des résultats transforme
@@ -147,30 +147,30 @@ export default function ArticleOutcomeTracking() {
         {/* Introduction */}
         <section className="mb-10 rounded-2xl bg-[#F1F0F9] p-6">
           <p className="leading-relaxed">
-            En psychothérapie, l'intuition clinique reste précieuse. Mais elle peut aussi
+            En psychothérapie, l&apos;intuition clinique reste précieuse. Mais elle peut aussi
             induire en erreur. Des études menées sur plusieurs milliers de cas montrent que
-            les thérapeutes surestiment le progrès de leurs patients dans près d'un tiers des
+            les thérapeutes surestiment le progrès de leurs patients dans près d&apos;un tiers des
             situations où la thérapie stagne ou régresse. Cette dissonance a un nom : le
-            phénomène de drift thérapeutique. Pour y répondre, une approche rigoureuse s'est
-            imposée : l'outcome tracking, ou suivi systématique des résultats.
+            phénomène de drift thérapeutique. Pour y répondre, une approche rigoureuse s&apos;est
+            imposée : l&apos;outcome tracking, ou suivi systématique des résultats.
           </p>
         </section>
 
         {/* Section 1 */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            Qu'est-ce que l'outcome tracking en psychothérapie ?
+            Qu&apos;est-ce que l&apos;outcome tracking en psychothérapie ?
           </h2>
           <p className="mb-4 leading-relaxed">
-            L'outcome tracking — également appelé Routine Outcome Monitoring (ROM) — désigne
-            la collecte régulière et systématique de données standardisées sur l'état clinique
+            L&apos;outcome tracking — également appelé Routine Outcome Monitoring (ROM) — désigne
+            la collecte régulière et systématique de données standardisées sur l&apos;état clinique
             du patient au fil des séances. Le patient répond à un questionnaire validé de
             quelques minutes avant ou après la séance. Le praticien dispose alors de scores
             comparables dans le temps, visualisables sous forme de graphiques.
           </p>
           <p className="mb-4 leading-relaxed">
             Cette approche permet de détecter précocement les situations de stagnation ou de
-            régression, d'objectiver les progrès pour le patient lui-même, d'ajuster la
+            régression, d&apos;objectiver les progrès pour le patient lui-même, d&apos;ajuster la
             stratégie thérapeutique sur des données factuelles et de documenter les résultats
             cliniques pour les dossiers et les échanges confrères.
           </p>
@@ -179,15 +179,15 @@ export default function ArticleOutcomeTracking() {
         {/* Section 2 */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            Les outils d'évaluation incontournables
+            Les outils d&apos;évaluation incontournables
           </h2>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
             Le PHQ-9 : mesurer la dépression séance après séance
           </h3>
           <p className="mb-4 leading-relaxed">
-            Le Patient Health Questionnaire-9 (PHQ-9) est l'outil de référence pour évaluer
-            l'intensité des symptômes dépressifs. Il comprend neuf items, chacun coté de 0 à 3,
+            Le Patient Health Questionnaire-9 (PHQ-9) est l&apos;outil de référence pour évaluer
+            l&apos;intensité des symptômes dépressifs. Il comprend neuf items, chacun coté de 0 à 3,
             pour un score total de 0 à 27. Les seuils cliniques sont les suivants : 0-4
             (minimal), 5-9 (léger), 10-14 (modéré), 15-19 (modérément sévère), 20-27 (sévère).
             Une réduction de 5 points est considérée cliniquement significative selon les
@@ -195,11 +195,11 @@ export default function ArticleOutcomeTracking() {
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            Le GAD-7 : quantifier l'anxiété
+            Le GAD-7 : quantifier l&apos;anxiété
           </h3>
           <p className="mb-4 leading-relaxed">
             Le GAD-7 suit la même logique pour les troubles anxieux. Sept items évaluent la
-            fréquence des symptômes d'anxiété généralisée, avec un score de 0 à 21. Les seuils :
+            fréquence des symptômes d&apos;anxiété généralisée, avec un score de 0 à 21. Les seuils :
             0-4 (minimal), 5-9 (léger), 10-14 (modéré), 15-21 (sévère). La combinaison
             PHQ-9 + GAD-7 couvre les deux motifs les plus fréquents de consultation en
             psychologie libérale en seulement cinq minutes.
@@ -213,7 +213,7 @@ export default function ArticleOutcomeTracking() {
             domaines : le bien-être subjectif, les problèmes et symptômes, le fonctionnement
             quotidien et le risque. Particulièrement pertinent pour les suivis longue durée ou
             les tableaux cliniques complexes où la symptomatologie dépressive ou anxieuse ne
-            suffit pas à rendre compte de l'évolution globale du patient.
+            suffit pas à rendre compte de l&apos;évolution globale du patient.
           </p>
         </section>
 
@@ -224,14 +224,14 @@ export default function ArticleOutcomeTracking() {
           </h2>
           <p className="mb-4 leading-relaxed">
             Une méta-analyse publiée dans le Journal of Consulting and Clinical Psychology montre
-            que l'utilisation d'un système de feedback systématique réduit de 65 % le risque de
+            que l&apos;utilisation d&apos;un système de feedback systématique réduit de 65 % le risque de
             détérioration chez les patients qui ne progressent pas selon les trajectoires attendues.
-            Sans cet outil, les thérapeutes ne détectent ces situations qu'une fois sur huit.
+            Sans cet outil, les thérapeutes ne détectent ces situations qu&apos;une fois sur huit.
           </p>
           <p className="mb-4 leading-relaxed">
-            Partager les résultats avec le patient renforce également l'alliance thérapeutique.
+            Partager les résultats avec le patient renforce également l&apos;alliance thérapeutique.
             Les patients qui voient leur courbe de progrès se sentent davantage acteurs de leur
-            thérapie, ce qui améliore l'adhésion au suivi et réduit les abandons prématurés.
+            thérapie, ce qui améliore l&apos;adhésion au suivi et réduit les abandons prématurés.
           </p>
 
           <div className="rounded-xl border border-[#3D52A0]/20 bg-[#F1F0F9] p-5 my-6">
@@ -247,7 +247,7 @@ export default function ArticleOutcomeTracking() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1 h-2 w-2 rounded-full bg-[#3D52A0] flex-shrink-0" />
-                <span>PHQ-9 + GAD-7 : 5 minutes d'administration par séance</span>
+                <span>PHQ-9 + GAD-7 : 5 minutes d&apos;administration par séance</span>
               </li>
             </ul>
           </div>
@@ -256,7 +256,7 @@ export default function ArticleOutcomeTracking() {
         {/* Section 4 */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            Comment intégrer l'outcome tracking dans votre pratique ?
+            Comment intégrer l&apos;outcome tracking dans votre pratique ?
           </h2>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -270,13 +270,13 @@ export default function ArticleOutcomeTracking() {
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            Modalités d'administration
+            Modalités d&apos;administration
           </h3>
           <p className="mb-4 leading-relaxed">
-            L'administration peut se faire en salle d'attente sur tablette, par lien envoyé la
-            veille, ou en début de consultation via une interface numérique. L'envoi par lien
-            la veille présente l'avantage de disposer des scores avant la séance, permettant
-            au praticien d'adapter son approche dès l'accueil du patient.
+            L&apos;administration peut se faire en salle d&apos;attente sur tablette, par lien envoyé la
+            veille, ou en début de consultation via une interface numérique. L&apos;envoi par lien
+            la veille présente l&apos;avantage de disposer des scores avant la séance, permettant
+            au praticien d&apos;adapter son approche dès l&apos;accueil du patient.
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
@@ -284,27 +284,27 @@ export default function ArticleOutcomeTracking() {
           </h3>
           <p className="mb-4 leading-relaxed">
             Les scores ne doivent pas rester des données abstraites. Partager la courbe
-            d'évolution avec le patient en début de séance ouvre une discussion directe sur
+            d&apos;évolution avec le patient en début de séance ouvre une discussion directe sur
             les fluctuations observées, renforce la transparence thérapeutique et offre un
-            point d'ancrage concret pour le travail de la séance.
+            point d&apos;ancrage concret pour le travail de la séance.
           </p>
         </section>
 
         {/* Section 5 : PsyLib */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
-            L'outcome tracking avec PsyLib
+            L&apos;outcome tracking avec PsyLib
           </h2>
           <p className="mb-4 leading-relaxed">
             PsyLib intègre nativement PHQ-9, GAD-7 et CORE-OM dans son tableau de bord
             clinique. Le patient complète son évaluation depuis son espace dédié — accessible
             sur mobile ou ordinateur. Le psychologue accède instantanément aux courbes
-            d'évolution par questionnaire, avec les seuils cliniques affichés en repère visuel.
+            d&apos;évolution par questionnaire, avec les seuils cliniques affichés en repère visuel.
           </p>
           <p className="mb-4 leading-relaxed">
-            Les données sont hébergées en France sur une infrastructure certifiée HDS. L'accès
+            Les données sont hébergées en France sur une infrastructure certifiée HDS. L&apos;accès
             est protégé par authentification forte OIDC. Les évaluations sont associées
-            automatiquement au dossier patient et à l'historique des séances.
+            automatiquement au dossier patient et à l&apos;historique des séances.
           </p>
         </section>
 
@@ -333,13 +333,13 @@ export default function ArticleOutcomeTracking() {
           <div className="space-y-4">
             <details className="rounded-xl border border-gray-200 p-5">
               <summary className="cursor-pointer font-semibold text-[#1E1B4B]">
-                Qu'est-ce que l'outcome tracking en psychothérapie ?
+                Qu&apos;est-ce que l&apos;outcome tracking en psychothérapie ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                L'outcome tracking, ou Routine Outcome Monitoring (ROM), désigne la collecte
-                régulière de données standardisées sur l'état clinique du patient via des
+                L&apos;outcome tracking, ou Routine Outcome Monitoring (ROM), désigne la collecte
+                régulière de données standardisées sur l&apos;état clinique du patient via des
                 questionnaires validés (PHQ-9, GAD-7, CORE-OM). Les scores sont comparés dans
-                le temps pour visualiser l'évolution thérapeutique objectivement.
+                le temps pour visualiser l&apos;évolution thérapeutique objectivement.
               </p>
             </details>
 
@@ -348,8 +348,8 @@ export default function ArticleOutcomeTracking() {
                 Quelle est la différence entre le PHQ-9 et le GAD-7 ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
-                Le PHQ-9 mesure l'intensité des symptômes dépressifs (9 items, score 0-27).
-                Le GAD-7 évalue la fréquence des symptômes d'anxiété généralisée (7 items,
+                Le PHQ-9 mesure l&apos;intensité des symptômes dépressifs (9 items, score 0-27).
+                Le GAD-7 évalue la fréquence des symptômes d&apos;anxiété généralisée (7 items,
                 score 0-21). Les deux questionnaires sont complémentaires et couvrent les
                 motifs les plus fréquents de consultation en psychologie libérale.
               </p>
@@ -362,19 +362,19 @@ export default function ArticleOutcomeTracking() {
               <p className="mt-3 leading-relaxed text-gray-700">
                 La fréquence recommandée est toutes les séances pour le PHQ-9 et le GAD-7
                 (environ 2 minutes), ou toutes les quatre séances pour le CORE-OM.
-                L'administration peut se faire en salle d'attente, par lien envoyé la veille
+                L&apos;administration peut se faire en salle d&apos;attente, par lien envoyé la veille
                 ou via une interface numérique en début de consultation.
               </p>
             </details>
 
             <details className="rounded-xl border border-gray-200 p-5">
               <summary className="cursor-pointer font-semibold text-[#1E1B4B]">
-                PsyLib intègre-t-il les outils d'outcome tracking ?
+                PsyLib intègre-t-il les outils d&apos;outcome tracking ?
               </summary>
               <p className="mt-3 leading-relaxed text-gray-700">
                 Oui. PsyLib intègre nativement PHQ-9, GAD-7 et CORE-OM. Le patient complète
                 son évaluation depuis son espace dédié. Le psychologue accède instantanément
-                aux courbes d'évolution. Les données sont hébergées en France sur infrastructure
+                aux courbes d&apos;évolution. Les données sont hébergées en France sur infrastructure
                 certifiée HDS.
               </p>
             </details>
@@ -384,9 +384,9 @@ export default function ArticleOutcomeTracking() {
         {/* Conclusion */}
         <footer className="border-t border-gray-200 pt-8 text-sm text-gray-500">
           <p>
-            Article rédigé par l'équipe PsyLib — Mars 2026.{' '}
+            Article rédigé par l&apos;équipe PsyLib — Mars 2026.{' '}
             <Link href="/" className="text-[#3D52A0] hover:underline">
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </Link>
             {' '}|{' '}
             <Link href="/blog" className="text-[#3D52A0] hover:underline">

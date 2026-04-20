@@ -181,7 +181,7 @@ export default function GuidesIndexPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-gray-600">
             Tarifs, facturation TVA, conformité HDS, agenda, dossiers patients, TCC, supervision —
-            tout ce qu'un psychologue libéral doit savoir pour gérer son cabinet sereinement.
+            tout ce qu&apos;un psychologue libéral doit savoir pour gérer son cabinet sereinement.
           </p>
         </header>
 
