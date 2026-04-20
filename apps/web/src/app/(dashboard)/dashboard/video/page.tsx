@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { Video, Clock, User, ArrowRight, CheckCircle } from 'lucide-react';
+import { Video, Clock, User, Users, ArrowRight, CheckCircle } from 'lucide-react';
 import { videoApi } from '@/lib/api/video';
 
 const STATUS_CONFIG = {
@@ -68,7 +68,18 @@ export default function VideoPage() {
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="font-medium text-foreground">{room.patientName}</span>
+                        {room.participantCount > 1 && (
+                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                            <Users className="h-3 w-3" />
+                            {room.participantsJoined}/{room.participantCount} connectes
+                          </span>
+                        )}
                       </div>
+                      {room.participantNames && room.participantNames.length > 0 && (
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">
+                          + {room.participantNames.join(', ')}
+                        </p>
+                      )}
                       <div className="flex items-center gap-2 mt-0.5">
                         <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">{room.duration} min</span>
