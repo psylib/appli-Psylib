@@ -1,8 +1,9 @@
 -- CreateTable: appointment_participants
+-- Note: id columns use TEXT to match existing appointments/patients tables
 CREATE TABLE IF NOT EXISTS "appointment_participants" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "appointment_id" UUID NOT NULL,
-    "patient_id" UUID NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
+    "appointment_id" TEXT NOT NULL,
+    "patient_id" TEXT NOT NULL,
     "video_join_token" TEXT,
     "video_link_sent_at" TIMESTAMPTZ,
     "joined_at" TIMESTAMPTZ,
