@@ -13,25 +13,33 @@ function VisioMockup() {
         <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-dm-mono">HD</span>
       </div>
 
-      {/* Video feeds */}
-      <div className="flex gap-3 mb-4">
-        <div className="flex-[2] bg-white/10 rounded-xl h-36 flex items-center justify-content-center relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-2">
-                <span className="text-white font-playfair font-bold text-lg">ML</span>
-              </div>
-              <p className="text-white/70 text-xs">Dr. Marie Laurent</p>
-              <p className="text-white/50 text-[10px]">Psychologue clinicienne</p>
+      {/* Video feeds — group therapy mockup */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="col-span-2 bg-white/10 rounded-xl h-36 flex items-center justify-center relative overflow-hidden">
+          <div className="text-center">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-2">
+              <span className="text-white font-playfair font-bold text-lg">ML</span>
             </div>
+            <p className="text-white/70 text-xs">Dr. Marie Laurent</p>
+            <p className="text-white/50 text-[10px]">Psychologue clinicienne</p>
           </div>
         </div>
-        <div className="flex-1 bg-white/10 rounded-xl h-36 flex items-center justify-center relative overflow-hidden">
-          <div className="text-center">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-1">
-              <span className="text-white font-medium text-sm">SB</span>
+        <div className="flex flex-col gap-2">
+          <div className="flex-1 bg-white/10 rounded-xl flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-0.5">
+                <span className="text-white font-medium text-xs">SB</span>
+              </div>
+              <p className="text-white/60 text-[9px]">Sophie B.</p>
             </div>
-            <p className="text-white/60 text-[10px]">Sophie B.</p>
+          </div>
+          <div className="flex-1 bg-white/10 rounded-xl flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-0.5">
+                <span className="text-white font-medium text-xs">PD</span>
+              </div>
+              <p className="text-white/60 text-[9px]">Pierre D.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -71,19 +79,20 @@ export function VisioSection() {
               </div>
 
               <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal leading-tight">
-                Consultez en visio,{' '}
-                <em className="not-italic text-sage">sans compromis sur la sécurité</em>
+                Visio individuelle, couple & famille{' '}
+                <em className="not-italic text-sage">en toute sécurité</em>
               </h2>
 
               <p className="text-charcoal-400 text-lg leading-relaxed">
-                Visio-consultation intégrée directement dans PsyLib. Infrastructure hébergée sur serveur HDS certifié en France. Zéro outil tiers, zéro compromis.
+                Visio-consultation intégrée directement dans PsyLib. Jusqu&apos;a 5 participants par session pour vos thérapies de couple et familiales. Infrastructure hébergée sur serveur HDS certifié en France.
               </p>
 
               <ul className="space-y-3">
                 {[
+                  'Individuel, couple ou famille — jusqu\u0027a 5 participants',
                   'Vidéo HD + audio, hébergés en France (HDS)',
                   'Prise de notes pendant la consultation',
-                  'Lien de connexion unique envoyé au patient',
+                  'Lien unique par participant, consentement RGPD individuel',
                   'Pas de Zoom, pas de Google Meet — 100% conforme',
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3 text-charcoal-500">

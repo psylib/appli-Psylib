@@ -16,7 +16,7 @@ const rows: { feature: string; psylib: CellValue; generic: CellValue; files: Cel
   { feature: 'Suivi Mon Soutien Psy (12 séances)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Facturation PDF', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Assistant IA (résumés séances)', psylib: 'yes', generic: 'no', files: 'no' },
-  { feature: 'Visio-consultation intégrée HDS', psylib: 'yes', generic: 'no', files: 'no' },
+  { feature: 'Visio intégrée HDS (individuel, couple, famille)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Espace patient (humeur, journal, exercices)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Factures PDF automatiques', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Comptabilité intégrée (recettes, dépenses, FEC, 2035)', psylib: 'yes', generic: 'no', files: 'no' },
