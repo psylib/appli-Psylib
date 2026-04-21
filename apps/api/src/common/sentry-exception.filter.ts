@@ -31,14 +31,28 @@ export class SentryExceptionFilter implements ExceptionFilter {
       );
     }
 
+    // Extract message and machine-readable code from HttpException
+    let message = 'Internal server error';
+    let code = 'INTERNAL_ERROR';
+
+    if (exception instanceof HttpException) {
+      const exResponse = exception.getResponse();
+      if (typeof exResponse === 'string') {
+        message = exResponse;
+        code = `HTTP_${status}`;
+      } else if (typeof exResponse === 'object' && exResponse !== null) {
+        const obj = exResponse as Record<string, unknown>;
+        message = (obj['message'] as string) ?? exception.message;
+        code = (obj['code'] as string) ?? `HTTP_${status}`;
+      }
+    }
+
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message:
-        exception instanceof HttpException
-          ? exception.message
-          : 'Internal server error',
+      message,
+      code,
     });
   }
 }
