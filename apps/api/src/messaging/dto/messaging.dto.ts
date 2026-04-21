@@ -48,7 +48,7 @@ export class MarkReadPayload {
 export class MessageDto {
   id!: string;
   conversationId!: string;
-  senderId!: string;
+  senderId!: string | null;
   content!: string; // déchiffré
   readAt!: Date | null;
   createdAt!: Date;
