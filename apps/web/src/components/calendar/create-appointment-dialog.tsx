@@ -63,7 +63,7 @@ export function CreateAppointmentDialog({
 
   const canRequestPayment = psyProfile?.stripeOnboardingComplete === true;
 
-  const patients = patientsData?.data ?? [];
+  const patients = useMemo(() => patientsData?.data ?? [], [patientsData?.data]);
 
   const filteredPatients = useMemo(() => {
     if (!search.trim()) return patients;

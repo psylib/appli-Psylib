@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { CreateConsultationTypeDto } from './dto/create-consultation-type.dto';
 import { UpdateConsultationTypeDto } from './dto/update-consultation-type.dto';
+import { ConsultationCategory } from '@psyscale/shared-types';
 
 /** Tarif réglementé Mon Soutien Psy — fixé par l'Assurance Maladie */
 const MSP_RATE = 50;
@@ -67,7 +68,7 @@ export class ConsultationTypesService {
     }
 
     // Forcer le tarif réglementé MSP
-    const isMsp = dto.category === 'mon_soutien_psy';
+    const isMsp = dto.category === ConsultationCategory.MON_SOUTIEN_PSY;
     const rate = isMsp ? MSP_RATE : dto.rate;
 
     // Calcul du prochain sortOrder
@@ -84,7 +85,7 @@ export class ConsultationTypesService {
         duration: dto.duration,
         rate,
         color: dto.color ?? '#3D52A0',
-        category: dto.category ?? 'standard',
+        category: dto.category ?? ConsultationCategory.STANDARD,
         isPublic: dto.isPublic ?? true,
         sortOrder: (maxSort?.sortOrder ?? -1) + 1,
       },
@@ -104,7 +105,7 @@ export class ConsultationTypesService {
 
     // Déterminer la catégorie finale
     const category = dto.category ?? existing.category;
-    const isMsp = category === 'mon_soutien_psy';
+    const isMsp = category === ConsultationCategory.MON_SOUTIEN_PSY;
 
     // Forcer le tarif MSP — même si le psy tente de le modifier
     let rate: number | undefined;
@@ -162,7 +163,7 @@ export class ConsultationTypesService {
         duration: 60,
         rate: defaultRate,
         color: '#3D52A0',
-        category: 'standard',
+        category: ConsultationCategory.STANDARD,
         isPublic: true,
         sortOrder: 0,
       },
@@ -174,7 +175,7 @@ export class ConsultationTypesService {
   /** Créer les 2 types MSP réglementés */
   async createMspDefaults(psychologistId: string) {
     const existingMsp = await this.prisma.consultationType.count({
-      where: { psychologistId, category: 'mon_soutien_psy' },
+      where: { psychologistId, category: ConsultationCategory.MON_SOUTIEN_PSY },
     });
     if (existingMsp > 0) return; // Déjà créés
 
@@ -186,7 +187,7 @@ export class ConsultationTypesService {
           duration: 45,
           rate: MSP_RATE,
           color: '#0D9488',
-          category: 'mon_soutien_psy',
+          category: ConsultationCategory.MON_SOUTIEN_PSY,
           isPublic: true,
           sortOrder: 100,
         },
@@ -196,7 +197,7 @@ export class ConsultationTypesService {
           duration: 45,
           rate: MSP_RATE,
           color: '#0D9488',
-          category: 'mon_soutien_psy',
+          category: ConsultationCategory.MON_SOUTIEN_PSY,
           isPublic: true,
           sortOrder: 101,
         },

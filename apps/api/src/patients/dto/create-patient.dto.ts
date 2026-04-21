@@ -5,6 +5,7 @@ import {
   IsDateString,
   IsEnum,
   IsBoolean,
+  IsIn,
   MinLength,
   MaxLength,
 } from 'class-validator';
@@ -42,7 +43,7 @@ export class CreatePatientDto {
   notes?: string;
 
   @ApiPropertyOptional({ enum: ['direct', 'referral', 'online'] })
-  @IsString()
+  @IsIn(['direct', 'referral', 'online'])
   @IsOptional()
   source?: string;
 }

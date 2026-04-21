@@ -133,7 +133,7 @@ export function AiAssistantContent() {
     staleTime: 120_000,
   });
 
-  const patients = patientsData?.data ?? [];
+  const patients = useMemo(() => patientsData?.data ?? [], [patientsData?.data]);
 
   const filteredPatients = useMemo(() => {
     if (!patientSearch.trim()) return patients;

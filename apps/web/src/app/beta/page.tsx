@@ -393,7 +393,7 @@ export default function BetaPage() {
             <div className="flex items-center justify-center gap-4 text-xs text-charcoal-300">
               <Link href="/privacy" className="hover:text-charcoal-500 transition-colors">Confidentialité</Link>
               <span>·</span>
-              <Link href="/cgv" className="hover:text-charcoal-500 transition-colors">CGV</Link>
+              <Link href="/terms" className="hover:text-charcoal-500 transition-colors">CGV</Link>
               <span>·</span>
               <a href="mailto:contact@psylib.eu" className="hover:text-charcoal-500 transition-colors">contact@psylib.eu</a>
             </div>

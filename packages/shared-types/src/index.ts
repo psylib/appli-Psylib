@@ -53,6 +53,12 @@ export enum AppointmentStatus {
   NO_SHOW = 'no_show',
 }
 
+export enum AppointmentPaymentMode {
+  NONE = 'none',
+  PREPAYMENT = 'prepayment',
+  POST_SESSION = 'post_session',
+}
+
 export enum ExerciseStatus {
   ASSIGNED = 'assigned',
   IN_PROGRESS = 'in_progress',
@@ -623,9 +629,11 @@ export enum ExpensePaymentMethod {
   CHECK = 'check',
   CARD = 'card',
   TRANSFER = 'transfer',
+  BANK_TRANSFER = 'bank_transfer',
   DIRECT_DEBIT = 'direct_debit',
   STRIPE = 'stripe',
-  OTHER = 'other_pm',
+  PAYPAL = 'paypal',
+  OTHER = 'other',
 }
 
 export const EXPENSE_PAYMENT_METHOD_LABELS: Record<ExpensePaymentMethod, string> = {
@@ -633,8 +641,10 @@ export const EXPENSE_PAYMENT_METHOD_LABELS: Record<ExpensePaymentMethod, string>
   [ExpensePaymentMethod.CHECK]: 'Chèque',
   [ExpensePaymentMethod.CARD]: 'Carte bancaire',
   [ExpensePaymentMethod.TRANSFER]: 'Virement',
+  [ExpensePaymentMethod.BANK_TRANSFER]: 'Virement bancaire',
   [ExpensePaymentMethod.DIRECT_DEBIT]: 'Prélèvement',
   [ExpensePaymentMethod.STRIPE]: 'Paiement en ligne',
+  [ExpensePaymentMethod.PAYPAL]: 'PayPal',
   [ExpensePaymentMethod.OTHER]: 'Autre',
 };
 

@@ -101,7 +101,7 @@ export function useActivationChecklist() {
   });
 }
 
-export function useSession2(id: string) {
+export function useSessionDetail(id: string) {
   const { data: session } = useSession();
   const token = session?.accessToken;
 

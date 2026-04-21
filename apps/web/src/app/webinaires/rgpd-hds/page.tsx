@@ -421,7 +421,7 @@ export default function WebinarRgpdHdsPage() {
                 Confidentialité
               </Link>
               <span>·</span>
-              <Link href="/cgv" className="hover:text-charcoal-500 transition-colors">
+              <Link href="/terms" className="hover:text-charcoal-500 transition-colors">
                 CGV
               </Link>
               <span>·</span>

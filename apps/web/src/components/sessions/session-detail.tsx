@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { SessionNoteEditor } from './session-note-editor';
-import { useSession2 } from '@/hooks/use-dashboard';
+import { useSessionDetail } from '@/hooks/use-dashboard';
 import { sessionsApi } from '@/lib/api/sessions';
 import { formatDateTime } from '@/lib/utils';
 
@@ -17,7 +17,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const { data: authSession } = useSession();
   const queryClient = useQueryClient();
-  const { data: session, isLoading } = useSession2(sessionId);
+  const { data: session, isLoading } = useSessionDetail(sessionId);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({

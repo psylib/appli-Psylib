@@ -37,6 +37,11 @@ export declare enum AppointmentStatus {
     COMPLETED = "completed",
     NO_SHOW = "no_show"
 }
+export declare enum AppointmentPaymentMode {
+    NONE = "none",
+    PREPAYMENT = "prepayment",
+    POST_SESSION = "post_session"
+}
 export declare enum ExerciseStatus {
     ASSIGNED = "assigned",
     IN_PROGRESS = "in_progress",
@@ -505,9 +510,11 @@ export declare enum ExpensePaymentMethod {
     CHECK = "check",
     CARD = "card",
     TRANSFER = "transfer",
+    BANK_TRANSFER = "bank_transfer",
     DIRECT_DEBIT = "direct_debit",
     STRIPE = "stripe",
-    OTHER = "other_pm"
+    PAYPAL = "paypal",
+    OTHER = "other"
 }
 export declare const EXPENSE_PAYMENT_METHOD_LABELS: Record<ExpensePaymentMethod, string>;
 export declare enum RecurringFrequency {

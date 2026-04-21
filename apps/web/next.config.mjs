@@ -99,6 +99,7 @@ const nextConfig = {
 
   // Optimisations expérimentales
   experimental: {
+    instrumentationHook: true,
     optimizePackageImports: ['lucide-react', 'posthog-js'],
   },
 

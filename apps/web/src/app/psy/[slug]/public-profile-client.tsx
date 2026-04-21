@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock } from 'lucide-react';
 import { publicBookingApi } from '@/lib/api/public-booking';
 import type { PublicPsyProfile, ConsultationType } from '@/lib/api/public-booking';
@@ -419,9 +420,11 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
             {/* Avatar */}
             <div className="flex-shrink-0">
               {profile.avatarUrl ? (
-                <img
+                <Image
                   src={profile.avatarUrl}
                   alt={profile.name}
+                  width={80}
+                  height={80}
                   className="w-20 h-20 rounded-full object-cover border-2 border-border"
                 />
               ) : (

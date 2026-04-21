@@ -4,7 +4,7 @@
 // Partagés entre apps/web et apps/api
 // =============================================================================
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.ExerciseStatus = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
+exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
 // -----------------------------------------------------------------------------
 // Enums
 // -----------------------------------------------------------------------------
@@ -54,6 +54,12 @@ var AppointmentStatus;
     AppointmentStatus["COMPLETED"] = "completed";
     AppointmentStatus["NO_SHOW"] = "no_show";
 })(AppointmentStatus || (exports.AppointmentStatus = AppointmentStatus = {}));
+var AppointmentPaymentMode;
+(function (AppointmentPaymentMode) {
+    AppointmentPaymentMode["NONE"] = "none";
+    AppointmentPaymentMode["PREPAYMENT"] = "prepayment";
+    AppointmentPaymentMode["POST_SESSION"] = "post_session";
+})(AppointmentPaymentMode || (exports.AppointmentPaymentMode = AppointmentPaymentMode = {}));
 var ExerciseStatus;
 (function (ExerciseStatus) {
     ExerciseStatus["ASSIGNED"] = "assigned";
@@ -227,17 +233,21 @@ var ExpensePaymentMethod;
     ExpensePaymentMethod["CHECK"] = "check";
     ExpensePaymentMethod["CARD"] = "card";
     ExpensePaymentMethod["TRANSFER"] = "transfer";
+    ExpensePaymentMethod["BANK_TRANSFER"] = "bank_transfer";
     ExpensePaymentMethod["DIRECT_DEBIT"] = "direct_debit";
     ExpensePaymentMethod["STRIPE"] = "stripe";
-    ExpensePaymentMethod["OTHER"] = "other_pm";
+    ExpensePaymentMethod["PAYPAL"] = "paypal";
+    ExpensePaymentMethod["OTHER"] = "other";
 })(ExpensePaymentMethod || (exports.ExpensePaymentMethod = ExpensePaymentMethod = {}));
 exports.EXPENSE_PAYMENT_METHOD_LABELS = {
     [ExpensePaymentMethod.CASH]: 'Espèces',
     [ExpensePaymentMethod.CHECK]: 'Chèque',
     [ExpensePaymentMethod.CARD]: 'Carte bancaire',
     [ExpensePaymentMethod.TRANSFER]: 'Virement',
+    [ExpensePaymentMethod.BANK_TRANSFER]: 'Virement bancaire',
     [ExpensePaymentMethod.DIRECT_DEBIT]: 'Prélèvement',
     [ExpensePaymentMethod.STRIPE]: 'Paiement en ligne',
+    [ExpensePaymentMethod.PAYPAL]: 'PayPal',
     [ExpensePaymentMethod.OTHER]: 'Autre',
 };
 var RecurringFrequency;

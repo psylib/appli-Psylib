@@ -205,6 +205,7 @@ function ChatPanel({ conversation, currentUserId, isConnected }: ChatPanelProps)
       .finally(() => {
         setLoadingMessages(false);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- we only re-fetch when conversation.id changes, not the full object
   }, [conversation?.id, session?.accessToken, setMessages]);
 
   // Auto-scroll vers le bas sur nouveaux messages

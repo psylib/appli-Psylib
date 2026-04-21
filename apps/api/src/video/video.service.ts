@@ -113,6 +113,10 @@ export class VideoService {
    * Marks the psy as joined on first call.
    */
   async generatePsyToken(userId: string, appointmentId: string): Promise<VideoTokenResponse> {
+    if (!this.livekitApiKey || !this.livekitApiSecret) {
+      throw new ForbiddenException('Visio non configurée — clés LiveKit manquantes');
+    }
+
     const psy = await this.getPsychologist(userId);
 
     const room = await this.prisma.videoRoom.findFirst({
@@ -168,6 +172,10 @@ export class VideoService {
   async generatePatientToken(
     joinToken: string,
   ): Promise<VideoTokenResponse & { needsConsent?: boolean }> {
+    if (!this.livekitApiKey || !this.livekitApiSecret) {
+      throw new ForbiddenException('Visio non configurée — clés LiveKit manquantes');
+    }
+
     // First: check primary patient token on appointment
     let appointment = await this.prisma.appointment.findFirst({
       where: { videoJoinToken: joinToken },
