@@ -147,6 +147,30 @@ export class MessagingGateway
     }
 
     try {
+      // AUDIT FIX: Verify membership before joining room
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        select: {
+          psychologist: { select: { userId: true } },
+          patient: { select: { userId: true } },
+        },
+      });
+
+      if (!conversation) {
+        throw new WsException('Conversation introuvable');
+      }
+
+      const isMember =
+        conversation.psychologist.userId === authSocket.userId ||
+        conversation.patient.userId === authSocket.userId;
+
+      if (!isMember) {
+        this.logger.warn(
+          `[WS] IDOR blocked: ${authSocket.userId} tried to join conversation ${conversationId}`,
+        );
+        throw new WsException('Accès non autorisé à cette conversation');
+      }
+
       const room = `conversation:${conversationId}`;
       await client.join(room);
       this.logger.log(
@@ -154,6 +178,7 @@ export class MessagingGateway
       );
       client.emit('joined_conversation', { conversationId, room });
     } catch (error) {
+      if (error instanceof WsException) throw error;
       this.logger.error(
         `[WS] Erreur join_conversation: ${(error as Error).message}`,
       );
