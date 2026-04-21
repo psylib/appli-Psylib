@@ -258,9 +258,14 @@ function SortableModuleItem({ module, index, courseId, token, onUpdated }: Sorta
     updateMutation.mutate();
   };
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const handleDelete = () => {
-    if (window.confirm(`Supprimer le module "${module.title}" ?`)) {
+    if (confirmDelete) {
       deleteMutation.mutate();
+      setConfirmDelete(false);
+    } else {
+      setConfirmDelete(true);
     }
   };
 
@@ -405,20 +410,36 @@ function SortableModuleItem({ module, index, courseId, token, onUpdated }: Sorta
         >
           <Pencil size={14} />
         </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleteMutation.isPending}
-          className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
-          title="Supprimer"
-          aria-label={`Supprimer le module ${module.title}`}
-        >
-          {deleteMutation.isPending ? (
-            <Loader2 size={14} className="animate-spin" />
-          ) : (
+        {confirmDelete ? (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="px-2 py-1 rounded-lg text-xs font-medium text-destructive bg-destructive/10 hover:bg-destructive/20 transition-colors disabled:opacity-50"
+            >
+              {deleteMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : 'Confirmer'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              className="px-2 py-1 rounded-lg text-xs text-muted-foreground hover:bg-surface transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+            title="Supprimer"
+            aria-label={`Supprimer le module ${module.title}`}
+          >
             <Trash2 size={14} />
-          )}
-        </button>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -119,6 +119,8 @@ export class AiController {
    */
   @Post('session-summary')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(SubscriptionGuard)
+  @RequireFeature('ai_summary')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({
     summary: 'Résumé structuré de séance (streaming SSE)',
@@ -135,6 +137,8 @@ export class AiController {
   }
 
   @Post('generate-exercise')
+  @UseGuards(SubscriptionGuard)
+  @RequireFeature('ai_exercise')
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Générer un exercice thérapeutique personnalisé' })
   async generateExercise(

@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Video, Clock, User, Users, ArrowRight, CheckCircle } from 'lucide-react';
 import { videoApi } from '@/lib/api/video';
 
@@ -26,12 +27,16 @@ export default function VideoPage() {
     refetchInterval: 15000,
   });
 
+  const [startError, setStartError] = useState<string | null>(null);
+
   const handleStart = async (appointmentId: string) => {
     try {
+      setStartError(null);
       await videoApi.createRoom(appointmentId, token);
       router.push(`/dashboard/video/${appointmentId}`);
-    } catch {
-      // Toast error handling
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Impossible de demarrer la visio';
+      setStartError(msg);
     }
   };
 
@@ -43,6 +48,12 @@ export default function VideoPage() {
           <p className="text-sm text-muted-foreground mt-1">Vos visios du jour</p>
         </div>
       </div>
+
+      {startError && (
+        <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive" role="alert">
+          {startError}
+        </div>
+      )}
 
       <div className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
         {isLoading ? (

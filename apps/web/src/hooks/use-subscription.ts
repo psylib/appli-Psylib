@@ -2,7 +2,7 @@
 
 import { useDashboardKpis } from './use-dashboard';
 
-const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, clinic: 3 };
+const PLAN_RANK: Record<string, number> = { free: 0, solo: 1, starter: 1, pro: 2, clinic: 3 };
 
 export function useSubscription() {
   const { data: kpis, isLoading } = useDashboardKpis();

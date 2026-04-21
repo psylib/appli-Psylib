@@ -82,7 +82,7 @@ export default function OutboundPage() {
 
   // Gate admin-only
   const userRole = (session?.user as { role?: string })?.role;
-  if (userRole && userRole !== 'admin') {
+  if (userRole && userRole !== 'admin' && userRole !== 'ADMIN') {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">Accès réservé aux administrateurs.</p>

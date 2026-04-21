@@ -175,7 +175,8 @@ export class MessagingService {
       orderBy: { createdAt: 'asc' },
     });
 
-    await this.audit.logRead(userId, 'psychologist', 'messages', conversationId);
+    const actorType = await this.resolveActorType(userId);
+    await this.audit.logRead(userId, actorType, 'messages', conversationId);
 
     return messages.map((m) => ({
       id: m.id,
@@ -208,9 +209,10 @@ export class MessagingService {
       },
     });
 
+    const actorType = await this.resolveActorType(senderId);
     await this.audit.log({
       actorId: senderId,
-      actorType: 'psychologist',
+      actorType,
       action: 'CREATE',
       entityType: 'message',
       entityId: message.id,
@@ -244,9 +246,10 @@ export class MessagingService {
       },
     });
 
+    const actorType = await this.resolveActorType(userId);
     await this.audit.log({
       actorId: userId,
-      actorType: 'psychologist',
+      actorType,
       action: 'UPDATE',
       entityType: 'messages',
       entityId: conversationId,
@@ -338,6 +341,14 @@ export class MessagingService {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
     return psy;
+  }
+
+  private async resolveActorType(userId: string): Promise<'psychologist' | 'patient'> {
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    return psy ? 'psychologist' : 'patient';
   }
 
   private safeDecrypt(content: string): string {

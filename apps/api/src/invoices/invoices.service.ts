@@ -89,37 +89,57 @@ export class InvoicesService {
       }
     }
 
-    // Generate invoice number: PSY-YYYY-NNN
+    // Generate invoice number: PSY-YYYY-NNN (with retry on unique constraint race condition)
     const year = new Date(dto.issuedAt).getFullYear();
-    const lastInvoice = await this.prisma.invoice.findFirst({
-      where: {
-        psychologistId,
-        invoiceNumber: { startsWith: `PSY-${year}-` },
-      },
-      orderBy: { invoiceNumber: 'desc' },
-    });
+    const maxRetries = 3;
 
-    let sequence = 1;
-    if (lastInvoice) {
-      const parts = lastInvoice.invoiceNumber.split('-');
-      const lastSeq = parseInt(parts[2] ?? '0', 10);
-      if (!isNaN(lastSeq)) {
-        sequence = lastSeq + 1;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const lastInvoice = await this.prisma.invoice.findFirst({
+        where: {
+          psychologistId,
+          invoiceNumber: { startsWith: `PSY-${year}-` },
+        },
+        orderBy: { invoiceNumber: 'desc' },
+      });
+
+      let sequence = 1;
+      if (lastInvoice) {
+        const parts = lastInvoice.invoiceNumber.split('-');
+        const lastSeq = parseInt(parts[2] ?? '0', 10);
+        if (!isNaN(lastSeq)) {
+          sequence = lastSeq + 1;
+        }
+      }
+
+      const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+
+      try {
+        return await this.prisma.invoice.create({
+          data: {
+            psychologistId,
+            patientId: dto.patientId,
+            invoiceNumber,
+            amountTtc: dto.amountTtc,
+            status: 'draft',
+            issuedAt: new Date(dto.issuedAt),
+          },
+        });
+      } catch (err: unknown) {
+        // P2002 = unique constraint violation — retry with next sequence
+        if (
+          err &&
+          typeof err === 'object' &&
+          'code' in err &&
+          (err as { code: string }).code === 'P2002' &&
+          attempt < maxRetries - 1
+        ) {
+          continue;
+        }
+        throw err;
       }
     }
 
-    const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
-
-    return this.prisma.invoice.create({
-      data: {
-        psychologistId,
-        patientId: dto.patientId,
-        invoiceNumber,
-        amountTtc: dto.amountTtc,
-        status: 'draft',
-        issuedAt: new Date(dto.issuedAt),
-      },
-    });
+    throw new Error('Impossible de generer un numero de facture unique');
   }
 
   async generatePdf(
@@ -320,13 +340,15 @@ export class InvoicesService {
   }
 
   async markAsPaid(userId: string, invoiceId: string): Promise<Invoice> {
-    const psychologist = await this.prisma.psychologist.findFirstOrThrow({
+    const psychologist = await this.prisma.psychologist.findFirst({
       where: { userId },
     });
+    if (!psychologist) throw new NotFoundException('Profil psychologue introuvable');
 
-    const invoice = await this.prisma.invoice.findFirstOrThrow({
+    const invoice = await this.prisma.invoice.findFirst({
       where: { id: invoiceId, psychologistId: psychologist.id },
     });
+    if (!invoice) throw new NotFoundException('Facture introuvable');
 
     if (invoice.status === 'paid') {
       throw new BadRequestException('Invoice is already paid');

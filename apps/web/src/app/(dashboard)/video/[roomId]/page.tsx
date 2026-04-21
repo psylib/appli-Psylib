@@ -19,6 +19,8 @@ export default function ConsultationRoomPage() {
     roomName: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ending, setEnding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [duration] = useState(50);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function ConsultationRoomPage() {
         setTokenData(data);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Impossible de demarrer la visio';
-        alert(message);
+        setError(message);
         router.push('/dashboard/video');
       } finally {
         setLoading(false);
@@ -44,14 +46,16 @@ export default function ConsultationRoomPage() {
   }, [session?.accessToken, roomId, router]);
 
   const handleEndCall = async () => {
-    if (!session?.accessToken) return;
+    if (!session?.accessToken || ending) return;
+    setEnding(true);
     try {
       await videoApi.endRoom(roomId, session.accessToken);
-      queryClient.invalidateQueries({ queryKey: ['video-today'] });
+      void queryClient.invalidateQueries({ queryKey: ['video-today'] });
       router.push('/dashboard/video');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur lors de la fermeture';
-      alert(message);
+      setError(message);
+      setEnding(false);
     }
   };
 

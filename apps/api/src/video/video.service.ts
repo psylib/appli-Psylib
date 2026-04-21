@@ -369,7 +369,6 @@ export class VideoService {
           date: startTime,
           duration: durationMinutes,
           type: participantIds.length > 0 ? 'group' : 'online',
-          notes: '',
           paymentStatus: 'pending',
           participantIds,
         },

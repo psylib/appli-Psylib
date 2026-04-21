@@ -49,8 +49,11 @@ export default function MoodPage() {
       );
       setHistory((prev) => [entry, ...prev]);
       setNote('');
+      setError(null);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur lors de l\'enregistrement');
     } finally {
       setSaving(false);
     }
@@ -92,6 +95,12 @@ export default function MoodPage() {
           className="mt-4 w-full px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#3D52A0]/30 focus:border-[#3D52A0]"
           rows={2}
         />
+
+        {error && (
+          <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 text-center">
+            {error}
+          </div>
+        )}
 
         {saved && (
           <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700 text-center">

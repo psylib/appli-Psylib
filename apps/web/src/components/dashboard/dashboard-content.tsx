@@ -155,7 +155,7 @@ const QUICK_ACTIONS = [
   },
   {
     label: 'Nouveau patient',
-    href: '/dashboard/patients/new',
+    href: '/dashboard/patients',
     icon: UserPlus,
     bgClass: 'bg-emerald-50 group-hover:bg-emerald-100',
     iconClass: 'text-emerald-600',

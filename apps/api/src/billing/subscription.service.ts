@@ -866,7 +866,7 @@ export class SubscriptionService {
     });
 
     // Audit log
-    void this.audit.log({
+    await this.audit.log({
       actorId: userId,
       actorType: 'psychologist',
       action: 'CREATE',
@@ -928,7 +928,7 @@ export class SubscriptionService {
     ]);
 
     // Audit log
-    void this.audit.log({
+    await this.audit.log({
       actorId: userId,
       actorType: 'psychologist',
       action: 'UPDATE',

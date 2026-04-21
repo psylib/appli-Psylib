@@ -11,6 +11,7 @@ import {
   Max,
   MaxLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { SessionType, SessionPaymentStatus } from '@psyscale/shared-types';
 import { TherapyOrientation, SessionStatus } from '@prisma/client';
@@ -135,10 +136,12 @@ export class UpdateSessionDto {
 export class SessionQueryDto {
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
+  @Type(() => Number)
   page?: number = 1;
 
   @ApiPropertyOptional({ default: 20 })
   @IsOptional()
+  @Type(() => Number)
   limit?: number = 20;
 
   @ApiPropertyOptional()
@@ -157,14 +160,4 @@ export class SessionQueryDto {
   to?: string;
 }
 
-export class AiSummaryDto {
-  @ApiProperty({ description: 'Notes brutes de la séance pour le résumé IA' })
-  @IsString()
-  rawNotes!: string;
-
-  @ApiPropertyOptional({ description: 'Contexte patient (anonymisé)' })
-  @IsString()
-  @IsOptional()
-  @MaxLength(2000)
-  context?: string;
-}
+// AiSummaryDto — removed (unused, AI summary uses ai.controller DTOs)

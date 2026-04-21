@@ -33,13 +33,14 @@ const VALUE_PROPS = [
   },
 ] as const;
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: { callbackUrl?: string; error?: string };
+  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
-  const callbackUrl = searchParams?.callbackUrl ?? '/dashboard';
-  const error = searchParams?.error;
+  const params = await searchParams;
+  const callbackUrl = params?.callbackUrl ?? '/dashboard';
+  const error = params?.error;
 
   return (
     <main className="flex min-h-screen">

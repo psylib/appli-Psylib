@@ -62,9 +62,11 @@ export default function NotificationsPage() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
+
   const deleteAll = async () => {
-    if (!window.confirm('Supprimer toutes les notifications ?')) return;
     setIsDeleting(true);
+    setConfirmDeleteAll(false);
     try {
       await Promise.all(notifications.map((n) => deleteNotification(n.id)));
     } catch {
@@ -115,10 +117,10 @@ export default function NotificationsPage() {
               Tout marquer lu
             </button>
           )}
-          {notifications.length > 0 && (
+          {notifications.length > 0 && !confirmDeleteAll && (
             <button
               type="button"
-              onClick={() => void deleteAll()}
+              onClick={() => setConfirmDeleteAll(true)}
               disabled={isDeleting}
               className="flex items-center gap-1.5 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-destructive/5 border border-destructive/20 disabled:opacity-50"
             >
@@ -129,6 +131,25 @@ export default function NotificationsPage() {
               )}
               Tout supprimer
             </button>
+          )}
+          {confirmDeleteAll && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Confirmer ?</span>
+              <button
+                type="button"
+                onClick={() => void deleteAll()}
+                className="text-xs font-medium text-destructive hover:text-destructive/80 px-2 py-1 rounded border border-destructive/20"
+              >
+                Oui, supprimer
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteAll(false)}
+                className="text-xs font-medium text-muted-foreground px-2 py-1 rounded border border-border"
+              >
+                Annuler
+              </button>
+            </div>
           )}
         </div>
       </div>

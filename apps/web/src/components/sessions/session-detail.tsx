@@ -38,7 +38,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
 
   const updateMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      sessionsApi.update(sessionId, data as never, authSession?.accessToken ?? ''),
+      sessionsApi.update(sessionId, data as Record<string, unknown>, authSession?.accessToken ?? ''),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
       setEditing(false);

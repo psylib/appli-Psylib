@@ -426,7 +426,7 @@ export class AppointmentsService {
     }
 
     // Audit log
-    void this.audit.log({
+    await this.audit.log({
       actorId: appointment.patient.id,
       actorType: 'patient',
       action: 'UPDATE',
@@ -600,7 +600,7 @@ export class AppointmentsService {
       .map((p) => ({ id: p.id, name: p.name }));
 
     // Audit log
-    void this.audit.log({
+    await this.audit.log({
       actorId: userId,
       actorType: 'psychologist',
       action: 'CREATE',

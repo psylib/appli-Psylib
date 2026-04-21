@@ -31,8 +31,12 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     return nextWithPathname(req);
   }
 
-  // /forgot-password — toujours accessible
-  if (pathname === '/forgot-password') {
+  // /forgot-password, /patient/login, /patient/accept-invitation — toujours accessible
+  if (
+    pathname === '/forgot-password' ||
+    pathname === '/patient/login' ||
+    pathname === '/patient/accept-invitation'
+  ) {
     return nextWithPathname(req);
   }
 

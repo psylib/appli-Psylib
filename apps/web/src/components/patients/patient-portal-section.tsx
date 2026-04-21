@@ -47,13 +47,14 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
   const [inviting, setInviting] = useState(false);
   const [inviteResult, setInviteResult] = useState<string | null>(null);
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) return;
     patientsApi
       .portalStatus(patientId, session.accessToken)
       .then(setStatus)
-      .catch(console.error);
+      .catch(() => setLoadError('Impossible de charger le statut du portail patient'));
   }, [patientId, session?.accessToken]);
 
   useEffect(() => {
@@ -66,7 +67,7 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
         setMoods(m);
         setExercises(e);
       })
-      .catch(console.error);
+      .catch(() => setLoadError('Impossible de charger les donnees du portail'));
   }, [status?.hasPortalAccess, patientId, session?.accessToken]);
 
   const handleInvite = async () => {
@@ -92,7 +93,7 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
     patientsApi
       .portalExercises(patientId, session.accessToken)
       .then(setExercises)
-      .catch(console.error);
+      .catch(() => setLoadError('Erreur lors du rechargement des exercices'));
   };
 
   const avgMood =
@@ -100,6 +101,11 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
 
   return (
     <section className="rounded-xl border border-border bg-white shadow-sm overflow-hidden">
+      {loadError && (
+        <div className="px-6 py-3 bg-destructive/10 border-b border-destructive/20 text-xs text-destructive">
+          {loadError}
+        </div>
+      )}
       {/* Header */}
       <div className="px-6 py-4 border-b border-border flex items-center justify-between">
         <div>

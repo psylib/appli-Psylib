@@ -2,10 +2,11 @@ import { NewSessionContent } from '@/components/sessions/new-session';
 
 export const metadata = { title: 'Nouvelle séance' };
 
-export default function NewSessionPage({
+export default async function NewSessionPage({
   searchParams,
 }: {
-  searchParams?: { patientId?: string };
+  searchParams: Promise<{ patientId?: string }>;
 }) {
-  return <NewSessionContent preselectedPatientId={searchParams?.patientId} />;
+  const { patientId } = await searchParams;
+  return <NewSessionContent preselectedPatientId={patientId} />;
 }

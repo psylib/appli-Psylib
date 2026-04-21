@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
+import { UserRole } from '@psyscale/shared-types';
 import dynamic from 'next/dynamic';
 
 const FunnelContent = dynamic(
@@ -12,6 +13,6 @@ export const metadata = { title: 'Funnel Activation — PsyLib Admin' };
 export default async function AdminFunnelPage() {
   const session = await auth();
   if (!session) redirect('/login');
-  if (session.user.role !== 'admin') redirect('/dashboard');
+  if (session.user.role !== UserRole.ADMIN) redirect('/dashboard');
   return <FunnelContent />;
 }

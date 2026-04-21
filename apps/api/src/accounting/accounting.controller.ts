@@ -68,9 +68,9 @@ export class AccountingController {
   @Get('export/csv')
   async exportCsv(
     @CurrentUser() user: KeycloakUser,
+    @Res() res: Response,
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
-    @Res() res?: Response,
   ) {
     // Fetch all entries (large limit) for the period
     const result = await this.accountingService.getBook(user.sub, {
@@ -99,11 +99,9 @@ export class AccountingController {
 
     const filename = buildCsvFilename(dateFrom, dateTo);
 
-    if (res) {
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      res.send('\uFEFF' + csv); // BOM for Excel UTF-8 compatibility
-    }
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('\uFEFF' + csv); // BOM for Excel UTF-8 compatibility
   }
 
   /**
@@ -112,8 +110,8 @@ export class AccountingController {
    * Requires Starter plan or higher (not available on Free).
    */
   @Get('export/fec')
-  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async exportFec(
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,
@@ -139,8 +137,8 @@ export class AccountingController {
    * Requires Pro or Clinic plan.
    */
   @Get('tax-prep')
-  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async getTaxPrep(
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,
@@ -156,8 +154,8 @@ export class AccountingController {
    * Requires Pro or Clinic plan.
    */
   @Get('social-charges')
-  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async getSocialCharges(
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,

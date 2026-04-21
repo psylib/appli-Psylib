@@ -49,6 +49,7 @@ export function NewSessionContent({ preselectedPatientId }: NewSessionContentPro
       router.push(`/dashboard/sessions/${session.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur lors de la création');
+    } finally {
       setLoading(false);
     }
   };
