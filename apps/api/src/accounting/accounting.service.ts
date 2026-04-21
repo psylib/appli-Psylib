@@ -222,56 +222,43 @@ export class AccountingService {
 
     const now = new Date();
     const currentYear = now.getFullYear();
-    const ytdStart = new Date(currentYear, 0, 1); // Jan 1st of current year
+    const ytdStart = new Date(currentYear, 0, 1);
 
-    // Monthly P&L for last 12 months
-    const monthlyPnl: Array<{
-      month: string;
-      income: number;
-      expenses: number;
-      net: number;
-    }> = [];
+    // 12-month window start
+    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
+    // Single query for monthly P&L (replaces 24 sequential queries)
+    const monthlyRaw = await this.prisma.$queryRaw<
+      Array<{
+        month: string;
+        income: number;
+        expenses: number;
+      }>
+    >`
+      SELECT
+        TO_CHAR(date, 'YYYY-MM') AS month,
+        COALESCE(SUM(CASE WHEN entry_type = 'income' THEN credit ELSE 0 END), 0)::float AS income,
+        COALESCE(SUM(CASE WHEN entry_type = 'expense' THEN debit ELSE 0 END), 0)::float AS expenses
+      FROM accounting_entries
+      WHERE psychologist_id = ${psychologistId}
+        AND deleted_at IS NULL
+        AND date >= ${twelveMonthsAgo}
+      GROUP BY TO_CHAR(date, 'YYYY-MM')
+      ORDER BY month ASC
+    `;
+
+    // Fill in missing months with zeros
+    const monthlyPnl: Array<{ month: string; income: number; expenses: number; net: number }> = [];
     for (let i = 11; i >= 0; i--) {
-      const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
-      const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
-
-      const monthLabel = monthStart.toISOString().slice(0, 7); // YYYY-MM
-
-      const [incomeAgg, expenseAgg] = await this.prisma.$transaction([
-        this.prisma.accountingEntry.aggregate({
-          _sum: { credit: true },
-          where: {
-            psychologistId,
-            deletedAt: null,
-            entryType: AccountingEntryType.income,
-            date: { gte: monthStart, lte: monthEnd },
-          },
-        }),
-        this.prisma.accountingEntry.aggregate({
-          _sum: { debit: true },
-          where: {
-            psychologistId,
-            deletedAt: null,
-            entryType: AccountingEntryType.expense,
-            date: { gte: monthStart, lte: monthEnd },
-          },
-        }),
-      ]);
-
-      const income = Number(incomeAgg._sum.credit ?? 0);
-      const expenses = Number(expenseAgg._sum.debit ?? 0);
-
-      monthlyPnl.push({
-        month: monthLabel,
-        income,
-        expenses,
-        net: income - expenses,
-      });
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toISOString().slice(0, 7);
+      const found = monthlyRaw.find((r) => r.month === label);
+      const income = found?.income ?? 0;
+      const expenses = found?.expenses ?? 0;
+      monthlyPnl.push({ month: label, income, expenses, net: income - expenses });
     }
 
-    // Expenses by category YTD
+    // Expenses by category YTD (already a single query — keep as-is)
     const expensesByCategory = await this.prisma.accountingEntry.groupBy({
       by: ['category'],
       _sum: { debit: true },
@@ -288,7 +275,7 @@ export class AccountingService {
       categoryBreakdown[group.category] = Number(group._sum.debit ?? 0);
     }
 
-    // YTD totals
+    // YTD totals (keep as-is — already efficient as a single $transaction)
     const [ytdIncomeAgg, ytdExpenseAgg] = await this.prisma.$transaction([
       this.prisma.accountingEntry.aggregate({
         _sum: { credit: true },
