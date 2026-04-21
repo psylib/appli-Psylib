@@ -44,15 +44,7 @@ ALTER TABLE "payments" ADD CONSTRAINT "payments_patient_id_fkey"
   FOREIGN KEY ("patient_id") REFERENCES "patients"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- =============================================================================
--- Step 5: Appointment FK in payments — add ON DELETE SET NULL (already nullable)
--- =============================================================================
-
-ALTER TABLE "payments" DROP CONSTRAINT IF EXISTS "payments_appointment_id_fkey";
-ALTER TABLE "payments" ADD CONSTRAINT "payments_appointment_id_fkey"
-  FOREIGN KEY ("appointment_id") REFERENCES "appointments"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- =============================================================================
--- Step 6: Patient FK in invoices — add ON DELETE SET NULL (already nullable)
+-- Step 5: Patient FK in invoices — add ON DELETE SET NULL (already nullable)
 -- =============================================================================
 
 ALTER TABLE "invoices" DROP CONSTRAINT IF EXISTS "invoices_patient_id_fkey";
