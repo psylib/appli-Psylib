@@ -9,6 +9,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AppointmentStatus } from '@psyscale/shared-types';
 
@@ -74,6 +75,7 @@ export class AppointmentQueryDto {
   to?: string;
 
   @ApiPropertyOptional({ example: 20 })
+  @Type(() => Number)
   @IsNumber()
   @IsOptional()
   @Min(1)
