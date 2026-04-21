@@ -270,8 +270,14 @@ export class ExpensesService {
       throw new BadRequestException('Fichier trop volumineux. Taille maximale : 5 Mo.');
     }
 
-    // Build storage path
-    const uploadDir = path.join(process.cwd(), 'uploads', 'receipts', psychologistId, id);
+    // Build storage path — with traversal guard
+    const baseUploadDir = path.resolve(process.cwd(), 'uploads', 'receipts');
+    const uploadDir = path.resolve(baseUploadDir, psychologistId, id);
+
+    if (!uploadDir.startsWith(baseUploadDir)) {
+      throw new BadRequestException('Chemin de fichier invalide');
+    }
+
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -279,7 +285,11 @@ export class ExpensesService {
     // Sanitize filename
     const ext = path.extname(file.originalname).toLowerCase();
     const safeFilename = `receipt_${Date.now()}${ext}`;
-    const filePath = path.join(uploadDir, safeFilename);
+    const filePath = path.resolve(uploadDir, safeFilename);
+
+    if (!filePath.startsWith(baseUploadDir)) {
+      throw new BadRequestException('Nom de fichier invalide');
+    }
 
     fs.writeFileSync(filePath, file.buffer);
 
