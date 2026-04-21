@@ -26,6 +26,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { corsOriginCallback } from './common/cors.config';
 import { SentryExceptionFilter } from './common/sentry-exception.filter';
+import { PrismaExceptionFilter } from './common/prisma-exception.filter';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -38,8 +39,13 @@ async function bootstrap() {
   // Graceful shutdown — ferme proprement Prisma, Redis, Bull avant arrêt
   app.enableShutdownHooks();
 
-  // Sentry global exception filter — capture toutes les erreurs 5xx
-  app.useGlobalFilters(new SentryExceptionFilter());
+  // Global exception filters — NestJS evaluates in REVERSE registration order:
+  // PrismaExceptionFilter runs first (catches P2002/P2025/P2003 → 409/404/400),
+  // SentryExceptionFilter runs last (catches remaining errors → 5xx to Sentry).
+  app.useGlobalFilters(
+    new SentryExceptionFilter(),
+    new PrismaExceptionFilter(),
+  );
 
   // Security headers
   app.use(
