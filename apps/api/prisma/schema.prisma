@@ -415,7 +415,7 @@ model Patient {
 
   // Relations
   psychologist           Psychologist            @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  user                   User?                   @relation("UserPatient", fields: [userId], references: [id])
+  user                   User?                   @relation("UserPatient", fields: [userId], references: [id], onDelete: SetNull)
   sessions               Session[]
   appointments           Appointment[]
   moodTrackings          MoodTracking[]
@@ -599,8 +599,8 @@ model Appointment {
 
   psychologist     Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  session          Session?          @relation(fields: [sessionId], references: [id])
-  consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id])
+  session          Session?          @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id], onDelete: SetNull)
   payments         Payment[]
   videoRoom        VideoRoom?
   participants     AppointmentParticipant[]
@@ -716,13 +716,13 @@ model Conversation {
 model Message {
   id             String    @id @default(uuid())
   conversationId String    @map("conversation_id")
-  senderId       String    @map("sender_id")
+  senderId       String?   @map("sender_id")
   content        String // ENCRYPTED — AES-256-GCM
   readAt         DateTime? @map("read_at")
   createdAt      DateTime  @default(now()) @map("created_at")
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User         @relation("MessageSender", fields: [senderId], references: [id])
+  sender       User?        @relation("MessageSender", fields: [senderId], references: [id], onDelete: SetNull)
 
   @@index([conversationId, readAt], name: "idx_messages_conv_read")
   @@map("messages")
@@ -766,13 +766,13 @@ model CourseModule {
 model CourseEnrollment {
   id         String   @id @default(uuid())
   courseId   String   @map("course_id")
-  userId     String   @map("user_id")
+  userId     String?  @map("user_id")
   paymentId  String?  @map("payment_id")
   progress   Json     @default("{}")
   enrolledAt DateTime @default(now()) @map("enrolled_at")
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([courseId, userId])
   @@index([userId], name: "idx_course_enrollments_user")
@@ -797,8 +797,8 @@ model Payment {
   createdAt               DateTime      @default(now()) @map("created_at")
 
   psychologist      Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  patient           Patient?          @relation(fields: [patientId], references: [id])
-  appointment       Appointment?      @relation(fields: [appointmentId], references: [id])
+  patient           Patient?          @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  appointment       Appointment?      @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   invoices          Invoice[]
   accountingEntries AccountingEntry[]
 
@@ -823,9 +823,9 @@ model Invoice {
   source         InvoiceSource @default(manual)
 
   psychologist      Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  patient           Patient?          @relation(fields: [patientId], references: [id])
-  session           Session?          @relation(fields: [sessionId], references: [id])
-  payment           Payment?          @relation(fields: [paymentId], references: [id])
+  patient           Patient?          @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  session           Session?          @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  payment           Payment?          @relation(fields: [paymentId], references: [id], onDelete: SetNull)
   accountingEntries AccountingEntry[]
 
   @@index([psychologistId], name: "idx_invoices_psy")
@@ -850,7 +850,7 @@ model StripeEvent {
 
 model AuditLog {
   id         String   @id @default(uuid())
-  actorId    String   @map("actor_id")
+  actorId    String?  @map("actor_id")
   actorType  String   @map("actor_type")
   action     String
   entityType String   @map("entity_type")
@@ -859,7 +859,7 @@ model AuditLog {
   metadata   Json?
   createdAt  DateTime @default(now()) @map("created_at")
 
-  actor User @relation(fields: [actorId], references: [id])
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([entityType, entityId, createdAt(sort: Desc)], name: "idx_audit_entity")
   @@map("audit_logs")
@@ -1122,7 +1122,7 @@ model Expense {
   supplier           String?
   receiptUrl         String?              @map("receipt_url")
   recurringExpenseId String?              @map("recurring_expense_id")
-  recurringExpense   RecurringExpense?    @relation(fields: [recurringExpenseId], references: [id])
+  recurringExpense   RecurringExpense?    @relation(fields: [recurringExpenseId], references: [id], onDelete: SetNull)
   notes              String?              // ENCRYPTED — AES-256-GCM
   isDeductible       Boolean              @default(true) @map("is_deductible")
   createdAt          DateTime             @default(now()) @map("created_at")
@@ -1174,11 +1174,11 @@ model AccountingEntry {
   paymentMethod  String?             @map("payment_method")
   counterpart    String?
   invoiceId      String?             @map("invoice_id")
-  invoice        Invoice?            @relation(fields: [invoiceId], references: [id])
+  invoice        Invoice?            @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
   paymentId      String?             @map("payment_id")
-  payment        Payment?            @relation(fields: [paymentId], references: [id])
+  payment        Payment?            @relation(fields: [paymentId], references: [id], onDelete: SetNull)
   expenseId      String?             @map("expense_id")
-  expense        Expense?            @relation(fields: [expenseId], references: [id])
+  expense        Expense?            @relation(fields: [expenseId], references: [id], onDelete: SetNull)
   accountCode    String?             @map("account_code")
   pieceRef       String?             @map("piece_ref")
   ecritureNum    Int?                @map("ecriture_num")
@@ -1222,7 +1222,7 @@ model ReferralInvite {
   createdAt     DateTime             @default(now()) @map("created_at")
 
   referrer Psychologist  @relation("InviteFrom", fields: [referrerId], references: [id], onDelete: Cascade)
-  referred Psychologist? @relation("InviteTo", fields: [referredId], references: [id])
+  referred Psychologist? @relation("InviteTo", fields: [referredId], references: [id], onDelete: SetNull)
 
   @@index([referrerId])
   @@map("referral_invites")
