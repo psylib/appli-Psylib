@@ -721,11 +721,18 @@ export class SubscriptionService {
       return;
     }
 
-    // Update payment status
+    // Update payment and appointment statuses
     await this.prisma.payment.update({
       where: { id: payment.id },
       data: { status: 'refunded' },
     });
+
+    if (payment.appointmentId) {
+      await this.prisma.appointment.update({
+        where: { id: payment.appointmentId },
+        data: { bookingPaymentStatus: 'refunded' },
+      });
+    }
 
     this.logger.log(`Charge refunded synced: payment ${payment.id}, PI ${paymentIntentId}`);
   }
