@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -65,7 +66,7 @@ export class ExpensesController {
   @Get(':id')
   findOne(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.expensesService.findOne(user.sub, id);
   }
@@ -73,7 +74,7 @@ export class ExpensesController {
   @Put(':id')
   update(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateExpenseDto,
   ) {
     return this.expensesService.update(user.sub, id, dto);
@@ -82,7 +83,7 @@ export class ExpensesController {
   @Delete(':id')
   remove(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.expensesService.softDelete(user.sub, id);
   }
@@ -98,7 +99,7 @@ export class ExpensesController {
   )
   uploadReceipt(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.expensesService.uploadReceipt(user.sub, id, file);
@@ -107,7 +108,7 @@ export class ExpensesController {
   @Get(':id/receipt')
   getReceipt(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.expensesService.getReceiptUrl(user.sub, id);
   }

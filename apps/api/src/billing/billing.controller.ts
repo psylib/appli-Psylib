@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Put, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -107,7 +107,7 @@ export class BillingController {
   @ApiOperation({ summary: 'Marquer un rendez-vous comme payé sur place' })
   async markPaidOnSite(
     @CurrentUser() user: KeycloakUser,
-    @Param('appointmentId') appointmentId: string,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
   ) {
     return this.subscriptionService.markPaidOnSite(user.sub, appointmentId);
   }

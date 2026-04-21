@@ -9,6 +9,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -195,7 +196,7 @@ export class AiController {
   @Delete('content-library/:id')
   @ApiOperation({ summary: 'Supprimer un contenu de la bibliothèque' })
   async deleteContent(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.aiService.deleteMarketingContent(user.sub, id);
