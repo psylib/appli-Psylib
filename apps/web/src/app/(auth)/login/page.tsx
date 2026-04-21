@@ -67,7 +67,7 @@ export default async function LoginPage({
             <h2 className="text-2xl xl:text-3xl font-bold leading-tight">
               La plateforme tout-en-un
               <br />
-              pour psychologues libéraux
+              pour psys libéraux
             </h2>
             <div className="space-y-6">
               {VALUE_PROPS.map((prop) => {
