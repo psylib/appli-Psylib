@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
+import { AuditService } from '../common/audit.service';
 import {
   getSessionSummaryPrompt,
   EXTRACTION_PROMPT,
@@ -70,6 +71,7 @@ export class AiService {
     private readonly config: ConfigService,
     private readonly encryption: EncryptionService,
     private readonly notifications: NotificationsService,
+    private readonly audit: AuditService,
   ) {}
 
   onModuleInit() {
@@ -312,6 +314,27 @@ export class AiService {
       );
 
       await this.trackUsage(psy.id, 'session_summary', totalTokens, startedAt, this.modelMain);
+
+      // Persist encrypted summary in DB
+      if (fullSummary.length > 0) {
+        try {
+          const encrypted = this.encryption.encrypt(fullSummary);
+          await this.prisma.session.update({
+            where: { id: dto.sessionId, psychologistId: psy.id },
+            data: { summaryAi: encrypted },
+          });
+          await this.audit.log({
+            actorId: psychologistUserId,
+            actorType: 'psychologist',
+            action: 'CREATE',
+            entityType: 'session_summary',
+            entityId: dto.sessionId,
+            metadata: { model: this.modelMain, tokensUsed: totalTokens },
+          });
+        } catch (e) {
+          this.logger.error('Failed to persist AI summary:', e);
+        }
+      }
 
       // Phase 3: Extract structured data
       if (fullSummary.length > 50 && !res.writableEnded) {
