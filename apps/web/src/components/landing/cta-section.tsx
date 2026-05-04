@@ -11,7 +11,7 @@ export function CTASection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 text-white text-sm font-medium">
               <CheckCircle2 size={14} />
-              Offre Fondateurs — places limitées
+              Plan gratuit pour toujours
             </div>
 
             {/* Heading */}
@@ -23,20 +23,20 @@ export function CTASection() {
               Plan Free pour toujours. Solo a 25€/mois. Pro a 40€/mois avec IA illimitee.
             </p>
 
-            {/* Dual CTAs */}
+            {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
               <Link
-                href="/beta"
+                href="/register"
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-terracotta text-white font-medium text-sm hover:bg-terracotta-600 transition-colors shadow-sm"
               >
-                Devenir Fondateur
+                Commencer gratuitement
                 <ArrowRight size={16} />
               </Link>
               <Link
-                href="/register"
+                href="/login"
                 className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-white/20 text-white font-medium text-sm hover:bg-white/30 transition-colors"
               >
-                Commencez gratuitement
+                Se connecter
               </Link>
             </div>
 

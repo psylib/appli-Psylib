@@ -84,10 +84,10 @@ function DashboardMockup() {
         <span className="text-xs font-medium text-sage-700">Conformité HDS</span>
       </div>
 
-      {/* Floating stat — Founders urgency */}
-      <div className="absolute -top-4 -left-4 bg-terracotta text-white rounded-xl shadow-lg px-3 py-2">
-        <div className="font-dm-mono font-medium text-lg leading-none">13/15</div>
-        <div className="text-xs opacity-80">places restantes</div>
+      {/* Floating stat */}
+      <div className="absolute -top-4 -left-4 bg-sage text-white rounded-xl shadow-lg px-3 py-2">
+        <div className="font-dm-mono font-medium text-lg leading-none">100%</div>
+        <div className="text-xs opacity-80">gratuit</div>
       </div>
     </div>
   );
@@ -110,10 +110,10 @@ export function HeroSection() {
           {/* Left — Text */}
           <ScrollReveal>
             <div className="space-y-6">
-              {/* Badge — Founders urgency */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-terracotta/10 border border-terracotta/20 text-terracotta text-sm font-medium">
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-sage/10 border border-sage/20 text-sage-700 text-sm font-medium">
                 <CheckCircle2 size={14} />
-                Offre Fondateurs — 15 places à tarif gelé à vie
+                Essayez gratuitement — sans engagement
               </div>
 
               {/* H1 */}
@@ -131,26 +131,26 @@ export function HeroSection() {
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Link
-                  href="/beta"
+                  href="/register"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-terracotta text-white font-medium hover:bg-terracotta-600 transition-colors shadow-sm"
                 >
                   Commencez gratuitement
                   <ArrowRight size={16} />
                 </Link>
                 <Link
-                  href="/register"
+                  href="/login"
                   className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal text-charcoal font-medium hover:bg-charcoal hover:text-white transition-colors"
                 >
-                  Commencez gratuitement
+                  Se connecter
                 </Link>
               </div>
 
               {/* Stats */}
               <div className="flex items-center gap-6 pt-2">
                 {[
-                  { value: '15', label: 'places Fondateurs' },
                   { value: '0€', label: 'pour commencer' },
                   { value: 'HDS', label: 'certifié France' },
+                  { value: '100%', label: 'données en France' },
                 ].map(({ value, label }) => (
                   <div key={label} className="text-center">
                     <div className="font-dm-mono font-medium text-xl text-charcoal">{value}</div>

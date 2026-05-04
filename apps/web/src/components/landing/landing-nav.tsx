@@ -74,10 +74,10 @@ export function LandingNav() {
             Connexion
           </Link>
           <Link
-            href="/beta"
+            href="/register"
             className="inline-flex items-center px-5 py-2.5 rounded-full bg-terracotta text-white text-sm font-medium hover:bg-terracotta-600 transition-colors shadow-sm"
           >
-            Devenir Fondateur
+            Commencer
           </Link>
         </div>
 
@@ -119,10 +119,10 @@ export function LandingNav() {
             Blog
           </Link>
           <Link
-            href="/beta"
+            href="/register"
             className="block w-full text-center px-5 py-3 rounded-full bg-terracotta text-white text-sm font-medium hover:bg-terracotta-600 transition-colors mt-2"
           >
-            Devenir Fondateur
+            Commencer
           </Link>
         </div>
       )}

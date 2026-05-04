@@ -28,10 +28,10 @@ export function StickyCTA() {
           </p>
         </div>
         <Link
-          href="/beta"
+          href="/register"
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-terracotta text-sm font-semibold hover:bg-cream transition-colors whitespace-nowrap"
         >
-          Candidater
+          Commencer
           <ArrowRight size={14} />
         </Link>
         <button
