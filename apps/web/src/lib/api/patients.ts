@@ -31,7 +31,7 @@ export const patientsApi = {
     apiClient.get<{ total: number; active: number; newThisMonth: number }>('/patients/stats', token),
 
   invite: (id: string, token: string) =>
-    apiClient.post<{ id: string; email: string; expiresAt: string; invitationUrl: string }>(
+    apiClient.post<{ id: string; email: string; expiresAt: string; invitationUrl: string; emailSent?: boolean; emailError?: string }>(
       `/patients/${id}/invite`,
       {},
       token,

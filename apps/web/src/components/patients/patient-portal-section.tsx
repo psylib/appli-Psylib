@@ -76,7 +76,11 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
     setInviteResult(null);
     try {
       const result = await patientsApi.invite(patientId, session.accessToken);
-      setInviteResult(`Invitation envoyée à ${result.email}`);
+      if (result.emailSent === false) {
+        setInviteResult(`Invitation créée mais l'email n'a pas pu être envoyé à ${result.email}. Vérifiez l'adresse email du patient.`);
+      } else {
+        setInviteResult(`Invitation envoyée à ${result.email}`);
+      }
       // Refresh status
       const newStatus = await patientsApi.portalStatus(patientId, session.accessToken);
       setStatus(newStatus);

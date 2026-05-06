@@ -66,12 +66,19 @@ export class EmailService {
     html: string,
     method: string,
     attachments?: Array<{ filename: string; content: Buffer }>,
-  ): Promise<void> {
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      await this.resend.emails.send({ from: this.from, to, subject, html, attachments });
+      const result = await this.resend.emails.send({ from: this.from, to, subject, html, attachments });
+      if (result.error) {
+        const masked = to.replace(/^(.{2}).*(@.*)$/, '$1***$2');
+        this.logger.error(`[EmailService] ${method} rejected for ${masked}: ${result.error.message}`);
+        return { success: false, error: result.error.message };
+      }
+      return { success: true };
     } catch (error) {
       const masked = to.replace(/^(.{2}).*(@.*)$/, '$1***$2');
       this.logger.error(`[EmailService] ${method} failed for ${masked}: ${(error as Error).message}`);
+      return { success: false, error: (error as Error).message };
     }
   }
 
@@ -373,7 +380,7 @@ export class EmailService {
       invitationUrl: string;
       expiresAt: Date;
     },
-  ): Promise<void> {
+  ): Promise<{ success: boolean; error?: string }> {
     const expiresFormatted = data.expiresAt.toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: 'long',
@@ -397,7 +404,7 @@ export class EmailService {
       </div>`,
     );
 
-    await this.send(
+    return this.send(
       to,
       `${data.psychologistName} vous invite sur PsyLib`,
       html,

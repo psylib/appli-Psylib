@@ -68,18 +68,24 @@ export class PatientInvitationService {
 
     this.logger.log(`Invitation créée pour ${patient.email}: ${invitationUrl}`);
 
-    await this.emailService.sendPatientInvitation(patient.email, {
+    const emailResult = await this.emailService.sendPatientInvitation(patient.email, {
       patientName: patient.name,
       psychologistName: psy.name,
       invitationUrl,
       expiresAt,
     });
 
+    if (!emailResult.success) {
+      this.logger.warn(`Email invitation non envoyé pour ${patient.email}: ${emailResult.error}`);
+    }
+
     return {
       id: invitation.id,
       email: patient.email,
       expiresAt,
       invitationUrl,
+      emailSent: emailResult.success,
+      emailError: emailResult.error,
     };
   }
 
