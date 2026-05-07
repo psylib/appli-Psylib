@@ -9,12 +9,14 @@ import { PatientPortalService } from './patient-portal.service';
 import { PatientInvitationService } from './patient-invitation.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ScoringService } from '../outcomes/scoring.service';
+import { DocumentsModule } from '../documents/documents.module';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({}), // secret injecté dynamiquement via ConfigService
     NotificationsModule,
+    DocumentsModule,
   ],
   controllers: [PatientAuthController, PatientPortalController],
   providers: [

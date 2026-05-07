@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import type { Request } from 'express';
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
@@ -237,10 +238,81 @@ export class PatientPortalService {
     });
   }
 
+  // ─── DOCUMENTS ─────────────────────────────────────────────────────────────
+
+  private safeDecryptMessage(value: string | null): string | null {
+    if (!value) return null;
+    try {
+      return this.encryption.decrypt(value);
+    } catch {
+      return null;
+    }
+  }
+
+  async getDocuments(patientId: string) {
+    const docs = await this.prisma.sharedDocument.findMany({
+      where: { patientId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        fileName: true,
+        fileSize: true,
+        mimeType: true,
+        category: true,
+        message: true,
+        downloadedAt: true,
+        createdAt: true,
+      },
+    });
+
+    return docs.map((d) => ({
+      ...d,
+      message: this.safeDecryptMessage(d.message),
+    }));
+  }
+
+  async downloadDocument(patientId: string, docId: string, userId: string, req?: Request) {
+    const doc = await this.prisma.sharedDocument.findFirst({
+      where: { id: docId, patientId, deletedAt: null },
+    });
+    if (!doc) throw new NotFoundException('Document introuvable');
+
+    // Defense-in-depth: verify file path is within upload base directory
+    const path = require('path');
+    const resolvedPath = path.resolve(doc.filePath);
+    if (!resolvedPath.startsWith(path.resolve('/uploads/documents'))) {
+      throw new ForbiddenException('Chemin de fichier invalide');
+    }
+
+    // Mark first download
+    if (!doc.downloadedAt) {
+      await this.prisma.sharedDocument.update({
+        where: { id: docId },
+        data: { downloadedAt: new Date() },
+      });
+    }
+
+    // Audit log
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'patient',
+      action: 'READ',
+      entityType: 'document',
+      entityId: docId,
+      req,
+    });
+
+    return {
+      filePath: doc.filePath,
+      fileName: doc.fileName,
+      mimeType: doc.mimeType,
+    };
+  }
+
   // ─── DASHBOARD PATIENT ───────────────────────────────────────────────────
 
   async getDashboard(patientId: string) {
-    const [recentMoods, exercises, nextAppointment, recentJournal, pendingAssessmentsCount] = await Promise.all([
+    const [recentMoods, exercises, nextAppointment, recentJournal, pendingAssessmentsCount, unreadDocuments] = await Promise.all([
       // 7 derniers jours d'humeur
       this.prisma.moodTracking.findMany({
         where: {
@@ -270,6 +342,10 @@ export class PatientPortalService {
       this.prisma.journalEntry.count({ where: { patientId } }),
       // Évaluations en attente
       this.prisma.assessment.count({ where: { patientId, status: 'pending' } }),
+      // Documents non téléchargés
+      this.prisma.sharedDocument.count({
+        where: { patientId, deletedAt: null, downloadedAt: null },
+      }),
     ]);
 
     const avgMood = recentMoods.length
@@ -283,6 +359,7 @@ export class PatientPortalService {
       nextAppointment,
       journalCount: recentJournal,
       pendingAssessmentsCount,
+      unreadDocuments,
     };
   }
 }

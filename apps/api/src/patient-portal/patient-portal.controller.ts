@@ -13,8 +13,13 @@ import {
   DefaultValuePipe,
   HttpCode,
   HttpStatus,
+  Res,
+  Req,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import type { Response, Request } from 'express';
+import { createReadStream } from 'fs';
 import { PatientJwtGuard } from './guards/patient-jwt.guard';
 import { PatientPortalService } from './patient-portal.service';
 import { CreateMoodDto, CreateJournalEntryDto, UpdateExerciseDto } from './dto/patient-portal.dto';
@@ -118,5 +123,37 @@ export class PatientPortalController {
     @Body() body: { answers: Array<{ questionId: string; value: number }> },
   ) {
     return this.service.submitPatientAssessment(id, user.patientId, body.answers);
+  }
+
+  // ─── DOCUMENTS ───────────────────────────────────────────────────
+
+  @Get('documents')
+  @ApiOperation({ summary: 'Liste des documents partagés' })
+  getDocuments(@CurrentPatient() user: PatientUser) {
+    return this.service.getDocuments(user.patientId);
+  }
+
+  @Get('documents/:id/download')
+  @ApiOperation({ summary: 'Télécharger un document' })
+  async downloadDocument(
+    @CurrentPatient() user: PatientUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ) {
+    const { filePath, fileName, mimeType } = await this.service.downloadDocument(
+      user.patientId,
+      id,
+      user.sub,
+      req,
+    );
+
+    res.set({
+      'Content-Type': mimeType,
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`,
+    });
+
+    const stream = createReadStream(filePath);
+    return new StreamableFile(stream);
   }
 }
