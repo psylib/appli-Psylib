@@ -395,6 +395,7 @@ export class PublicBookingService {
         consultationTypeId: dto.consultationTypeId ?? null,
         bookingPaymentStatus: wantsOnlinePayment ? 'pending_payment' : 'none',
         isOnline: dto.isOnline === true,
+        videoJoinToken: dto.isOnline === true ? randomUUID() : undefined,
       },
     });
 

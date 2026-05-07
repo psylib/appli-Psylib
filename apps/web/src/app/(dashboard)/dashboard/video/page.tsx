@@ -33,7 +33,7 @@ export default function VideoPage() {
     try {
       setStartError(null);
       await videoApi.createRoom(appointmentId, token);
-      router.push(`/dashboard/video/${appointmentId}`);
+      router.push(`/video/${appointmentId}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Impossible de demarrer la visio';
       setStartError(msg);
@@ -113,7 +113,7 @@ export default function VideoPage() {
                     )}
                     {room.status === 'active' && (
                       <button
-                        onClick={() => router.push(`/dashboard/video/${room.appointmentId}`)}
+                        onClick={() => router.push(`/video/${room.appointmentId}`)}
                         className="inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition-colors"
                       >
                         En cours

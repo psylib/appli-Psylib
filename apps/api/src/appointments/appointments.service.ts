@@ -194,13 +194,20 @@ export class AppointmentsService {
     });
     if (!existing) throw new NotFoundException('RDV introuvable');
 
+    const updateData: Record<string, unknown> = {};
+    if (dto.scheduledAt !== undefined) updateData.scheduledAt = new Date(dto.scheduledAt);
+    if (dto.duration !== undefined) updateData.duration = dto.duration;
+    if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.isOnline !== undefined) {
+      updateData.isOnline = dto.isOnline;
+      if (dto.isOnline && !existing.videoJoinToken) {
+        updateData.videoJoinToken = randomUUID();
+      }
+    }
+
     return this.prisma.appointment.update({
       where: { id },
-      data: {
-        ...(dto.scheduledAt !== undefined && { scheduledAt: new Date(dto.scheduledAt) }),
-        ...(dto.duration !== undefined && { duration: dto.duration }),
-        ...(dto.status !== undefined && { status: dto.status }),
-      },
+      data: updateData,
     });
   }
 

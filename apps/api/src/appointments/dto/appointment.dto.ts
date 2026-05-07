@@ -61,6 +61,11 @@ export class UpdateAppointmentDto {
   @IsEnum(AppointmentStatus)
   @IsOptional()
   status?: AppointmentStatus;
+
+  @ApiPropertyOptional({ default: false })
+  @IsBoolean()
+  @IsOptional()
+  isOnline?: boolean;
 }
 
 export class AppointmentQueryDto {
