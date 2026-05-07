@@ -48,6 +48,12 @@ export declare enum ExerciseStatus {
     COMPLETED = "completed",
     SKIPPED = "skipped"
 }
+export declare enum DocumentCategory {
+    EXERCISE = "exercise",
+    ADMINISTRATIVE = "administrative",
+    SESSION_REPORT = "session_report",
+    OTHER = "other"
+}
 export declare enum InvitationStatus {
     PENDING = "pending",
     ACCEPTED = "accepted",
@@ -409,6 +415,7 @@ export declare const PLAN_LIMITS: Record<SubscriptionPlan, {
     videoConsultations: number | null;
     courses: number | null;
     expenses: number | null;
+    documentsBytesMonthly: number | null;
 }>;
 export declare const PLAN_PRICES: Record<SubscriptionPlan, number>;
 export declare const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string>;

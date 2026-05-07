@@ -66,6 +66,13 @@ export enum ExerciseStatus {
   SKIPPED = 'skipped',
 }
 
+export enum DocumentCategory {
+  EXERCISE = 'exercise',
+  ADMINISTRATIVE = 'administrative',
+  SESSION_REPORT = 'session_report',
+  OTHER = 'other',
+}
+
 export enum InvitationStatus {
   PENDING = 'pending',
   ACCEPTED = 'accepted',
@@ -472,11 +479,11 @@ export interface HealthCheckResponse {
 }
 
 // Plan limits
-export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null; expenses: number | null }> = {
-  [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30 },
-  [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null },
-  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null },  // null/-1 = unlimited
-  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null }, // -1 / null = illimité
+export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null; expenses: number | null; documentsBytesMonthly: number | null }> = {
+  [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0 },
+  [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800 },
+  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null },  // null/-1 = unlimited
+  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null }, // -1 / null = illimité
 };
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {

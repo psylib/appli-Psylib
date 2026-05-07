@@ -4,7 +4,7 @@
 // Partagés entre apps/web et apps/api
 // =============================================================================
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
+exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
 // -----------------------------------------------------------------------------
 // Enums
 // -----------------------------------------------------------------------------
@@ -67,6 +67,13 @@ var ExerciseStatus;
     ExerciseStatus["COMPLETED"] = "completed";
     ExerciseStatus["SKIPPED"] = "skipped";
 })(ExerciseStatus || (exports.ExerciseStatus = ExerciseStatus = {}));
+var DocumentCategory;
+(function (DocumentCategory) {
+    DocumentCategory["EXERCISE"] = "exercise";
+    DocumentCategory["ADMINISTRATIVE"] = "administrative";
+    DocumentCategory["SESSION_REPORT"] = "session_report";
+    DocumentCategory["OTHER"] = "other";
+})(DocumentCategory || (exports.DocumentCategory = DocumentCategory = {}));
 var InvitationStatus;
 (function (InvitationStatus) {
     InvitationStatus["PENDING"] = "pending";
@@ -134,10 +141,10 @@ var AiFeature;
 })(AiFeature || (exports.AiFeature = AiFeature = {}));
 // Plan limits
 exports.PLAN_LIMITS = {
-    [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30 },
-    [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null },
-    [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null }, // null/-1 = unlimited
-    [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null }, // -1 / null = illimité
+    [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0 },
+    [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800 },
+    [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null }, // null/-1 = unlimited
+    [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null }, // -1 / null = illimité
 };
 exports.PLAN_PRICES = {
     [SubscriptionPlan.FREE]: 0,

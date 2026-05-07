@@ -202,6 +202,13 @@ enum RecurringFrequency {
   yearly
 }
 
+enum DocumentCategory {
+  exercise
+  administrative
+  session_report
+  other
+}
+
 enum AccountingEntryType {
   income
   expense
@@ -298,6 +305,7 @@ model Psychologist {
   recurringExpenses        RecurringExpense[]
   accountingEntries        AccountingEntry[]
   fecSequences             FecSequence[]
+  sharedDocuments          SharedDocument[]
 
   @@map("psychologists")
 }
@@ -429,6 +437,7 @@ model Patient {
   assessments            Assessment[]
   monSoutienPsyTrackings MonSoutienPsyTracking[]
   appointmentParticipations AppointmentParticipant[]
+  sharedDocuments           SharedDocument[]
 
   @@index([psychologistId], name: "idx_patients_psychologist")
   @@map("patients")
@@ -1226,4 +1235,30 @@ model ReferralInvite {
 
   @@index([referrerId])
   @@map("referral_invites")
+}
+
+// =============================================================================
+// Document Sharing
+// =============================================================================
+
+model SharedDocument {
+  id             String           @id @default(uuid())
+  psychologistId String           @map("psychologist_id")
+  patientId      String           @map("patient_id")
+  fileName       String           @map("file_name")
+  filePath       String           @map("file_path")
+  fileSize       Int              @map("file_size")
+  mimeType       String           @map("mime_type")
+  category       DocumentCategory
+  message        String?          // ENCRYPTED — AES-256-GCM
+  downloadedAt   DateTime?        @map("downloaded_at")
+  deletedAt      DateTime?        @map("deleted_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([psychologistId], name: "idx_shared_documents_psy")
+  @@index([patientId, createdAt(sort: Desc)], name: "idx_shared_documents_patient")
+  @@map("shared_documents")
 }
