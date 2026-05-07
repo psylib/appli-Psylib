@@ -330,6 +330,51 @@ export class SubscriptionService {
     }
   }
 
+  async checkDocumentQuota(psychologistId: string, additionalBytes = 0): Promise<void> {
+    const sub = await this.prisma.subscription.findUnique({ where: { psychologistId } });
+    const plan = (sub?.plan ?? SubscriptionPlan.FREE) as SubscriptionPlan;
+    const limits = PLAN_LIMITS[plan];
+
+    // 0 = disabled (Free plan)
+    if (limits.documentsBytesMonthly === 0) {
+      throw new ForbiddenException({
+        code: 'DOCUMENTS_DISABLED',
+        currentPlan: plan,
+        message: 'Le partage de documents nécessite le plan Solo ou supérieur.',
+      });
+    }
+
+    // null = unlimited
+    if (limits.documentsBytesMonthly === null) return;
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const result = await this.prisma.sharedDocument.aggregate({
+      where: {
+        psychologistId,
+        deletedAt: null,
+        createdAt: { gte: startOfMonth },
+      },
+      _sum: { fileSize: true },
+    });
+
+    const currentUsage = result._sum.fileSize ?? 0;
+
+    if (currentUsage + additionalBytes > limits.documentsBytesMonthly) {
+      const usedMB = Math.round(currentUsage / 1024 / 1024);
+      const limitMB = Math.round(limits.documentsBytesMonthly / 1024 / 1024);
+      throw new ForbiddenException({
+        code: 'DOCUMENT_QUOTA_EXCEEDED',
+        currentPlan: plan,
+        currentUsageBytes: currentUsage,
+        limitBytes: limits.documentsBytesMonthly,
+        message: `Quota documents dépassé (${usedMB}/${limitMB} Mo). Passez au plan Pro pour un stockage illimité.`,
+      });
+    }
+  }
+
   // --- Webhook handlers ---
 
   async handleWebhookEvent(event: Stripe.Event): Promise<void> {

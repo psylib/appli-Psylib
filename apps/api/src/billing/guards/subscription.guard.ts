@@ -82,6 +82,8 @@ export class SubscriptionGuard implements CanActivate {
       await this.subscriptionService.checkCourseLimit(psy.id);
     } else if (requiredFeature === 'expenses') {
       await this.subscriptionService.checkExpenseLimit(psy.id);
+    } else if (requiredFeature === 'documents') {
+      await this.subscriptionService.checkDocumentQuota(psy.id);
     }
 
     return true;
