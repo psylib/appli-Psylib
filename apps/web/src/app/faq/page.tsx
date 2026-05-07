@@ -62,7 +62,7 @@ const faqCategories = [
       },
       {
         q: "PsyLib est-il conforme au RGPD ?",
-        a: "Oui, PsyLib est entierement conforme au RGPD. Nous implementons : consentements explicites versiones, droit a l\"effacement (suppression complete des donnees sur demande), droit a la portabilite (export de toutes les donnees), minimisation des donnees collectees, et un registre de traitement a jour. Notre DPO est joignable a dpo@psylib.eu.",
+        a: "Oui, PsyLib est entierement conforme au RGPD. Nous implementons : consentements explicites versiones, droit a l\"effacement (suppression complete des donnees sur demande), droit a la portabilite (export de toutes les donnees), minimisation des donnees collectees, et un registre de traitement a jour. Notre DPO est joignable a tony@psylib.eu.",
       },
       {
         q: "Ou sont stockees mes donnees ?",
@@ -117,7 +117,7 @@ const faqCategories = [
     questions: [
       {
         q: "Comment contacter le support ?",
-        a: "Vous pouvez nous contacter par email a support@psylib.eu, via le chat en direct integre dans votre tableau de bord (Crisp), ou consulter notre centre d\"aide. Les utilisateurs du plan Clinic beneficient d\"un support prioritaire dedie.",
+        a: "Vous pouvez nous contacter par email a tony@psylib.eu, via le chat en direct integre dans votre tableau de bord (Crisp), ou consulter notre centre d\"aide. Les utilisateurs du plan Clinic beneficient d\"un support prioritaire dedie.",
       },
       {
         q: "Quel est le delai de reponse du support ?",

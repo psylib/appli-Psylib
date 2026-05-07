@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           from: 'PsyLib Leads <noreply@psylib.eu>',
-          to: ['psylib.eu@gmail.com'],
+          to: ['tony@psylib.eu'],
           subject: `🔔 Nouveau lead PsyLib — ${email}`,
           html: `
             <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">

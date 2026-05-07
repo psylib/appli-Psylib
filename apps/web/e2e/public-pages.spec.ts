@@ -34,7 +34,7 @@ test.describe('Public pages — SEO & accessibility', () => {
   test('/contact page loads', async ({ page }) => {
     await page.goto('/contact');
     await expect(page).toHaveTitle(/Contact/i);
-    await expect(page.locator('text=contact@psylib.eu')).toBeVisible();
+    await expect(page.locator('text=tony@psylib.eu')).toBeVisible();
   });
 
   test('/comparaison page loads with comparison table', async ({ page }) => {

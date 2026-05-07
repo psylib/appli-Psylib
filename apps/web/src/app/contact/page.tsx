@@ -40,12 +40,12 @@ const contactJsonLd = {
       name: "PsyLib",
       url: "https://psylib.eu",
       logo: "https://psylib.eu/logo.png",
-      email: "contact@psylib.eu",
+      email: "tony@psylib.eu",
       contactPoint: [
         {
           "@type": "ContactPoint",
           contactType: "technical support",
-          email: "support@psylib.eu",
+          email: "tony@psylib.eu",
           availableLanguage: "French",
           hoursAvailable: {
             "@type": "OpeningHoursSpecification",
@@ -63,13 +63,13 @@ const contactJsonLd = {
         {
           "@type": "ContactPoint",
           contactType: "sales",
-          email: "contact@psylib.eu",
+          email: "tony@psylib.eu",
           availableLanguage: "French",
         },
         {
           "@type": "ContactPoint",
           contactType: "data protection",
-          email: "dpo@psylib.eu",
+          email: "tony@psylib.eu",
           availableLanguage: "French",
         },
       ],
@@ -99,7 +99,7 @@ const contactChannels = [
     title: "Support technique",
     description:
       "Un probleme technique ? Notre equipe vous aide a le resoudre rapidement.",
-    email: "support@psylib.eu",
+    email: "tony@psylib.eu",
     icon: (
       <svg
         className="h-8 w-8 text-[#3D52A0]"
@@ -121,7 +121,7 @@ const contactChannels = [
     title: "Questions commerciales",
     description:
       "Tarifs, plans, demos personnalisees, devis pour cabinets multi-praticiens.",
-    email: "contact@psylib.eu",
+    email: "tony@psylib.eu",
     icon: (
       <svg
         className="h-8 w-8 text-[#3D52A0]"
@@ -143,7 +143,7 @@ const contactChannels = [
     title: "Partenariats",
     description:
       "Vous etes un organisme de formation, une association ou un editeur ? Collaborons.",
-    email: "partnerships@psylib.eu",
+    email: "tony@psylib.eu",
     icon: (
       <svg
         className="h-8 w-8 text-[#3D52A0]"
@@ -165,7 +165,7 @@ const contactChannels = [
     title: "Delegue a la Protection des Donnees (DPO)",
     description:
       "Demandes RGPD, droit d\"acces, droit a l\"effacement, questions de conformite.",
-    email: "dpo@psylib.eu",
+    email: "tony@psylib.eu",
     icon: (
       <svg
         className="h-8 w-8 text-[#3D52A0]"

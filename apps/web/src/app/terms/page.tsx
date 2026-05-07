@@ -203,7 +203,7 @@ export default function TermsPage() {
             </li>
             <li>
               <strong>Support technique :</strong> fournir une assistance par email a
-              l&apos;adresse support@psylib.eu, avec un delai de reponse de 48 heures ouvrees
+              l&apos;adresse tony@psylib.eu, avec un delai de reponse de 48 heures ouvrees
             </li>
             <li>
               <strong>Transparence :</strong> informer les utilisateurs en cas d&apos;incident
@@ -515,20 +515,20 @@ export default function TermsPage() {
             <ul className="list-inside list-disc space-y-1 text-gray-700">
               <li>
                 <strong>Support :</strong>{' '}
-                <a href="mailto:support@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  support@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li>
                 <strong>Contact general :</strong>{' '}
-                <a href="mailto:contact@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  contact@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li>
                 <strong>Protection des donnees :</strong>{' '}
-                <a href="mailto:dpo@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  dpo@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
             </ul>

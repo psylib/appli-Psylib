@@ -20,8 +20,8 @@ const footerLinks = {
   ],
   Contact: [
     { label: 'Nous contacter', href: '/contact' },
-    { label: 'Support', href: 'mailto:support@psylib.eu' },
-    { label: 'Partenariats', href: 'mailto:partnerships@psylib.eu' },
+    { label: 'Support', href: 'mailto:tony@psylib.eu' },
+    { label: 'Partenariats', href: 'mailto:tony@psylib.eu' },
   ],
 };
 

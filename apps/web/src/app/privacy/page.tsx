@@ -85,8 +85,8 @@ export default function PrivacyPage() {
             <ul className="list-inside list-disc space-y-1 text-gray-700">
               <li><strong>Raison sociale :</strong> PsyLib (en cours d&apos;immatriculation)</li>
               <li><strong>Adresse :</strong> France</li>
-              <li><strong>Email de contact :</strong> contact@psylib.eu</li>
-              <li><strong>Delegue a la Protection des Donnees (DPO) :</strong> dpo@psylib.eu</li>
+              <li><strong>Email de contact :</strong> tony@psylib.eu</li>
+              <li><strong>Delegue a la Protection des Donnees (DPO) :</strong> tony@psylib.eu</li>
             </ul>
           </div>
         </section>
@@ -452,8 +452,8 @@ export default function PrivacyPage() {
             <p className="mb-2 font-semibold text-[#1E1B4B]">Comment exercer vos droits</p>
             <p className="leading-relaxed text-gray-700">
               Vous pouvez exercer vos droits en contactant notre DPO a l&apos;adresse{' '}
-              <a href="mailto:dpo@psylib.eu" className="text-[#3D52A0] hover:underline">
-                dpo@psylib.eu
+              <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                tony@psylib.eu
               </a>
               . Nous repondrons dans un delai maximum de 30 jours. Une verification
               d&apos;identite pourra etre demandee. En cas de difficulte, vous pouvez
@@ -519,14 +519,14 @@ export default function PrivacyPage() {
             <ul className="list-inside list-disc space-y-1 text-gray-700">
               <li>
                 <strong>DPO :</strong>{' '}
-                <a href="mailto:dpo@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  dpo@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li>
                 <strong>Support general :</strong>{' '}
-                <a href="mailto:support@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  support@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li>

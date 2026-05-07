@@ -87,8 +87,8 @@ export default function LegalPage() {
               <li><strong>Numero de TVA intracommunautaire :</strong> En cours d&apos;attribution</li>
               <li>
                 <strong>Email de contact :</strong>{' '}
-                <a href="mailto:contact@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  contact@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li><strong>Site web :</strong>{' '}
@@ -108,8 +108,8 @@ export default function LegalPage() {
           <p className="leading-relaxed">
             Le directeur de la publication est le representant legal de PsyLib. Il peut etre
             contacte a l&apos;adresse email :{' '}
-            <a href="mailto:contact@psylib.eu" className="text-[#3D52A0] hover:underline">
-              contact@psylib.eu
+            <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+              tony@psylib.eu
             </a>
             .
           </p>
@@ -222,8 +222,8 @@ export default function LegalPage() {
                 Politique de confidentialite
               </Link>{' '}
               complete. Pour exercer vos droits, contactez notre DPO :{' '}
-              <a href="mailto:dpo@psylib.eu" className="text-[#3D52A0] hover:underline">
-                dpo@psylib.eu
+              <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                tony@psylib.eu
               </a>
               .
             </p>
@@ -329,20 +329,20 @@ export default function LegalPage() {
             <ul className="list-inside list-disc space-y-1 text-gray-700">
               <li>
                 <strong>Contact general :</strong>{' '}
-                <a href="mailto:contact@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  contact@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li>
                 <strong>Support technique :</strong>{' '}
-                <a href="mailto:support@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  support@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
               <li>
                 <strong>Protection des donnees (DPO) :</strong>{' '}
-                <a href="mailto:dpo@psylib.eu" className="text-[#3D52A0] hover:underline">
-                  dpo@psylib.eu
+                <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">
+                  tony@psylib.eu
                 </a>
               </li>
             </ul>

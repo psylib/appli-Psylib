@@ -426,10 +426,10 @@ export default function WebinarRgpdHdsPage() {
               </Link>
               <span>·</span>
               <a
-                href="mailto:contact@psylib.eu"
+                href="mailto:tony@psylib.eu"
                 className="hover:text-charcoal-500 transition-colors"
               >
-                contact@psylib.eu
+                tony@psylib.eu
               </a>
             </div>
           </div>

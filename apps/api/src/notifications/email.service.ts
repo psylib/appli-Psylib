@@ -279,7 +279,7 @@ export class EmailService {
         <a href="${data.portalUrl}" class="btn">Mettre à jour mon paiement</a>
       </div>
       <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
-        Si vous pensez qu'il s'agit d'une erreur, contactez-nous à support@psylib.eu
+        Si vous pensez qu'il s'agit d'une erreur, contactez-nous à tony@psylib.eu
       </p>`,
     );
 
@@ -311,7 +311,7 @@ export class EmailService {
         Vos données sont conservées. Vous pouvez vous réabonner à tout moment depuis votre espace.
       </p>
       <p style="font-size:13px;color:#9CA3AF;">
-        Si vous avez annulé par erreur ou souhaitez nous faire part de vos retours, écrivez-nous à support@psylib.eu
+        Si vous avez annulé par erreur ou souhaitez nous faire part de vos retours, écrivez-nous à tony@psylib.eu
       </p>`,
     );
 

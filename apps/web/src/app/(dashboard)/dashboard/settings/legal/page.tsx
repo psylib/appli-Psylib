@@ -39,7 +39,7 @@ export default async function LegalPage() {
           </p>
           <ul className="mt-2 space-y-1 text-muted-foreground">
             <li>Siège social : Nancy, France</li>
-            <li>Email : contact@psylib.eu</li>
+            <li>Email : tony@psylib.eu</li>
             <li>Directeur de la publication : le représentant légal de PsyScale SAS</li>
           </ul>
         </section>
@@ -69,8 +69,8 @@ export default async function LegalPage() {
             Conformément au RGPD, vous disposez d&apos;un droit d&apos;accès, de
             rectification, d&apos;effacement et de portabilité de vos données.
             Contactez-nous à{' '}
-            <a href="mailto:privacy@psylib.eu" className="text-primary hover:underline">
-              privacy@psylib.eu
+            <a href="mailto:tony@psylib.eu" className="text-primary hover:underline">
+              tony@psylib.eu
             </a>.
           </p>
         </section>

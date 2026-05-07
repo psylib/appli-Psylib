@@ -42,7 +42,7 @@ Seriez-vous disponible pour une démo de 20 min cette semaine ?
 
 Cordialement,
 L'équipe PsyLib
-contact@psylib.eu | https://psylib.eu`;
+tony@psylib.eu | https://psylib.eu`;
 
 function parseCSV(text: string): Prospect[] {
   const lines = text.trim().split('\n');

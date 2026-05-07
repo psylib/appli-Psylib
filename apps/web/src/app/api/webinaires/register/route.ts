@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           from: 'PsyLib Webinaires <noreply@psylib.eu>',
-          to: ['psylib.eu@gmail.com'],
+          to: ['tony@psylib.eu'],
           subject: `Inscription webinaire ${webinar} — ${name}`,
           html: `
             <div style="font-family: Inter, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">

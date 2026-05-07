@@ -69,10 +69,10 @@ function UnsubscribeContent() {
         <p className="mt-2 text-gray-600">
           Ce lien de desinscription n&apos;est pas valide. Contactez-nous a{" "}
           <a
-            href="mailto:Psylib.eu@gmail.com"
+            href="mailto:tony@psylib.eu"
             className="font-medium text-[#3D52A0] underline"
           >
-            Psylib.eu@gmail.com
+            tony@psylib.eu
           </a>{" "}
           pour etre retire de notre liste.
         </p>

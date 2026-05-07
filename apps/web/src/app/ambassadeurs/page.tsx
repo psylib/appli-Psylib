@@ -34,7 +34,7 @@ export default function AmbassadeursPage() {
       if (!res.ok) throw new Error('Erreur lors de l\'envoi');
       setSubmitted(true);
     } catch {
-      setError('Une erreur est survenue. Veuillez réessayer ou envoyer un email à contact@psylib.eu');
+      setError('Une erreur est survenue. Veuillez réessayer ou envoyer un email à tony@psylib.eu');
     } finally {
       setLoading(false);
     }

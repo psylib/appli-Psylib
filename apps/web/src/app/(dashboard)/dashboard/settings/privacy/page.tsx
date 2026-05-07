@@ -102,7 +102,7 @@ export default async function PrivacyPage() {
           </button>
         </div>
         <p className="text-xs text-muted-foreground">
-          Pour toute demande RGPD : <span className="font-medium">privacy@psylib.eu</span>
+          Pour toute demande RGPD : <span className="font-medium">tony@psylib.eu</span>
         </p>
       </div>
     </div>

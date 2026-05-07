@@ -90,8 +90,8 @@ PsyLib s'adresse aux psychologues liberaux en France, qu'ils soient en debut d'a
 
 ## Contact
 
-- Email : contact@psylib.eu
-- Support : support@psylib.eu
+- Email : tony@psylib.eu
+- Support : tony@psylib.eu
 `;
 
   return new Response(content, {

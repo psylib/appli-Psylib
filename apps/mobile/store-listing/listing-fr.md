@@ -68,7 +68,7 @@ TARIFS
 
 PsyLib, c'est le "Doctolib + Notion" des psychologues — votre cabinet dans la poche, en toute conformité.
 
-Développé en France 🇫🇷 | Support : contact@psylib.eu | Site : https://psylib.eu
+Développé en France 🇫🇷 | Support : tony@psylib.eu | Site : https://psylib.eu
 
 ## Catégorie
 Medical / Médical
@@ -83,7 +83,7 @@ Everyone / Tous publics
 https://psylib.eu/privacy
 
 ## Contact Email
-psylib.eu@gmail.com
+tony@psylib.eu
 
 ## Website
 https://psylib.eu

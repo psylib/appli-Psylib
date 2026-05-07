@@ -110,7 +110,7 @@ export default function BetaPage() {
               <span>·</span>
               <Link href="/terms" className="hover:text-charcoal-500 transition-colors">CGV</Link>
               <span>·</span>
-              <a href="mailto:contact@psylib.eu" className="hover:text-charcoal-500 transition-colors">contact@psylib.eu</a>
+              <a href="mailto:tony@psylib.eu" className="hover:text-charcoal-500 transition-colors">tony@psylib.eu</a>
             </div>
           </div>
         </footer>

@@ -69,7 +69,7 @@ const organizationJsonLd = {
       },
       contactPoint: {
         '@type': 'ContactPoint',
-        email: 'contact@psylib.eu',
+        email: 'tony@psylib.eu',
         contactType: 'customer support',
         availableLanguage: 'French',
       },
