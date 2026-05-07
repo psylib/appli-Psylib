@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, FileText } from 'lucide-react';
 import { patientPortalApi, type PatientDashboard } from '@/lib/api/patient-portal';
 
 const MOOD_EMOJIS: Record<number, string> = {
@@ -192,6 +192,26 @@ export default function PatientPortalDashboard() {
             <ClipboardList className="h-5 w-5 text-amber-600" />
           </div>
         </a>
+      )}
+
+      {/* Documents widget */}
+      {data && data.unreadDocuments > 0 && (
+        <Link
+          href="/patient-portal/documents"
+          className="rounded-2xl border bg-white p-4 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+              <FileText size={18} className="text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">
+                {data.unreadDocuments} nouveau{data.unreadDocuments > 1 ? 'x' : ''} document{data.unreadDocuments > 1 ? 's' : ''}
+              </p>
+              <p className="text-xs text-slate-500">Partag&eacute;{data.unreadDocuments > 1 ? 's' : ''} par votre psychologue</p>
+            </div>
+          </div>
+        </Link>
       )}
     </div>
   );

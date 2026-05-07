@@ -40,6 +40,17 @@ export interface JournalEntry {
   createdAt: string;
 }
 
+export interface SharedDocument {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  category: 'exercise' | 'administrative' | 'session_report' | 'other';
+  message: string | null;
+  downloadedAt: string | null;
+  createdAt: string;
+}
+
 export interface PatientDashboard {
   avgMood7d: number | null;
   moodHistory: { mood: number; createdAt: string }[];
@@ -47,6 +58,7 @@ export interface PatientDashboard {
   nextAppointment: { scheduledAt: string; duration: number; status: string } | null;
   journalCount: number;
   pendingAssessmentsCount: number;
+  unreadDocuments: number;
 }
 
 export interface PatientProfile {
@@ -150,4 +162,25 @@ export const patientPortalApi = {
         answers: Object.entries(answers).map(([questionId, value]) => ({ questionId, value })),
       }),
     }),
+
+  getDocuments: (token: string) => fetchPortal<SharedDocument[]>('/documents', token),
+
+  downloadDocument: async (token: string, id: string) => {
+    const res = await fetch(`${API}/api/v1/patient-portal/documents/${id}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const blob = await res.blob();
+    const contentDisposition = res.headers.get('Content-Disposition');
+    const filenameMatch = contentDisposition?.match(/filename="?(.+?)"?$/);
+    const filename = filenameMatch?.[1] ? decodeURIComponent(filenameMatch[1]) : 'document';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  },
 };

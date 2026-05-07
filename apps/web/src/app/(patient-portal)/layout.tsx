@@ -39,6 +39,7 @@ export default async function PatientPortalLayout({
           { label: 'Humeur', href: '/patient-portal/mood' },
           { label: 'Exercices', href: '/patient-portal/exercises' },
           { label: 'Journal', href: '/patient-portal/journal' },
+          { label: 'Documents', href: '/patient-portal/documents' },
         ].map((item) => (
           <Link
             key={item.href}
