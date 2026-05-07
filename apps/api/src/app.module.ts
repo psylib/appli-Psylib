@@ -41,6 +41,7 @@ import { VideoModule } from './video/video.module';
 import { AccountingModule } from './accounting/accounting.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses.module';
+import { DocumentsModule } from './documents/documents.module';
 
 @Module({
   imports: [
@@ -125,6 +126,7 @@ import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses
     AccountingModule,
     ExpensesModule,
     RecurringExpensesModule,
+    DocumentsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
