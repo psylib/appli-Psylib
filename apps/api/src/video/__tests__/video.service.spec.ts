@@ -14,6 +14,7 @@ const mockPrisma = {
   videoRoom: { create: vi.fn(), findUnique: vi.fn(), findFirst: vi.fn(), update: vi.fn(), findMany: vi.fn() },
   gdprConsent: { findFirst: vi.fn(), create: vi.fn() },
   session: { create: vi.fn() },
+  appointmentParticipant: { count: vi.fn().mockResolvedValue(0), findMany: vi.fn().mockResolvedValue([]), findFirst: vi.fn(), updateMany: vi.fn() },
 };
 const mockAudit = { log: vi.fn() };
 const mockLivekitRoomService = {
@@ -21,6 +22,17 @@ const mockLivekitRoomService = {
   deleteRoom: vi.fn(),
   listParticipants: vi.fn(),
 };
+const mockConfig = {
+  get: (key: string) => {
+    const env: Record<string, string> = {
+      LIVEKIT_API_KEY: 'test-api-key',
+      LIVEKIT_API_SECRET: 'test-api-secret-that-is-long-enough-for-hs256',
+      LIVEKIT_WS_URL: 'wss://livekit.test.local',
+    };
+    return env[key] ?? '';
+  },
+};
+const mockNotificationGateway = { sendToUser: vi.fn() };
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const PSY_USER_ID = 'user-psy-1';
@@ -68,6 +80,8 @@ function createService(): VideoService {
     mockPrisma as never,
     mockAudit as never,
     mockLivekitRoomService as never,
+    mockConfig as never,
+    mockNotificationGateway as never,
   );
 }
 
@@ -76,10 +90,6 @@ let service: VideoService;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // LiveKit AccessToken requires these env vars
-  process.env.LIVEKIT_API_KEY = 'test-api-key';
-  process.env.LIVEKIT_API_SECRET = 'test-api-secret-that-is-long-enough-for-hs256';
-  process.env.LIVEKIT_WS_URL = 'wss://livekit.test.local';
   service = createService();
 });
 
@@ -163,6 +173,7 @@ describe('VideoService', () => {
       mockPrisma.appointment.findFirst.mockResolvedValueOnce({ ...appt, videoRoom: room });
       mockPrisma.gdprConsent.findFirst.mockResolvedValueOnce({ id: 'consent-1' }); // has consent
       mockPrisma.videoRoom.update.mockResolvedValueOnce({ ...room, patientJoinedAt: new Date() });
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
 
       const result = await service.generatePatientToken('join-token-123');
 

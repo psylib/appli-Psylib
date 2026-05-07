@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { AuditService } from '../common/audit.service';
+import { NotificationGateway } from '../notifications/notification.gateway';
 import { RoomServiceClient, AccessToken, VideoGrant } from 'livekit-server-sdk';
 import { Cron } from '@nestjs/schedule';
 import { VideoTokenResponse, TodayVideoRoom } from './dto/video.dto';
@@ -25,10 +26,15 @@ export class VideoService {
     private readonly audit: AuditService,
     private readonly roomService: RoomServiceClient,
     private readonly config: ConfigService,
+    private readonly notificationGateway: NotificationGateway,
   ) {
     this.livekitApiKey = this.config.get<string>('LIVEKIT_API_KEY', '');
     this.livekitApiSecret = this.config.get<string>('LIVEKIT_API_SECRET', '');
     this.livekitWsUrl = this.config.get<string>('LIVEKIT_WS_URL', '');
+
+    if (!this.livekitApiKey || !this.livekitApiSecret || !this.livekitWsUrl) {
+      this.logger.warn('LIVEKIT_API_KEY, LIVEKIT_API_SECRET ou LIVEKIT_WS_URL manquante — la visio sera désactivée');
+    }
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -79,11 +85,16 @@ export class VideoService {
     const isGroup = participantCount > 0;
 
     const roomName = `psylib-${appointmentId}`;
-    await this.roomService.createRoom({
-      name: roomName,
-      emptyTimeout: isGroup ? 600 : 300,
-      maxParticipants: isGroup ? 6 : undefined,
-    });
+    try {
+      await this.roomService.createRoom({
+        name: roomName,
+        emptyTimeout: isGroup ? 600 : 300,
+        maxParticipants: isGroup ? 6 : undefined,
+      });
+    } catch (e) {
+      this.logger.error(`Failed to create LiveKit room ${roomName}: ${e}`);
+      throw new BadRequestException('Impossible de créer la salle de visio — le serveur vidéo est indisponible');
+    }
 
     const videoRoom = await this.prisma.videoRoom.create({
       data: {
@@ -160,6 +171,7 @@ export class VideoService {
       token: await token.toJwt(),
       wsUrl: this.livekitWsUrl,
       roomName: room.roomName,
+      durationMin: room.appointment.duration,
     };
   }
 
@@ -269,6 +281,19 @@ export class VideoService {
       await this.prisma.appointmentParticipant.updateMany({
         where: { appointmentId: appointment!.id, patientId },
         data: { joinedAt: new Date() },
+      });
+    }
+
+    // Notify psy in realtime that patient has joined
+    const psyUserId = await this.prisma.psychologist.findUnique({
+      where: { id: room.psychologistId },
+      select: { userId: true },
+    });
+    if (psyUserId) {
+      this.notificationGateway.sendToUser(psyUserId.userId, {
+        type: 'video_patient_joined',
+        title: `${patientName} a rejoint la visio`,
+        data: { appointmentId: appointment!.id, roomId: room.id },
       });
     }
 

@@ -21,7 +21,7 @@ export default function ConsultationRoomPage() {
   const [loading, setLoading] = useState(true);
   const [ending, setEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [duration] = useState(50);
+  const [duration, setDuration] = useState(50);
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -30,9 +30,10 @@ export default function ConsultationRoomPage() {
       try {
         // Ensure room exists
         await videoApi.createRoom(roomId, session.accessToken);
-        // Get psy token
+        // Get psy token (includes duration)
         const data = await videoApi.getPsyToken(roomId, session.accessToken);
         setTokenData(data);
+        if (data.durationMin) setDuration(data.durationMin);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Impossible de demarrer la visio';
         setError(message);

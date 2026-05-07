@@ -16,6 +16,7 @@ export interface VideoTokenResponse {
   token: string;
   wsUrl: string;
   roomName: string;
+  durationMin?: number;
 }
 
 export interface PatientJoinResponse {

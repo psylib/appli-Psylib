@@ -7,6 +7,7 @@ import {
   UseGuards,
   Req,
   HttpCode,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
@@ -33,7 +34,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async createRoom(
     @Body() dto: CreateVideoRoomDto,
     @CurrentUser() user: KeycloakUser,
@@ -46,7 +47,7 @@ export class VideoController {
   @UseGuards(KeycloakGuard, RolesGuard)
   @Roles('psychologist', 'admin')
   async getRoom(
-    @Param('appointmentId') appointmentId: string,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.videoService.getRoomInfo(user.sub, appointmentId);
@@ -56,9 +57,9 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async getPsyToken(
-    @Param('appointmentId') appointmentId: string,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.videoService.generatePsyToken(user.sub, appointmentId);
@@ -78,7 +79,7 @@ export class VideoController {
   @Roles('psychologist', 'admin')
   @HttpCode(204)
   async endRoom(
-    @Param('appointmentId') appointmentId: string,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
     @CurrentUser() user: KeycloakUser,
   ) {
     await this.videoService.endRoom(user.sub, appointmentId);

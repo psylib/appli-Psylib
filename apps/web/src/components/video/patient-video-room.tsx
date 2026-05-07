@@ -16,11 +16,20 @@ function PatientLayout() {
   const { localParticipant } = useLocalParticipant();
   const room = useRoomContext();
   const [disconnected, setDisconnected] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
 
   useEffect(() => {
     const onDisconnected = () => setDisconnected(true);
+    const onReconnecting = () => setReconnecting(true);
+    const onReconnected = () => setReconnecting(false);
     room.on(RoomEvent.Disconnected, onDisconnected);
-    return () => { room.off(RoomEvent.Disconnected, onDisconnected); };
+    room.on(RoomEvent.Reconnecting, onReconnecting);
+    room.on(RoomEvent.Reconnected, onReconnected);
+    return () => {
+      room.off(RoomEvent.Disconnected, onDisconnected);
+      room.off(RoomEvent.Reconnecting, onReconnecting);
+      room.off(RoomEvent.Reconnected, onReconnected);
+    };
   }, [room]);
 
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]);
@@ -29,6 +38,18 @@ function PatientLayout() {
 
   const isMicOn = localParticipant.isMicrophoneEnabled;
   const isCamOn = localParticipant.isCameraEnabled;
+
+  if (reconnecting) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center p-8">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-foreground mb-2">Reconnexion en cours...</h1>
+          <p className="text-muted-foreground">Veuillez patienter, la connexion sera retablie automatiquement.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (disconnected) {
     return (

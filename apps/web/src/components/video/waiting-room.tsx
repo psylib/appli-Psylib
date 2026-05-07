@@ -85,7 +85,7 @@ export function WaitingRoom({ psychologistName, onReady }: WaitingRoomProps) {
             onClick={() => { stream?.getTracks().forEach(t => t.stop()); onReady(); }}
             className="mt-6 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
           >
-            Rejoindre la salle d&apos;attente
+            Rejoindre la consultation
           </button>
         )}
       </div>

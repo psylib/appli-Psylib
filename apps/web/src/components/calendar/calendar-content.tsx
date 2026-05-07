@@ -478,7 +478,7 @@ export function CalendarContent() {
                       {/* Video call button */}
                       {appt.isOnline && isWithinVideoWindow(appt.scheduledAt) && appt.status !== 'completed' && (
                         <button
-                          onClick={() => router.push(`/dashboard/video/${appt.id}`)}
+                          onClick={() => router.push(`/video/${appt.id}`)}
                           className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90 transition-colors mt-2"
                         >
                           <Video className="h-3.5 w-3.5" />

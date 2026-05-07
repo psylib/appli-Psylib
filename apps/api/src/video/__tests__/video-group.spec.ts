@@ -35,6 +35,7 @@ const mockConfig = {
     return map[key] ?? defaultValue ?? '';
   }),
 };
+const mockNotificationGateway = { sendToUser: vi.fn() };
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 const PATIENT_ID = 'patient-1';
@@ -64,6 +65,7 @@ function createService(): VideoService {
     mockAudit as never,
     mockLivekitRoomService as never,
     mockConfig as never,
+    mockNotificationGateway as never,
   );
 }
 
@@ -104,6 +106,7 @@ describe('VideoService — Multi-participant', () => {
       // Mark participant joined
       mockPrisma.videoRoom.update.mockResolvedValueOnce({ ...room, patientJoinedAt: new Date() });
       mockPrisma.appointmentParticipant.updateMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce({ id: 'psy-1', userId: 'user-psy-1' });
 
       const result = await service.generatePatientToken('participant-join-token');
 

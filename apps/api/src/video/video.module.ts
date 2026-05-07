@@ -4,9 +4,10 @@ import { VideoController } from './video.controller';
 import { VideoService } from './video.service';
 import { RoomServiceClient } from 'livekit-server-sdk';
 import { BillingModule } from '../billing/billing.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [BillingModule],
+  imports: [BillingModule, NotificationsModule],
   controllers: [VideoController],
   providers: [
     VideoService,
