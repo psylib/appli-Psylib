@@ -157,14 +157,14 @@ The patient portal uses a **custom JWT auth system** (NOT Keycloak):
 
 **Guardians follow the same pattern:**
 
-1. **Extend `PatientJwtStrategy`** to accept both `patient` and `guardian` roles:
-   - Rename to `PortalJwtStrategy` (or keep name, update validation)
-   - Accept `role: 'patient' | 'guardian'` in JWT payload
-   - For guardians, JWT payload includes: `{ sub, guardianId, role: 'guardian', email }`
+1. **Separate `GuardianJwtStrategy`** (new, parallel to PatientJwtStrategy):
+   - Strategy name: `'guardian-jwt'`, same `PATIENT_JWT_SECRET` (HS256)
+   - JWT payload: `{ sub: userId, role: 'guardian', email }` — **no guardianId in JWT**
+   - Guardian-to-patient mapping is resolved per-request via `GuardianAccessGuard` which looks up `LegalGuardian` by `userId + patientId`. This correctly handles guardians linked to multiple minors across different psychologists.
    - For patients, JWT payload stays: `{ sub, patientId, role: 'patient', email }`
 
-2. **New `GuardianJwtGuard`** — extracts guardian context from JWT
-3. **New `@CurrentGuardian()` decorator** — returns `{ sub, guardianId, email }`
+2. **New `GuardianJwtGuard`** — Passport guard for `'guardian-jwt'` strategy
+3. **New `@CurrentGuardian()` decorator** — returns `{ sub, role: 'guardian', email }`
 4. **New next-auth provider:** `CredentialsProvider('guardian-credentials')` — same pattern as `patient-credentials`, calls `/guardian-portal/auth/login`
 
 ### 4.2 Guard Chain (NestJS)
