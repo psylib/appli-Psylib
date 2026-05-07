@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
+import { DocumentsService } from '../documents/documents.service';
 import { CreatePatientDto, UpdatePatientDto, PatientQueryDto, CreateExerciseDto } from './dto/create-patient.dto';
 import type { PaginatedResponse } from '@psyscale/shared-types';
 import type { Patient, Prisma } from '@prisma/client';
@@ -20,6 +21,7 @@ export class PatientsService {
     private readonly prisma: PrismaService,
     private readonly encryption: EncryptionService,
     private readonly audit: AuditService,
+    private readonly documentsService: DocumentsService,
   ) {}
 
   async create(
@@ -244,6 +246,9 @@ export class PatientsService {
       where: { id: patientId, psychologistId: psy.id },
     });
     if (!existing) throw new NotFoundException('Patient introuvable');
+
+    // Delete shared documents files before cascade delete
+    await this.documentsService.purgePatientDocuments(psy.id, patientId);
 
     // Suppression en cascade (Prisma gère via onDelete: Cascade)
     await this.prisma.patient.delete({ where: { id: patientId } });

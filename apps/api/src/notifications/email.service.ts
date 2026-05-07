@@ -1546,6 +1546,46 @@ export class EmailService {
     );
   }
 
+  // ─── DOCUMENT PARTAGÉ ───────────────────────────────────────────────────────
+
+  async sendDocumentShared(
+    to: string,
+    data: {
+      psychologistName: string;
+      documentName: string;
+      category: string;
+      message?: string;
+      portalUrl: string;
+    },
+  ): Promise<void> {
+    const categoryLabels: Record<string, string> = {
+      exercise: 'Exercice thérapeutique',
+      administrative: 'Document administratif',
+      session_report: 'Compte-rendu de séance',
+      other: 'Document',
+    };
+    const categoryLabel = categoryLabels[data.category] ?? 'Document';
+
+    const html = emailLayout(
+      'Nouveau document partagé',
+      `
+      <span class="badge badge-success">${categoryLabel}</span>
+      <h1>${data.psychologistName} vous a partagé un document</h1>
+      <div class="info-box">
+        <p style="margin: 0; font-weight: 600;">${data.documentName}</p>
+      </div>
+      ${data.message ? `<p>${data.message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}</p>` : ''}
+      <p>Connectez-vous à votre espace patient pour le consulter et le télécharger.</p>
+      <a href="${data.portalUrl}" class="btn">Voir mes documents</a>
+      <p style="font-size: 13px; color: #6B7280; margin-top: 24px;">
+        Pour des raisons de sécurité, les documents ne sont accessibles qu&apos;après authentification.
+      </p>
+      `,
+    );
+
+    await this.send(to, `${data.psychologistName} vous a partagé un document`, html, 'sendDocumentShared');
+  }
+
   // ─── Generic Notification Email ──────────────────────────────────────────────
 
   async sendNotificationEmail(

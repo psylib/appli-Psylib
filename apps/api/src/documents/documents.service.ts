@@ -8,6 +8,9 @@ import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
 import { SubscriptionService } from '../billing/subscription.service';
+import { EmailService } from '../notifications/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { ConfigService } from '@nestjs/config';
 import { ShareDocumentDto } from './dto/share-document.dto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -34,6 +37,9 @@ export class DocumentsService {
     private readonly encryption: EncryptionService,
     private readonly audit: AuditService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly emailService: EmailService,
+    private readonly notifications: NotificationsService,
+    private readonly config: ConfigService,
   ) {}
 
   async share(
@@ -99,6 +105,33 @@ export class DocumentsService {
       metadata: { patientId: dto.patientId, fileName: file.originalname },
       req,
     });
+
+    // Email notification (skip gracefully if no email)
+    if (patient.email) {
+      const portalUrl = `${this.config.get('FRONTEND_URL') ?? 'https://app.psylib.eu'}/patient-portal/documents`;
+      await this.emailService.sendDocumentShared(patient.email, {
+        psychologistName: psy.name,
+        documentName: file.originalname,
+        category: dto.category,
+        message: dto.message,
+        portalUrl,
+      }).catch((err) => {
+        this.logger.warn(`Failed to send document notification email: ${(err as Error).message}`);
+      });
+    }
+
+    // In-app notification (if patient has a user account)
+    if (patient.userId) {
+      await this.notifications.createAndDispatch(
+        patient.userId,
+        'document_shared',
+        'Nouveau document',
+        `${psy.name} vous a partagé un document : ${file.originalname}`,
+        { documentId: doc.id },
+      ).catch((err) => {
+        this.logger.warn(`Failed to send document notification: ${(err as Error).message}`);
+      });
+    }
 
     return {
       id: doc.id,
