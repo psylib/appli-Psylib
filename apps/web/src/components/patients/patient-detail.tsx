@@ -13,6 +13,7 @@ import { usePatient, useSessions } from '@/hooks/use-dashboard';
 import { formatDate } from '@/lib/utils';
 import { PatientPortalSection } from './patient-portal-section';
 import { MspTracker } from './msp-tracker';
+import { PatientDocumentsTab } from './patient-documents-tab';
 
 interface PatientDetailContentProps {
   patientId: string;
@@ -125,6 +126,9 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
 
       {/* Portal patient */}
       <PatientPortalSection patientId={patientId} />
+
+      {/* Documents partagés */}
+      <PatientDocumentsTab patientId={patientId} patientName={patient.name} />
 
       {/* Séances récentes */}
       <section>
