@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Building2, Shield, Bell, Lock, Scale, Banknote } from 'lucide-react';
+import { User, CreditCard, Building2, Shield, Bell, Lock, Scale, Banknote, FileText } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -56,6 +56,12 @@ const settingsLinks = [
     label: 'Mentions légales',
     description: 'Éditeur, hébergement, cookies',
     icon: Scale,
+  },
+  {
+    href: '/modele-consentement',
+    label: 'Consentement patient',
+    description: 'Modèle RGPD à imprimer pour vos patients',
+    icon: FileText,
   },
 ];
 

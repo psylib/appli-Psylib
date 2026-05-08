@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     q: 'PsyLib propose-t-il la téléconsultation ?',
-    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible sur les plans Pro et Clinic.',
+    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible dès le plan Solo.',
   },
   {
     q: 'Comment fonctionne l\'espace patient ?',
@@ -48,6 +48,14 @@ const faqs = [
   {
     q: 'Les factures sont-elles générées automatiquement ?',
     a: 'Oui. Après chaque séance marquée comme payée ou après un paiement Stripe, PsyLib génère automatiquement une facture PDF avec numérotation séquentielle et TVA 0% (exonération psychologue). Configurable dans Paramètres > Cabinet.',
+  },
+  {
+    q: 'Puis-je synchroniser mon Google Calendar ?',
+    a: 'Oui. PsyLib se synchronise avec Google Calendar en quelques clics. Vos rendez-vous PsyLib apparaissent dans votre Google Calendar et inversement. La synchronisation est bidirectionnelle — fini la double saisie.',
+  },
+  {
+    q: 'Comment gérer les patients mineurs ?',
+    a: 'PsyLib intègre la gestion des patients mineurs avec portail tuteur légal dédié. Vous pouvez inviter les parents/tuteurs qui disposent d\'un accès lecture seule sécurisé. Chaque tuteur donne son consentement individuellement. Disponible dès le plan Solo.',
   },
 ];
 

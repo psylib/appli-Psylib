@@ -7,6 +7,8 @@ import {
   Shield,
   Bell,
   Calculator,
+  CalendarCheck,
+  Baby,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
@@ -68,6 +70,20 @@ const features: {
     color: 'text-sage bg-sage-50',
     border: 'border-sage-200',
     badge: 'Inclus tous plans',
+  },
+  {
+    icon: CalendarCheck,
+    title: 'Sync Google Calendar',
+    description: 'Synchronisez votre agenda PsyLib avec Google Calendar en un clic. Vos RDV apparaissent dans les deux sens — fini la double saisie.',
+    color: 'text-terracotta bg-terracotta-50',
+    border: 'border-terracotta-200',
+  },
+  {
+    icon: Baby,
+    title: 'Patients mineurs & tuteurs',
+    description: 'Gérez les patients mineurs avec portail tuteur légal dédié. Invitations sécurisées, consentements individuels, accès lecture seule pour les parents.',
+    color: 'text-sage bg-sage-50',
+    border: 'border-sage-200',
   },
   {
     icon: Shield,

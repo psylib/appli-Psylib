@@ -20,6 +20,7 @@ const footerLinks = {
     { label: 'Politique RGPD', href: '/privacy' },
     { label: 'DPA (sous-traitance)', href: '/dpa' },
     { label: 'Sous-traitants', href: '/sous-traitants' },
+    { label: 'Consentement patient', href: '/modele-consentement' },
   ],
   Contact: [
     { label: 'Nous contacter', href: '/contact' },

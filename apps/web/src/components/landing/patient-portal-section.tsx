@@ -1,4 +1,4 @@
-import { Heart, BookOpen, Dumbbell, Bell } from 'lucide-react';
+import { Heart, BookOpen, Dumbbell, Bell, FileUp } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 function PhoneMockup() {
@@ -88,6 +88,7 @@ export function PatientPortalSection() {
                   { icon: Heart, text: 'Mood tracking quotidien (échelle 1-10 + note libre)' },
                   { icon: BookOpen, text: 'Journal thérapeutique (privé ou partagé avec le psy)' },
                   { icon: Dumbbell, text: 'Exercices personnalisés (manuels ou générés par IA)' },
+                  { icon: FileUp, text: 'Documents partagés par le psy (fiches, protocoles, ressources)' },
                   { icon: Bell, text: 'Alertes humeur pour le praticien (baisse significative)' },
                 ].map(({ icon: Icon, text }) => (
                   <li key={text} className="flex items-center gap-3 text-charcoal-500">

@@ -20,6 +20,9 @@ const rows: { feature: string; psylib: CellValue; generic: CellValue; files: Cel
   { feature: 'Espace patient (humeur, journal, exercices)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Factures PDF automatiques', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Comptabilité intégrée (recettes, dépenses, FEC, 2035)', psylib: 'yes', generic: 'no', files: 'no' },
+  { feature: 'Synchronisation Google Calendar', psylib: 'yes', generic: 'partial', files: 'no' },
+  { feature: 'Partage de documents sécurisé psy→patient', psylib: 'yes', generic: 'no', files: 'no' },
+  { feature: 'Gestion patients mineurs & tuteurs légaux', psylib: 'yes', generic: 'no', files: 'no' },
 ];
 
 function Cell({ value, highlight }: { value: CellValue; highlight?: boolean }) {
