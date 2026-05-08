@@ -42,6 +42,8 @@ import { AccountingModule } from './accounting/accounting.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses.module';
 import { DocumentsModule } from './documents/documents.module';
+import { GuardiansModule } from './guardians/guardians.module';
+import { GuardianPortalModule } from './guardian-portal/guardian-portal.module';
 
 @Module({
   imports: [
@@ -131,6 +133,8 @@ import { DocumentsModule } from './documents/documents.module';
     ExpensesModule,
     RecurringExpensesModule,
     DocumentsModule,
+    GuardiansModule,
+    GuardianPortalModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
