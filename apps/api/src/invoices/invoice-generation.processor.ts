@@ -100,7 +100,80 @@ export class InvoiceGenerationProcessor extends WorkerHost {
             this.logger.error(`Failed to email invoice ${invoice.invoiceNumber}: ${error}`);
           }
         }
+
+        // Send invoice to guardian(s) if minor patient
+        if (patient?.isMinor) {
+          try {
+            await this.sendInvoiceToGuardians(
+              data.patientId,
+              patient.name,
+              psychologist.name,
+              invoice,
+            );
+          } catch (error) {
+            this.logger.error(`Failed to email guardian invoice ${invoice.invoiceNumber}: ${error}`);
+          }
+        }
       }
+    }
+  }
+
+  /**
+   * Sends the invoice to guardians who have the invoices permission enabled.
+   */
+  private async sendInvoiceToGuardians(
+    patientId: string,
+    patientName: string,
+    psychologistName: string,
+    invoice: { id: string; invoiceNumber: string; amountTtc: any; issuedAt: Date },
+  ): Promise<void> {
+    const guardians = await this.prisma.legalGuardian.findMany({
+      where: { patientId },
+      select: { name: true, email: true, permissions: true },
+    });
+
+    const dateFormatted = invoice.issuedAt.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const amountFormatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(Number(invoice.amountTtc));
+
+    // Build PDF once for all guardians
+    let pdfBuffer: Buffer | undefined;
+    try {
+      const fullInvoice = await this.prisma.invoice.findUnique({
+        where: { id: invoice.id },
+        include: { psychologist: true, patient: true, session: true },
+      });
+      if (fullInvoice) {
+        const sessions = fullInvoice.session ? [fullInvoice.session] : [];
+        pdfBuffer = await this.invoicesService.buildPdfBufferPublic(fullInvoice as any, sessions);
+      }
+    } catch (error) {
+      this.logger.warn(`Could not build PDF for guardian invoice ${invoice.invoiceNumber}: ${error}`);
+    }
+
+    const patientFirstName = patientName.split(' ')[0] ?? patientName;
+
+    for (const guardian of guardians) {
+      const perms = guardian.permissions as Record<string, boolean> | null;
+      if (!perms?.invoices) continue;
+
+      await this.email.sendGuardianInvoice(guardian.email, {
+        guardianName: guardian.name,
+        patientFirstName,
+        psychologistName,
+        invoiceNumber: invoice.invoiceNumber,
+        amount: amountFormatted,
+        issuedAt: dateFormatted,
+        pdfBuffer,
+      });
+
+      this.logger.log(`Guardian invoice ${invoice.invoiceNumber} sent to ${guardian.email}`);
     }
   }
 }

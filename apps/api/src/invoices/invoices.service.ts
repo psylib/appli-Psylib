@@ -242,9 +242,69 @@ export class InvoicesService {
         issuedAt: invoice.issuedAt,
         pdfBuffer,
       });
+
+      // Send to guardians if minor patient
+      if (invoice.patient.isMinor) {
+        void this.sendInvoiceToGuardians(
+          invoice.patient.id,
+          invoice.patient.name,
+          invoice.psychologist.name,
+          invoice,
+          pdfBuffer,
+        );
+      }
     }
 
     return updated;
+  }
+
+  /**
+   * Sends the invoice PDF to guardians who have the invoices permission enabled.
+   */
+  private async sendInvoiceToGuardians(
+    patientId: string,
+    patientName: string,
+    psychologistName: string,
+    invoice: { invoiceNumber: string; amountTtc: any; issuedAt: Date },
+    pdfBuffer?: Buffer,
+  ): Promise<void> {
+    try {
+      const guardians = await this.prisma.legalGuardian.findMany({
+        where: { patientId },
+        select: { name: true, email: true, permissions: true },
+      });
+
+      const dateFormatted = invoice.issuedAt.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+      const amountFormatted = new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+      }).format(Number(invoice.amountTtc));
+
+      const patientFirstName = patientName.split(' ')[0] ?? patientName;
+
+      for (const guardian of guardians) {
+        const perms = guardian.permissions as Record<string, boolean> | null;
+        if (!perms?.invoices) continue;
+
+        await this.email.sendGuardianInvoice(guardian.email, {
+          guardianName: guardian.name,
+          patientFirstName,
+          psychologistName,
+          invoiceNumber: invoice.invoiceNumber,
+          amount: amountFormatted,
+          issuedAt: dateFormatted,
+          pdfBuffer,
+        });
+
+        this.logger.log(`Guardian invoice ${invoice.invoiceNumber} sent to guardian ${guardian.email}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send invoice to guardians: ${error}`);
+    }
   }
 
   async createAutoInvoice(data: {

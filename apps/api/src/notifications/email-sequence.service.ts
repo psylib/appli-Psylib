@@ -347,7 +347,7 @@ export class EmailSequenceService {
         status: { in: ['scheduled', 'confirmed'] },
       },
       include: {
-        patient: { select: { name: true, email: true } },
+        patient: { select: { id: true, name: true, email: true, isMinor: true } },
         psychologist: { select: { name: true } },
         participants: {
           where: { videoLinkSentAt: null },
@@ -404,6 +404,63 @@ export class EmailSequenceService {
           }
         }
       }
+
+      // Send video notification to guardians if minor patient
+      if (appt.patient.isMinor) {
+        try {
+          await this.sendVideoNotificationToGuardians(
+            appt.patient.id,
+            appt.patient.name,
+            appt.psychologist.name,
+            appt.scheduledAt,
+          );
+        } catch (err) {
+          this.logger.error(`[VideoLink] Échec envoi notification tuteur RDV ${appt.id}: ${(err as Error).message}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Notifies guardians with video permission that a video consultation is upcoming.
+   */
+  private async sendVideoNotificationToGuardians(
+    patientId: string,
+    patientName: string,
+    psychologistName: string,
+    scheduledAt: Date,
+  ): Promise<void> {
+    const guardians = await this.prisma.legalGuardian.findMany({
+      where: { patientId },
+      select: { name: true, email: true, permissions: true },
+    });
+
+    const dateFormatted = scheduledAt.toLocaleDateString('fr-FR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+    const timeFormatted = scheduledAt.toLocaleTimeString('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Paris',
+    });
+
+    const patientFirstName = patientName.split(' ')[0] ?? patientName;
+
+    for (const guardian of guardians) {
+      const perms = guardian.permissions as Record<string, boolean> | null;
+      if (!perms?.video) continue;
+
+      await this.email.sendGuardianVideoNotification(guardian.email, {
+        guardianName: guardian.name,
+        patientFirstName,
+        psychologistName,
+        scheduledDate: dateFormatted,
+        scheduledTime: timeFormatted,
+      });
+
+      this.logger.log(`[VideoLink] Notification tuteur envoyée → ${guardian.email} pour ${patientFirstName}`);
     }
   }
 

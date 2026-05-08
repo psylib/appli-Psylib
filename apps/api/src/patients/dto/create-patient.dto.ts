@@ -46,6 +46,11 @@ export class CreatePatientDto {
   @IsIn(['direct', 'referral', 'online'])
   @IsOptional()
   source?: string;
+
+  @ApiPropertyOptional({ description: 'Patient mineur', default: false })
+  @IsBoolean()
+  @IsOptional()
+  isMinor?: boolean;
 }
 
 export class UpdatePatientDto {
@@ -87,6 +92,11 @@ export class UpdatePatientDto {
   @IsString()
   @IsOptional()
   source?: string;
+
+  @ApiPropertyOptional({ description: 'Patient mineur', default: false })
+  @IsBoolean()
+  @IsOptional()
+  isMinor?: boolean;
 }
 
 export class PatientQueryDto {

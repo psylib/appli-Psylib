@@ -45,6 +45,7 @@ export class PatientsService {
         birthDate: dto.birthDate ? new Date(dto.birthDate) : null,
         notes: dto.notes ? this.encryption.encrypt(dto.notes) : null,
         source: dto.source ?? null,
+        isMinor: dto.isMinor ?? false,
       },
     });
 
@@ -98,6 +99,7 @@ export class PatientsService {
           phone: true,
           birthDate: true,
           notes: false, // jamais en liste — performance + sécurité
+          isMinor: true,
           status: true,
           source: true,
           createdAt: true,
@@ -144,6 +146,7 @@ export class PatientsService {
         id: patientId,
         psychologistId: psy.id, // isolation tenant
       },
+      include: { guardians: true },
     });
 
     if (!patient) throw new NotFoundException('Patient introuvable');
@@ -187,6 +190,7 @@ export class PatientsService {
         }),
         ...(dto.status !== undefined && { status: dto.status }),
         ...(dto.source !== undefined && { source: dto.source }),
+        ...(dto.isMinor !== undefined && { isMinor: dto.isMinor }),
       },
     });
 

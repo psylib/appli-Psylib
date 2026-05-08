@@ -4,6 +4,8 @@ import { Resend } from 'resend';
 import { guardianInvitationEmail } from './emails/guardian-invitation';
 import { guardianConsentRequestEmail } from './emails/guardian-consent-request';
 import { guardianConsentConfirmedEmail } from './emails/guardian-consent-confirmed';
+import { guardianInvoiceEmail } from './emails/guardian-invoice';
+import { guardianVideoLinkEmail } from './emails/guardian-video-link';
 
 // ─── Shared layout helpers ────────────────────────────────────────────────────
 
@@ -1659,5 +1661,42 @@ export class EmailService {
     const wrappedHtml = emailLayout(subject, html);
     await this.send(guardianEmail, subject, wrappedHtml, 'sendGuardianConsentConfirmed');
     await this.send(psyEmail, subject, wrappedHtml, 'sendGuardianConsentConfirmed-psy');
+  }
+
+  // ─── Guardian invoice ─────────────────────────────────────────────────────────
+
+  async sendGuardianInvoice(
+    to: string,
+    params: {
+      guardianName: string;
+      patientFirstName: string;
+      psychologistName: string;
+      invoiceNumber: string;
+      amount: string;
+      issuedAt: string;
+      pdfBuffer?: Buffer;
+    },
+  ) {
+    const { subject, html } = guardianInvoiceEmail(params);
+    const attachments = params.pdfBuffer
+      ? [{ filename: `facture-${params.invoiceNumber}.pdf`, content: params.pdfBuffer }]
+      : undefined;
+    return this.send(to, subject, emailLayout(subject, html), 'sendGuardianInvoice', attachments);
+  }
+
+  // ─── Guardian video notification ──────────────────────────────────────────────
+
+  async sendGuardianVideoNotification(
+    to: string,
+    params: {
+      guardianName: string;
+      patientFirstName: string;
+      psychologistName: string;
+      scheduledDate: string;
+      scheduledTime: string;
+    },
+  ) {
+    const { subject, html } = guardianVideoLinkEmail(params);
+    return this.send(to, subject, emailLayout(subject, html), 'sendGuardianVideoNotification');
   }
 }
