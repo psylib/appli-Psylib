@@ -52,7 +52,9 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
               // connect-src dynamique : dev (localhost) + prod (vraies URLs)
-              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
+              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://eu.i.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
+              "media-src 'self' blob: mediastream:",
+              "worker-src 'self' blob:",
               "frame-src 'self' https://game.crisp.chat",
               "frame-ancestors 'none'",
               "object-src 'none'",
@@ -107,13 +109,8 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/register',
-        destination: '/login',
-        permanent: true,
-      },
-      {
         source: '/inscription',
-        destination: '/login',
+        destination: '/register',
         permanent: true,
       },
       {

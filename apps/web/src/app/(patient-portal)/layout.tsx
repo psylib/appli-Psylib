@@ -13,7 +13,7 @@ export default async function PatientPortalLayout({
   const session = await auth();
 
   if (!session?.user) {
-    redirect('/patient/login');
+    redirect('/patient/login?callbackUrl=/patient-portal');
   }
 
   if (session.user.role !== UserRole.PATIENT && session.user.role !== UserRole.GUARDIAN) {

@@ -39,6 +39,10 @@ async function bootstrap() {
   // Graceful shutdown — ferme proprement Prisma, Redis, Bull avant arrêt
   app.enableShutdownHooks();
 
+  // Trust the first proxy (ALB/nginx) so req.ip returns the real client IP
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.set('trust proxy', 1);
+
   // Global exception filters — NestJS evaluates in REVERSE registration order:
   // PrismaExceptionFilter runs first (catches P2002/P2025/P2003 → 409/404/400),
   // SentryExceptionFilter runs last (catches remaining errors → 5xx to Sentry).

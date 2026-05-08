@@ -5,7 +5,7 @@ Sentry.init({
   environment: process.env.NODE_ENV,
   tracesSampleRate: 0.1,
   // Jamais de données patients dans les erreurs
-  beforeSend(event) {
+  beforeSend(event: Sentry.ErrorEvent) {
     return event;
   },
 });

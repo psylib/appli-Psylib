@@ -56,7 +56,7 @@ export function usePsychologistProfile() {
   });
 }
 
-export function usePatients(params: { page?: number; search?: string; status?: string } = {}) {
+export function usePatients(params: { page?: number; search?: string; status?: string; limit?: number } = {}) {
   const { data: session } = useSession();
   const token = session?.accessToken;
 

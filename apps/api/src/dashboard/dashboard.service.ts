@@ -68,8 +68,8 @@ export class DashboardService {
       activePatients,
       newPatientsThisMonth,
       newPatientsLastMonth,
-      sessionsThisMonth,
-      sessionsLastMonth,
+      sessionsThisMonthAgg,
+      sessionsLastMonthAgg,
       upcomingAppointments,
       todayAppointments,
     ] = await Promise.all([
@@ -84,16 +84,19 @@ export class DashboardService {
           createdAt: { gte: firstOfLastMonth, lte: lastOfLastMonth },
         },
       }),
-      this.prisma.session.findMany({
-        where: { psychologistId: psy.id, date: { gte: firstOfMonth } },
-        select: { rate: true, paymentStatus: true },
+      this.prisma.session.aggregate({
+        where: { psychologistId: psy.id, date: { gte: firstOfMonth }, paymentStatus: 'paid' },
+        _sum: { rate: true },
+        _count: { id: true },
       }),
-      this.prisma.session.findMany({
+      this.prisma.session.aggregate({
         where: {
           psychologistId: psy.id,
           date: { gte: firstOfLastMonth, lte: lastOfLastMonth },
+          paymentStatus: 'paid',
         },
-        select: { rate: true, paymentStatus: true },
+        _sum: { rate: true },
+        _count: { id: true },
       }),
       this.prisma.appointment.count({
         where: {
@@ -111,13 +114,8 @@ export class DashboardService {
       }),
     ]);
 
-    const revenueThisMonth = sessionsThisMonth
-      .filter((s) => s.paymentStatus === 'paid')
-      .reduce((acc, s) => acc + (Number(s.rate) || 0), 0);
-
-    const revenueLastMonth = sessionsLastMonth
-      .filter((s) => s.paymentStatus === 'paid')
-      .reduce((acc, s) => acc + (Number(s.rate) || 0), 0);
+    const revenueThisMonth = Number(sessionsThisMonthAgg._sum.rate) || 0;
+    const revenueLastMonth = Number(sessionsLastMonthAgg._sum.rate) || 0;
 
     const calcTrend = (current: number, previous: number) => {
       if (previous === 0) return current > 0 ? 100 : 0;
@@ -132,9 +130,9 @@ export class DashboardService {
         trend: calcTrend(newPatientsThisMonth, newPatientsLastMonth),
       },
       sessions: {
-        totalThisMonth: sessionsThisMonth.length,
-        totalLastMonth: sessionsLastMonth.length,
-        trend: calcTrend(sessionsThisMonth.length, sessionsLastMonth.length),
+        totalThisMonth: sessionsThisMonthAgg._count.id,
+        totalLastMonth: sessionsLastMonthAgg._count.id,
+        trend: calcTrend(sessionsThisMonthAgg._count.id, sessionsLastMonthAgg._count.id),
       },
       revenue: {
         thisMonth: revenueThisMonth,

@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   ParseUUIDPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsString, MinLength } from 'class-validator';
@@ -42,7 +43,7 @@ export class GuardianInvitationsController {
     @Param('guardianId', ParseUUIDPipe) guardianId: string,
   ) {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId: user.sub } });
-    if (!psy) throw new Error('Psychologue introuvable');
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
     return this.service.sendInvitation(psy.id, patientId, guardianId, user.sub);
   }
 

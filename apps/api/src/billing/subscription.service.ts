@@ -76,7 +76,6 @@ export class SubscriptionService {
       successUrl: `${frontendUrl}/dashboard/settings/billing?success=true`,
       cancelUrl: `${frontendUrl}/dashboard/settings/billing?canceled=true`,
       psychologistId: psy.id,
-      trialDays: 14,
       referralCode,
     });
 

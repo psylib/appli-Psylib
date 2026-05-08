@@ -72,8 +72,12 @@ export class InvoiceGenerationProcessor extends WorkerHost {
             });
 
             const sessions = fullInvoice?.session ? [fullInvoice.session] : [];
+            if (!fullInvoice) {
+              this.logger.warn(`Invoice ${invoice.id} not found for PDF generation`);
+              return;
+            }
             const pdfBuffer = await this.invoicesService.buildPdfBufferPublic(
-              fullInvoice as any,
+              fullInvoice,
               sessions,
             );
 
@@ -151,7 +155,7 @@ export class InvoiceGenerationProcessor extends WorkerHost {
       });
       if (fullInvoice) {
         const sessions = fullInvoice.session ? [fullInvoice.session] : [];
-        pdfBuffer = await this.invoicesService.buildPdfBufferPublic(fullInvoice as any, sessions);
+        pdfBuffer = await this.invoicesService.buildPdfBufferPublic(fullInvoice, sessions);
       }
     } catch (error) {
       this.logger.warn(`Could not build PDF for guardian invoice ${invoice.invoiceNumber}: ${error}`);

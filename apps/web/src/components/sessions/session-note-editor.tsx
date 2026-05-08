@@ -388,9 +388,13 @@ export function SessionNoteEditor({
 
   const handleCopySummary = async () => {
     if (!aiSummary) return;
-    await navigator.clipboard.writeText(aiSummary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(aiSummary);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API may fail if page is not focused
+    }
   };
 
   const handleDismissAi = () => {

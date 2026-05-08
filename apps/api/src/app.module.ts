@@ -52,12 +52,17 @@ import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
       validate: (config: Record<string, unknown>) => {
+        const isProd = process.env['NODE_ENV'] === 'production';
+        const requiredInProd = isProd ? z.string().min(1) : z.string().optional();
         const schema = z.object({
           DATABASE_URL: z.string().min(1),
           ENCRYPTION_KEY: z.string().min(1),
+          PATIENT_JWT_SECRET: requiredInProd,
           JWT_SECRET: z.string().optional(),
-          KEYCLOAK_URL: z.string().optional(),
-          KEYCLOAK_REALM: z.string().optional(),
+          KEYCLOAK_URL: requiredInProd,
+          KEYCLOAK_REALM: requiredInProd,
+          KEYCLOAK_CLIENT_ID: z.string().optional(),
+          KEYCLOAK_CLIENT_SECRET: z.string().optional(),
           STRIPE_SECRET_KEY: z.string().optional(),
           STRIPE_WEBHOOK_SECRET: z.string().optional(),
           OPENROUTER_API_KEY: z.string().optional(),

@@ -101,9 +101,14 @@ export class AuditService {
 
   private extractIp(req?: Request): string | null {
     if (!req) return null;
+    // Use req.ip which respects Express trust proxy setting (configured in main.ts)
+    // Falls back to X-Forwarded-For last entry (closest proxy) then remoteAddress
+    if (req.ip) return req.ip;
     const forwarded = req.headers['x-forwarded-for'];
     if (forwarded) {
-      return (Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0])?.trim() ?? null;
+      const parts = Array.isArray(forwarded) ? forwarded : forwarded.split(',');
+      // Use the LAST entry (closest to the server) rather than first (attacker-controlled)
+      return parts[parts.length - 1]?.trim() ?? null;
     }
     return req.socket?.remoteAddress ?? null;
   }

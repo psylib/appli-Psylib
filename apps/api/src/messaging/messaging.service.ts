@@ -161,18 +161,22 @@ export class MessagingService {
   }
 
   /**
-   * Retourne tous les messages d'une conversation, déchiffrés.
+   * Retourne les messages d'une conversation, déchiffrés, avec pagination.
    * Vérifie que l'utilisateur est bien membre de la conversation.
    */
   async getMessages(
     conversationId: string,
     userId: string,
+    take = 50,
+    skip = 0,
   ): Promise<MessageDto[]> {
     await this.assertConversationAccess(conversationId, userId);
 
     const messages = await this.prisma.message.findMany({
       where: { conversationId },
       orderBy: { createdAt: 'asc' },
+      take,
+      skip,
     });
 
     const actorType = await this.resolveActorType(userId);

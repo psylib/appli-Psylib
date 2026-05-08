@@ -17,6 +17,33 @@ import * as path from 'path';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
 
+/**
+ * Detect MIME type from file magic bytes (first few bytes).
+ * Returns null if the signature is not recognized.
+ */
+function detectMimeFromMagicBytes(buffer: Buffer): string | null {
+  if (buffer.length < 4) return null;
+  // PDF: %PDF
+  if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) {
+    return 'application/pdf';
+  }
+  // JPEG: FF D8 FF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return 'image/jpeg';
+  }
+  // PNG: 89 50 4E 47
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+    return 'image/png';
+  }
+  // ZIP-based (DOCX, ODT): PK\x03\x04
+  if (buffer[0] === 0x50 && buffer[1] === 0x4B && buffer[2] === 0x03 && buffer[3] === 0x04) {
+    // DOCX and ODT are both ZIP-based — accept as valid
+    return null; // Can't distinguish DOCX from ODT from ZIP header alone; trust declared type
+  }
+  // Unknown signature — could be malicious
+  return 'application/octet-stream';
+}
+
 const ALLOWED_MIME_TYPES = [
   'application/pdf',
   'image/jpeg',
@@ -60,6 +87,11 @@ export class DocumentsService {
     if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       throw new BadRequestException('Type de fichier non autorisé. Types acceptés : PDF, JPEG, PNG, DOCX, ODT.');
     }
+    // Validate actual file content via magic bytes (not just client-declared MIME)
+    const detectedMime = detectMimeFromMagicBytes(file.buffer);
+    if (detectedMime && !ALLOWED_MIME_TYPES.includes(detectedMime)) {
+      throw new BadRequestException('Le contenu du fichier ne correspond pas au type déclaré.');
+    }
     if (file.size > MAX_FILE_SIZE) {
       throw new BadRequestException('Fichier trop volumineux (max 10 Mo).');
     }
@@ -87,7 +119,7 @@ export class DocumentsService {
       data: {
         psychologistId: psy.id,
         patientId: dto.patientId,
-        fileName: file.originalname,
+        fileName: file.originalname.replace(/[\r\n\x00-\x1F]/g, '').slice(0, 255),
         filePath,
         fileSize: file.size,
         mimeType: file.mimetype,

@@ -18,7 +18,7 @@ import { TherapyOrientation, SessionStatus } from '@prisma/client';
 
 export class CreateSessionDto {
   @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
-  @IsString()
+  @IsUUID()
   patientId!: string;
 
   @ApiProperty({ example: '2024-02-15T14:00:00Z' })
@@ -145,7 +145,7 @@ export class SessionQueryDto {
   limit?: number = 20;
 
   @ApiPropertyOptional()
-  @IsString()
+  @IsUUID()
   @IsOptional()
   patientId?: string;
 

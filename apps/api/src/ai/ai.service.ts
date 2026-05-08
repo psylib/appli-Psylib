@@ -3,6 +3,7 @@ import {
   Logger,
   ForbiddenException,
   BadRequestException,
+  type OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
@@ -59,7 +60,7 @@ RÈGLE ABSOLUE : N'utilise JAMAIS de données patients, même anonymisées.`,
 };
 
 @Injectable()
-export class AiService {
+export class AiService implements OnModuleInit {
   private readonly logger = new Logger(AiService.name);
   private aiApiKey!: string | null;
   private aiBaseUrl!: string;

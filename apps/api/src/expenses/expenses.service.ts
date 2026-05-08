@@ -54,31 +54,35 @@ export class ExpensesService {
 
     const encryptedNotes = dto.notes ? this.encryption.encrypt(dto.notes) : null;
 
-    const expense = await this.prisma.expense.create({
-      data: {
-        psychologistId,
+    const expense = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.expense.create({
+        data: {
+          psychologistId,
+          date: new Date(dto.date),
+          label: dto.label,
+          amount: dto.amount,
+          amountHt: dto.amountHt ?? null,
+          vatRate: dto.vatRate ?? null,
+          category: dto.category as ExpenseCategory,
+          subcategory: dto.subcategory ?? null,
+          paymentMethod: dto.paymentMethod as ExpensePaymentMethod,
+          supplier: dto.supplier ?? null,
+          notes: encryptedNotes,
+          isDeductible: dto.isDeductible ?? true,
+        },
+      });
+
+      // Create linked AccountingEntry atomically
+      await this.accountingService.createExpenseEntry(psychologistId, {
         date: new Date(dto.date),
         label: dto.label,
         amount: dto.amount,
-        amountHt: dto.amountHt ?? null,
-        vatRate: dto.vatRate ?? null,
         category: dto.category as ExpenseCategory,
-        subcategory: dto.subcategory ?? null,
         paymentMethod: dto.paymentMethod as ExpensePaymentMethod,
-        supplier: dto.supplier ?? null,
-        notes: encryptedNotes,
-        isDeductible: dto.isDeductible ?? true,
-      },
-    });
+        expenseId: created.id,
+      });
 
-    // Create linked AccountingEntry
-    await this.accountingService.createExpenseEntry(psychologistId, {
-      date: new Date(dto.date),
-      label: dto.label,
-      amount: dto.amount,
-      category: dto.category as ExpenseCategory,
-      paymentMethod: dto.paymentMethod as ExpensePaymentMethod,
-      expenseId: expense.id,
+      return created;
     });
 
     await this.audit.log({

@@ -7,7 +7,9 @@ import {
   IsObject,
   MinLength,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GuardianRelationship } from '@psyscale/shared-types';
 
@@ -57,5 +59,7 @@ export class CreateGuardianDto {
   @ApiPropertyOptional()
   @IsObject()
   @IsOptional()
+  @ValidateNested()
+  @Type(() => GuardianPermissionsDto)
   permissions?: GuardianPermissionsDto;
 }

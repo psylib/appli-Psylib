@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsBoolean,
   IsIn,
+  IsUUID,
   Min,
   Max,
   MaxLength,
@@ -16,7 +17,7 @@ import { AppointmentStatus, OfflinePaymentMethod } from '@psyscale/shared-types'
 
 export class CreateAppointmentDto {
   @ApiProperty()
-  @IsString()
+  @IsUUID()
   patientId!: string;
 
   @ApiProperty()

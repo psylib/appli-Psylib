@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import * as path from 'path';
 import type { Request } from 'express';
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
@@ -278,7 +279,6 @@ export class PatientPortalService {
     if (!doc) throw new NotFoundException('Document introuvable');
 
     // Defense-in-depth: verify file path is within upload base directory
-    const path = require('path');
     const resolvedPath = path.resolve(doc.filePath);
     if (!resolvedPath.startsWith(path.resolve('/uploads/documents'))) {
       throw new ForbiddenException('Chemin de fichier invalide');

@@ -7,9 +7,10 @@ import {
   UseGuards,
   ParseUUIDPipe,
   Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { IsString, IsUUID } from 'class-validator';
+import { IsString, IsUUID, IsIn } from 'class-validator';
 import type { Request } from 'express';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -24,6 +25,7 @@ class RequestConsentDto {
   guardianId!: string;
 
   @IsString()
+  @IsIn(['data_processing', 'ai_processing', 'video_consultation'])
   type!: string;
 }
 
@@ -46,7 +48,7 @@ export class GuardianConsentsController {
     @Body() dto: RequestConsentDto,
   ) {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId: user.sub } });
-    if (!psy) throw new Error('Psychologue introuvable');
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
     return this.service.requestConsent(psy.id, patientId, dto.guardianId, dto.type, user.sub);
   }
 

@@ -4,6 +4,7 @@ import {
   Param,
   UseGuards,
   ParseUUIDPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { MonSoutienPsyService } from './mon-soutien-psy.service';
@@ -63,7 +64,7 @@ export class MonSoutienPsyController {
       select: { id: true },
     });
     if (!psy) {
-      throw new Error('Profil psychologue introuvable');
+      throw new NotFoundException('Profil psychologue introuvable');
     }
     return psy;
   }

@@ -22,13 +22,23 @@ export class CalendarSyncProcessor extends WorkerHost {
     switch (job.name) {
       case 'initial-sync': {
         this.logger.log(`Initial sync for psy ${psychologistId}`);
-        await this.syncService.performIncrementalSync(psychologistId);
-        await this.syncService.setupWatch(psychologistId);
+        try {
+          await this.syncService.performIncrementalSync(psychologistId);
+          await this.syncService.setupWatch(psychologistId);
+        } catch (err) {
+          this.logger.error(`Initial sync failed for psy ${psychologistId}`, err);
+          throw err;
+        }
         break;
       }
       case 'incremental-sync': {
         this.logger.debug(`Incremental sync for psy ${psychologistId}`);
-        await this.syncService.performIncrementalSync(psychologistId);
+        try {
+          await this.syncService.performIncrementalSync(psychologistId);
+        } catch (err) {
+          this.logger.error(`Incremental sync failed for psy ${psychologistId}`, err);
+          throw err;
+        }
         break;
       }
       case 'poll-all': {

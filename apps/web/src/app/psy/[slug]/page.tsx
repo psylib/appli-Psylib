@@ -50,8 +50,9 @@ export default async function PsyProfilePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const profile = await getProfile(slug);
-  if (!profile) notFound();
+  const profileOrNull = await getProfile(slug);
+  if (!profileOrNull) notFound();
+  const profile = profileOrNull as PublicPsyProfile;
 
   const jsonLd = {
     '@context': 'https://schema.org',

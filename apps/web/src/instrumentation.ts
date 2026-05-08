@@ -6,7 +6,7 @@ export async function register() {
       environment: process.env.NODE_ENV,
       tracesSampleRate: 0.1,
       // Jamais de données patients dans les erreurs
-      beforeSend(event) {
+      beforeSend(event: import('@sentry/nextjs').ErrorEvent) {
         return event;
       },
     });

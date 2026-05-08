@@ -115,8 +115,12 @@ export class CalendarSyncService implements OnModuleInit {
       },
     });
 
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { id: psychologistId },
+      select: { userId: true },
+    });
     await this.audit.log({
-      actorId: psychologistId,
+      actorId: psy?.userId ?? psychologistId,
       actorType: 'psychologist',
       action: 'CALENDAR_CONNECT',
       entityType: 'calendar_connection',

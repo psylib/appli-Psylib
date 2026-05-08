@@ -17,6 +17,10 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !firstName.trim() || !lastName.trim() || !adeliOrRpps.trim()) return;
+    if (!/^\d{9,11}$/.test(adeliOrRpps.trim())) {
+      setError('Le numéro ADELI (9 chiffres) ou RPPS (11 chiffres) est invalide.');
+      return;
+    }
 
     setLoading(true);
     setError('');

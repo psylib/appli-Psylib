@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -124,6 +125,9 @@ export class CalendarSyncController {
     @Query('from') from: string,
     @Query('to') to: string,
   ) {
+    if (!from || !to || isNaN(new Date(from).getTime()) || isNaN(new Date(to).getTime())) {
+      throw new BadRequestException('Paramètres from et to requis (format ISO date)');
+    }
     const psy = await this.prisma.psychologist.findUniqueOrThrow({
       where: { userId: user.sub },
     });

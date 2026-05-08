@@ -8,6 +8,7 @@ import {
   Param,
   UseGuards,
   ParseUUIDPipe,
+  NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
@@ -33,7 +34,7 @@ export class GuardiansController {
 
   private async getPsyId(userId: string): Promise<string> {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
-    if (!psy) throw new Error('Psychologue introuvable');
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
     return psy.id;
   }
 

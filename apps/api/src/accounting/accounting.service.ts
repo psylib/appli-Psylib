@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AccountingEntryType, ExpenseCategory, ExpensePaymentMethod } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
@@ -451,7 +451,7 @@ export class AccountingService {
     `;
     const row = result[0];
     if (!row) {
-      throw new Error(
+      throw new InternalServerErrorException(
         `FecSequence upsert returned no rows for psychologistId=${psychologistId} year=${fiscalYear}`,
       );
     }

@@ -453,7 +453,7 @@ model WaitlistEntry {
   createdAt          DateTime        @default(now()) @map("created_at")
 
   psychologist     Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id])
+  consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id], onDelete: SetNull)
 
   @@index([psychologistId, status], name: "idx_waitlist_psy_status")
   @@map("waitlist_entries")
@@ -465,7 +465,7 @@ model Subscription {
   stripeCustomerId     String?            @unique @map("stripe_customer_id")
   stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
   plan                 SubscriptionPlan   @default(free)
-  status               SubscriptionStatus @default(trialing)
+  status               SubscriptionStatus @default(active)
   trialEndsAt          DateTime?          @map("trial_ends_at")
   currentPeriodEnd     DateTime?          @map("current_period_end")
   cancelAtPeriodEnd    Boolean            @default(false) @map("cancel_at_period_end")
@@ -772,7 +772,7 @@ model VideoRoom {
   appointmentId   String          @unique @map("appointment_id")
   appointment     Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
   psychologistId  String          @map("psychologist_id")
-  psychologist    Psychologist    @relation(fields: [psychologistId], references: [id])
+  psychologist    Psychologist    @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   roomName        String          @unique @map("room_name")
   status          VideoRoomStatus @default(waiting)
   psyJoinedAt     DateTime?       @map("psy_joined_at")
@@ -961,6 +961,7 @@ model Payment {
   @@index([appointmentId])
   @@index([patientId], name: "idx_payments_patient")
   @@index([psychologistId, status], name: "idx_payments_psy_status")
+  @@index([stripePaymentIntentId])
   @@map("payments")
 }
 
@@ -988,6 +989,7 @@ model Invoice {
   @@index([patientId], name: "idx_invoices_patient")
   @@index([paymentId], name: "idx_invoices_payment")
   @@index([sessionId], name: "idx_invoices_session")
+  @@index([psychologistId, issuedAt(sort: Desc)], name: "idx_invoices_psy_date")
   @@map("invoices")
 }
 
@@ -1018,6 +1020,7 @@ model AuditLog {
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([entityType, entityId, createdAt(sort: Desc)], name: "idx_audit_entity")
+  @@index([actorId, action, createdAt(sort: Desc)], name: "idx_audit_actor_action")
   @@map("audit_logs")
 }
 
@@ -1293,6 +1296,7 @@ model Expense {
 
   @@index([psychologistId, date(sort: Desc)], name: "idx_expenses_psy_date")
   @@index([psychologistId, category], name: "idx_expenses_psy_category")
+  @@index([psychologistId, deletedAt, date(sort: Desc)], name: "idx_expenses_psy_active_date")
   @@map("expenses")
 }
 
@@ -1353,6 +1357,7 @@ model AccountingEntry {
   @@index([paymentId], name: "idx_accounting_payment")
   @@index([expenseId], name: "idx_accounting_expense")
   @@index([psychologistId, fiscalYear], name: "idx_accounting_psy_year")
+  @@index([psychologistId, deletedAt, date(sort: Desc)], name: "idx_accounting_psy_active_date")
   @@map("accounting_entries")
 }
 

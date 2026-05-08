@@ -223,25 +223,18 @@ export class AnalyticsService {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const patients = await this.prisma.patient.findMany({
-      where: { psychologistId },
-      select: { id: true },
-    });
-
-    const patientIds = patients.map((p) => p.id);
-
-    if (patientIds.length === 0) {
-      return [];
-    }
-
     const moodEntries = await this.prisma.moodTracking.findMany({
       where: {
-        patientId: { in: patientIds },
+        patient: { psychologistId },
         createdAt: { gte: thirtyDaysAgo, lte: now },
       },
       select: { mood: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
     });
+
+    if (moodEntries.length === 0) {
+      return [];
+    }
 
     // Group by week — keyed on Monday's date
     const weekMap = new Map<string, { sum: number; count: number; startDate: Date }>();

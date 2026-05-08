@@ -7,7 +7,7 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
   replaysSessionSampleRate: 0.0,
   // Ne jamais capturer les données patients
-  beforeBreadcrumb(breadcrumb) {
+  beforeBreadcrumb(breadcrumb: Sentry.Breadcrumb) {
     // Supprimer les breadcrumbs contenant des URLs de données sensibles
     if (
       breadcrumb.data?.url?.includes('/patients') ||

@@ -166,13 +166,17 @@ export default function ExercisesPage() {
     feedback?: string,
   ) => {
     if (!session?.accessToken) return;
-    const updated = await patientPortalApi.updateExercise(
-      session.accessToken,
-      id,
-      status,
-      feedback,
-    );
-    setExercises((prev) => prev.map((e) => (e.id === id ? updated : e)));
+    try {
+      const updated = await patientPortalApi.updateExercise(
+        session.accessToken,
+        id,
+        status,
+        feedback,
+      );
+      setExercises((prev) => prev.map((e) => (e.id === id ? updated : e)));
+    } catch {
+      setError('Impossible de mettre à jour l\u0027exercice.');
+    }
   };
 
   const pending = exercises.filter((e) => e.status === 'assigned' || e.status === 'in_progress');

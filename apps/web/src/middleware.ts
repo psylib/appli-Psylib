@@ -63,7 +63,8 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
   if (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/patient-portal') ||
-    pathname.startsWith('/onboarding')
+    pathname.startsWith('/onboarding') ||
+    pathname.startsWith('/video')
   ) {
     if (!isAuthenticated) {
       const loginUrl = new URL('/login', req.url);

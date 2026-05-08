@@ -25,7 +25,8 @@ export default function PatientLoginPage() {
 function PatientLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') ?? '/patient-portal';
+  const rawCallback = searchParams.get('callbackUrl') ?? '/patient-portal';
+  const callbackUrl = rawCallback.startsWith('/') && !rawCallback.startsWith('//') ? rawCallback : '/patient-portal';
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +35,8 @@ function PatientLoginForm() {
     handleSubmit,
     formState: { errors },
   
-  } = useForm<FormData>({ resolver: zodResolver(schema as any) });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = useForm<FormData>({ resolver: zodResolver(schema) as any });
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);

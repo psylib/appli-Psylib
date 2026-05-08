@@ -16,7 +16,7 @@ interface NewSessionContentProps {
 export function NewSessionContent({ preselectedPatientId }: NewSessionContentProps) {
   const router = useRouter();
   const { data: authSession } = useSession();
-  const { data: patients } = usePatients({ limit: 100 } as Parameters<typeof usePatients>[0]);
+  const { data: patients } = usePatients({ limit: 100 });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

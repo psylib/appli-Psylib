@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -139,7 +140,7 @@ export class InvoicesService {
       }
     }
 
-    throw new Error('Impossible de generer un numero de facture unique');
+    throw new InternalServerErrorException('Impossible de générer un numéro de facture unique');
   }
 
   async generatePdf(

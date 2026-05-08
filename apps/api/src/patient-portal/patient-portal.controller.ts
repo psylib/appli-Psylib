@@ -148,9 +148,10 @@ export class PatientPortalController {
       req,
     );
 
+    const safeFileName = fileName.replace(/[\r\n\x00-\x1F"\\]/g, '').slice(0, 255);
     res.set({
       'Content-Type': mimeType,
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`,
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(safeFileName)}"`,
     });
 
     const stream = createReadStream(filePath);
