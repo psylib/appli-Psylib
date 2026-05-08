@@ -4,7 +4,7 @@
 // Partagés entre apps/web et apps/api
 // =============================================================================
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
+exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
 // -----------------------------------------------------------------------------
 // Enums
 // -----------------------------------------------------------------------------
@@ -13,6 +13,7 @@ var UserRole;
     UserRole["PSYCHOLOGIST"] = "psychologist";
     UserRole["PATIENT"] = "patient";
     UserRole["ADMIN"] = "admin";
+    UserRole["GUARDIAN"] = "guardian";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var SubscriptionPlan;
 (function (SubscriptionPlan) {
@@ -273,4 +274,21 @@ var AccountingEntryType;
     AccountingEntryType["INCOME"] = "income";
     AccountingEntryType["EXPENSE"] = "expense";
 })(AccountingEntryType || (exports.AccountingEntryType = AccountingEntryType = {}));
+// -----------------------------------------------------------------------------
+// Guardian Types
+// -----------------------------------------------------------------------------
+var GuardianRelationship;
+(function (GuardianRelationship) {
+    GuardianRelationship["MOTHER"] = "mother";
+    GuardianRelationship["FATHER"] = "father";
+    GuardianRelationship["LEGAL_GUARDIAN"] = "legal_guardian";
+    GuardianRelationship["OTHER"] = "other";
+})(GuardianRelationship || (exports.GuardianRelationship = GuardianRelationship = {}));
+exports.DEFAULT_GUARDIAN_PERMISSIONS = {
+    portal: true,
+    invoices: true,
+    video: false,
+    documents: true,
+    messaging: false,
+};
 //# sourceMappingURL=index.js.map

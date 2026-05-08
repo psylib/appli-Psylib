@@ -11,6 +11,7 @@ export enum UserRole {
   PSYCHOLOGIST = 'psychologist',
   PATIENT = 'patient',
   ADMIN = 'admin',
+  GUARDIAN = 'guardian',
 }
 
 export enum SubscriptionPlan {
@@ -768,4 +769,66 @@ export interface SocialChargesEstimate {
   total: number;
   monthlyProvision: number;
   disclaimer: string;
+}
+
+// -----------------------------------------------------------------------------
+// Guardian Types
+// -----------------------------------------------------------------------------
+
+export enum GuardianRelationship {
+  MOTHER = 'mother',
+  FATHER = 'father',
+  LEGAL_GUARDIAN = 'legal_guardian',
+  OTHER = 'other',
+}
+
+export interface GuardianPermissions {
+  portal: boolean;
+  invoices: boolean;
+  video: boolean;
+  documents: boolean;
+  messaging: boolean;
+}
+
+export const DEFAULT_GUARDIAN_PERMISSIONS: GuardianPermissions = {
+  portal: true,
+  invoices: true,
+  video: false,
+  documents: true,
+  messaging: false,
+};
+
+export interface LegalGuardian {
+  id: string;
+  patientId: string;
+  userId: string | null;
+  psychologistId: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  relationship: GuardianRelationship;
+  isPrimary: boolean;
+  permissions: GuardianPermissions;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GuardianInvitation {
+  id: string;
+  guardianId: string;
+  email: string;
+  status: 'pending' | 'accepted' | 'expired';
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface GuardianConsentRequest {
+  id: string;
+  guardianId: string;
+  patientId: string;
+  consentType: string;
+  status: 'pending' | 'approved' | 'refused';
+  expiresAt: string;
+  respondedAt: string | null;
+  createdAt: string;
 }
