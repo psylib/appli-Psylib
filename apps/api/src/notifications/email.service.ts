@@ -243,7 +243,7 @@ export class EmailService {
       trialEndsAt?: Date | null;
     },
   ): Promise<void> {
-    const planLabel = { starter: 'Starter', pro: 'Pro', clinic: 'Clinic' }[data.plan] ?? data.plan;
+    const planLabel = { solo: 'Solo', pro: 'Pro', clinic: 'Clinic' }[data.plan] ?? data.plan;
     const trialHtml = data.trialEndsAt
       ? `<p style="font-size:14px;color:#6B7280;">
           Période d'essai jusqu'au <strong>${data.trialEndsAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong> — aucun débit avant cette date.
@@ -759,7 +759,7 @@ export class EmailService {
       ? `<div class="alert-box alert-warning">
           <div>
             <strong style="color:#92400E;">Il vous reste ${data.daysLeft} jour${data.daysLeft > 1 ? 's' : ''} d'essai</strong><br />
-            <span style="font-size:14px;color:#78350F;">Passez au plan Starter (49€/mois) pour continuer à utiliser PsyLib.</span>
+            <span style="font-size:14px;color:#78350F;">Passez au plan Solo (25€/mois) pour continuer à utiliser PsyLib.</span>
           </div>
         </div>`
       : '<p>Votre période d\'essai est toujours en cours — profitez-en !</p>';

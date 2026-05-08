@@ -51,7 +51,7 @@ const mockConfig = {
   get: vi.fn((key: string) => {
     const map: Record<string, string> = {
       FRONTEND_URL: 'https://psylib.eu',
-      STRIPE_PRICE_ID_STARTER: 'price_starter_test',
+      STRIPE_PRICE_ID_SOLO: 'price_solo_test',
       STRIPE_PRICE_ID_PRO: 'price_pro_test',
       STRIPE_PRICE_ID_CLINIC: 'price_clinic_test',
     };
@@ -89,7 +89,7 @@ function makeSub(overrides = {}) {
     psychologistId: 'psy-1',
     stripeCustomerId: 'cus_test123',
     stripeSubscriptionId: 'sub_test123',
-    plan: SubscriptionPlan.STARTER,
+    plan: SubscriptionPlan.SOLO,
     status: SubscriptionStatus.ACTIVE,
     currentPeriodEnd: new Date(Date.now() + 30 * 24 * 3600 * 1000),
     cancelAtPeriodEnd: false,
@@ -112,7 +112,7 @@ function makeStripeSubscription(overrides: Partial<Stripe.Subscription> = {}): S
         {
           id: 'si_test',
           object: 'subscription_item',
-          price: { id: 'price_starter_test' } as Stripe.Price,
+          price: { id: 'price_solo_test' } as Stripe.Price,
         } as Stripe.SubscriptionItem,
       ],
       has_more: false,
@@ -158,7 +158,7 @@ describe('SubscriptionService', () => {
 
       const result = await service.getSubscription('user-1');
 
-      expect(result.plan).toBe(SubscriptionPlan.STARTER);
+      expect(result.plan).toBe(SubscriptionPlan.SOLO);
       expect(result.status).toBe(SubscriptionStatus.ACTIVE);
       expect(result.stripeCustomerId).toBe('cus_test123');
       expect(result.cancelAtPeriodEnd).toBe(false);
@@ -203,7 +203,7 @@ describe('SubscriptionService', () => {
       mockPrisma.subscription.upsert.mockResolvedValue(makeSub());
       mockStripeService.createCheckoutSession.mockResolvedValue(checkoutSession);
 
-      const result = await service.createCheckoutSession('user-1', SubscriptionPlan.STARTER);
+      const result = await service.createCheckoutSession('user-1', SubscriptionPlan.SOLO);
 
       expect(result).toEqual({ url: checkoutSession.url });
       expect(mockStripeService.createOrRetrieveCustomer).toHaveBeenCalledWith(
@@ -214,7 +214,7 @@ describe('SubscriptionService', () => {
       expect(mockStripeService.createCheckoutSession).toHaveBeenCalledWith(
         expect.objectContaining({
           customerId: customer.id,
-          priceId: 'price_starter_test',
+          priceId: 'price_solo_test',
           trialDays: 14,
         }),
       );
@@ -262,7 +262,7 @@ describe('SubscriptionService', () => {
       mockStripeService.createCheckoutSession.mockResolvedValue({ url: null });
 
       await expect(
-        service.createCheckoutSession('user-1', SubscriptionPlan.STARTER),
+        service.createCheckoutSession('user-1', SubscriptionPlan.SOLO),
       ).rejects.toThrow(ForbiddenException);
     });
   });
@@ -274,7 +274,7 @@ describe('SubscriptionService', () => {
   describe('checkPatientLimit()', () => {
     it('ne lève pas d\'erreur si sous la limite du plan', async () => {
       // STARTER: 40 patients max — 5 patients actuels
-      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.STARTER }));
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
       mockPrisma.patient.count.mockResolvedValue(5);
 
       await expect(service.checkPatientLimit('psy-1')).resolves.toBeUndefined();
@@ -282,7 +282,7 @@ describe('SubscriptionService', () => {
 
     it('lève ForbiddenException si la limite est atteinte', async () => {
       // STARTER: 40 patients max — 40 patients actuels
-      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.STARTER }));
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
       mockPrisma.patient.count.mockResolvedValue(40);
 
       await expect(service.checkPatientLimit('psy-1')).rejects.toThrow(ForbiddenException);
@@ -313,7 +313,7 @@ describe('SubscriptionService', () => {
   describe('checkSessionLimit()', () => {
     it('ne lève pas d\'erreur si sous la limite mensuelle', async () => {
       // STARTER: 40 sessions max — 10 ce mois
-      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.STARTER }));
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
       mockPrisma.session.count.mockResolvedValue(10);
 
       await expect(service.checkSessionLimit('psy-1')).resolves.toBeUndefined();
@@ -321,7 +321,7 @@ describe('SubscriptionService', () => {
 
     it('lève ForbiddenException si la limite mensuelle est atteinte', async () => {
       // STARTER: 40 sessions max — 40 ce mois
-      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.STARTER }));
+      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
       mockPrisma.session.count.mockResolvedValue(40);
 
       await expect(service.checkSessionLimit('psy-1')).rejects.toThrow(ForbiddenException);
@@ -356,7 +356,7 @@ describe('SubscriptionService', () => {
         expect.objectContaining({
           where: { stripeSubscriptionId: stripeSub.id },
           data: expect.objectContaining({
-            plan: SubscriptionPlan.STARTER, // price_starter_test
+            plan: SubscriptionPlan.SOLO, // price_solo_test
             status: SubscriptionStatus.ACTIVE,
           }),
         }),
@@ -460,7 +460,7 @@ describe('SubscriptionService', () => {
         expect.objectContaining({
           where: { psychologistId: 'psy-1' },
           create: expect.objectContaining({
-            plan: SubscriptionPlan.STARTER,
+            plan: SubscriptionPlan.SOLO,
             status: SubscriptionStatus.ACTIVE,
           }),
         }),

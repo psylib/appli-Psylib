@@ -25,7 +25,7 @@ export function UpgradeBanner({ reason, currentPlan }: UpgradeBannerProps) {
 
   const targetPlan =
     currentPlan === SubscriptionPlan.FREE || !currentPlan
-      ? SubscriptionPlan.STARTER
+      ? SubscriptionPlan.SOLO
       : SubscriptionPlan.PRO;
 
   return (
@@ -42,7 +42,7 @@ export function UpgradeBanner({ reason, currentPlan }: UpgradeBannerProps) {
         <p className="text-sm font-medium text-amber-900">{MESSAGES[reason]}</p>
         <p className="text-xs text-amber-700 mt-0.5">
           Passez au plan{' '}
-          {targetPlan === SubscriptionPlan.STARTER ? 'Solo (25€/mois)' : 'Pro (40€/mois)'}{' '}
+          {targetPlan === SubscriptionPlan.SOLO ? 'Solo (25€/mois)' : 'Pro (40€/mois)'}{' '}
           pour continuer.
         </p>
       </div>

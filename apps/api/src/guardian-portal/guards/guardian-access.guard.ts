@@ -49,7 +49,7 @@ export class GuardianAccessGuard implements CanActivate {
     // Plan gating
     const plan = guardian.psychologist.subscription?.plan ?? 'free';
     if (plan === 'free') throw new ForbiddenException('Le plan du praticien ne permet pas l\'acces portail tuteur');
-    if (plan === 'starter' && !guardian.isPrimary) throw new ForbiddenException('Seul le tuteur principal peut acceder au portail avec le plan Solo');
+    if (plan === 'solo' && !guardian.isPrimary) throw new ForbiddenException('Seul le tuteur principal peut acceder au portail avec le plan Solo');
 
     // Permission check
     if (requiredPermission) {

@@ -18,7 +18,7 @@ var UserRole;
 var SubscriptionPlan;
 (function (SubscriptionPlan) {
     SubscriptionPlan["FREE"] = "free";
-    SubscriptionPlan["STARTER"] = "starter";
+    SubscriptionPlan["SOLO"] = "solo";
     SubscriptionPlan["PRO"] = "pro";
     SubscriptionPlan["CLINIC"] = "clinic";
 })(SubscriptionPlan || (exports.SubscriptionPlan = SubscriptionPlan = {}));
@@ -149,20 +149,20 @@ var CalendarProvider;
 // Plan limits
 exports.PLAN_LIMITS = {
     [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0, calendarSync: false },
-    [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800, calendarSync: true },
+    [SubscriptionPlan.SOLO]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800, calendarSync: true },
     [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null, calendarSync: true }, // null/-1 = unlimited
     [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null, calendarSync: true }, // -1 / null = illimité
 };
 exports.PLAN_PRICES = {
     [SubscriptionPlan.FREE]: 0,
-    [SubscriptionPlan.STARTER]: 25,
+    [SubscriptionPlan.SOLO]: 25,
     [SubscriptionPlan.PRO]: 40,
     [SubscriptionPlan.CLINIC]: 79,
 };
 // Display names for plans (enum values stay same for DB/Stripe compat)
 exports.PLAN_DISPLAY_NAMES = {
     [SubscriptionPlan.FREE]: 'Free',
-    [SubscriptionPlan.STARTER]: 'Solo',
+    [SubscriptionPlan.SOLO]: 'Solo',
     [SubscriptionPlan.PRO]: 'Pro',
     [SubscriptionPlan.CLINIC]: 'Clinic',
 };

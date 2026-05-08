@@ -2,7 +2,7 @@
 
 import { useDashboardKpis } from './use-dashboard';
 
-const PLAN_RANK: Record<string, number> = { free: 0, solo: 1, starter: 1, pro: 2, clinic: 3 };
+const PLAN_RANK: Record<string, number> = { free: 0, solo: 1, pro: 2, clinic: 3 };
 
 export function useSubscription() {
   const { data: kpis, isLoading } = useDashboardKpis();
@@ -13,10 +13,10 @@ export function useSubscription() {
     plan,
     isLoading,
     isFree: rank === 0,
-    isStarter: rank >= 1,
+    isSolo: rank >= 1,
     isPro: rank >= 2,
     isClinic: rank >= 3,
-    canAccess: (required: 'starter' | 'pro' | 'clinic') =>
+    canAccess: (required: 'solo' | 'pro' | 'clinic') =>
       rank >= (PLAN_RANK[required] ?? 99),
   };
 }

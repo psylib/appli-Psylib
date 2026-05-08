@@ -10,7 +10,7 @@ import type { SubscriptionDetails } from '@/lib/api/billing';
 
 const PLAN_LABELS: Record<string, string> = {
   [SubscriptionPlan.FREE]: 'Gratuit',
-  [SubscriptionPlan.STARTER]: 'Starter',
+  [SubscriptionPlan.SOLO]: 'Solo',
   [SubscriptionPlan.PRO]: 'Pro',
   [SubscriptionPlan.CLINIC]: 'Clinic',
 };

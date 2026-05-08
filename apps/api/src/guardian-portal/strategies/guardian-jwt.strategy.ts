@@ -18,7 +18,7 @@ export class GuardianJwtStrategy extends PassportStrategy(Strategy, 'guardian-jw
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.getOrThrow<string>('PATIENT_JWT_SECRET'),
+      secretOrKey: config.get<string>('GUARDIAN_JWT_SECRET') ?? config.getOrThrow<string>('PATIENT_JWT_SECRET'),
       algorithms: ['HS256'],
     });
   }

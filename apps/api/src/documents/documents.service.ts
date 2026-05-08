@@ -11,8 +11,8 @@ import { SubscriptionService } from '../billing/subscription.service';
 import { EmailService } from '../notifications/email.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ConfigService } from '@nestjs/config';
+import { StorageService } from '../common/storage.service';
 import { ShareDocumentDto } from './dto/share-document.dto';
-import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
@@ -53,7 +53,6 @@ const ALLOWED_MIME_TYPES = [
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MiB
-const UPLOAD_BASE = '/uploads/documents';
 
 @Injectable()
 export class DocumentsService {
@@ -67,6 +66,7 @@ export class DocumentsService {
     private readonly emailService: EmailService,
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
+    private readonly storage: StorageService,
   ) {}
 
   async share(
@@ -100,16 +100,9 @@ export class DocumentsService {
 
     const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
     const fileId = randomUUID();
-    const dirPath = path.join(UPLOAD_BASE, psy.id, dto.patientId);
-    const filePath = path.join(dirPath, `${fileId}_${safeName}`);
+    const storageKey = `${psy.id}/${dto.patientId}/${fileId}_${safeName}`;
 
-    const resolvedPath = path.resolve(filePath);
-    if (!resolvedPath.startsWith(path.resolve(UPLOAD_BASE))) {
-      throw new BadRequestException('Chemin de fichier invalide');
-    }
-
-    await fs.mkdir(dirPath, { recursive: true });
-    await fs.writeFile(filePath, file.buffer);
+    const filePath = await this.storage.upload(storageKey, file.buffer, file.mimetype);
 
     const encryptedMessage = dto.message
       ? this.encryption.encrypt(dto.message)
@@ -253,11 +246,9 @@ export class DocumentsService {
     });
     if (!doc) throw new NotFoundException('Document introuvable');
 
-    try {
-      await fs.unlink(doc.filePath);
-    } catch {
+    await this.storage.delete(doc.filePath).catch(() => {
       this.logger.warn(`Physical file not found for document ${docId}: ${doc.filePath}`);
-    }
+    });
 
     await this.prisma.sharedDocument.update({
       where: { id: docId },
@@ -283,11 +274,9 @@ export class DocumentsService {
     });
 
     for (const doc of docs) {
-      try {
-        await fs.unlink(doc.filePath);
-      } catch {
+      await this.storage.delete(doc.filePath).catch(() => {
         this.logger.warn(`RGPD purge: file not found ${doc.filePath}`);
-      }
+      });
     }
 
     await this.prisma.sharedDocument.deleteMany({

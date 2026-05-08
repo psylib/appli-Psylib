@@ -40,9 +40,9 @@ export interface FunnelMetrics {
 // ---------------------------------------------------------------------------
 
 const PLAN_PRICES: Record<string, number> = {
-  starter: 49,
-  pro: 97,
-  clinic: 149,
+  solo: 25,
+  pro: 40,
+  clinic: 79,
 };
 
 /**

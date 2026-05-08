@@ -37,7 +37,7 @@ export class CalendarSyncController {
   @Get('google/auth')
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async startAuth(@CurrentUser() user: KeycloakUser): Promise<{ url: string }> {
     const psy = await this.prisma.psychologist.findUniqueOrThrow({
       where: { userId: user.sub },

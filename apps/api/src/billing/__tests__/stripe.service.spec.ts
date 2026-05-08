@@ -32,7 +32,7 @@ vi.mock('stripe', () => ({
 const STRIPE_KEY = 'sk_test_fake_key';
 const PSY_ID = 'psy-001';
 const CUSTOMER_ID = 'cus_test_001';
-const PRICE_ID = 'price_starter_001';
+const PRICE_ID = 'price_solo_001';
 
 function createMockConfig(key: string | undefined) {
   return {

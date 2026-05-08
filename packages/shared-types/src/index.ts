@@ -16,7 +16,7 @@ export enum UserRole {
 
 export enum SubscriptionPlan {
   FREE = 'free',
-  STARTER = 'starter',
+  SOLO = 'solo',
   PRO = 'pro',
   CLINIC = 'clinic',
 }
@@ -495,14 +495,14 @@ export interface HealthCheckResponse {
 // Plan limits
 export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null; expenses: number | null; documentsBytesMonthly: number | null; calendarSync: boolean }> = {
   [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0, calendarSync: false },
-  [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800, calendarSync: true },
+  [SubscriptionPlan.SOLO]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800, calendarSync: true },
   [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null, calendarSync: true },  // null/-1 = unlimited
   [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null, calendarSync: true }, // -1 / null = illimité
 };
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.FREE]: 0,
-  [SubscriptionPlan.STARTER]: 25,
+  [SubscriptionPlan.SOLO]: 25,
   [SubscriptionPlan.PRO]: 40,
   [SubscriptionPlan.CLINIC]: 79,
 };
@@ -510,7 +510,7 @@ export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
 // Display names for plans (enum values stay same for DB/Stripe compat)
 export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.FREE]: 'Free',
-  [SubscriptionPlan.STARTER]: 'Solo',
+  [SubscriptionPlan.SOLO]: 'Solo',
   [SubscriptionPlan.PRO]: 'Pro',
   [SubscriptionPlan.CLINIC]: 'Clinic',
 };

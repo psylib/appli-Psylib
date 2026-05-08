@@ -34,7 +34,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async createRoom(
     @Body() dto: CreateVideoRoomDto,
     @CurrentUser() user: KeycloakUser,
@@ -57,7 +57,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async getPsyToken(
     @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
     @CurrentUser() user: KeycloakUser,

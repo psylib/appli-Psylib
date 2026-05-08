@@ -27,7 +27,7 @@ enum UserRole {
 
 enum SubscriptionPlan {
   free
-  starter
+  solo
   pro
   clinic
 }
@@ -514,6 +514,7 @@ model Patient {
   guardians                 LegalGuardian[]
   guardianConsentRequests   GuardianConsentRequest[]
 
+  @@unique([psychologistId, email], name: "idx_patients_psy_email")
   @@index([psychologistId], name: "idx_patients_psychologist")
   @@map("patients")
 }

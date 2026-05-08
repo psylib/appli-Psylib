@@ -33,7 +33,7 @@ export class SubscriptionService {
 
   private getPriceIdForPlan(plan: SubscriptionPlan): string {
     const map: Record<string, string | undefined> = {
-      [SubscriptionPlan.STARTER]: this.config.get('STRIPE_PRICE_ID_STARTER'),
+      [SubscriptionPlan.SOLO]: this.config.get('STRIPE_PRICE_ID_SOLO'),
       [SubscriptionPlan.PRO]: this.config.get('STRIPE_PRICE_ID_PRO'),
       [SubscriptionPlan.CLINIC]: this.config.get('STRIPE_PRICE_ID_CLINIC'),
     };
@@ -1159,7 +1159,7 @@ export class SubscriptionService {
 
   private stripePlanFromSubscription(subscription: Stripe.Subscription): SubscriptionPlan {
     const priceId = subscription.items.data[0]?.price.id ?? '';
-    if (priceId === this.config.get('STRIPE_PRICE_ID_STARTER')) return SubscriptionPlan.STARTER;
+    if (priceId === this.config.get('STRIPE_PRICE_ID_SOLO')) return SubscriptionPlan.SOLO;
     if (priceId === this.config.get('STRIPE_PRICE_ID_PRO')) return SubscriptionPlan.PRO;
     if (priceId === this.config.get('STRIPE_PRICE_ID_CLINIC')) return SubscriptionPlan.CLINIC;
     return SubscriptionPlan.FREE;

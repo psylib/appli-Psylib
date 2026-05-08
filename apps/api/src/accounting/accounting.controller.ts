@@ -107,11 +107,11 @@ export class AccountingController {
   /**
    * GET /accounting/export/fec?year=2025
    * Download the FEC (Fichier des Écritures Comptables) for the given fiscal year.
-   * Requires Starter plan or higher (not available on Free).
+   * Requires Solo plan or higher (not available on Free).
    */
   @Get('export/fec')
   @UseGuards(SubscriptionGuard)
-  @RequirePlan(SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async exportFec(
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,

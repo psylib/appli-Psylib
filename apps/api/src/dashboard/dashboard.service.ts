@@ -216,7 +216,7 @@ export class DashboardService {
       {
         id: 'billing',
         label: 'Activer votre abonnement',
-        description: 'Passer au plan Starter ou Pro',
+        description: 'Passer au plan Solo ou Pro',
         completed: billingActive,
         href: '/dashboard/settings/billing',
       },

@@ -15,7 +15,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Comptabilité intégrée',
     'Support email',
   ],
-  [SubscriptionPlan.STARTER]: [
+  [SubscriptionPlan.SOLO]: [
     'Patients illimités',
     'Séances illimitées',
     '10 résumés IA / mois',
@@ -43,7 +43,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
 
 const PLAN_LABELS: Record<string, string> = {
   [SubscriptionPlan.FREE]: 'Gratuit',
-  [SubscriptionPlan.STARTER]: 'Starter',
+  [SubscriptionPlan.SOLO]: 'Solo',
   [SubscriptionPlan.PRO]: 'Pro',
   [SubscriptionPlan.CLINIC]: 'Clinic',
 };
@@ -57,7 +57,7 @@ export function PlanSelector({ subscription }: PlanSelectorProps) {
   const { track } = useAnalytics();
   const currentPlan = subscription?.plan ?? SubscriptionPlan.FREE;
 
-  const plans = [SubscriptionPlan.STARTER, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC];
+  const plans = [SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

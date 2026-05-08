@@ -54,7 +54,7 @@ export class GuardianAuthService {
    * Rafraichit le token guardian via refresh token
    */
   async refreshToken(refreshTokenValue: string) {
-    const secret = this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
+    const secret = this.config.get<string>('GUARDIAN_JWT_SECRET') ?? this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
 
     try {
       const decoded = this.jwt.verify(refreshTokenValue, { secret }) as {
@@ -83,7 +83,7 @@ export class GuardianAuthService {
   }
 
   private generateTokens(userId: string, email: string) {
-    const secret = this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
+    const secret = this.config.get<string>('GUARDIAN_JWT_SECRET') ?? this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
     const payload = { sub: userId, role: 'guardian', email };
 
     const accessToken = this.jwt.sign(payload, {

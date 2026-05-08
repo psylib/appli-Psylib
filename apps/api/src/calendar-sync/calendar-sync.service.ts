@@ -70,7 +70,7 @@ export class CalendarSyncService implements OnModuleInit {
    * parameter, so we can validate the callback securely.
    */
   getAuthUrl(psychologistId: string): string {
-    const secret = this.config.get<string>('ENCRYPTION_KEY') ?? '';
+    const secret = this.config.get<string>('OAUTH_STATE_SECRET') ?? this.config.get<string>('ENCRYPTION_KEY') ?? '';
     const state = jwt.sign({ psychologistId } as StatePayload, secret, { expiresIn: '10m' });
     return this.googleProvider.getAuthUrl(state);
   }
@@ -80,7 +80,7 @@ export class CalendarSyncService implements OnModuleInit {
    * Throws if the token is invalid or expired.
    */
   verifyState(state: string): { psychologistId: string } {
-    const secret = this.config.get<string>('ENCRYPTION_KEY') ?? '';
+    const secret = this.config.get<string>('OAUTH_STATE_SECRET') ?? this.config.get<string>('ENCRYPTION_KEY') ?? '';
     const payload = jwt.verify(state, secret) as StatePayload;
     return { psychologistId: payload.psychologistId };
   }

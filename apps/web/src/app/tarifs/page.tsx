@@ -263,7 +263,7 @@ const faqs = [
       "Nous acceptons les cartes bancaires (Visa, Mastercard, CB) via Stripe, notre partenaire de paiement securise certifie PCI DSS. Le prelevement SEPA est disponible pour les abonnements annuels.",
   },
   {
-    question: "Mes donnees sont-elles securisees meme sur le plan Starter ?",
+    question: "Mes donnees sont-elles securisees meme sur le plan Solo ?",
     answer:
       "Oui, tous les plans beneficient du meme niveau de securite : hebergement HDS certifie en France, chiffrement AES-256-GCM des donnees cliniques, authentification MFA, et conformite RGPD complete. La securite n\"est jamais une option payante.",
   },

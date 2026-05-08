@@ -6,7 +6,7 @@ export declare enum UserRole {
 }
 export declare enum SubscriptionPlan {
     FREE = "free",
-    STARTER = "starter",
+    SOLO = "solo",
     PRO = "pro",
     CLINIC = "clinic"
 }
