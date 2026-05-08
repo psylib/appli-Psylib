@@ -97,6 +97,19 @@ export class AvailabilityService {
       select: { scheduledAt: true, duration: true },
     });
 
+    // Fetch external calendar events that overlap with the requested range
+    const externalEvents = await this.prisma.externalCalendarEvent.findMany({
+      where: {
+        psychologistId,
+        status: { not: 'cancelled' },
+        OR: [
+          { startAt: { lt: to }, endAt: { gt: from } },
+          { isAllDay: true, startAt: { gte: from, lt: to } },
+        ],
+      },
+      select: { startAt: true, endAt: true, isAllDay: true },
+    });
+
     const freeTimes: Date[] = [];
     const current = new Date(from);
     current.setHours(0, 0, 0, 0);
@@ -111,6 +124,18 @@ export class AvailabilityService {
 
       const daySlot = slots.find((s) => s.dayOfWeek === ourDay);
       if (daySlot) {
+        // Check if this day is blocked by an all-day external event
+        const dayStart = new Date(current);
+        const dayEnd = new Date(current);
+        dayEnd.setDate(dayEnd.getDate() + 1);
+        const isBlockedByAllDay = externalEvents.some(
+          (e) => e.isAllDay && e.startAt < dayEnd && e.endAt > dayStart,
+        );
+        if (isBlockedByAllDay) {
+          current.setDate(current.getDate() + 1);
+          continue;
+        }
+
         const [startH, startM] = daySlot.startTime.split(':').map((x: string) => Number(x));
         const [endH, endM] = daySlot.endTime.split(':').map((x: string) => Number(x));
 
@@ -133,7 +158,18 @@ export class AvailabilityService {
             return newStart < occupiedEnd && newEnd > apptStart;
           });
 
-          if (!hasConflict && slotTime > new Date()) {
+          // Also block slots that overlap with external calendar events
+          const breakBuffer = minBreak * 60000;
+          const hasExternalConflict = externalEvents.some((e) => {
+            if (e.isAllDay) return false; // Already handled above
+            const eStart = e.startAt.getTime() - breakBuffer;
+            const eEnd = e.endAt.getTime() + breakBuffer;
+            const newStart = slotTime.getTime();
+            const newEnd = newStart + sessionDuration * 60000;
+            return newStart < eEnd && newEnd > eStart;
+          });
+
+          if (!hasConflict && !hasExternalConflict && slotTime > new Date()) {
             freeTimes.push(slotTime);
           }
 
