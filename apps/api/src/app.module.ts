@@ -44,6 +44,7 @@ import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses
 import { DocumentsModule } from './documents/documents.module';
 import { GuardiansModule } from './guardians/guardians.module';
 import { GuardianPortalModule } from './guardian-portal/guardian-portal.module';
+import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
 
 @Module({
   imports: [
@@ -65,6 +66,9 @@ import { GuardianPortalModule } from './guardian-portal/guardian-portal.module';
           LIVEKIT_API_SECRET: z.string().optional(),
           LIVEKIT_WS_URL: z.string().optional(),
           LIVEKIT_API_URL: z.string().optional(),
+          GOOGLE_CLIENT_ID: z.string().optional(),
+          GOOGLE_CLIENT_SECRET: z.string().optional(),
+          GOOGLE_REDIRECT_URI: z.string().optional(),
         });
         return schema.parse(config);
       },
@@ -135,6 +139,7 @@ import { GuardianPortalModule } from './guardian-portal/guardian-portal.module';
     DocumentsModule,
     GuardiansModule,
     GuardianPortalModule,
+    CalendarSyncModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
