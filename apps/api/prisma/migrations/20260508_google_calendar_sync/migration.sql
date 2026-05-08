@@ -6,8 +6,8 @@ END $$;
 
 -- CreateTable calendar_connections
 CREATE TABLE IF NOT EXISTS "calendar_connections" (
-  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-  "psychologist_id" UUID NOT NULL,
+  "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
+  "psychologist_id" TEXT NOT NULL,
   "provider" "CalendarProvider" NOT NULL DEFAULT 'google',
   "access_token" TEXT NOT NULL,
   "refresh_token" TEXT NOT NULL,
@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS "calendar_connections" (
 
 -- CreateTable external_calendar_events
 CREATE TABLE IF NOT EXISTS "external_calendar_events" (
-  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-  "psychologist_id" UUID NOT NULL,
-  "calendar_connection_id" UUID NOT NULL,
+  "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
+  "psychologist_id" TEXT NOT NULL,
+  "calendar_connection_id" TEXT NOT NULL,
   "external_id" TEXT NOT NULL,
   "title" TEXT,
   "start_at" TIMESTAMP(3) NOT NULL,
