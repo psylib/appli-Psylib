@@ -245,6 +245,10 @@ enum GuardianRelationship {
   @@map("guardian_relationship")
 }
 
+enum CalendarProvider {
+  google
+}
+
 enum GuardianInvitationStatus {
   pending
   accepted
@@ -367,6 +371,8 @@ model Psychologist {
   minBreakMinutes          Int                      @default(0) @map("min_break_minutes")
   noShowBillingEnabled     Boolean                  @default(false) @map("no_show_billing_enabled")
   noShowFee                Decimal?                 @map("no_show_fee") @db.Decimal(10, 2)
+  calendarConnection       CalendarConnection?
+  externalCalendarEvents   ExternalCalendarEvent[]
 
   @@map("psychologists")
 }
@@ -744,6 +750,7 @@ model Appointment {
   offlinePaymentMethod   OfflinePaymentMethod?  @map("offline_payment_method")
   cancellationReason     String?                @map("cancellation_reason")
   cancelledBy            CancelledBy?           @map("cancelled_by")
+  googleEventId          String?                @map("google_event_id")
   createdAt              DateTime               @default(now()) @map("created_at")
 
   psychologist     Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
@@ -1405,4 +1412,55 @@ model SharedDocument {
   @@index([psychologistId], name: "idx_shared_documents_psy")
   @@index([patientId, createdAt(sort: Desc)], name: "idx_shared_documents_patient")
   @@map("shared_documents")
+}
+
+// =============================================================================
+// Google Calendar Sync
+// =============================================================================
+
+model CalendarConnection {
+  id              String           @id @default(uuid())
+  psychologistId  String           @unique @map("psychologist_id")
+  provider        CalendarProvider @default(google)
+  accessToken     String           @map("access_token")
+  refreshToken    String           @map("refresh_token")
+  tokenExpiresAt  DateTime?        @map("token_expires_at")
+  email           String?
+  calendarId      String           @default("primary") @map("calendar_id")
+  syncToken       String?          @map("sync_token")
+  watchChannelId  String?          @map("watch_channel_id")
+  watchResourceId String?          @map("watch_resource_id")
+  watchToken      String?          @map("watch_token")
+  watchExpiration DateTime?        @map("watch_expiration")
+  lastSyncAt      DateTime?        @map("last_sync_at")
+  isActive        Boolean          @default(true) @map("is_active")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  psychologist           Psychologist            @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  externalCalendarEvents ExternalCalendarEvent[]
+
+  @@map("calendar_connections")
+}
+
+model ExternalCalendarEvent {
+  id                   String             @id @default(uuid())
+  psychologistId       String             @map("psychologist_id")
+  calendarConnectionId String             @map("calendar_connection_id")
+  externalId           String             @map("external_id")
+  title                String?
+  startAt              DateTime           @map("start_at")
+  endAt                DateTime           @map("end_at")
+  isAllDay             Boolean            @default(false) @map("is_all_day")
+  status               String             @default("confirmed")
+  lastUpdatedAt        DateTime?          @map("last_updated_at")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  psychologist       Psychologist       @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  calendarConnection CalendarConnection @relation(fields: [calendarConnectionId], references: [id], onDelete: Cascade)
+
+  @@unique([calendarConnectionId, externalId])
+  @@index([psychologistId, startAt, endAt], name: "idx_external_events_psy_dates")
+  @@map("external_calendar_events")
 }
