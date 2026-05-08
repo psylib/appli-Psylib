@@ -29,6 +29,7 @@ export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogP
     notes: '',
     status: '' as string,
     source: '',
+    isMinor: false,
   });
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogP
         notes: patient.notes ?? '',
         status: patient.status,
         source: patient.source ?? '',
+        isMinor: patient.isMinor ?? false,
       });
       setError(null);
     }
@@ -69,6 +71,7 @@ export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogP
           notes: form.notes || null,
           status: form.status as Patient['status'],
           source: form.source || null,
+          isMinor: form.isMinor,
         },
         session?.accessToken ?? '',
       );
@@ -121,6 +124,23 @@ export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogP
           value={form.birthDate}
           onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
         />
+
+        {/* Patient mineur toggle */}
+        <label className="flex items-center gap-3 p-3 rounded-lg bg-surface cursor-pointer select-none transition-colors hover:bg-border/50">
+          <input
+            type="checkbox"
+            checked={form.isMinor}
+            onChange={(e) => setForm({ ...form, isMinor: e.target.checked })}
+            className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+          />
+          <div>
+            <span className="text-sm font-medium text-foreground">Patient mineur</span>
+            <p className="text-xs text-muted-foreground">
+              Active la gestion des responsables legaux et consentements parentaux
+            </p>
+          </div>
+        </label>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Statut</label>

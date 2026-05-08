@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/utils';
 import { PatientPortalSection } from './patient-portal-section';
 import { MspTracker } from './msp-tracker';
 import { PatientDocumentsTab } from './patient-documents-tab';
+import { GuardianTab } from './guardian-tab';
 
 interface PatientDetailContentProps {
   patientId: string;
@@ -80,6 +81,9 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
               <Badge variant={patient.status === 'active' ? 'success' : 'secondary'}>
                 {patient.status === 'active' ? 'Actif' : patient.status === 'inactive' ? 'Inactif' : 'Archivé'}
               </Badge>
+              {patient.isMinor && (
+                <Badge variant="warning">Mineur</Badge>
+              )}
             </div>
             <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
               {patient.email && (
@@ -126,6 +130,11 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
 
       {/* Portal patient */}
       <PatientPortalSection patientId={patientId} />
+
+      {/* Tuteurs (only shown for minor patients) */}
+      {patient.isMinor && (
+        <GuardianTab patientId={patientId} />
+      )}
 
       {/* Documents partagés */}
       <PatientDocumentsTab patientId={patientId} patientName={patient.name} />
