@@ -87,7 +87,9 @@ export declare enum AuditAction {
     VIDEO_PSY_JOIN = "VIDEO_PSY_JOIN",
     VIDEO_PATIENT_JOIN = "VIDEO_PATIENT_JOIN",
     VIDEO_CALL_END = "VIDEO_CALL_END",
-    VIDEO_ROOM_CLEANUP = "VIDEO_ROOM_CLEANUP"
+    VIDEO_ROOM_CLEANUP = "VIDEO_ROOM_CLEANUP",
+    CALENDAR_CONNECT = "CALENDAR_CONNECT",
+    CALENDAR_DISCONNECT = "CALENDAR_DISCONNECT"
 }
 export declare enum GdprConsentType {
     DATA_PROCESSING = "data_processing",
@@ -110,6 +112,9 @@ export declare enum AiFeature {
     SESSION_SUMMARY = "session_summary",
     EXERCISE = "exercise",
     CONTENT = "content"
+}
+export declare enum CalendarProvider {
+    GOOGLE = "google"
 }
 export interface User {
     id: string;
@@ -424,6 +429,7 @@ export declare const PLAN_LIMITS: Record<SubscriptionPlan, {
     courses: number | null;
     expenses: number | null;
     documentsBytesMonthly: number | null;
+    calendarSync: boolean;
 }>;
 export declare const PLAN_PRICES: Record<SubscriptionPlan, number>;
 export declare const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string>;
@@ -730,5 +736,35 @@ export interface GuardianConsentRequest {
     expiresAt: string;
     respondedAt: string | null;
     createdAt: string;
+}
+export interface CalendarConnection {
+    id: string;
+    psychologistId: string;
+    provider: CalendarProvider;
+    email: string | null;
+    calendarId: string;
+    lastSyncAt: string | null;
+    isActive: boolean;
+    createdAt: string;
+}
+export interface ExternalCalendarEvent {
+    id: string;
+    psychologistId: string;
+    externalId: string;
+    title: string | null;
+    startAt: string;
+    endAt: string;
+    isAllDay: boolean;
+    status: string;
+}
+export interface AppointmentEventPayload {
+    psychologistId: string;
+    appointmentId: string;
+    patientId: string;
+    scheduledAt: Date;
+    duration: number;
+    consultationTypeId?: string;
+    isOnline: boolean;
+    status: string;
 }
 //# sourceMappingURL=index.d.ts.map

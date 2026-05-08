@@ -111,6 +111,8 @@ export enum AuditAction {
   VIDEO_PATIENT_JOIN = 'VIDEO_PATIENT_JOIN',
   VIDEO_CALL_END = 'VIDEO_CALL_END',
   VIDEO_ROOM_CLEANUP = 'VIDEO_ROOM_CLEANUP',
+  CALENDAR_CONNECT = 'CALENDAR_CONNECT',
+  CALENDAR_DISCONNECT = 'CALENDAR_DISCONNECT',
 }
 
 export enum GdprConsentType {
@@ -137,6 +139,10 @@ export enum AiFeature {
   SESSION_SUMMARY = 'session_summary',
   EXERCISE = 'exercise',
   CONTENT = 'content',
+}
+
+export enum CalendarProvider {
+  GOOGLE = 'google',
 }
 
 // -----------------------------------------------------------------------------
@@ -487,11 +493,11 @@ export interface HealthCheckResponse {
 }
 
 // Plan limits
-export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null; expenses: number | null; documentsBytesMonthly: number | null }> = {
-  [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0 },
-  [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800 },
-  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null },  // null/-1 = unlimited
-  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null }, // -1 / null = illimité
+export const PLAN_LIMITS: Record<SubscriptionPlan, { patients: number | null; sessions: number | null; aiSummaries: number; videoConsultations: number | null; courses: number | null; expenses: number | null; documentsBytesMonthly: number | null; calendarSync: boolean }> = {
+  [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0, calendarSync: false },
+  [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800, calendarSync: true },
+  [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null, calendarSync: true },  // null/-1 = unlimited
+  [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null, calendarSync: true }, // -1 / null = illimité
 };
 
 export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
@@ -879,4 +885,41 @@ export interface GuardianConsentRequest {
   expiresAt: string;
   respondedAt: string | null;
   createdAt: string;
+}
+
+// -----------------------------------------------------------------------------
+// Google Calendar Sync
+// -----------------------------------------------------------------------------
+
+export interface CalendarConnection {
+  id: string;
+  psychologistId: string;
+  provider: CalendarProvider;
+  email: string | null;
+  calendarId: string;
+  lastSyncAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface ExternalCalendarEvent {
+  id: string;
+  psychologistId: string;
+  externalId: string;
+  title: string | null;
+  startAt: string;
+  endAt: string;
+  isAllDay: boolean;
+  status: string;
+}
+
+export interface AppointmentEventPayload {
+  psychologistId: string;
+  appointmentId: string;
+  patientId: string;
+  scheduledAt: Date;
+  duration: number;
+  consultationTypeId?: string;
+  isOnline: boolean;
+  status: string;
 }

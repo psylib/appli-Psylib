@@ -4,7 +4,7 @@
 // Partagés entre apps/web et apps/api
 // =============================================================================
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.CancelledBy = exports.CONSULTATION_MODALITY_LABELS = exports.ConsultationModality = exports.OFFLINE_PAYMENT_METHOD_LABELS = exports.OfflinePaymentMethod = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
+exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.CancelledBy = exports.CONSULTATION_MODALITY_LABELS = exports.ConsultationModality = exports.OFFLINE_PAYMENT_METHOD_LABELS = exports.OfflinePaymentMethod = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.CalendarProvider = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
 // -----------------------------------------------------------------------------
 // Enums
 // -----------------------------------------------------------------------------
@@ -113,6 +113,8 @@ var AuditAction;
     AuditAction["VIDEO_PATIENT_JOIN"] = "VIDEO_PATIENT_JOIN";
     AuditAction["VIDEO_CALL_END"] = "VIDEO_CALL_END";
     AuditAction["VIDEO_ROOM_CLEANUP"] = "VIDEO_ROOM_CLEANUP";
+    AuditAction["CALENDAR_CONNECT"] = "CALENDAR_CONNECT";
+    AuditAction["CALENDAR_DISCONNECT"] = "CALENDAR_DISCONNECT";
 })(AuditAction || (exports.AuditAction = AuditAction = {}));
 var GdprConsentType;
 (function (GdprConsentType) {
@@ -140,12 +142,16 @@ var AiFeature;
     AiFeature["EXERCISE"] = "exercise";
     AiFeature["CONTENT"] = "content";
 })(AiFeature || (exports.AiFeature = AiFeature = {}));
+var CalendarProvider;
+(function (CalendarProvider) {
+    CalendarProvider["GOOGLE"] = "google";
+})(CalendarProvider || (exports.CalendarProvider = CalendarProvider = {}));
 // Plan limits
 exports.PLAN_LIMITS = {
-    [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0 },
-    [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800 },
-    [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null }, // null/-1 = unlimited
-    [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null }, // -1 / null = illimité
+    [SubscriptionPlan.FREE]: { patients: null, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 30, documentsBytesMonthly: 0, calendarSync: false },
+    [SubscriptionPlan.STARTER]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: null, documentsBytesMonthly: 52428800, calendarSync: true },
+    [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null, calendarSync: true }, // null/-1 = unlimited
+    [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null, calendarSync: true }, // -1 / null = illimité
 };
 exports.PLAN_PRICES = {
     [SubscriptionPlan.FREE]: 0,
