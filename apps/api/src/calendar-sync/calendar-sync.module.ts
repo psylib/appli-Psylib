@@ -1,14 +1,13 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { CalendarSyncService } from './calendar-sync.service';
+import { CalendarSyncController } from './calendar-sync.controller';
 import { GoogleCalendarProvider } from './google-calendar.provider';
 import { CalendarSyncProcessor } from './calendar-sync.processor';
 import { CALENDAR_SYNC_QUEUE } from './calendar-sync.constants';
 import { CommonModule } from '../common/common.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { BillingModule } from '../billing/billing.module';
-
-// CalendarSyncController will be added when the controller file is created (Task 7)
 
 @Module({
   imports: [
@@ -25,6 +24,7 @@ import { BillingModule } from '../billing/billing.module';
     NotificationsModule,
     BillingModule,
   ],
+  controllers: [CalendarSyncController],
   providers: [
     CalendarSyncService,
     GoogleCalendarProvider,
