@@ -9,6 +9,7 @@ import { ReminderSettings } from '@/components/settings/reminder-settings';
 import { PaymentSettings } from '@/components/settings/payment-settings';
 import { VisioSettings } from '@/components/settings/visio-settings';
 import { InvoiceSettings } from '@/components/settings/invoice-settings';
+import { CalendarSyncSettings } from '@/components/settings/calendar-sync-settings';
 
 export const metadata: Metadata = {
   title: 'Cabinet',
@@ -43,6 +44,9 @@ export default async function PracticePage() {
 
       {/* Disponibilites — prise de RDV en ligne */}
       <AvailabilityManager token={token} />
+
+      {/* Synchronisation Google Calendar */}
+      <CalendarSyncSettings token={token} />
 
       {/* Rappels de rendez-vous */}
       <ReminderSettings token={token} />
