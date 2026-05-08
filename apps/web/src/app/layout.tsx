@@ -40,6 +40,9 @@ export const metadata: Metadata = {
       'fr-FR': 'https://psylib.eu',
     },
   },
+  verification: {
+    google: 'ISMAeTxcb6Vrb24Vp48cGSBCXi85fucll866a-500sk',
+  },
   manifest: '/manifest.json',
   icons: {
     icon: '/icon-192.png',
