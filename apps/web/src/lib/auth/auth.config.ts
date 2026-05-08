@@ -88,6 +88,30 @@ export const authConfig: NextAuthConfig = {
         }
       },
     }),
+
+    // Auth guardian — email/password via notre API NestJS
+    CredentialsProvider({
+      id: 'guardian-credentials',
+      name: 'Guardian',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Mot de passe', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+        try {
+          const apiUrl = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
+          const res = await fetch(`${apiUrl}/api/v1/guardian-portal/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: credentials.email, password: credentials.password }),
+          });
+          if (!res.ok) return null;
+          const data = (await res.json()) as { accessToken: string; userId: string; email: string };
+          return { id: data.userId, email: data.email, role: UserRole.GUARDIAN, accessToken: data.accessToken };
+        } catch { return null; }
+      },
+    }),
   ],
 
   callbacks: {
@@ -119,6 +143,14 @@ export const authConfig: NextAuthConfig = {
         token.role = UserRole.PATIENT;
         token.patientId = patientUser.patientId;
         token.accessToken = patientUser.accessToken;
+        return token;
+      }
+
+      // Guardian credentials login
+      if (account?.provider === 'guardian-credentials' && user) {
+        const guardianUser = user as typeof user & { accessToken: string; role: UserRole };
+        token.role = UserRole.GUARDIAN;
+        token.accessToken = guardianUser.accessToken;
         return token;
       }
 

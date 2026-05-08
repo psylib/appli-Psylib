@@ -31,11 +31,13 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     return nextWithPathname(req);
   }
 
-  // /forgot-password, /patient/login, /patient/accept-invitation — toujours accessible
+  // /forgot-password, /patient/login, /patient/accept-invitation, guardian pages — toujours accessible
   if (
     pathname === '/forgot-password' ||
     pathname === '/patient/login' ||
-    pathname === '/patient/accept-invitation'
+    pathname === '/patient/accept-invitation' ||
+    pathname.startsWith('/guardian-invite/') ||
+    pathname.startsWith('/guardian-consent/')
   ) {
     return nextWithPathname(req);
   }
@@ -44,7 +46,7 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
   if (pathname === '/login' || pathname === '/register') {
     if (isAuthenticated) {
       const role = session?.user?.role;
-      if (role === UserRole.PATIENT) {
+      if (role === UserRole.PATIENT || role === UserRole.GUARDIAN) {
         return NextResponse.redirect(new URL('/patient-portal', req.url));
       }
       return NextResponse.redirect(new URL('/dashboard', req.url));
@@ -73,15 +75,15 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
   // Protection RBAC — dashboard uniquement pour psychologist/admin
   if (pathname.startsWith('/dashboard')) {
     const role = session?.user?.role;
-    if (role === UserRole.PATIENT) {
+    if (role === UserRole.PATIENT || role === UserRole.GUARDIAN) {
       return NextResponse.redirect(new URL('/patient-portal', req.url));
     }
   }
 
-  // Protection RBAC — patient-portal uniquement pour patients
+  // Protection RBAC — patient-portal pour patients et guardians
   if (pathname.startsWith('/patient-portal')) {
     const role = session?.user?.role;
-    if (role === UserRole.PSYCHOLOGIST || role === UserRole.ADMIN) {
+    if (role !== UserRole.PATIENT && role !== UserRole.GUARDIAN) {
       return NextResponse.redirect(new URL('/dashboard', req.url));
     }
   }

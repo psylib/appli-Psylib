@@ -193,6 +193,7 @@ export interface Patient {
   notes: string | null; // chiffré en DB
   status: PatientStatus;
   source: string | null;
+  isMinor: boolean;
   createdAt: Date;
 }
 

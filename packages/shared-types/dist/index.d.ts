@@ -158,6 +158,7 @@ export interface Patient {
     notes: string | null;
     status: PatientStatus;
     source: string | null;
+    isMinor: boolean;
     createdAt: Date;
 }
 export interface Session {
