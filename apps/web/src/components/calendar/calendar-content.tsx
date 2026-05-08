@@ -110,6 +110,22 @@ export function CalendarContent() {
     enabled: !!session?.accessToken,
   });
 
+  const { data: externalEvents = [] } = useQuery({
+    queryKey: ['external-calendar-events', year, month],
+    queryFn: () =>
+      apiClient.get<Array<{
+        id: string;
+        title: string | null;
+        startAt: string;
+        endAt: string;
+        isAllDay: boolean;
+      }>>(
+        `/calendar-sync/external-events?from=${from}&to=${to}`,
+        session?.accessToken,
+      ),
+    enabled: !!session?.accessToken,
+  });
+
   const { data: pendingAppointments = [] } = useQuery({
     queryKey: ['appointments', 'pending'],
     queryFn: () => appointmentsApi.getPending(session?.accessToken ?? ''),
@@ -333,7 +349,7 @@ export function CalendarContent() {
                     >
                       {day}
                     </span>
-                    {hasAppts && (
+                    {(hasAppts || externalEvents.some(e => isSameDay(new Date(e.startAt), date))) && (
                       <div className="flex gap-0.5 mt-0.5 flex-wrap">
                         {dayAppts.slice(0, 3).map((appt) => (
                           <div
@@ -345,6 +361,17 @@ export function CalendarContent() {
                         {dayAppts.length > 3 && (
                           <span className="text-[9px] text-muted-foreground">+{dayAppts.length - 3}</span>
                         )}
+                        {/* External Google Calendar events */}
+                        {externalEvents
+                          .filter(e => isSameDay(new Date(e.startAt), date))
+                          .slice(0, 2)
+                          .map(e => (
+                            <div
+                              key={`ext-${e.id}`}
+                              className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0"
+                              title={`Google: ${e.title || 'Occupé'}`}
+                            />
+                          ))}
                       </div>
                     )}
                   </button>
@@ -382,7 +409,7 @@ export function CalendarContent() {
                 </div>
               ))}
             </div>
-          ) : selectedDateAppointments.length === 0 ? (
+          ) : selectedDateAppointments.length === 0 && externalEvents.filter(e => isSameDay(new Date(e.startAt), selectedDate)).length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-6 text-center">
               <Calendar size={24} className="text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">Pas de RDV ce jour</p>
@@ -512,6 +539,26 @@ export function CalendarContent() {
                     </div>
                   );
                 })}
+
+              {/* External Google Calendar events */}
+              {externalEvents
+                .filter(e => isSameDay(new Date(e.startAt), selectedDate))
+                .map(e => (
+                  <div key={`ext-detail-${e.id}`} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-dashed border-gray-200">
+                    <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-500 truncate">
+                        {e.title || 'Occupé'}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {e.isAllDay
+                          ? 'Toute la journée'
+                          : `${new Date(e.startAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(e.endAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-gray-400">Google</span>
+                  </div>
+                ))}
             </div>
           )}
 
