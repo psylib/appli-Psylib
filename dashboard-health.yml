@@ -1,0 +1,207 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic:
+      - img
+      - progressbar
+      - generic: Chargement de la Google Play Console en cours
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e9]:
+          - generic [ref=e10]: Pour publier des applis, terminez la configuration de votre compte de développeur
+          - link "Afficher les détails" [ref=e14] [cursor=pointer]:
+            - /url: /console/u/0/developers/7919314652629537895/app-list
+            - generic [ref=e17]: Afficher les détails
+        - generic [ref=e18]:
+          - link "Logo de la Google Play Console" [ref=e19] [cursor=pointer]:
+            - /url: /console/u/0/developers/7919314652629537895/app-list
+            - button "Logo de la Google Play Console" [ref=e20]
+          - generic [ref=e21]:
+            - button "Notifications non lues Ouvrir le centre de notifications" [ref=e57]:
+              - img [ref=e61]: notifications_unread
+              - generic [ref=e63]: Notifications non lues
+            - generic [ref=e22]:
+              - button "PsyLib — Cabinet psy" [ref=e71] [cursor=pointer]:
+                - generic [ref=e75]:
+                  - img [ref=e77]
+                  - generic [ref=e81]: PsyLib — Cabinet psy
+              - button "Changer de compte de développeur" [ref=e26] [cursor=pointer]:
+                - img "Changer de compte de développeur" [ref=e28]
+    - navigation [ref=e84]:
+      - link "Toutes les applications" [ref=e85] [cursor=pointer]:
+        - /url: /console/u/0/developers/7919314652629537895/app-list
+        - img [ref=e87]: keyboard_backspace
+        - generic [ref=e88]: Toutes les applications
+      - list [ref=e89]:
+        - listitem "Tableau de bord" [ref=e92]:
+          - button "Tableau de bord" [ref=e93] [cursor=pointer]:
+            - img [ref=e96]: dashboard
+            - generic [ref=e97]: Tableau de bord
+        - listitem "Statistiques" [ref=e100]:
+          - button "Statistiques" [ref=e101] [cursor=pointer]:
+            - img [ref=e104]: bar_chart
+            - generic [ref=e105]: Statistiques
+        - listitem "Vue d'ensemble de la publication" [ref=e108]:
+          - button "Vue d'ensemble de la publication" [ref=e109] [cursor=pointer]:
+            - img [ref=e112]: overview
+            - generic [ref=e113]: Vue d'ensemble de la publication
+        - listitem "Tester et publier" [ref=e116]:
+          - button "Tester et publier" [ref=e117] [cursor=pointer]:
+            - img [ref=e120]: rocket_launch
+            - generic [ref=e121]: Tester et publier
+        - listitem "Surveiller et améliorer" [ref=e124]:
+          - button "Surveiller et améliorer" [ref=e125] [cursor=pointer]:
+            - img [ref=e128]: vital_signs
+            - generic [ref=e129]: Surveiller et améliorer
+        - listitem "Accroître le nombre d'utilisateurs" [ref=e132]:
+          - button "Accroître le nombre d'utilisateurs" [ref=e133] [cursor=pointer]:
+            - img [ref=e136]: finance_mode
+            - generic [ref=e137]: Accroître le nombre d'utilisateurs
+        - listitem "Monétiser avec Play" [ref=e140]:
+          - button "Monétiser avec Play" [ref=e141] [cursor=pointer]:
+            - img [ref=e144]: sell
+            - generic [ref=e145]: Monétiser avec Play
+    - generic [ref=e34]:
+      - generic [ref=e149]:
+        - generic [ref=e156]:
+          - heading "Tableau de bord" [level=1] [ref=e162]
+          - generic [ref=e167]:
+            - text: Préparez-vous à publier votre appli.
+            - button "Voir plus de détails concernant Tableau de bord" [ref=e168] [cursor=pointer]: Afficher plus
+        - generic [ref=e173]:
+          - heading "Tests internes" [level=2] [ref=e182]
+          - generic [ref=e189]:
+            - img [ref=e191]
+            - generic [ref=e192]:
+              - generic [ref=e195]:
+                - heading "Partager rapidement votre appli dès maintenant pour les premiers contrôles qualité" [level=3] [ref=e201]
+                - generic [ref=e206]:
+                  - text: Avant de terminer la configuration de votre appli, vous pouvez distribuer rapidement des builds sur votre propre appareil ou auprès d'un petit groupe d'utilisateurs de confiance. Les builds sont normalement accessibles aux utilisateurs quelques secondes après leur ajout dans la Play Console. Cette étape est facultative, et vous devrez quand même exécuter un test fermé avant de mettre votre jeu à disposition de tous les utilisateurs.
+                  - link "En savoir plus" [ref=e207] [cursor=pointer]:
+                    - /url: https://support.google.com/googleplay/android-developer/answer/9845334
+              - generic [ref=e208]:
+                - button "Masquer 2 tâche(s) terminée(s) sur 3 pour Partager rapidement votre appli dès maintenant pour les premiers contrôles qualité" [expanded] [ref=e216]:
+                  - generic [ref=e219]: 2 tâches terminées sur 3
+                  - img [ref=e221]: expand_less
+                - generic [ref=e226]:
+                  - generic [ref=e231]:
+                    - img [ref=e235]: check
+                    - generic [ref=e237]: Sélectionner les testeurs
+                  - generic [ref=e240]:
+                    - generic [ref=e241]: Créer et déployer une release
+                    - generic [ref=e243]:
+                      - generic [ref=e245]:
+                        - img [ref=e250]: check
+                        - generic [ref=e252]: Créer une release
+                      - button "Prévisualiser et confirmer la version" [ref=e259] [cursor=pointer]:
+                        - generic [ref=e260]: Prévisualiser et confirmer la version
+                        - img [ref=e262]: chevron_right
+        - generic [ref=e264]:
+          - heading "Terminer la configuration de votre appli" [level=2] [ref=e273]
+          - generic [ref=e280]:
+            - img [ref=e282]
+            - generic [ref=e283]:
+              - generic [ref=e286]:
+                - heading "Fournir des informations sur l'appli et créer une fiche Play Store" [level=3] [ref=e292]
+                - generic [ref=e296]: Décrivez-nous le contenu de votre appli, et gérez son organisation et sa présentation sur Google Play
+              - generic [ref=e297]:
+                - button "Masquer 9 tâche(s) terminée(s) sur 11 pour Fournir des informations sur l'appli et créer une fiche Play Store" [expanded] [ref=e305]:
+                  - generic [ref=e308]: 9 tâches terminées sur 11
+                  - img [ref=e310]: expand_less
+                - generic [ref=e315]:
+                  - generic [ref=e316]:
+                    - generic [ref=e317]: Décrire le contenu de votre application
+                    - generic [ref=e319]:
+                      - generic [ref=e321]:
+                        - img [ref=e326]: check
+                        - generic [ref=e328]: Définir les règles de confidentialité
+                      - generic [ref=e330]:
+                        - img [ref=e335]: check
+                        - generic [ref=e337]: Accès aux applications
+                      - generic [ref=e339]:
+                        - img [ref=e344]: check
+                        - generic [ref=e346]: Annonces
+                      - generic [ref=e348]:
+                        - img [ref=e353]: check
+                        - generic [ref=e355]: Classification du contenu
+                      - generic [ref=e357]:
+                        - img [ref=e362]: check
+                        - generic [ref=e364]: Cible
+                      - generic [ref=e366]:
+                        - img [ref=e371]: check
+                        - generic [ref=e373]: Sécurité des données
+                      - generic [ref=e375]:
+                        - img [ref=e380]: check
+                        - generic [ref=e382]: Applis gouvernementales
+                      - generic [ref=e384]:
+                        - img [ref=e389]: check
+                        - generic [ref=e391]: Fonctionnalités financières
+                      - button "Santé" [ref=e399] [cursor=pointer]:
+                        - generic [ref=e400]: Santé
+                        - img [ref=e402]: chevron_right
+                  - generic [ref=e405]:
+                    - generic [ref=e406]: Gérer l'organisation et la présentation de votre application
+                    - generic [ref=e408]:
+                      - button "Sélectionner la catégorie de votre application et indiquer vos coordonnées" [ref=e416] [cursor=pointer]:
+                        - generic [ref=e417]: Sélectionner la catégorie de votre application et indiquer vos coordonnées
+                        - img [ref=e419]: chevron_right
+                      - generic [ref=e421]:
+                        - img [ref=e426]: check
+                        - generic [ref=e427]: Configurer une fiche Play Store
+        - generic [ref=e429]:
+          - heading "Tests fermés" [level=2] [ref=e438]
+          - generic [ref=e445]:
+            - img [ref=e447]
+            - generic [ref=e448]:
+              - generic [ref=e451]:
+                - heading "Identifier les problèmes de votre appli, recevoir des commentaires et obtenir l'accès en production" [level=3] [ref=e457]
+                - generic [ref=e462]:
+                  - text: Les tests fermés vous permettent de partager votre appli avec un large groupe d'utilisateurs que vous pouvez gérer. Vous pouvez ainsi identifier les problèmes, recevoir des commentaires et vous assurer que votre appli est prête pour le lancement. Vous devez exécuter un test fermé avant de pouvoir demander à publier votre appli en production (pour tous les utilisateurs).
+                  - link "En savoir plus" [ref=e463] [cursor=pointer]:
+                    - /url: https://support.google.com/googleplay/android-developer/answer/14151465
+              - generic [ref=e465]:
+                - generic [ref=e467]:
+                  - img [ref=e470]: lock
+                  - generic [ref=e471]: Pour lancer un test fermé, terminez la configuration de votre appli
+                - button "Afficher les tâches associées à l'objectif \"Identifier les problèmes de votre appli, recevoir des commentaires et obtenir l'accès en production\"" [ref=e474]:
+                  - generic [ref=e477]: Afficher les tâches
+                  - img [ref=e479]: expand_more
+        - generic [ref=e487]:
+          - heading "Production" [level=2] [ref=e496]
+          - generic [ref=e500]:
+            - generic [ref=e502]:
+              - img [ref=e504]
+              - generic [ref=e505]:
+                - generic [ref=e508]:
+                  - heading "Demander un accès en production" [level=3] [ref=e514]
+                  - generic [ref=e517]:
+                    - text: La production vous permet de mettre votre appli à la disposition de milliards d'utilisateurs sur Google Play. Avant de pouvoir demander un accès en production, vous devez exécuter un test fermé répondant à nos critères. Au moment d'envoyer votre demande, vous devrez aussi répondre à des questions sur ce test.
+                    - link "Prévisualiser les questions" [ref=e518] [cursor=pointer]:
+                      - /url: https://support.google.com/googleplay/android-developer/answer/14151465#production
+                - generic [ref=e522]:
+                  - generic [ref=e528]: Publier une version de test fermé
+                  - generic [ref=e535]:
+                    - text: Avoir au moins 12 testeurs inscrits à votre test fermé
+                    - emphasis [ref=e537]: 0 testeur actuellement inscrit
+                  - generic [ref=e543] [cursor=pointer]: Exécuter votre test fermé avec au moins 12 testeurs pour au moins 14 jours
+            - generic [ref=e545]:
+              - button "Demander à publier en production" [disabled] [ref=e546]:
+                - generic [ref=e549]: Demander à publier en production
+              - button "En savoir plus sur Production Access (s'ouvre dans un nouvel onglet)" [ref=e550]:
+                - generic [ref=e553]: En savoir plus
+      - generic [ref=e42]:
+        - generic [ref=e554]:
+          - link "Actualités du produit" [ref=e555] [cursor=pointer]:
+            - /url: https://play.google.com/console/about/whats-new/
+          - link "Tableau de bord d'état" [ref=e556] [cursor=pointer]:
+            - /url: https://status.play.google.com/
+          - link "Aide" [ref=e557] [cursor=pointer]:
+            - /url: /console/u/0/developers/7919314652629537895/help-and-support?app=4974653201022590628
+        - generic [ref=e558]:
+          - generic [ref=e559]: © 2026 Google
+          - link "Confidentialité" [ref=e560] [cursor=pointer]:
+            - /url: https://www.google.com/policies/privacy/
+          - link "Contrat relatif à la distribution (pour les développeurs)" [ref=e561] [cursor=pointer]:
+            - /url: https://play.google.com/about/developer-distribution-agreement.html
+          - link "Conditions d'utilisation" [ref=e562] [cursor=pointer]:
+            - /url: https://play.google.com/about/console/terms-of-service/

@@ -94,3 +94,6 @@ Nouveau dossier/
 # Root screenshots (debug captures)
 /*.png
 apps/mobile/*.png
+
+# Firecrawl research data
+.firecrawl/

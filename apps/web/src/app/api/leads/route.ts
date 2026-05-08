@@ -60,9 +60,11 @@ export async function POST(req: NextRequest) {
       console.warn(`[leads] API responded ${apiRes.status}`);
     }
 
-    // 2. Notifier par email à l'adresse admin via Resend
+    // 2. Envoyer email de bienvenue au lead avec lien d'inscription
     const resendApiKey = process.env['RESEND_API_KEY'];
     if (resendApiKey) {
+      const registerUrl = 'https://psylib.eu/register';
+
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -70,37 +72,83 @@ export async function POST(req: NextRequest) {
           Authorization: `Bearer ${resendApiKey}`,
         },
         body: JSON.stringify({
-          from: 'PsyLib Leads <noreply@psylib.eu>',
+          from: 'PsyLib <noreply@send.psylib.eu>',
+          to: [email],
+          subject: 'Bienvenue sur PsyLib — Votre plan Pro offert 6 mois',
+          html: `
+            <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; color: #1E1B4B;">
+              <div style="text-align: center; margin-bottom: 32px;">
+                <h1 style="font-size: 24px; font-weight: 700; color: #3D52A0; margin: 0;">PsyLib</h1>
+                <p style="color: #64748b; font-size: 14px; margin-top: 4px;">La plateforme tout-en-un pour psy lib&eacute;raux</p>
+              </div>
+              <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">Bonjour,</p>
+              <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
+                Merci pour votre int&eacute;r&ecirc;t pour PsyLib ! Pour vous remercier, nous vous offrons le <strong style="color: #3D52A0;">plan Pro gratuitement pendant 6 mois</strong>.
+              </p>
+              <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 16px;">
+                Le plan Pro inclut : patients illimit&eacute;s, s&eacute;ances illimit&eacute;es, r&eacute;sum&eacute;s IA illimit&eacute;s, AI Scribe audio, portail patient, visio, comptabilit&eacute; int&eacute;gr&eacute;e.
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
+                Cr&eacute;ez votre compte en un clic :
+              </p>
+              <div style="text-align: center; margin: 32px 0;">
+                <a href="${registerUrl}" style="display: inline-block; background-color: #3D52A0; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 14px 32px; border-radius: 8px;">
+                  Cr&eacute;er mon compte
+                </a>
+              </div>
+              <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 24px;">
+                Une question ? R&eacute;pondez directement &agrave; cet email ou contactez-moi &agrave; <a href="mailto:tony@psylib.eu" style="color: #3D52A0;">tony@psylib.eu</a>.
+              </p>
+              <p style="font-size: 14px; line-height: 1.6; color: #64748b;">Tony &mdash; Fondateur PsyLib</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+              <p style="font-size: 12px; color: #94a3b8; text-align: center;">
+                PsyLib &mdash; H&eacute;berg&eacute; en France (HDS) &mdash; Donn&eacute;es de sant&eacute; prot&eacute;g&eacute;es
+              </p>
+            </div>
+          `,
+          reply_to: 'tony@psylib.eu',
+        }),
+      }).catch((err) => console.error('[leads] Resend welcome email error:', err));
+
+      // 3. Notifier l'admin
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: 'PsyLib Leads <noreply@send.psylib.eu>',
           to: ['tony@psylib.eu'],
-          subject: `🔔 Nouveau lead PsyLib — ${email}`,
+          subject: `Nouveau lead PsyLib — ${email}`,
           html: `
             <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
-              <h2 style="color: #7B9E87; margin-bottom: 8px;">Nouveau lead landing PsyLib</h2>
-              <p style="color: #666; margin-bottom: 16px;">Un nouveau visiteur vient de s'inscrire.</p>
+              <h2 style="color: #3D52A0; margin-bottom: 8px;">Nouveau lead PsyLib</h2>
+              <p style="color: #666; margin-bottom: 16px;">Un email de bienvenue avec lien d&apos;inscription a &eacute;t&eacute; envoy&eacute; automatiquement.</p>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 8px 12px; background: #f7f3ee; font-weight: 600; width: 100px; border-radius: 4px 0 0 4px;">Email</td>
-                  <td style="padding: 8px 12px; background: #fdfaf7; border-radius: 0 4px 4px 0;"><a href="mailto:${email}">${email}</a></td>
+                  <td style="padding: 8px 12px; background: #f1f0f9; font-weight: 600; width: 100px;">Email</td>
+                  <td style="padding: 8px 12px; background: #f8f7ff;"><a href="mailto:${email}">${email}</a></td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 12px; background: #f7f3ee; font-weight: 600; border-radius: 4px 0 0 4px; margin-top: 4px;">Source</td>
-                  <td style="padding: 8px 12px; background: #fdfaf7; border-radius: 0 4px 4px 0;">landing_beta</td>
+                  <td style="padding: 8px 12px; background: #f1f0f9; font-weight: 600;">Source</td>
+                  <td style="padding: 8px 12px; background: #f8f7ff;">landing_beta</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 12px; background: #f7f3ee; font-weight: 600; border-radius: 4px 0 0 4px;">IP</td>
-                  <td style="padding: 8px 12px; background: #fdfaf7; border-radius: 0 4px 4px 0;">${ip}</td>
+                  <td style="padding: 8px 12px; background: #f1f0f9; font-weight: 600;">IP</td>
+                  <td style="padding: 8px 12px; background: #f8f7ff;">${ip}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 12px; background: #f7f3ee; font-weight: 600; border-radius: 4px 0 0 4px;">Date</td>
-                  <td style="padding: 8px 12px; background: #fdfaf7; border-radius: 0 4px 4px 0;">${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</td>
+                  <td style="padding: 8px 12px; background: #f1f0f9; font-weight: 600;">Date</td>
+                  <td style="padding: 8px 12px; background: #f8f7ff;">${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}</td>
                 </tr>
               </table>
             </div>
           `,
         }),
-      }).catch((err) => console.error('[leads] Resend notification error:', err));
+      }).catch((err) => console.error('[leads] Resend admin notification error:', err));
     } else {
-      console.warn('[leads] RESEND_API_KEY non configuré — notification email désactivée');
+      console.warn('[leads] RESEND_API_KEY non configuré — emails désactivés');
     }
 
     rateLimitMap.set(ip, Date.now());
