@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../common/prisma.service';
 import { AuditService } from '../common/audit.service';
 import { EmailService } from '../notifications/email.service';
@@ -35,6 +36,7 @@ export class AppointmentsService {
     private readonly invoicesService: InvoicesService,
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(userId: string, dto: CreateAppointmentDto): Promise<Appointment & { checkoutUrl?: string }> {
@@ -73,6 +75,17 @@ export class AppointmentsService {
         paymentAmount: hasPayment ? dto.paymentAmount : null,
         bookingPaymentStatus: paymentMode === 'prepayment' && hasPayment ? 'pending_payment' : 'none',
       },
+    });
+
+    this.eventEmitter.emit('appointment.created', {
+      psychologistId: psy.id,
+      appointmentId: appointment.id,
+      patientId: appointment.patientId,
+      scheduledAt: appointment.scheduledAt,
+      duration: appointment.duration,
+      consultationTypeId: appointment.consultationTypeId ?? undefined,
+      isOnline: appointment.isOnline,
+      status: appointment.status,
     });
 
     // --- Prepayment flow: send link immediately ---
@@ -227,6 +240,17 @@ export class AppointmentsService {
       data: updateData,
     });
 
+    this.eventEmitter.emit('appointment.updated', {
+      psychologistId: updated.psychologistId,
+      appointmentId: updated.id,
+      patientId: updated.patientId,
+      scheduledAt: updated.scheduledAt,
+      duration: updated.duration,
+      consultationTypeId: updated.consultationTypeId ?? undefined,
+      isOnline: updated.isOnline,
+      status: updated.status,
+    });
+
     // If status changed to no_show, check if no-show billing is enabled
     if (dto.status === 'no_show' && existing.status !== 'no_show') {
       void this.handleNoShowBilling(psy.id, existing, userId);
@@ -250,6 +274,17 @@ export class AppointmentsService {
         cancelledBy: 'psychologist',
         ...(dto?.cancellationReason && { cancellationReason: dto.cancellationReason }),
       },
+    });
+
+    this.eventEmitter.emit('appointment.cancelled', {
+      psychologistId: cancelled.psychologistId,
+      appointmentId: cancelled.id,
+      patientId: cancelled.patientId,
+      scheduledAt: cancelled.scheduledAt,
+      duration: cancelled.duration,
+      consultationTypeId: cancelled.consultationTypeId ?? undefined,
+      isOnline: cancelled.isOnline,
+      status: 'cancelled',
     });
 
     // Notify psy about waitlist candidates when a slot is freed
@@ -427,6 +462,17 @@ export class AppointmentsService {
         cancelledBy: 'patient',
         ...(cancellationReason && { cancellationReason }),
       },
+    });
+
+    this.eventEmitter.emit('appointment.cancelled', {
+      psychologistId: appointment.psychologist.id,
+      appointmentId: appointment.id,
+      patientId: appointment.patient.id,
+      scheduledAt: appointment.scheduledAt,
+      duration: appointment.duration,
+      consultationTypeId: appointment.consultationTypeId ?? undefined,
+      isOnline: appointment.isOnline,
+      status: 'cancelled',
     });
 
     let refunded = false;
@@ -650,6 +696,17 @@ export class AppointmentsService {
         primaryPatientId: dto.patientId,
         participantIds: dto.participantIds,
       },
+    });
+
+    this.eventEmitter.emit('appointment.created', {
+      psychologistId: psy.id,
+      appointmentId: appointment.id,
+      patientId: appointment.patientId,
+      scheduledAt: appointment.scheduledAt,
+      duration: appointment.duration,
+      consultationTypeId: appointment.consultationTypeId ?? undefined,
+      isOnline: appointment.isOnline,
+      status: appointment.status,
     });
 
     return {
