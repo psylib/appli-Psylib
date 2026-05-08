@@ -22,6 +22,7 @@ enum UserRole {
   psychologist
   patient
   admin
+  guardian
 }
 
 enum SubscriptionPlan {
@@ -214,6 +215,38 @@ enum AccountingEntryType {
   expense
 }
 
+enum GuardianRelationship {
+  mother
+  father
+  legal_guardian
+  other
+
+  @@map("guardian_relationship")
+}
+
+enum GuardianInvitationStatus {
+  pending
+  accepted
+  expired
+
+  @@map("guardian_invitation_status")
+}
+
+enum GuardianConsentRequestStatus {
+  pending
+  approved
+  refused
+
+  @@map("guardian_consent_request_status")
+}
+
+enum ConsentGivenBy {
+  patient
+  guardian
+
+  @@map("consent_given_by")
+}
+
 // =============================================================================
 // Core Tables
 // =============================================================================
@@ -239,6 +272,7 @@ model User {
   notifications     Notification[]
   courseEnrollments CourseEnrollment[]
   sentMessages      Message[]          @relation("MessageSender")
+  guardianRecords   LegalGuardian[]
 
   @@map("users")
 }
@@ -259,7 +293,7 @@ model Psychologist {
   createdAt              DateTime @default(now()) @map("created_at")
 
   // Relations
-  user                     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                     User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   subscription             Subscription?
   patients                 Patient[]
   sessions                 Session[]
@@ -275,28 +309,28 @@ model Psychologist {
   assessments              Assessment[]
   noteTemplates            NoteTemplate[]
   networkProfile           PsyNetworkProfile?
-  referralsSent            Referral[]              @relation("ReferralFrom")
-  referralsReceived        Referral[]              @relation("ReferralTo")
-  networkGroups            NetworkGroup[]          @relation("NetworkGroupOwner")
-  groupMemberships         NetworkGroupMember[]    @relation("NetworkGroupMembership")
-  supervisionGroups        SupervisionGroup[]      @relation("SupervisionGroupOwner")
-  supervisionMemberships   SupervisionMember[]     @relation("SupervisionMembership")
-  caseStudies              CaseStudy[]             @relation("CaseStudyPresenter")
+  referralsSent            Referral[]               @relation("ReferralFrom")
+  referralsReceived        Referral[]               @relation("ReferralTo")
+  networkGroups            NetworkGroup[]           @relation("NetworkGroupOwner")
+  groupMemberships         NetworkGroupMember[]     @relation("NetworkGroupMembership")
+  supervisionGroups        SupervisionGroup[]       @relation("SupervisionGroupOwner")
+  supervisionMemberships   SupervisionMember[]      @relation("SupervisionMembership")
+  caseStudies              CaseStudy[]              @relation("CaseStudyPresenter")
   availability             Availability[]
-  referralInvitesSent      ReferralInvite[]        @relation("InviteFrom")
-  referralInviteReceived   ReferralInvite?         @relation("InviteTo")
-  allowOnlinePayment       Boolean                 @default(false) @map("allow_online_payment")
-  stripeAccountId          String?                 @unique @map("stripe_account_id")
-  stripeOnboardingComplete Boolean                 @default(false) @map("stripe_onboarding_complete")
-  paymentMode              PaymentMode             @default(both) @map("payment_mode")
-  cancellationDelay        Int                     @default(24) @map("cancellation_delay")
-  autoRefund               Boolean                 @default(true) @map("auto_refund")
-  autoInvoice              Boolean                 @default(true) @map("auto_invoice")
-  autoInvoiceEmail         Boolean                 @default(true) @map("auto_invoice_email")
-  reminderDelay            Int                     @default(24) @map("reminder_delay")
-  reminderSmsEnabled       Boolean                 @default(false) @map("reminder_sms_enabled")
-  reminderEmailEnabled     Boolean                 @default(true) @map("reminder_email_enabled")
-  reminderTemplate         String?                 @map("reminder_template")
+  referralInvitesSent      ReferralInvite[]         @relation("InviteFrom")
+  referralInviteReceived   ReferralInvite?          @relation("InviteTo")
+  allowOnlinePayment       Boolean                  @default(false) @map("allow_online_payment")
+  stripeAccountId          String?                  @unique @map("stripe_account_id")
+  stripeOnboardingComplete Boolean                  @default(false) @map("stripe_onboarding_complete")
+  paymentMode              PaymentMode              @default(both) @map("payment_mode")
+  cancellationDelay        Int                      @default(24) @map("cancellation_delay")
+  autoRefund               Boolean                  @default(true) @map("auto_refund")
+  autoInvoice              Boolean                  @default(true) @map("auto_invoice")
+  autoInvoiceEmail         Boolean                  @default(true) @map("auto_invoice_email")
+  reminderDelay            Int                      @default(24) @map("reminder_delay")
+  reminderSmsEnabled       Boolean                  @default(false) @map("reminder_sms_enabled")
+  reminderEmailEnabled     Boolean                  @default(true) @map("reminder_email_enabled")
+  reminderTemplate         String?                  @map("reminder_template")
   consultationTypes        ConsultationType[]
   monSoutienPsyTrackings   MonSoutienPsyTracking[]
   waitlistEntries          WaitlistEntry[]
@@ -306,6 +340,9 @@ model Psychologist {
   accountingEntries        AccountingEntry[]
   fecSequences             FecSequence[]
   sharedDocuments          SharedDocument[]
+  guardians                LegalGuardian[]
+  guardianInvitations      GuardianInvitation[]
+  guardianConsentRequests  GuardianConsentRequest[]
 
   @@map("psychologists")
 }
@@ -419,28 +456,99 @@ model Patient {
   notes          String? // ENCRYPTED — AES-256-GCM
   status         PatientStatus @default(active)
   source         String?
+  isMinor        Boolean       @default(false) @map("is_minor")
   createdAt      DateTime      @default(now()) @map("created_at")
 
   // Relations
-  psychologist           Psychologist            @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  user                   User?                   @relation("UserPatient", fields: [userId], references: [id], onDelete: SetNull)
-  sessions               Session[]
-  appointments           Appointment[]
-  moodTrackings          MoodTracking[]
-  exercises              Exercise[]
-  journalEntries         JournalEntry[]
-  conversations          Conversation[]
-  gdprConsents           GdprConsent[]
-  invitations            PatientInvitation[]
-  payments               Payment[]
-  invoices               Invoice[]
-  assessments            Assessment[]
-  monSoutienPsyTrackings MonSoutienPsyTracking[]
+  psychologist              Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  user                      User?                    @relation("UserPatient", fields: [userId], references: [id], onDelete: SetNull)
+  sessions                  Session[]
+  appointments              Appointment[]
+  moodTrackings             MoodTracking[]
+  exercises                 Exercise[]
+  journalEntries            JournalEntry[]
+  conversations             Conversation[]
+  gdprConsents              GdprConsent[]
+  invitations               PatientInvitation[]
+  payments                  Payment[]
+  invoices                  Invoice[]
+  assessments               Assessment[]
+  monSoutienPsyTrackings    MonSoutienPsyTracking[]
   appointmentParticipations AppointmentParticipant[]
   sharedDocuments           SharedDocument[]
+  guardians                 LegalGuardian[]
+  guardianConsentRequests   GuardianConsentRequest[]
 
   @@index([psychologistId], name: "idx_patients_psychologist")
   @@map("patients")
+}
+
+model LegalGuardian {
+  id             String               @id @default(uuid())
+  patientId      String               @map("patient_id")
+  userId         String?              @map("user_id")
+  psychologistId String               @map("psychologist_id")
+  name           String
+  email          String
+  phone          String?
+  relationship   GuardianRelationship
+  isPrimary      Boolean              @default(false) @map("is_primary")
+  permissions    Json                 @default("{\"portal\":true,\"invoices\":true,\"video\":false,\"documents\":true,\"messaging\":false}")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  patient         Patient                  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  user            User?                    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  psychologist    Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  invitations     GuardianInvitation[]
+  consentRequests GuardianConsentRequest[]
+  gdprConsents    GdprConsent[]
+
+  @@unique([patientId, email])
+  @@index([patientId], name: "idx_legal_guardians_patient")
+  @@index([userId], name: "idx_legal_guardians_user")
+  @@index([psychologistId], name: "idx_legal_guardians_psy")
+  @@map("legal_guardians")
+}
+
+model GuardianInvitation {
+  id             String                   @id @default(uuid())
+  psychologistId String                   @map("psychologist_id")
+  guardianId     String                   @map("guardian_id")
+  email          String
+  token          String                   @unique
+  status         GuardianInvitationStatus @default(pending)
+  expiresAt      DateTime                 @map("expires_at")
+  createdAt      DateTime                 @default(now()) @map("created_at")
+
+  psychologist Psychologist  @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  guardian     LegalGuardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+
+  @@index([token], name: "idx_guardian_invitations_token")
+  @@index([guardianId], name: "idx_guardian_invitations_guardian")
+  @@map("guardian_invitations")
+}
+
+model GuardianConsentRequest {
+  id             String                       @id @default(uuid())
+  psychologistId String                       @map("psychologist_id")
+  guardianId     String                       @map("guardian_id")
+  patientId      String                       @map("patient_id")
+  consentType    String                       @map("consent_type")
+  token          String                       @unique
+  status         GuardianConsentRequestStatus @default(pending)
+  expiresAt      DateTime                     @map("expires_at")
+  respondedAt    DateTime?                    @map("responded_at")
+  ipAddress      String?                      @map("ip_address")
+  createdAt      DateTime                     @default(now()) @map("created_at")
+
+  psychologist Psychologist  @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  guardian     LegalGuardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([token], name: "idx_guardian_consent_requests_token")
+  @@index([guardianId, patientId], name: "idx_guardian_consent_req_guardian_patient")
+  @@map("guardian_consent_requests")
 }
 
 model Session {
@@ -583,33 +691,33 @@ model NetworkGroupMember {
 }
 
 model Appointment {
-  id                   String               @id @default(uuid())
-  psychologistId       String               @map("psychologist_id")
-  patientId            String               @map("patient_id")
-  sessionId            String?              @unique @map("session_id")
-  scheduledAt          DateTime             @map("scheduled_at")
+  id                   String                 @id @default(uuid())
+  psychologistId       String                 @map("psychologist_id")
+  patientId            String                 @map("patient_id")
+  sessionId            String?                @unique @map("session_id")
+  scheduledAt          DateTime               @map("scheduled_at")
   duration             Int // minutes
-  status               AppointmentStatus    @default(scheduled)
-  reminderSentAt       DateTime?            @map("reminder_sent_at")
-  smsReminderSentAt    DateTime?            @map("sms_reminder_sent_at")
+  status               AppointmentStatus      @default(scheduled)
+  reminderSentAt       DateTime?              @map("reminder_sent_at")
+  smsReminderSentAt    DateTime?              @map("sms_reminder_sent_at")
   reason               String? // motif de consultation
-  source               String               @default("internal") // "internal" | "public"
-  cancelToken          String?              @unique @map("cancel_token")
-  consultationTypeId   String?              @map("consultation_type_id")
-  paymentIntentId      String?              @map("payment_intent_id")
-  paymentAmount        Decimal?             @map("payment_amount") @db.Decimal(10, 2)
+  source               String                 @default("internal") // "internal" | "public"
+  cancelToken          String?                @unique @map("cancel_token")
+  consultationTypeId   String?                @map("consultation_type_id")
+  paymentIntentId      String?                @map("payment_intent_id")
+  paymentAmount        Decimal?               @map("payment_amount") @db.Decimal(10, 2)
   paymentMode          AppointmentPaymentMode @default(none) @map("payment_mode")
-  paidOnline           Boolean              @default(false) @map("paid_online")
-  bookingPaymentStatus BookingPaymentStatus @default(none) @map("booking_payment_status")
-  isOnline             Boolean              @default(false) @map("is_online")
-  videoJoinToken       String?              @unique @map("video_join_token")
-  videoLinkSentAt      DateTime?            @map("video_link_sent_at")
-  createdAt            DateTime             @default(now()) @map("created_at")
+  paidOnline           Boolean                @default(false) @map("paid_online")
+  bookingPaymentStatus BookingPaymentStatus   @default(none) @map("booking_payment_status")
+  isOnline             Boolean                @default(false) @map("is_online")
+  videoJoinToken       String?                @unique @map("video_join_token")
+  videoLinkSentAt      DateTime?              @map("video_link_sent_at")
+  createdAt            DateTime               @default(now()) @map("created_at")
 
-  psychologist     Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  session          Session?          @relation(fields: [sessionId], references: [id], onDelete: SetNull)
-  consultationType ConsultationType? @relation(fields: [consultationTypeId], references: [id], onDelete: SetNull)
+  psychologist     Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient          Patient                  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  session          Session?                 @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  consultationType ConsultationType?        @relation(fields: [consultationTypeId], references: [id], onDelete: SetNull)
   payments         Payment[]
   videoRoom        VideoRoom?
   participants     AppointmentParticipant[]
@@ -793,12 +901,12 @@ model CourseEnrollment {
 // =============================================================================
 
 model Payment {
-  id                    String        @id @default(uuid())
-  psychologistId        String        @map("psychologist_id")
-  patientId             String?       @map("patient_id")
-  type                  PaymentType
-  amount                Decimal       @db.Decimal(10, 2)
-  status                PaymentStatus @default(pending)
+  id                      String        @id @default(uuid())
+  psychologistId          String        @map("psychologist_id")
+  patientId               String?       @map("patient_id")
+  type                    PaymentType
+  amount                  Decimal       @db.Decimal(10, 2)
+  status                  PaymentStatus @default(pending)
   stripePaymentIntentId   String?       @map("stripe_payment_intent_id")
   stripeCheckoutSessionId String?       @unique @map("stripe_checkout_session_id")
   invoiceUrl              String?       @map("invoice_url")
@@ -875,15 +983,19 @@ model AuditLog {
 }
 
 model GdprConsent {
-  id          String    @id @default(uuid())
-  patientId   String    @map("patient_id")
-  type        String
-  version     String
-  consentedAt DateTime  @default(now()) @map("consented_at")
-  withdrawnAt DateTime? @map("withdrawn_at")
-  ipAddress   String?   @map("ip_address")
+  id             String         @id @default(uuid())
+  patientId      String         @map("patient_id")
+  type           String
+  version        String
+  consentedAt    DateTime       @default(now()) @map("consented_at")
+  withdrawnAt    DateTime?      @map("withdrawn_at")
+  ipAddress      String?        @map("ip_address")
+  consentGivenBy ConsentGivenBy @default(patient) @map("consent_given_by")
+  guardianId     String?        @map("guardian_id")
+  refusedAt      DateTime?      @map("refused_at")
 
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient  Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  guardian LegalGuardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
 
   @@index([patientId], name: "idx_gdpr_consents_patient")
   @@map("gdpr_consents")
@@ -1132,7 +1244,7 @@ model Expense {
   receiptUrl         String?              @map("receipt_url")
   recurringExpenseId String?              @map("recurring_expense_id")
   recurringExpense   RecurringExpense?    @relation(fields: [recurringExpenseId], references: [id], onDelete: SetNull)
-  notes              String?              // ENCRYPTED — AES-256-GCM
+  notes              String? // ENCRYPTED — AES-256-GCM
   isDeductible       Boolean              @default(true) @map("is_deductible")
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
@@ -1156,10 +1268,10 @@ model RecurringExpense {
   supplier        String?
   frequency       RecurringFrequency
   dayOfMonth      Int                  @default(1) @map("day_of_month")
-  startDate       DateTime             @db.Date @map("start_date")
-  endDate         DateTime?            @db.Date @map("end_date")
+  startDate       DateTime             @map("start_date") @db.Date
+  endDate         DateTime?            @map("end_date") @db.Date
   isActive        Boolean              @default(true) @map("is_active")
-  lastGeneratedAt DateTime?            @db.Date @map("last_generated_at")
+  lastGeneratedAt DateTime?            @map("last_generated_at") @db.Date
   createdAt       DateTime             @default(now()) @map("created_at")
   updatedAt       DateTime             @updatedAt @map("updated_at")
 
@@ -1206,10 +1318,10 @@ model AccountingEntry {
 }
 
 model FecSequence {
-  id             String       @id @default(uuid())
-  psychologistId String       @map("psychologist_id")
+  id             String @id @default(uuid())
+  psychologistId String @map("psychologist_id")
   year           Int
-  lastNumber     Int          @default(0) @map("last_number")
+  lastNumber     Int    @default(0) @map("last_number")
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 
@@ -1250,7 +1362,7 @@ model SharedDocument {
   fileSize       Int              @map("file_size")
   mimeType       String           @map("mime_type")
   category       DocumentCategory
-  message        String?          // ENCRYPTED — AES-256-GCM
+  message        String? // ENCRYPTED — AES-256-GCM
   downloadedAt   DateTime?        @map("downloaded_at")
   deletedAt      DateTime?        @map("deleted_at")
   createdAt      DateTime         @default(now()) @map("created_at")
