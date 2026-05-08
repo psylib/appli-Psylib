@@ -2,10 +2,11 @@
 
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { CreditCard, ArrowRight, Sparkles } from 'lucide-react';
+import { CreditCard, ArrowRight, Sparkles, UserX } from 'lucide-react';
 import { useSubscription } from '@/hooks/use-subscription';
 import { ConnectOnboardingCard } from '@/components/billing/connect-onboarding-card';
 import { PaymentSettingsForm } from '@/components/billing/payment-settings-form';
+import { NoShowBillingSettings } from '@/components/billing/no-show-billing-settings';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -78,6 +79,14 @@ function PaymentsSettingsContent() {
           Configuration
         </h2>
         <PaymentSettingsForm />
+      </section>
+
+      <section aria-labelledby="noshow-title">
+        <h2 id="noshow-title" className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+          <UserX size={14} aria-hidden />
+          Absences
+        </h2>
+        <NoShowBillingSettings />
       </section>
     </div>
   );

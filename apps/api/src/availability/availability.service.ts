@@ -80,6 +80,13 @@ export class AvailabilityService {
 
     if (slots.length === 0) return [];
 
+    // Récupère le minBreakMinutes du psychologue (pause minimale entre RDV)
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { id: psychologistId },
+      select: { minBreakMinutes: true },
+    });
+    const minBreak = psy?.minBreakMinutes ?? 0;
+
     // Récupère les RDV existants sur la période
     const existingAppointments = await this.prisma.appointment.findMany({
       where: {
@@ -115,13 +122,15 @@ export class AvailabilityService {
         const cursor = new Date(slotStart);
         while (cursor.getTime() + sessionDuration * 60000 <= slotEnd.getTime()) {
           const slotTime = new Date(cursor);
-          // Vérifie qu'aucun RDV n'est à ce moment
+          // Vérifie qu'aucun RDV n'est à ce moment (avec buffer de pause si configuré)
           const hasConflict = existingAppointments.some((appt) => {
             const apptStart = new Date(appt.scheduledAt).getTime();
             const apptEnd = apptStart + appt.duration * 60000;
+            // Étend la fenêtre occupée par la pause minimale entre RDV
+            const occupiedEnd = minBreak > 0 ? apptEnd + minBreak * 60000 : apptEnd;
             const newStart = slotTime.getTime();
             const newEnd = newStart + sessionDuration * 60000;
-            return newStart < apptEnd && newEnd > apptStart;
+            return newStart < occupiedEnd && newEnd > apptStart;
           });
 
           if (!hasConflict && slotTime > new Date()) {

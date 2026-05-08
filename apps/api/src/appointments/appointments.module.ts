@@ -5,12 +5,14 @@ import { AppointmentsService } from './appointments.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { WaitlistModule } from '../waitlist/waitlist.module';
 import { BillingModule } from '../billing/billing.module';
+import { InvoicesModule } from '../invoices/invoices.module';
 
 @Module({
   imports: [
     NotificationsModule,
     forwardRef(() => WaitlistModule),
     forwardRef(() => BillingModule),
+    forwardRef(() => InvoicesModule),
   ],
   controllers: [AppointmentsController, AppointmentCancelController],
   providers: [AppointmentsService],

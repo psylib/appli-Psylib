@@ -13,11 +13,16 @@ import {
   Loader2,
   X,
   Save,
+  MapPin,
+  Video,
+  Home,
+  Globe,
 } from 'lucide-react';
 import {
   consultationTypesApi,
   type ConsultationType,
   type CreateConsultationTypeData,
+  type ConsultationModalityValue,
 } from '@/lib/api/consultation-types';
 
 const PRESET_COLORS = [
@@ -33,6 +38,20 @@ const PRESET_COLORS = [
   '#F97316',
 ];
 
+const MODALITY_OPTIONS: { value: ConsultationModalityValue; label: string; icon: typeof MapPin }[] = [
+  { value: 'any', label: 'Toutes modalites', icon: Globe },
+  { value: 'in_person', label: 'En cabinet', icon: MapPin },
+  { value: 'online', label: 'En ligne (visio)', icon: Video },
+  { value: 'home_visit', label: 'A domicile', icon: Home },
+];
+
+const PAYMENT_MODE_OPTIONS = [
+  { value: '', label: 'Heriter des parametres generaux' },
+  { value: 'online', label: 'Paiement en ligne uniquement' },
+  { value: 'on_site', label: 'Paiement sur place uniquement' },
+  { value: 'both', label: 'En ligne et sur place' },
+];
+
 interface FormState {
   name: string;
   duration: number;
@@ -40,6 +59,11 @@ interface FormState {
   color: string;
   category: 'standard' | 'mon_soutien_psy';
   isPublic: boolean;
+  modality: ConsultationModalityValue;
+  location: string;
+  instructions: string;
+  allowedPaymentModes: string;
+  cancellationDelay: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -49,6 +73,11 @@ const EMPTY_FORM: FormState = {
   color: '#3D52A0',
   category: 'standard',
   isPublic: true,
+  modality: 'any',
+  location: '',
+  instructions: '',
+  allowedPaymentModes: '',
+  cancellationDelay: '',
 };
 
 export function ConsultationTypesSettings({ token: tokenProp }: { token?: string }) {
@@ -97,6 +126,11 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
       color: ct.color,
       category: ct.category,
       isPublic: ct.isPublic,
+      modality: ct.modality || 'any',
+      location: ct.location || '',
+      instructions: ct.instructions || '',
+      allowedPaymentModes: ct.allowedPaymentModes || '',
+      cancellationDelay: ct.cancellationDelay != null ? String(ct.cancellationDelay) : '',
     });
     setEditingId(ct.id);
     setShowForm(true);
@@ -107,27 +141,29 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
     if (!token || !form.name.trim()) return;
 
     setSaving(true);
+    const payload: CreateConsultationTypeData = {
+      name: form.name,
+      duration: form.duration,
+      rate: form.rate,
+      color: form.color,
+      category: form.category,
+      isPublic: form.isPublic,
+      modality: form.modality,
+      location: form.location || undefined,
+      instructions: form.instructions || undefined,
+      allowedPaymentModes: form.allowedPaymentModes || undefined,
+      cancellationDelay: form.cancellationDelay ? parseInt(form.cancellationDelay) : undefined,
+    };
     try {
       if (editingId) {
         await consultationTypesApi.update(editingId, {
-          name: form.name,
-          duration: form.duration,
-          rate: form.rate,
-          color: form.color,
-          category: form.category,
-          isPublic: form.isPublic,
+          ...payload,
+          cancellationDelay: form.cancellationDelay ? parseInt(form.cancellationDelay) : null,
+          allowedPaymentModes: form.allowedPaymentModes || null,
         }, token);
         success('Type de consultation modifie.');
       } else {
-        const data: CreateConsultationTypeData = {
-          name: form.name,
-          duration: form.duration,
-          rate: form.rate,
-          color: form.color,
-          category: form.category,
-          isPublic: form.isPublic,
-        };
-        await consultationTypesApi.create(data, token);
+        await consultationTypesApi.create(payload, token);
         success('Type de consultation cree.');
       }
       resetForm();
@@ -325,6 +361,108 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
                     Visible sur la page de prise de RDV publique
                   </span>
                 </div>
+
+                {/* Separator */}
+                <div className="border-t border-border pt-3 mt-1">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                    Parametres avances
+                  </p>
+                </div>
+
+                {/* Modality */}
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
+                    Modalite
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MODALITY_OPTIONS.map((opt) => {
+                      const Icon = opt.icon;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setForm((prev) => ({ ...prev, modality: opt.value }))}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                            form.modality === opt.value
+                              ? 'border-primary bg-primary/5 text-primary font-medium'
+                              : 'border-border bg-white text-muted-foreground hover:border-primary/30'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Location (shown for in_person and home_visit) */}
+                {(form.modality === 'in_person' || form.modality === 'home_visit' || form.modality === 'any') && (
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
+                      Lieu (optionnel)
+                    </label>
+                    <input
+                      type="text"
+                      value={form.location}
+                      onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+                      placeholder="Ex: Cabinet 12 rue de la Paix, Nancy"
+                      className="w-full px-3 py-2 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    />
+                  </div>
+                )}
+
+                {/* Instructions */}
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
+                    Consignes pour le patient (optionnel)
+                  </label>
+                  <textarea
+                    value={form.instructions}
+                    onChange={(e) => setForm((prev) => ({ ...prev, instructions: e.target.value }))}
+                    placeholder="Ex: Merci d'arriver 10 minutes avant votre rendez-vous."
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Payment modes */}
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
+                      Moyens de paiement
+                    </label>
+                    <select
+                      value={form.allowedPaymentModes}
+                      onChange={(e) => setForm((prev) => ({ ...prev, allowedPaymentModes: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    >
+                      {PAYMENT_MODE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Cancellation delay */}
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">
+                      Delai d&apos;annulation
+                    </label>
+                    <select
+                      value={form.cancellationDelay}
+                      onChange={(e) => setForm((prev) => ({ ...prev, cancellationDelay: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    >
+                      <option value="">Parametres generaux</option>
+                      <option value="12">12 heures</option>
+                      <option value="24">24 heures</option>
+                      <option value="48">48 heures</option>
+                      <option value="72">72 heures</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               {/* Form actions */}
@@ -385,6 +523,14 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
                     {ct.category === 'mon_soutien_psy' && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
                         MSP
+                      </span>
+                    )}
+                    {ct.modality && ct.modality !== 'any' && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
+                        {ct.modality === 'online' && <Video className="w-3 h-3" />}
+                        {ct.modality === 'in_person' && <MapPin className="w-3 h-3" />}
+                        {ct.modality === 'home_visit' && <Home className="w-3 h-3" />}
+                        {ct.modality === 'online' ? 'Visio' : ct.modality === 'in_person' ? 'Cabinet' : 'Domicile'}
                       </span>
                     )}
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-surface text-muted-foreground">

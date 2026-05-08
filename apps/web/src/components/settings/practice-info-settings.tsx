@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { psychologistApi } from '@/lib/api/psychologist';
-import { MapPin, Euro, Phone, Save } from 'lucide-react';
+import { MapPin, Euro, Phone, Save, Clock } from 'lucide-react';
 
 interface PracticeInfoSettingsProps {
   token?: string;
@@ -24,6 +24,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
   const [phone, setPhone] = useState('');
   const [sessionRate, setSessionRate] = useState('');
   const [sessionDuration, setSessionDuration] = useState('');
+  const [minBreakMinutes, setMinBreakMinutes] = useState('0');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -35,6 +36,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         setPhone(profile.phone ?? '');
         setSessionRate(profile.defaultSessionRate != null ? String(profile.defaultSessionRate) : '');
         setSessionDuration(profile.defaultSessionDuration != null ? String(profile.defaultSessionDuration) : '');
+        setMinBreakMinutes(profile.minBreakMinutes != null ? String(profile.minBreakMinutes) : '0');
       })
       .catch(() => {
         toastError('Impossible de charger les informations du cabinet.');
@@ -56,6 +58,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         phone: phone || undefined,
         defaultSessionRate: sessionRate ? Number(sessionRate) : undefined,
         defaultSessionDuration: sessionDuration ? Number(sessionDuration) : undefined,
+        minBreakMinutes: Number(minBreakMinutes) || 0,
       }, token);
       success('Informations du cabinet enregistrées');
       setDirty(false);
@@ -134,6 +137,34 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
               className={inputClass}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Pause entre RDV */}
+      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Clock size={18} className="text-primary" />
+          <h2 className="text-base font-medium text-foreground">Pause entre les rendez-vous</h2>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground mb-1.5">
+            Temps de pause minimum entre chaque consultation
+          </label>
+          <select
+            value={minBreakMinutes}
+            onChange={(e) => { setMinBreakMinutes(e.target.value); setDirty(true); }}
+            className={inputClass}
+          >
+            <option value="0">Pas de pause (dos-a-dos)</option>
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="20">20 minutes</option>
+            <option value="30">30 minutes</option>
+          </select>
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Ce temps sera automatiquement reserve entre deux rendez-vous consecutifs dans votre agenda.
+          </p>
         </div>
       </div>
 

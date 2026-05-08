@@ -167,6 +167,9 @@ export interface Psychologist {
   isOnboarded: boolean;
   defaultSessionDuration: number;
   defaultSessionRate: number | null;
+  minBreakMinutes: number;
+  noShowBillingEnabled: boolean;
+  noShowFee: number | null;
   createdAt: Date;
 }
 
@@ -223,6 +226,9 @@ export interface Appointment {
   duration: number;
   status: AppointmentStatus;
   reminderSentAt: Date | null;
+  offlinePaymentMethod: OfflinePaymentMethod | null;
+  cancellationReason: string | null;
+  cancelledBy: CancelledBy | null;
 }
 
 export interface MoodTracking {
@@ -526,6 +532,42 @@ export enum PaymentMode {
   BOTH = 'both',
 }
 
+export enum OfflinePaymentMethod {
+  CASH = 'cash',
+  CHECK = 'check',
+  CARD = 'card',
+  TRANSFER = 'transfer',
+  OTHER = 'other',
+}
+
+export const OFFLINE_PAYMENT_METHOD_LABELS: Record<OfflinePaymentMethod, string> = {
+  [OfflinePaymentMethod.CASH]: 'Especes',
+  [OfflinePaymentMethod.CHECK]: 'Cheque',
+  [OfflinePaymentMethod.CARD]: 'Carte bancaire',
+  [OfflinePaymentMethod.TRANSFER]: 'Virement',
+  [OfflinePaymentMethod.OTHER]: 'Autre',
+};
+
+export enum ConsultationModality {
+  IN_PERSON = 'in_person',
+  ONLINE = 'online',
+  HOME_VISIT = 'home_visit',
+  ANY = 'any',
+}
+
+export const CONSULTATION_MODALITY_LABELS: Record<ConsultationModality, string> = {
+  [ConsultationModality.IN_PERSON]: 'En cabinet',
+  [ConsultationModality.ONLINE]: 'En ligne',
+  [ConsultationModality.HOME_VISIT]: 'A domicile',
+  [ConsultationModality.ANY]: 'Toutes modalites',
+};
+
+export enum CancelledBy {
+  PATIENT = 'patient',
+  PSYCHOLOGIST = 'psychologist',
+  SYSTEM = 'system',
+}
+
 export interface ConnectSettings {
   paymentMode: PaymentMode;
   cancellationDelay: number;
@@ -557,6 +599,11 @@ export interface ConsultationType {
   isPublic: boolean;
   isActive: boolean;
   sortOrder: number;
+  modality: ConsultationModality;
+  location: string | null;
+  instructions: string | null;
+  allowedPaymentModes: string | null;
+  cancellationDelay: number | null;
 }
 
 export interface MonSoutienPsyTracking {

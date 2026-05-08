@@ -138,6 +138,27 @@ enum PaymentMode {
   both
 }
 
+enum OfflinePaymentMethod {
+  cash
+  check
+  card
+  transfer
+  other
+}
+
+enum ConsultationModality {
+  in_person
+  online
+  home_visit
+  any
+}
+
+enum CancelledBy {
+  patient
+  psychologist
+  system
+}
+
 enum WaitlistUrgency {
   low
   medium
@@ -343,6 +364,9 @@ model Psychologist {
   guardians                LegalGuardian[]
   guardianInvitations      GuardianInvitation[]
   guardianConsentRequests  GuardianConsentRequest[]
+  minBreakMinutes          Int                      @default(0) @map("min_break_minutes")
+  noShowBillingEnabled     Boolean                  @default(false) @map("no_show_billing_enabled")
+  noShowFee                Decimal?                 @map("no_show_fee") @db.Decimal(10, 2)
 
   @@map("psychologists")
 }
@@ -362,18 +386,23 @@ model Availability {
 }
 
 model ConsultationType {
-  id             String               @id @default(uuid())
-  psychologistId String               @map("psychologist_id")
-  name           String
-  duration       Int
-  rate           Decimal              @db.Decimal(10, 2)
-  color          String               @default("#3D52A0")
-  category       ConsultationCategory @default(standard)
-  isPublic       Boolean              @default(true) @map("is_public")
-  isActive       Boolean              @default(true) @map("is_active")
-  sortOrder      Int                  @default(0) @map("sort_order")
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
+  id                  String               @id @default(uuid())
+  psychologistId      String               @map("psychologist_id")
+  name                String
+  duration            Int
+  rate                Decimal              @db.Decimal(10, 2)
+  color               String               @default("#3D52A0")
+  category            ConsultationCategory @default(standard)
+  isPublic            Boolean              @default(true) @map("is_public")
+  isActive            Boolean              @default(true) @map("is_active")
+  sortOrder           Int                  @default(0) @map("sort_order")
+  modality            ConsultationModality @default(any)
+  location            String?
+  instructions        String?
+  allowedPaymentModes String?              @map("allowed_payment_modes") // JSON: "online" | "on_site" | "both" | null (inherit)
+  cancellationDelay   Int?                 @map("cancellation_delay") // hours, null = inherit from psy
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
 
   psychologist    Psychologist    @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   appointments    Appointment[]
@@ -709,10 +738,13 @@ model Appointment {
   paymentMode          AppointmentPaymentMode @default(none) @map("payment_mode")
   paidOnline           Boolean                @default(false) @map("paid_online")
   bookingPaymentStatus BookingPaymentStatus   @default(none) @map("booking_payment_status")
-  isOnline             Boolean                @default(false) @map("is_online")
-  videoJoinToken       String?                @unique @map("video_join_token")
-  videoLinkSentAt      DateTime?              @map("video_link_sent_at")
-  createdAt            DateTime               @default(now()) @map("created_at")
+  isOnline               Boolean                @default(false) @map("is_online")
+  videoJoinToken         String?                @unique @map("video_join_token")
+  videoLinkSentAt        DateTime?              @map("video_link_sent_at")
+  offlinePaymentMethod   OfflinePaymentMethod?  @map("offline_payment_method")
+  cancellationReason     String?                @map("cancellation_reason")
+  cancelledBy            CancelledBy?           @map("cancelled_by")
+  createdAt              DateTime               @default(now()) @map("created_at")
 
   psychologist     Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient          Patient                  @relation(fields: [patientId], references: [id], onDelete: Cascade)

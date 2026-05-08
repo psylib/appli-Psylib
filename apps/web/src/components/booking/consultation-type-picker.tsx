@@ -1,7 +1,14 @@
 'use client';
 
-import { Clock, Euro, ShieldCheck } from 'lucide-react';
-import type { ConsultationType } from '@/lib/api/public-booking';
+import { Clock, Euro, ShieldCheck, MapPin, Video, Home } from 'lucide-react';
+import type { ConsultationType, ConsultationModality } from '@/lib/api/public-booking';
+
+const MODALITY_CONFIG: Record<ConsultationModality, { icon: typeof MapPin; label: string; className: string }> = {
+  in_person: { icon: MapPin, label: 'En cabinet', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  online: { icon: Video, label: 'En ligne', className: 'bg-sky-50 text-sky-700 border-sky-200' },
+  home_visit: { icon: Home, label: 'A domicile', className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  any: { icon: MapPin, label: 'Cabinet ou en ligne', className: 'bg-violet-50 text-violet-700 border-violet-200' },
+};
 
 interface ConsultationTypePickerProps {
   types: ConsultationType[];
@@ -40,7 +47,7 @@ export function ConsultationTypePicker({ types, selected, onSelect }: Consultati
                 {type.name}
               </p>
 
-              {/* Duration + Rate */}
+              {/* Duration + Rate + Modality */}
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#F1F0F9] text-xs font-medium text-[#1E1B4B]">
                   <Clock className="w-3 h-3" />
@@ -50,7 +57,25 @@ export function ConsultationTypePicker({ types, selected, onSelect }: Consultati
                   <Euro className="w-3 h-3" />
                   {type.rate}€
                 </span>
+                {type.modality && (() => {
+                  const config = MODALITY_CONFIG[type.modality];
+                  const ModalityIcon = config.icon;
+                  return (
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border ${config.className}`}>
+                      <ModalityIcon className="w-3 h-3" />
+                      {config.label}
+                    </span>
+                  );
+                })()}
               </div>
+
+              {/* Location */}
+              {type.location && (
+                <p className="mt-1.5 text-xs text-gray-500 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                  {type.location}
+                </p>
+              )}
 
               {/* Mon Soutien Psy badge */}
               {type.category === 'mon_soutien_psy' && (

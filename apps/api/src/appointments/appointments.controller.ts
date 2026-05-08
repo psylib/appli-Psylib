@@ -19,6 +19,8 @@ import {
   UpdateAppointmentDto,
   AppointmentQueryDto,
   SendPaymentLinkDto,
+  CancelAppointmentDto,
+  MarkPaidOnSiteDto,
 } from './dto/appointment.dto';
 import { CreateGroupAppointmentDto } from './dto/create-group-appointment.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
@@ -75,8 +77,12 @@ export class AppointmentsController {
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Annuler un RDV' })
-  async cancel(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: KeycloakUser) {
-    return this.appointmentsService.cancel(user.sub, id);
+  async cancel(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CancelAppointmentDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.appointmentsService.cancel(user.sub, id, dto);
   }
 
   @Get('pending')
@@ -105,5 +111,15 @@ export class AppointmentsController {
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.appointmentsService.sendPaymentLink(user.sub, id, dto);
+  }
+
+  @Post(':id/mark-paid-on-site')
+  @ApiOperation({ summary: 'Marquer un RDV comme payé sur place' })
+  async markPaidOnSite(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: MarkPaidOnSiteDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.appointmentsService.markAsPaidOnSite(user.sub, id, dto);
   }
 }

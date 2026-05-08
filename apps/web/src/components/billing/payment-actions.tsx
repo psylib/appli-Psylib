@@ -3,12 +3,20 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Banknote, RotateCcw } from 'lucide-react';
+import { Send, Banknote, RotateCcw, Coins, CreditCard, Building2, ArrowRightLeft, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { PaymentBadge } from '@/components/billing/payment-badge';
 import { useToast } from '@/components/ui/toast';
 import { billingApi } from '@/lib/api/billing';
+
+const OFFLINE_METHODS = [
+  { value: 'cash', label: 'Especes', icon: Coins },
+  { value: 'check', label: 'Cheque', icon: Banknote },
+  { value: 'card', label: 'Carte bancaire', icon: CreditCard },
+  { value: 'transfer', label: 'Virement', icon: ArrowRightLeft },
+  { value: 'other', label: 'Autre', icon: MoreHorizontal },
+] as const;
 
 interface PaymentActionsAppointment {
   id: string;
@@ -28,6 +36,7 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
   const [showRefundConfirm, setShowRefundConfirm] = useState(false);
+  const [showPaymentMethodPicker, setShowPaymentMethodPicker] = useState(false);
 
   const paymentLinkMutation = useMutation({
     mutationFn: () =>
@@ -64,10 +73,11 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
   });
 
   const markPaidMutation = useMutation({
-    mutationFn: () =>
-      billingApi.markPaidOnSite(appointment.id, session!.accessToken),
+    mutationFn: (method: string) =>
+      billingApi.markPaidOnSite(appointment.id, session!.accessToken, method),
     onSuccess: () => {
       success('Marque comme paye sur place.');
+      setShowPaymentMethodPicker(false);
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
       void queryClient.invalidateQueries({ queryKey: ['payments'] });
     },
@@ -133,18 +143,46 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
       )}
 
       {/* Mark paid on site — when not yet paid */}
-      {!isPaid && (
+      {!isPaid && !showPaymentMethodPicker && (
         <Button
           variant="secondary"
           size={buttonSize}
-          onClick={() => markPaidMutation.mutate()}
-          loading={markPaidMutation.isPending}
+          onClick={() => setShowPaymentMethodPicker(true)}
           disabled={!session?.accessToken}
         >
           <Banknote size={14} aria-hidden />
           {!compact && 'Paye sur place'}
           {compact && 'Sur place'}
         </Button>
+      )}
+
+      {/* Payment method picker */}
+      {showPaymentMethodPicker && (
+        <div className="flex items-center gap-1 flex-wrap">
+          {OFFLINE_METHODS.map((method) => {
+            const Icon = method.icon;
+            return (
+              <button
+                key={method.value}
+                type="button"
+                onClick={() => markPaidMutation.mutate(method.value)}
+                disabled={markPaidMutation.isPending}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-border bg-white hover:bg-surface hover:border-primary/30 transition-colors disabled:opacity-50"
+                title={method.label}
+              >
+                <Icon size={12} />
+                {method.label}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setShowPaymentMethodPicker(false)}
+            className="px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Annuler
+          </button>
+        </div>
       )}
 
       {/* Refund confirmation dialog */}

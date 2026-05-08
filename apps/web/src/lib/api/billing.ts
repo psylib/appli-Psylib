@@ -88,8 +88,8 @@ export const billingApi = {
   refund: (appointmentId: string, token: string) =>
     apiClient.post<{ success: boolean }>('/billing/refund', { appointmentId }, token),
 
-  markPaidOnSite: (appointmentId: string, token: string) =>
-    apiClient.post<{ success: boolean }>(`/billing/mark-paid/${appointmentId}`, {}, token),
+  markPaidOnSite: (appointmentId: string, token: string, offlinePaymentMethod?: string) =>
+    apiClient.post<{ success: boolean }>(`/billing/mark-paid/${appointmentId}`, { offlinePaymentMethod }, token),
 
   getPayments: (query: { from?: string; to?: string; status?: string; mode?: string; page?: number }, token: string) => {
     const params = new URLSearchParams();

@@ -8,10 +8,11 @@ import {
   IsIn,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AppointmentStatus } from '@psyscale/shared-types';
+import { AppointmentStatus, OfflinePaymentMethod } from '@psyscale/shared-types';
 
 export class CreateAppointmentDto {
   @ApiProperty()
@@ -66,6 +67,31 @@ export class UpdateAppointmentDto {
   @IsBoolean()
   @IsOptional()
   isOnline?: boolean;
+
+  @ApiPropertyOptional({ description: 'Mode de paiement sur place', enum: OfflinePaymentMethod })
+  @IsEnum(OfflinePaymentMethod)
+  @IsOptional()
+  offlinePaymentMethod?: OfflinePaymentMethod;
+
+  @ApiPropertyOptional({ description: 'Raison de l\'annulation' })
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  cancellationReason?: string;
+}
+
+export class CancelAppointmentDto {
+  @ApiPropertyOptional({ description: 'Raison de l\'annulation' })
+  @IsString()
+  @MaxLength(1000)
+  @IsOptional()
+  cancellationReason?: string;
+}
+
+export class MarkPaidOnSiteDto {
+  @ApiProperty({ description: 'Mode de paiement sur place', enum: OfflinePaymentMethod })
+  @IsEnum(OfflinePaymentMethod)
+  offlinePaymentMethod!: OfflinePaymentMethod;
 }
 
 export class AppointmentQueryDto {

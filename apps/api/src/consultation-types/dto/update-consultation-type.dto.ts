@@ -5,6 +5,7 @@ import {
   IsString,
   IsNumber,
   IsEnum,
+  IsIn,
   MinLength,
   MaxLength,
   Min,
@@ -12,7 +13,7 @@ import {
   Matches,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ConsultationCategory } from '@psyscale/shared-types';
+import { ConsultationCategory, ConsultationModality } from '@psyscale/shared-types';
 
 export class UpdateConsultationTypeDto {
   @ApiPropertyOptional({ example: 'Séance individuelle', minLength: 2, maxLength: 100 })
@@ -61,4 +62,30 @@ export class UpdateConsultationTypeDto {
   @IsOptional()
   @Min(0)
   sortOrder?: number;
+
+  @ApiPropertyOptional({ enum: ConsultationModality, description: 'Modalité de consultation' })
+  @IsEnum(ConsultationModality)
+  @IsOptional()
+  modality?: ConsultationModality;
+
+  @ApiPropertyOptional({ example: '12 rue de la Paix, 75002 Paris', description: 'Lieu spécifique pour ce type' })
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @ApiPropertyOptional({ example: 'Merci de vous munir de votre carte vitale', description: 'Instructions pour le patient' })
+  @IsString()
+  @IsOptional()
+  instructions?: string;
+
+  @ApiPropertyOptional({ enum: ['online', 'on_site', 'both'], description: 'Modes de paiement acceptés (null = hérite du psy)' })
+  @IsIn(['online', 'on_site', 'both'])
+  @IsOptional()
+  allowedPaymentModes?: string;
+
+  @ApiPropertyOptional({ example: 24, description: 'Délai d\'annulation en heures (null = hérite du psy)' })
+  @IsInt()
+  @IsOptional()
+  @Min(1)
+  cancellationDelay?: number;
 }

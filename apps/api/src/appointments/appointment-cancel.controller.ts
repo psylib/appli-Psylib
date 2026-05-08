@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Param } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AppointmentsService } from './appointments.service';
+import { CancelAppointmentDto } from './dto/appointment.dto';
 
 @ApiTags('Appointment Cancel')
 @Controller('appointments/cancel')
@@ -18,7 +19,10 @@ export class AppointmentCancelController {
   @Post(':token')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Annuler un RDV par token (public)' })
-  async cancelByToken(@Param('token') token: string) {
-    return this.appointmentsService.cancelByToken(token);
+  async cancelByToken(
+    @Param('token') token: string,
+    @Body() dto: CancelAppointmentDto,
+  ) {
+    return this.appointmentsService.cancelByToken(token, dto.cancellationReason);
   }
 }

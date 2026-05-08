@@ -70,6 +70,11 @@ export class PublicBookingService {
             rate: true,
             color: true,
             category: true,
+            modality: true,
+            location: true,
+            instructions: true,
+            allowedPaymentModes: true,
+            cancellationDelay: true,
           },
           orderBy: { sortOrder: 'asc' },
         },
@@ -108,6 +113,11 @@ export class PublicBookingService {
         rate: Number(ct.rate),
         color: ct.color,
         category: ct.category,
+        modality: ct.modality,
+        location: ct.location,
+        instructions: ct.instructions,
+        allowedPaymentModes: ct.allowedPaymentModes,
+        cancellationDelay: ct.cancellationDelay,
       })),
     };
 
@@ -186,6 +196,11 @@ export class PublicBookingService {
         rate: true,
         color: true,
         category: true,
+        modality: true,
+        location: true,
+        instructions: true,
+        allowedPaymentModes: true,
+        cancellationDelay: true,
       },
     });
 
@@ -196,6 +211,11 @@ export class PublicBookingService {
       rate: Number(t.rate),
       color: t.color,
       category: t.category,
+      modality: t.modality,
+      location: t.location,
+      instructions: t.instructions,
+      allowedPaymentModes: t.allowedPaymentModes,
+      cancellationDelay: t.cancellationDelay,
     }));
 
     void this.cache.set(cacheKey, result, TTL_PROFILE);

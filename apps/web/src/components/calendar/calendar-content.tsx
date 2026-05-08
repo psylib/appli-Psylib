@@ -140,7 +140,16 @@ export function CalendarContent() {
   });
 
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
+  const [noShowTarget, setNoShowTarget] = useState<Appointment | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const noShowMutation = useMutation({
+    mutationFn: (id: string) => appointmentsApi.update(id, { status: 'no_show' }, session?.accessToken ?? ''),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      setNoShowTarget(null);
+    },
+  });
 
   const appointments = appointmentsData ?? [];
 
@@ -466,12 +475,20 @@ export function CalendarContent() {
                           <span>{appt.duration} min</span>
                         </div>
                         {(appt.status === 'scheduled' || appt.status === 'confirmed') && (
-                          <button
-                            onClick={() => setCancelTarget(appt)}
-                            className="text-xs text-destructive hover:underline"
-                          >
-                            Annuler
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setNoShowTarget(appt)}
+                              className="text-xs text-amber-600 hover:underline"
+                            >
+                              Absent
+                            </button>
+                            <button
+                              onClick={() => setCancelTarget(appt)}
+                              className="text-xs text-destructive hover:underline"
+                            >
+                              Annuler
+                            </button>
+                          </div>
                         )}
                       </div>
 
@@ -524,6 +541,24 @@ export function CalendarContent() {
         open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
         defaultDate={selectedDate}
+      />
+
+      {/* No-show confirmation dialog */}
+      <ConfirmDialog
+        open={!!noShowTarget}
+        onClose={() => setNoShowTarget(null)}
+        onConfirm={() => {
+          if (noShowTarget) noShowMutation.mutate(noShowTarget.id);
+        }}
+        title="Marquer comme absent ?"
+        description={
+          noShowTarget
+            ? `Le rendez-vous avec ${noShowTarget.patient.name} sera marque comme non honore. Si la facturation des absences est activee dans vos parametres, une facture sera automatiquement generee.`
+            : ''
+        }
+        confirmLabel="Marquer absent"
+        variant="destructive"
+        loading={noShowMutation.isPending}
       />
 
       {/* Cancel appointment dialog */}

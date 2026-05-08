@@ -1,5 +1,7 @@
 import { apiClient } from './client';
 
+export type ConsultationModalityValue = 'in_person' | 'online' | 'home_visit' | 'any';
+
 export interface ConsultationType {
   id: string;
   name: string;
@@ -10,6 +12,11 @@ export interface ConsultationType {
   isPublic: boolean;
   isActive: boolean;
   sortOrder: number;
+  modality: ConsultationModalityValue;
+  location: string | null;
+  instructions: string | null;
+  allowedPaymentModes: string | null;
+  cancellationDelay: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +28,11 @@ export interface CreateConsultationTypeData {
   color?: string;
   category?: 'standard' | 'mon_soutien_psy';
   isPublic?: boolean;
+  modality?: ConsultationModalityValue;
+  location?: string;
+  instructions?: string;
+  allowedPaymentModes?: string;
+  cancellationDelay?: number | null;
 }
 
 export interface UpdateConsultationTypeData {
@@ -32,6 +44,11 @@ export interface UpdateConsultationTypeData {
   isPublic?: boolean;
   isActive?: boolean;
   sortOrder?: number;
+  modality?: ConsultationModalityValue;
+  location?: string;
+  instructions?: string;
+  allowedPaymentModes?: string | null;
+  cancellationDelay?: number | null;
 }
 
 export const consultationTypesApi = {

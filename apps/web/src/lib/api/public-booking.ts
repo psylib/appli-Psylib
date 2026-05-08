@@ -1,5 +1,7 @@
 const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
 
+export type ConsultationModality = 'in_person' | 'online' | 'home_visit' | 'any';
+
 export interface ConsultationType {
   id: string;
   name: string;
@@ -7,6 +9,11 @@ export interface ConsultationType {
   rate: number;
   color: string;
   category: 'standard' | 'mon_soutien_psy';
+  modality?: ConsultationModality;
+  location?: string | null;
+  instructions?: string | null;
+  allowedPaymentModes?: string | null;
+  cancellationDelay?: number | null;
 }
 
 export interface PublicPsyProfile {

@@ -109,6 +109,28 @@ export class UpdatePsychologistProfileDto {
   @IsBoolean()
   @Type(() => Boolean)
   autoInvoiceEmail?: boolean;
+
+  // Break & no-show settings
+  @ApiPropertyOptional({ description: 'Minimum break between appointments (minutes)' })
+  @IsInt()
+  @Min(0)
+  @Max(60)
+  @IsOptional()
+  @Type(() => Number)
+  minBreakMinutes?: number;
+
+  @ApiPropertyOptional({ description: 'Enable billing for no-show appointments' })
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  noShowBillingEnabled?: boolean;
+
+  @ApiPropertyOptional({ description: 'Fee charged for no-show appointments' })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  @Type(() => Number)
+  noShowFee?: number;
 }
 
 export type OnboardingStep =
@@ -193,6 +215,9 @@ export class OnboardingService {
         ...(dto.allowOnlinePayment !== undefined && { allowOnlinePayment: dto.allowOnlinePayment }),
         ...(dto.autoInvoice !== undefined && { autoInvoice: dto.autoInvoice }),
         ...(dto.autoInvoiceEmail !== undefined && { autoInvoiceEmail: dto.autoInvoiceEmail }),
+        ...(dto.minBreakMinutes !== undefined && { minBreakMinutes: dto.minBreakMinutes }),
+        ...(dto.noShowBillingEnabled !== undefined && { noShowBillingEnabled: dto.noShowBillingEnabled }),
+        ...(dto.noShowFee !== undefined && { noShowFee: dto.noShowFee }),
       },
     });
 

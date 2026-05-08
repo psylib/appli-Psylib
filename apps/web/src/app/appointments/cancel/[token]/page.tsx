@@ -64,6 +64,7 @@ export default function CancelAppointmentPage() {
 
   const [state, setState] = useState<PageState>({ kind: 'loading' });
   const [cancelling, setCancelling] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState('');
 
   useEffect(() => {
     if (!token) return;
@@ -93,6 +94,8 @@ export default function CancelAppointmentPage() {
     try {
       const res = await fetch(`${API_BASE}/api/v1/appointments/cancel/${token}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cancellationReason.trim() ? { cancellationReason: cancellationReason.trim() } : {}),
       });
       if (!res.ok) throw new Error('cancel_error');
       const result = (await res.json()) as CancelResult;
@@ -289,6 +292,24 @@ export default function CancelAppointmentPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Cancellation reason (optional) */}
+                  <div className="mb-5">
+                    <label
+                      htmlFor="cancellation-reason"
+                      className="block text-sm font-medium text-[#1E1B4B] mb-1.5"
+                    >
+                      Motif d&apos;annulation <span className="text-gray-400 font-normal">(optionnel)</span>
+                    </label>
+                    <textarea
+                      id="cancellation-reason"
+                      value={cancellationReason}
+                      onChange={(e) => setCancellationReason(e.target.value)}
+                      placeholder="Indiquez la raison si vous le souhaitez..."
+                      rows={3}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E5E7EB] text-sm text-[#1E1B4B] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3D52A0]/30 focus:border-[#3D52A0] resize-none bg-white"
+                    />
+                  </div>
 
                   {/* Cancel button */}
                   <button

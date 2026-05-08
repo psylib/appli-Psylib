@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock } from 'lucide-react';
+import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock, Info } from 'lucide-react';
 import { publicBookingApi } from '@/lib/api/public-booking';
 import type { PublicPsyProfile, ConsultationType } from '@/lib/api/public-booking';
 import { ConsultationTypePicker } from '@/components/booking/consultation-type-picker';
@@ -220,19 +220,29 @@ function BookingModal({
 
         {/* Consultation type info */}
         {consultationType ? (
-          <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
-            <span
-              className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              style={{ backgroundColor: consultationType.color || '#3D52A0' }}
-            />
-            <span className="font-medium text-foreground">{consultationType.name}</span>
-            <span className="text-muted-foreground">·</span>
-            <span>{consultationType.duration} min</span>
-            {consultationType.rate > 0 && (
-              <>
-                <span className="text-muted-foreground">·</span>
-                <span>{consultationType.rate}€</span>
-              </>
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: consultationType.color || '#3D52A0' }}
+              />
+              <span className="font-medium text-foreground">{consultationType.name}</span>
+              <span className="text-muted-foreground">·</span>
+              <span>{consultationType.duration} min</span>
+              {consultationType.rate > 0 && (
+                <>
+                  <span className="text-muted-foreground">·</span>
+                  <span>{consultationType.rate}€</span>
+                </>
+              )}
+            </div>
+            {consultationType.instructions && (
+              <div className="mt-2 flex items-start gap-2 p-2.5 rounded-lg bg-blue-50 border border-blue-200">
+                <Info className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-800 leading-relaxed whitespace-pre-line">
+                  {consultationType.instructions}
+                </p>
+              </div>
             )}
           </div>
         ) : null}
@@ -584,6 +594,24 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
                   setSelectedSlot(null);
                 }}
               />
+
+              {/* Instructions info box — shown when a type is selected and has instructions */}
+              {selectedType?.instructions && (
+                <div className="mt-3 flex items-start gap-2.5 p-3 rounded-xl bg-blue-50 border border-blue-200">
+                  <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-800 leading-relaxed whitespace-pre-line">
+                    {selectedType.instructions}
+                  </div>
+                </div>
+              )}
+
+              {/* Location info — shown when a type is selected and has location but no instructions */}
+              {selectedType?.location && !selectedType.instructions && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  {selectedType.location}
+                </div>
+              )}
             </div>
           )}
 

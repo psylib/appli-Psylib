@@ -11,8 +11,11 @@ import {
   UpdateAppointmentDto,
   AppointmentQueryDto,
   SendPaymentLinkDto,
+  CancelAppointmentDto,
+  MarkPaidOnSiteDto,
 } from './dto/appointment.dto';
 import { CreateGroupAppointmentDto } from './dto/create-group-appointment.dto';
+import { InvoicesService } from '../invoices/invoices.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import type { Appointment } from '@prisma/client';
 
@@ -28,6 +31,8 @@ export class AppointmentsService {
     private readonly stripeService: StripeService,
     @Inject(forwardRef(() => WaitlistService))
     private readonly waitlistService: WaitlistService,
+    @Inject(forwardRef(() => InvoicesService))
+    private readonly invoicesService: InvoicesService,
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
   ) {}
@@ -191,6 +196,7 @@ export class AppointmentsService {
 
     const existing = await this.prisma.appointment.findFirst({
       where: { id, psychologistId: psy.id },
+      include: { consultationType: { select: { rate: true } } },
     });
     if (!existing) throw new NotFoundException('RDV introuvable');
 
@@ -204,14 +210,32 @@ export class AppointmentsService {
         updateData.videoJoinToken = randomUUID();
       }
     }
+    if (dto.offlinePaymentMethod !== undefined) {
+      updateData.offlinePaymentMethod = dto.offlinePaymentMethod;
+    }
+    if (dto.cancellationReason !== undefined) {
+      updateData.cancellationReason = dto.cancellationReason;
+    }
 
-    return this.prisma.appointment.update({
+    // If status changes to cancelled via update, mark cancelledBy as psychologist
+    if (dto.status === 'cancelled' && existing.status !== 'cancelled') {
+      updateData.cancelledBy = 'psychologist';
+    }
+
+    const updated = await this.prisma.appointment.update({
       where: { id },
       data: updateData,
     });
+
+    // If status changed to no_show, check if no-show billing is enabled
+    if (dto.status === 'no_show' && existing.status !== 'no_show') {
+      void this.handleNoShowBilling(psy.id, existing, userId);
+    }
+
+    return updated;
   }
 
-  async cancel(userId: string, id: string): Promise<Appointment> {
+  async cancel(userId: string, id: string, dto?: CancelAppointmentDto): Promise<Appointment> {
     const psy = await this.getPsychologist(userId);
 
     const existing = await this.prisma.appointment.findFirst({
@@ -221,7 +245,11 @@ export class AppointmentsService {
 
     const cancelled = await this.prisma.appointment.update({
       where: { id },
-      data: { status: 'cancelled' },
+      data: {
+        status: 'cancelled',
+        cancelledBy: 'psychologist',
+        ...(dto?.cancellationReason && { cancellationReason: dto.cancellationReason }),
+      },
     });
 
     // Notify psy about waitlist candidates when a slot is freed
@@ -357,7 +385,7 @@ export class AppointmentsService {
     };
   }
 
-  async cancelByToken(cancelToken: string) {
+  async cancelByToken(cancelToken: string, cancellationReason?: string) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { cancelToken },
       include: {
@@ -394,7 +422,11 @@ export class AppointmentsService {
     // Cancel the appointment
     await this.prisma.appointment.update({
       where: { id: appointment.id },
-      data: { status: 'cancelled' },
+      data: {
+        status: 'cancelled',
+        cancelledBy: 'patient',
+        ...(cancellationReason && { cancellationReason }),
+      },
     });
 
     let refunded = false;
@@ -625,6 +657,104 @@ export class AppointmentsService {
       participants,
       participantsWithoutEmail,
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Mark as paid on-site (offline payment)
+  // ---------------------------------------------------------------------------
+
+  async markAsPaidOnSite(userId: string, appointmentId: string, dto: MarkPaidOnSiteDto): Promise<Appointment> {
+    const psy = await this.getPsychologist(userId);
+
+    const existing = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+      include: { patient: { select: { name: true } } },
+    });
+    if (!existing) throw new NotFoundException('RDV introuvable');
+
+    if (existing.bookingPaymentStatus === 'paid') {
+      throw new BadRequestException('Ce RDV est déjà payé');
+    }
+
+    const updated = await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        offlinePaymentMethod: dto.offlinePaymentMethod,
+        bookingPaymentStatus: 'paid',
+      },
+    });
+
+    void this.notifications.createAndDispatch(
+      userId,
+      'appointment_update',
+      'Paiement enregistré',
+      `Paiement sur place (${dto.offlinePaymentMethod}) enregistré pour ${existing.patient.name}`,
+      { href: '/dashboard/calendar' },
+    );
+
+    return updated;
+  }
+
+  // ---------------------------------------------------------------------------
+  // No-show billing: auto-create invoice when appointment marked as no_show
+  // ---------------------------------------------------------------------------
+
+  private async handleNoShowBilling(
+    psychologistId: string,
+    appointment: Appointment & { consultationType?: { rate: unknown } | null },
+    userId: string,
+  ): Promise<void> {
+    try {
+      const psy = await this.prisma.psychologist.findUnique({
+        where: { id: psychologistId },
+        select: { noShowBillingEnabled: true, noShowFee: true, defaultSessionRate: true, name: true },
+      });
+
+      if (!psy?.noShowBillingEnabled) return;
+
+      // Determine the no-show fee: noShowFee > paymentAmount > consultationType rate > defaultSessionRate
+      const fee =
+        (psy.noShowFee ? Number(psy.noShowFee) : null)
+        ?? (appointment.paymentAmount ? Number(appointment.paymentAmount) : null)
+        ?? (appointment.consultationType?.rate ? Number(appointment.consultationType.rate) : null)
+        ?? (psy.defaultSessionRate ? Number(psy.defaultSessionRate) : null);
+
+      if (!fee || fee <= 0) {
+        this.logger.warn(`No-show billing enabled but no fee could be determined for appointment ${appointment.id}`);
+        return;
+      }
+
+      const invoice = await this.invoicesService.createAutoInvoice({
+        type: 'session_completed',
+        psychologistId,
+        patientId: appointment.patientId,
+        amount: fee,
+        sessionDate: appointment.scheduledAt.toISOString(),
+        appointmentId: appointment.id,
+      });
+
+      if (invoice) {
+        this.logger.log(`No-show invoice ${invoice.invoiceNumber} created for appointment ${appointment.id} (${fee}€)`);
+
+        // Notify psy
+        const patient = await this.prisma.patient.findUnique({
+          where: { id: appointment.patientId },
+          select: { name: true },
+        });
+
+        void this.notifications.createAndDispatch(
+          userId,
+          'invoice_created',
+          'Facture absence créée',
+          `Facture de ${fee}€ créée pour l'absence de ${patient?.name ?? 'un patient'}`,
+          { href: '/dashboard/invoices' },
+        );
+      }
+    } catch (err) {
+      this.logger.error(
+        `No-show billing failed for appointment ${appointment.id}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   private async getPsychologist(userId: string) {

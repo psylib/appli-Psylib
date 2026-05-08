@@ -28,6 +28,10 @@ export interface PsychologistProfile {
   // Auto-invoice settings
   autoInvoice: boolean;
   autoInvoiceEmail: boolean;
+  // Break & no-show settings
+  minBreakMinutes: number;
+  noShowBillingEnabled: boolean;
+  noShowFee: number | null;
 }
 
 export interface UpdateProfileData {
@@ -52,6 +56,10 @@ export interface UpdateProfileData {
   // Auto-invoice settings
   autoInvoice?: boolean;
   autoInvoiceEmail?: boolean;
+  // Break & no-show settings
+  minBreakMinutes?: number;
+  noShowBillingEnabled?: boolean;
+  noShowFee?: number;
 }
 
 export const psychologistApi = {

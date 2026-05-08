@@ -4,7 +4,7 @@
 // Partagés entre apps/web et apps/api
 // =============================================================================
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
+exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.CancelledBy = exports.CONSULTATION_MODALITY_LABELS = exports.ConsultationModality = exports.OFFLINE_PAYMENT_METHOD_LABELS = exports.OfflinePaymentMethod = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
 // -----------------------------------------------------------------------------
 // Enums
 // -----------------------------------------------------------------------------
@@ -182,6 +182,40 @@ var PaymentMode;
     PaymentMode["POSTPAID"] = "postpaid";
     PaymentMode["BOTH"] = "both";
 })(PaymentMode || (exports.PaymentMode = PaymentMode = {}));
+var OfflinePaymentMethod;
+(function (OfflinePaymentMethod) {
+    OfflinePaymentMethod["CASH"] = "cash";
+    OfflinePaymentMethod["CHECK"] = "check";
+    OfflinePaymentMethod["CARD"] = "card";
+    OfflinePaymentMethod["TRANSFER"] = "transfer";
+    OfflinePaymentMethod["OTHER"] = "other";
+})(OfflinePaymentMethod || (exports.OfflinePaymentMethod = OfflinePaymentMethod = {}));
+exports.OFFLINE_PAYMENT_METHOD_LABELS = {
+    [OfflinePaymentMethod.CASH]: 'Especes',
+    [OfflinePaymentMethod.CHECK]: 'Cheque',
+    [OfflinePaymentMethod.CARD]: 'Carte bancaire',
+    [OfflinePaymentMethod.TRANSFER]: 'Virement',
+    [OfflinePaymentMethod.OTHER]: 'Autre',
+};
+var ConsultationModality;
+(function (ConsultationModality) {
+    ConsultationModality["IN_PERSON"] = "in_person";
+    ConsultationModality["ONLINE"] = "online";
+    ConsultationModality["HOME_VISIT"] = "home_visit";
+    ConsultationModality["ANY"] = "any";
+})(ConsultationModality || (exports.ConsultationModality = ConsultationModality = {}));
+exports.CONSULTATION_MODALITY_LABELS = {
+    [ConsultationModality.IN_PERSON]: 'En cabinet',
+    [ConsultationModality.ONLINE]: 'En ligne',
+    [ConsultationModality.HOME_VISIT]: 'A domicile',
+    [ConsultationModality.ANY]: 'Toutes modalites',
+};
+var CancelledBy;
+(function (CancelledBy) {
+    CancelledBy["PATIENT"] = "patient";
+    CancelledBy["PSYCHOLOGIST"] = "psychologist";
+    CancelledBy["SYSTEM"] = "system";
+})(CancelledBy || (exports.CancelledBy = CancelledBy = {}));
 var WaitlistUrgency;
 (function (WaitlistUrgency) {
     WaitlistUrgency["LOW"] = "low";
