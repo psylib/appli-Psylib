@@ -112,10 +112,17 @@ model ExternalCalendarEvent {
 }
 ```
 
-### Field added to `Appointment`:
+### Fields added to existing models
 
+**`Appointment` model** — add:
 ```prisma
 googleEventId  String?  @map("google_event_id")
+```
+
+**`Psychologist` model** — add back-relations:
+```prisma
+calendarConnections    CalendarConnection[]
+externalCalendarEvents ExternalCalendarEvent[]
 ```
 
 ### Shared Types (packages/shared-types)
@@ -148,6 +155,12 @@ export interface ExternalCalendarEvent {
   isAllDay: boolean;
   status: string;
 }
+```
+
+Add to `AuditAction` enum:
+```typescript
+CALENDAR_CONNECT = 'CALENDAR_CONNECT',
+CALENDAR_DISCONNECT = 'CALENDAR_DISCONNECT',
 ```
 
 ## OAuth2 Flow
