@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import { guardianInvitationEmail } from './emails/guardian-invitation';
+import { guardianConsentRequestEmail } from './emails/guardian-consent-request';
+import { guardianConsentConfirmedEmail } from './emails/guardian-consent-confirmed';
 
 // ─── Shared layout helpers ────────────────────────────────────────────────────
 
@@ -1622,5 +1625,39 @@ export class EmailService {
     } catch (error) {
       this.logger.error(`sendNotificationEmail failed: ${(error as Error).message}`);
     }
+  }
+
+  // ─── Guardian emails ─────────────────────────────────────────────────────────
+
+  async sendGuardianInvitation(to: string, params: {
+    guardianName: string;
+    patientFirstName: string;
+    psychologistName: string;
+    activationUrl: string;
+  }) {
+    const { subject, html } = guardianInvitationEmail(params);
+    return this.send(to, subject, emailLayout(subject, html), 'sendGuardianInvitation');
+  }
+
+  async sendGuardianConsentRequest(to: string, params: {
+    guardianName: string;
+    patientFirstName: string;
+    psychologistName: string;
+    consentType: string;
+    consentUrl: string;
+  }) {
+    const { subject, html } = guardianConsentRequestEmail(params);
+    return this.send(to, subject, emailLayout(subject, html), 'sendGuardianConsentRequest');
+  }
+
+  async sendGuardianConsentConfirmed(guardianEmail: string, psyEmail: string, params: {
+    guardianName: string;
+    patientFirstName: string;
+    consentType: string;
+  }) {
+    const { subject, html } = guardianConsentConfirmedEmail(params);
+    const wrappedHtml = emailLayout(subject, html);
+    await this.send(guardianEmail, subject, wrappedHtml, 'sendGuardianConsentConfirmed');
+    await this.send(psyEmail, subject, wrappedHtml, 'sendGuardianConsentConfirmed-psy');
   }
 }
