@@ -258,13 +258,14 @@ function template1(lead: Lead): { subject: string; html: string; text: string } 
 
   const html = `<div style="${baseStyle()}">
 <p>Bonjour ${fn},</p>
-<p>Je vous écris depuis <strong>PsyLib</strong> — je construis le premier logiciel de gestion de cabinet 100% HDS pour psychologues libéraux.</p>
+<p>Je vous écris depuis <strong>PsyLib</strong> — le premier logiciel de gestion de cabinet 100% HDS pour psy libéraux.</p>
 <p>Petite question franche : votre logiciel actuel est-il certifié HDS (Hébergeur de Données de Santé) ?</p>
-<p>L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée patient hébergée en ligne. En pratique, ~80% des psys utilisent aujourd'hui des outils non conformes (Drive, Dropbox, Excel, SaaS hébergés hors France) — souvent sans le savoir. Sanction CNIL potentielle : jusqu'à 20 M€ ou 4% du CA.</p>
+<p>L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée patient hébergée en ligne. En pratique, ~80% des psys utilisent des outils non conformes (Drive, Dropbox, Excel, SaaS hébergés hors France) — souvent sans le savoir. Sanction CNIL potentielle : jusqu'à 20 M€ ou 4% du CA.</p>
 <p>PsyLib combine tout ce que Doctolib ne fait <em>pas</em> :<br />
-agenda + notes de séance structurées + outcome tracking PHQ-9/GAD-7 + facturation + IA clinique + paiement Stripe + espace patient — 100% HDS France.</p>
-<p><strong>Prix : 25€/mois à vie</strong> pour l'offre Fondateurs (15 places, ~10 restantes).</p>
-<p>Auriez-vous 15 minutes cette semaine pour une démo courte ?</p>
+agenda + notes de séance structurées + comptabilité intégrée + facturation auto + IA clinique + visio sécurisée + espace patient — 100% HDS France.</p>
+<p><strong>Gratuit pour démarrer</strong> — patients et séances illimités, 0€/mois. Les fonctionnalités IA et visio sont disponibles dès 25€/mois (plan Solo).</p>
+<p style="margin:24px 0;"><a href="https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Créer mon compte gratuit →</a></p>
+<p>Ou si vous préférez, je peux vous faire une démo de 15 minutes — répondez simplement à cet email.</p>
 <p>Cordialement,<br />
 <strong>Tony</strong><br />
 Fondateur PsyLib — <a href="https://psylib.eu" style="color:#3D52A0;">psylib.eu</a></p>
@@ -274,17 +275,19 @@ ${footerHtml(unsub)}
 
   const text = `Bonjour ${fn},
 
-Je vous écris depuis PsyLib — je construis le premier logiciel de gestion de cabinet 100% HDS pour psychologues libéraux.
+Je vous écris depuis PsyLib — le premier logiciel de gestion de cabinet 100% HDS pour psy libéraux.
 
 Petite question franche : votre logiciel actuel est-il certifié HDS ?
 
 L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée patient hébergée en ligne. ~80% des psys utilisent des outils non conformes (Drive, Dropbox, Excel, SaaS non-HDS) - souvent sans le savoir. Sanction CNIL : jusqu'à 20 M€ ou 4% du CA.
 
-PsyLib combine tout ce que Doctolib ne fait PAS : agenda + notes de séance + outcome tracking PHQ-9/GAD-7 + facturation + IA clinique + paiement Stripe + espace patient - 100% HDS France.
+PsyLib combine tout ce que Doctolib ne fait PAS : agenda + notes de séance + comptabilité intégrée + facturation auto + IA clinique + visio sécurisée + espace patient - 100% HDS France.
 
-Prix : 25€/mois à vie pour l'offre Fondateurs (15 places, ~10 restantes).
+Gratuit pour démarrer — patients et séances illimités, 0€/mois. IA et visio dès 25€/mois (Solo).
 
-15 minutes cette semaine pour une démo ?
+Créer mon compte gratuit : https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1
+
+Ou répondez à cet email pour une démo de 15 minutes.
 
 Cordialement,
 Tony - Fondateur PsyLib
@@ -353,21 +356,20 @@ function template3(lead: Lead): { subject: string; html: string; text: string } 
   const fn = lead.firstName || 'Docteur';
   const unsub = unsubscribePageUrl(lead.email);
   const subject = `${fn}, je ne vous écrirai plus après ça`;
-  const betaUrl =
-    'https://psylib.eu/beta?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email3';
+  const registerUrl =
+    'https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email3';
 
   const html = `<div style="${baseStyle()}">
 <p>Bonjour ${fn},</p>
 <p>Promis, c'est mon dernier email.</p>
 <p>Rapide récap :</p>
 <ul style="padding-left:20px;">
-  <li><strong>PsyLib</strong> = logiciel tout-en-un pour psys libéraux (agenda + notes + facturation + IA + paiement + espace patient)</li>
+  <li><strong>PsyLib</strong> = logiciel tout-en-un pour psys libéraux (agenda + notes + comptabilité + facturation + IA + visio + espace patient)</li>
   <li>100% conforme HDS (hébergement France + chiffrement AES-256-GCM applicatif)</li>
   <li>Alternative à Doctolib (139€+/mois) et aux 3-4 outils que vous cumulez probablement</li>
 </ul>
-<p><strong>Offre Fondateurs : 25€/mois garantis à vie</strong>, prix gelé même quand on passera à 50€/mois. Il reste 7 places sur 15.</p>
-<p>Je ferme l'offre dans quelques jours.</p>
-<p style="margin:24px 0;"><a href="${betaUrl}" style="background:#D97757;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Candidater Fondateur (2 min) →</a></p>
+<p><strong>Le plan gratuit est illimité</strong> en patients et séances — vous pouvez tester sans engagement, sans carte bancaire. L'IA et la visio sont à 25€/mois si vous en avez besoin.</p>
+<p style="margin:24px 0;"><a href="${registerUrl}" style="background:#D97757;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Créer mon compte gratuit (30 sec) →</a></p>
 <p>Si rien ne vous intéresse, c'est OK — désabonnez-vous sans culpabilité avec le lien en bas.</p>
 <p>Bonne continuation dans votre pratique,<br />
 <strong>Tony</strong><br />
@@ -380,12 +382,11 @@ ${footerHtml(unsub)}
 Promis, c'est mon dernier email.
 
 PsyLib = logiciel tout-en-un pour psys libéraux, 100% HDS.
-Offre Fondateurs : 25€/mois à vie, 7 places restantes sur 15.
+Plan gratuit illimité (patients + séances), sans carte bancaire.
+IA et visio à 25€/mois si besoin.
 
-Je ferme l'offre dans quelques jours.
-
-Candidater directement (2 min) :
-${betaUrl}
+Créer mon compte gratuit (30 sec) :
+${registerUrl}
 
 Bonne continuation,
 Tony - Fondateur PsyLib

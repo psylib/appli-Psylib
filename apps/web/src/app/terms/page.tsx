@@ -538,11 +538,11 @@ export default function TermsPage() {
         {/* CTA */}
         <section className="mb-12 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">
-            Essayez PsyLib gratuitement pendant 14 jours
+            Commencez gratuitement
           </h2>
           <p className="mb-6 text-white/80">
             Logiciel de gestion de cabinet conforme HDS, concu pour les psychologues
-            liberaux. Sans engagement, sans carte bancaire.
+            liberaux. Plan Free sans engagement, sans carte bancaire.
           </p>
           <Link
             href="/login"

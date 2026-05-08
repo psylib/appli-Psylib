@@ -82,6 +82,16 @@ export class EmailService {
     }
   }
 
+  // ─── RAW (admin notifications, etc.) ────────────────────────────────────────
+
+  async sendRawEmail(
+    to: string,
+    subject: string,
+    html: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    return this.send(to, subject, html, 'sendRawEmail');
+  }
+
   // ─── BIENVENUE (fin d'onboarding) ───────────────────────────────────────────
 
   async sendWelcomeEmail(

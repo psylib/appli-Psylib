@@ -16,7 +16,10 @@ const footerLinks = {
   Légal: [
     { label: 'Mentions légales', href: '/legal' },
     { label: 'CGU', href: '/terms' },
+    { label: 'CGV', href: '/cgv' },
     { label: 'Politique RGPD', href: '/privacy' },
+    { label: 'DPA (sous-traitance)', href: '/dpa' },
+    { label: 'Sous-traitants', href: '/sous-traitants' },
   ],
   Contact: [
     { label: 'Nous contacter', href: '/contact' },
@@ -75,7 +78,7 @@ export function LandingFooter() {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-charcoal-600 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-charcoal-400">
-            © 2026 PsyLib — Conforme HDS · SIRET en cours de création
+            © 2026 PsyLib — Conforme HDS · SIRET 10278495600017
           </p>
           <div className="flex items-center gap-4 text-xs text-charcoal-400">
             <span className="font-dm-mono">OVH HDS</span>

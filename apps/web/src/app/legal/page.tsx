@@ -80,11 +80,11 @@ export default function LegalPage() {
           </h2>
           <div className="rounded-2xl bg-[#F1F0F9] p-6">
             <ul className="list-inside list-disc space-y-2 text-gray-700">
-              <li><strong>Denomination :</strong> PsyLib (en cours d&apos;immatriculation)</li>
-              <li><strong>Forme juridique :</strong> SAS (en cours de creation)</li>
+              <li><strong>Denomination commerciale :</strong> PsyLib</li>
+              <li><strong>Exploitant :</strong> Tony Ruppel, micro-entreprise</li>
+              <li><strong>Forme juridique :</strong> Micro-entreprise (entreprise individuelle)</li>
               <li><strong>Siege social :</strong> France</li>
-              <li><strong>Numero SIRET :</strong> En cours d&apos;immatriculation</li>
-              <li><strong>Numero de TVA intracommunautaire :</strong> En cours d&apos;attribution</li>
+              <li><strong>Numero SIRET :</strong> 102 784 956 00017</li>
               <li>
                 <strong>Email de contact :</strong>{' '}
                 <a href="mailto:tony@psylib.eu" className="text-[#3D52A0] hover:underline">

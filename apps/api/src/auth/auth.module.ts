@@ -5,10 +5,12 @@ import { KeycloakGuard } from './guards/keycloak.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'keycloak-jwt' }),
+    NotificationsModule,
   ],
   controllers: [AuthController],
   providers: [KeycloakJwtStrategy, KeycloakGuard, RolesGuard, AuthService],

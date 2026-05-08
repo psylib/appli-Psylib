@@ -1,12 +1,23 @@
-import { Controller, Post, Req, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Req,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { KeycloakGuard } from './guards/keycloak.guard';
 import { CacheService } from '../common/cache.service';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { RegisterDto } from './dto/register.dto';
 
-function decodeJwtPayload(token: string): { jti?: string; exp?: number } | null {
+function decodeJwtPayload(
+  token: string,
+): { jti?: string; exp?: number } | null {
   const parts = token.split('.');
   if (parts.length !== 3) return null;
   try {
@@ -26,9 +37,27 @@ export class AuthController {
   ) {}
 
   /**
+   * POST /auth/register
+   * Crée un compte psychologue (Keycloak + DB) et envoie un email
+   * pour définir le mot de passe.
+   */
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Inscription psychologue' })
+  async register(
+    @Body() dto: RegisterDto,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.authService.registerPsychologist(
+      dto.email,
+      dto.firstName,
+      dto.lastName,
+      dto.adeliOrRpps,
+    );
+  }
+
+  /**
    * POST /auth/revoke
-   * Révoque le JWT courant en le mettant en blacklist Redis (TTL = durée de vie restante).
-   * Appelé par le frontend au logout avant signOut().
+   * Révoque le JWT courant en le mettant en blacklist Redis.
    */
   @Post('revoke')
   @UseGuards(KeycloakGuard)
@@ -53,12 +82,13 @@ export class AuthController {
   /**
    * POST /auth/forgot-password
    * Triggers Keycloak password reset email via Admin API.
-   * Always returns 200 to avoid leaking whether the email exists.
    */
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Demande de réinitialisation de mot de passe' })
-  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ sent: boolean }> {
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ): Promise<{ sent: boolean }> {
     await this.authService.requestPasswordReset(dto.email);
     return { sent: true };
   }
