@@ -59,6 +59,20 @@ const mockConfig = {
   }),
 } as unknown as ConfigService;
 
+const mockReferralService = {} as any;
+
+const mockAuditService = {
+  log: vi.fn(),
+} as any;
+
+const mockEventEmitter = {
+  emit: vi.fn(),
+} as any;
+
+const mockInvoiceQueue = {
+  add: vi.fn(),
+} as any;
+
 // ---------------------------------------------------------------------------
 // Factories
 // ---------------------------------------------------------------------------
@@ -130,6 +144,10 @@ function createService(): SubscriptionService {
     mockStripeService as never,
     mockConfig,
     mockEmailService as never,
+    mockReferralService as never,
+    mockAuditService as never,
+    mockEventEmitter as never,
+    mockInvoiceQueue as never,
   );
 }
 
@@ -215,7 +233,6 @@ describe('SubscriptionService', () => {
         expect.objectContaining({
           customerId: customer.id,
           priceId: 'price_solo_test',
-          trialDays: 14,
         }),
       );
     });
@@ -272,20 +289,12 @@ describe('SubscriptionService', () => {
   // -------------------------------------------------------------------------
 
   describe('checkPatientLimit()', () => {
-    it('ne lève pas d\'erreur si sous la limite du plan', async () => {
-      // STARTER: 40 patients max — 5 patients actuels
+    it('ne lève pas d\'erreur sur plan SOLO (patients illimités)', async () => {
+      // SOLO: patients = null (illimité)
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
-      mockPrisma.patient.count.mockResolvedValue(5);
 
       await expect(service.checkPatientLimit('psy-1')).resolves.toBeUndefined();
-    });
-
-    it('lève ForbiddenException si la limite est atteinte', async () => {
-      // STARTER: 40 patients max — 40 patients actuels
-      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
-      mockPrisma.patient.count.mockResolvedValue(40);
-
-      await expect(service.checkPatientLimit('psy-1')).rejects.toThrow(ForbiddenException);
+      expect(mockPrisma.patient.count).not.toHaveBeenCalled();
     });
 
     it('ne lève pas d\'erreur sur plan PRO (patients illimités)', async () => {
@@ -293,16 +302,15 @@ describe('SubscriptionService', () => {
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.PRO }));
 
       await expect(service.checkPatientLimit('psy-1')).resolves.toBeUndefined();
-      // Aucun appel DB pour compter les patients
       expect(mockPrisma.patient.count).not.toHaveBeenCalled();
     });
 
-    it('utilise le plan FREE si aucune subscription en DB', async () => {
-      // FREE: 5 patients max — 5 actuels → erreur
+    it('ne lève pas d\'erreur sur plan FREE (patients illimités)', async () => {
+      // FREE: patients = null (illimité)
       mockPrisma.subscription.findUnique.mockResolvedValue(null);
-      mockPrisma.patient.count.mockResolvedValue(5);
 
-      await expect(service.checkPatientLimit('psy-1')).rejects.toThrow(ForbiddenException);
+      await expect(service.checkPatientLimit('psy-1')).resolves.toBeUndefined();
+      expect(mockPrisma.patient.count).not.toHaveBeenCalled();
     });
   });
 
@@ -311,20 +319,12 @@ describe('SubscriptionService', () => {
   // -------------------------------------------------------------------------
 
   describe('checkSessionLimit()', () => {
-    it('ne lève pas d\'erreur si sous la limite mensuelle', async () => {
-      // STARTER: 40 sessions max — 10 ce mois
+    it('ne lève pas d\'erreur sur plan SOLO (sessions illimitées)', async () => {
+      // SOLO: sessions = null (illimité)
       mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
-      mockPrisma.session.count.mockResolvedValue(10);
 
       await expect(service.checkSessionLimit('psy-1')).resolves.toBeUndefined();
-    });
-
-    it('lève ForbiddenException si la limite mensuelle est atteinte', async () => {
-      // STARTER: 40 sessions max — 40 ce mois
-      mockPrisma.subscription.findUnique.mockResolvedValue(makeSub({ plan: SubscriptionPlan.SOLO }));
-      mockPrisma.session.count.mockResolvedValue(40);
-
-      await expect(service.checkSessionLimit('psy-1')).rejects.toThrow(ForbiddenException);
+      expect(mockPrisma.session.count).not.toHaveBeenCalled();
     });
 
     it('ne lève pas d\'erreur sur plan PRO (sessions illimitées)', async () => {

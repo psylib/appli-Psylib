@@ -248,7 +248,7 @@ describe('OnboardingService', () => {
           data: expect.objectContaining({ name: 'Dr Martin', specialization: 'TCC' }),
         }),
       );
-      expect(result).toEqual(updatedPsy);
+      expect(result).toEqual({ ...updatedPsy, acceptsMonSoutienPsy: false });
     });
 
     it('génère un slug si slug est null', async () => {
@@ -362,18 +362,18 @@ describe('OnboardingService', () => {
 
   describe('getPsychologistProfile()', () => {
     it('retourne le profil existant', async () => {
-      const psy = { ...makePsy(), subscription: null };
+      const psy = { ...makePsy(), subscription: null, networkProfile: null };
       mockPrisma.psychologist.findUnique.mockResolvedValue(psy);
 
       const result = await service.getPsychologistProfile('user-1');
 
-      expect(result).toEqual(psy);
+      expect(result).toEqual({ ...psy, acceptsMonSoutienPsy: false });
       expect(mockPrisma.psychologist.create).not.toHaveBeenCalled();
     });
 
     it('crée le profil si premier accès (auto-create)', async () => {
       const user = makeUser({ email: 'nouveau@example.com' });
-      const createdPsy = { ...makePsy({ name: 'nouveau', slug: 'nouveau-xxxxx' }), subscription: null };
+      const createdPsy = { ...makePsy({ name: 'nouveau', slug: 'nouveau-xxxxx' }), subscription: null, networkProfile: null };
 
       mockPrisma.psychologist.findUnique.mockResolvedValue(null);
       mockPrisma.user.findUnique.mockResolvedValue(user);
@@ -389,7 +389,7 @@ describe('OnboardingService', () => {
           }),
         }),
       );
-      expect(result).toEqual(createdPsy);
+      expect(result).toEqual({ ...createdPsy, acceptsMonSoutienPsy: false });
     });
 
     it('lève NotFoundException si utilisateur introuvable lors de la création', async () => {

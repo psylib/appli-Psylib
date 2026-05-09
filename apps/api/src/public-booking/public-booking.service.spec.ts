@@ -89,6 +89,12 @@ function createStripeMock() {
   };
 }
 
+function createConfigMock() {
+  return {
+    get: vi.fn().mockReturnValue('https://psylib.eu'),
+  };
+}
+
 // ─── Suite ────────────────────────────────────────────────────────────────────
 
 describe('PublicBookingService', () => {
@@ -105,7 +111,7 @@ describe('PublicBookingService', () => {
     availabilityService = createAvailabilityMock();
     emailService = createEmailMock();
     stripeMock = createStripeMock();
-    service = new PublicBookingService(prisma as any, cacheService as any, availabilityService as any, emailService as any, stripeMock as any);
+    service = new PublicBookingService(prisma as any, cacheService as any, availabilityService as any, emailService as any, stripeMock as any, createConfigMock() as any);
   });
 
   // ─── getPublicProfile ────────────────────────────────────────────────────

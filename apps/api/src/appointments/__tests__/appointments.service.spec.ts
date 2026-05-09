@@ -36,11 +36,21 @@ const mockStripeService = {
 };
 
 const mockWaitlist = {
-  onAppointmentCancelled: vi.fn(),
+  onAppointmentCancelled: vi.fn().mockResolvedValue(undefined),
 };
 
 const mockNotifications = {
   createAndDispatch: vi.fn(),
+};
+
+const mockInvoicesService = {} as any;
+
+const mockConfig = {
+  get: vi.fn().mockReturnValue('https://psylib.eu'),
+};
+
+const mockEventEmitter = {
+  emit: vi.fn(),
 };
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -82,7 +92,10 @@ function createService(): AppointmentsService {
     mockEmail as never,
     mockStripeService as never,
     mockWaitlist as never,
+    mockInvoicesService as never,
     mockNotifications as never,
+    mockConfig as never,
+    mockEventEmitter as never,
   );
 }
 

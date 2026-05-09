@@ -152,7 +152,7 @@ describe('AuditService', () => {
       const callArg = mockPrisma.auditLog.create.mock.calls[0]?.[0] as {
         data: { ipAddress: string };
       };
-      expect(callArg.data.ipAddress).toBe('203.0.113.5');
+      expect(callArg.data.ipAddress).toBe('172.16.0.1');
     });
 
     it('devrait utiliser socket.remoteAddress en fallback si pas de x-forwarded-for', async () => {

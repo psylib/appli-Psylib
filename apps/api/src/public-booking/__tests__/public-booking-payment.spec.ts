@@ -106,12 +106,19 @@ function createStripeMock() {
   };
 }
 
+function createConfigMock() {
+  return {
+    get: vi.fn().mockReturnValue('https://psylib.eu'),
+  };
+}
+
 function createService() {
   const prisma = createPrismaMock();
   const cache = createCacheMock();
   const availability = createAvailabilityMock();
   const email = createEmailMock();
   const stripe = createStripeMock();
+  const config = createConfigMock();
 
   const service = new PublicBookingService(
     prisma as any,
@@ -119,6 +126,7 @@ function createService() {
     availability as any,
     email as any,
     stripe as any,
+    config as any,
   );
 
   return { service, prisma, cache, email, stripe };
@@ -340,7 +348,9 @@ describe('PublicBookingService — Payment Flow', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             bookingPaymentStatus: 'pending_payment',
-            createdAt: expect.objectContaining({ lt: expect.any(Date) }),
+            OR: expect.arrayContaining([
+              expect.objectContaining({ source: 'public', createdAt: expect.objectContaining({ lt: expect.any(Date) }) }),
+            ]),
           }),
         }),
       );
@@ -365,7 +375,7 @@ describe('PublicBookingService — Payment Flow', () => {
       expect(prisma.appointment.updateMany).not.toHaveBeenCalled();
     });
 
-    it('uses 35-minute threshold for expiration', async () => {
+    it('uses 35-minute threshold for public bookings', async () => {
       const { service, prisma } = createService();
       prisma.appointment.findMany.mockResolvedValue([]);
 
@@ -374,9 +384,10 @@ describe('PublicBookingService — Payment Flow', () => {
       const after = new Date(Date.now() - 34 * 60 * 1000);
 
       const callArgs = prisma.appointment.findMany.mock.calls[0]![0] as {
-        where: { createdAt: { lt: Date } };
+        where: { OR: Array<{ source: string; createdAt: { lt: Date } }> };
       };
-      const threshold = callArgs.where.createdAt.lt;
+      const publicEntry = callArgs.where.OR.find((e) => e.source === 'public')!;
+      const threshold = publicEntry.createdAt.lt;
 
       expect(threshold.getTime()).toBeGreaterThanOrEqual(before.getTime());
       expect(threshold.getTime()).toBeLessThanOrEqual(after.getTime());

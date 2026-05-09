@@ -78,7 +78,7 @@ describe('AiService', () => {
     it('uses default models when not configured', () => {
       service = buildService('sk-or-v1-test');
       expect((service as any).modelMain).toBe('anthropic/claude-sonnet-4');
-      expect((service as any).modelFast).toBe('anthropic/claude-haiku-4');
+      expect((service as any).modelFast).toBe('anthropic/claude-haiku-4.5');
     });
   });
 
