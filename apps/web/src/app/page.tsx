@@ -50,7 +50,7 @@ const jsonLd = {
           '@type': 'HowToStep',
           position: 1,
           name: 'Creez votre compte',
-          text: 'Inscrivez-vous gratuitement en 30 secondes. 14 jours d\'essai sans carte bancaire.',
+          text: 'Inscrivez-vous gratuitement en 30 secondes. Plan Free pour toujours, sans carte bancaire.',
         },
         {
           '@type': 'HowToStep',
@@ -141,21 +141,7 @@ const jsonLd = {
 export const metadata: Metadata = {
   title: 'PsyLib — Gestion cabinet psychologue libéral | HDS',
   description:
-    'PsyLib : logiciel de gestion de cabinet pour psychologues liberaux en France. Dossiers patients securises (HDS), notes cliniques structurees, outcome tracking PHQ-9/GAD-7, teleconsultation video HDS, espace patient, facturation automatique PDF, comptabilite integree. Commencez gratuitement.',
-  keywords: [
-    'psychologue libéral',
-    'logiciel cabinet psychologue',
-    'outcome tracking psychologue',
-    'HDS psychologue',
-    'gestion cabinet psy',
-    'PHQ-9 GAD-7',
-    'réseau psychologues France',
-    'notes cliniques TCC ACT',
-    'téléconsultation psychologue HDS',
-    'visio psy conforme',
-    'espace patient psychologue',
-    'facturation automatique psychologue',
-  ],
+    'Logiciel de gestion de cabinet pour psychologues liberaux. Notes cliniques, facturation, IA, visio, outcome tracking. Conforme HDS France. Gratuit.',
   openGraph: {
     title: 'PsyLib — L\'atelier numérique du psy libéral',
     description:

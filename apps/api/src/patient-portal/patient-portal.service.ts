@@ -39,9 +39,12 @@ export class PatientPortalService {
   // ─── MOOD TRACKING ───────────────────────────────────────────────────────
 
   async createMood(patientId: string, dto: CreateMoodDto) {
+    // Chiffrer la note d'humeur (donnée de santé — obligation HDS)
+    const encryptedNote = dto.note ? this.encryption.encrypt(dto.note) : null;
+
     const [moodEntry, patient] = await Promise.all([
       this.prisma.moodTracking.create({
-        data: { patientId, mood: dto.mood, note: dto.note },
+        data: { patientId, mood: dto.mood, note: encryptedNote },
       }),
       this.prisma.patient.findUnique({
         where: { id: patientId },
@@ -58,26 +61,33 @@ export class PatientPortalService {
     ]);
 
     if (patient?.psychologist) {
+      // Email générique sans données patient (transit non HDS)
       await this.emailService.sendMoodLogged(patient.psychologist.user.email, {
         patientName: patient.name,
         mood: dto.mood,
-        note: dto.note,
+        note: undefined,
         psychologistName: patient.psychologist.name,
       });
     }
 
-    return moodEntry;
+    // Retourner la note en clair au patient
+    return { ...moodEntry, note: dto.note ?? null };
   }
 
   async getMoodHistory(patientId: string, days = 30) {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    return this.prisma.moodTracking.findMany({
+    const entries = await this.prisma.moodTracking.findMany({
       where: { patientId, createdAt: { gte: since } },
       orderBy: { createdAt: 'asc' },
       select: { id: true, mood: true, note: true, createdAt: true },
     });
+
+    return entries.map((e) => ({
+      ...e,
+      note: e.note ? this.encryption.decrypt(e.note) : null,
+    }));
   }
 
   // ─── EXERCICES ───────────────────────────────────────────────────────────
@@ -117,10 +127,11 @@ export class PatientPortalService {
       });
 
       if (patient?.psychologist) {
+        // Email générique sans contenu sensible (transit email non HDS)
         await this.emailService.sendExerciseCompleted(patient.psychologist.user.email, {
           patientName: patient.name,
           exerciseTitle: exercise.title,
-          feedback: dto.patientFeedback ?? undefined,
+          feedback: undefined,
           psychologistName: patient.psychologist.name,
         });
       }
@@ -176,11 +187,20 @@ export class PatientPortalService {
     }));
   }
 
-  async deleteJournalEntry(patientId: string, entryId: string) {
+  async deleteJournalEntry(patientId: string, entryId: string, userId: string) {
     const entry = await this.prisma.journalEntry.findUnique({ where: { id: entryId } });
     if (!entry || entry.patientId !== patientId) throw new ForbiddenException();
 
     await this.prisma.journalEntry.delete({ where: { id: entryId } });
+
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'patient',
+      action: 'DELETE',
+      entityType: 'journal_entry',
+      entityId: entryId,
+    });
+
     return { deleted: true };
   }
 

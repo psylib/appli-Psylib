@@ -103,7 +103,7 @@ export class PatientPortalController {
     @CurrentPatient() user: PatientUser,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.service.deleteJournalEntry(user.patientId, id);
+    return this.service.deleteJournalEntry(user.patientId, id, user.sub);
   }
 
   // ─── ASSESSMENTS ──────────────────────────────────────────────

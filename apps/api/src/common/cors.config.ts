@@ -30,12 +30,18 @@ export function corsOriginCallback(
   origin: string | undefined,
   callback: (err: Error | null, allow?: boolean) => void,
 ): void {
-  // Apps natives (React Native) utilisent Bearer tokens — CORS ne s'applique pas.
-  // En dev, on accepte les requêtes sans origine (Postman, curl).
-  // En prod, on les rejette pour éviter les attaques SSRF/CSRF.
+  // Apps natives (React Native) envoient `Origin: null` (string) — on les accepte
+  // car elles s'authentifient via Bearer token, pas via cookies.
+  // En dev, on accepte aussi les requêtes sans origine (Postman, curl).
   if (!origin) {
     const isDev = process.env['NODE_ENV'] !== 'production';
     callback(null, isDev);
+    return;
+  }
+
+  // React Native et sandboxed iframes envoient "null" comme string
+  if (origin === 'null') {
+    callback(null, true);
     return;
   }
 

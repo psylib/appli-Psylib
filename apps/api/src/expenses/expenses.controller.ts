@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseUUIDPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -95,6 +96,14 @@ export class ExpensesController {
     FileInterceptor('file', {
       storage: memoryStorage(),
       limits: { fileSize: 5 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+        if (allowed.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Type de fichier non autorisé. Formats acceptés : JPEG, PNG, WebP, PDF'), false);
+        }
+      },
     }),
   )
   uploadReceipt(

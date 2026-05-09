@@ -196,7 +196,16 @@ export class PatientAuthService {
         throw new UnauthorizedException('Compte introuvable');
       }
 
-      return this.generateTokens(user.id, decoded.patientId, user.email);
+      // Vérifier que le patientId du token est toujours lié à ce user
+      const patient = await this.prisma.patient.findFirst({
+        where: { id: decoded.patientId, userId: user.id },
+        select: { id: true },
+      });
+      if (!patient) {
+        throw new UnauthorizedException('Patient non associé à ce compte');
+      }
+
+      return this.generateTokens(user.id, patient.id, user.email);
     } catch {
       throw new UnauthorizedException('Refresh token invalide ou expiré');
     }

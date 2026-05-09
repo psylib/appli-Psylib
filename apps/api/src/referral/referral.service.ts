@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../common/prisma.service';
 
 @Injectable()
@@ -13,7 +14,7 @@ export class ReferralService {
       .toUpperCase()
       .replace(/[^A-Z]/g, '')
       .slice(0, 6) || 'PSY';
-    const suffix = Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4).padEnd(4, 'X');
+    const suffix = randomBytes(3).toString('hex').toUpperCase().slice(0, 6);
     return `${prefix}-${suffix}`;
   }
 

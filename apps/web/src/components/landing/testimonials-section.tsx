@@ -1,30 +1,33 @@
-import { FileText, BarChart3, ShieldCheck } from 'lucide-react';
+import { Quote } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
-const useCases = [
+const testimonials = [
   {
-    icon: FileText,
-    title: 'Notes cliniques simplifiées',
-    description:
-      'Rédigez vos comptes-rendus de séance avec un éditeur pensé pour la pratique clinique. Autosave, templates TCC/ACT/systémique, et résumé IA optionnel.',
-    color: 'bg-sage-50 border-sage-200 text-sage-700',
-    iconColor: 'text-sage',
+    quote:
+      "J'ai enfin un outil pensé pour ma pratique de psy, pas un logiciel médical générique. Les notes structurées et l'outcome tracking ont changé ma façon de suivre mes patients.",
+    name: 'Pauline R.',
+    role: 'Psychologue clinicienne',
+    location: 'Paris',
+    color: 'border-sage-200 bg-sage-50',
+    quoteColor: 'text-sage',
   },
   {
-    icon: BarChart3,
-    title: 'Suivi thérapeutique objectif',
-    description:
-      'Visualisez l\'évolution de vos patients grâce au mood tracking et aux indicateurs de progression. Des données concrètes pour guider vos décisions cliniques.',
-    color: 'bg-terracotta-50 border-terracotta-200 text-terracotta-700',
-    iconColor: 'text-terracotta',
+    quote:
+      "La conformité HDS était un vrai casse-tête. PsyLib gère tout — chiffrement, hébergement certifié, audit. Je me concentre sur mes patients, pas sur la paperasse RGPD.",
+    name: 'Claire C.',
+    role: 'Psychologue TCC',
+    location: 'Lyon',
+    color: 'border-terracotta-200 bg-terracotta-50',
+    quoteColor: 'text-terracotta',
   },
   {
-    icon: ShieldCheck,
-    title: 'Zéro compromis sur la sécurité',
-    description:
-      'Hébergement HDS, chiffrement AES-256, authentification forte — vos données patients sont protégées selon les standards les plus exigeants du secteur santé.',
-    color: 'bg-cream-100 border-cream-200 text-charcoal-600',
-    iconColor: 'text-charcoal-500',
+    quote:
+      "L'espace patient avec le mood tracking est une vraie plus-value clinique. Mes patients s'impliquent plus entre les séances, et moi j'ai des données concrètes pour ajuster la prise en charge.",
+    name: 'Annaëlle V.',
+    role: 'Psychologue libérale',
+    location: 'Bordeaux',
+    color: 'border-cream-200 bg-cream-100',
+    quoteColor: 'text-charcoal-500',
   },
 ];
 
@@ -36,27 +39,32 @@ export function TestimonialsSection() {
         <ScrollReveal>
           <div className="text-center mb-12">
             <p className="text-terracotta text-sm font-medium tracking-widest uppercase mb-3">
-              Pourquoi PsyLib
+              Témoignages
             </p>
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-charcoal mb-4">
-              Conçu par et pour les psychologues
+              Ils ont adopté PsyLib
             </h2>
             <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
-              Chaque fonctionnalité a été pensée pour répondre aux réalités du cabinet libéral — documentation clinique, suivi patient et conformité légale.
+              Des psychologues libéraux qui ont rejoint PsyLib dès sa création.
             </p>
           </div>
         </ScrollReveal>
 
-        {/* Use cases grid */}
+        {/* Testimonials grid */}
         <div className="grid md:grid-cols-3 gap-6">
-          {useCases.map(({ icon: Icon, title, description, color, iconColor }, i) => (
-            <ScrollReveal key={title} delay={i * 120}>
-              <div className={`rounded-2xl border p-6 ${color} hover:shadow-md transition-shadow`}>
-                <Icon size={28} className={`${iconColor} mb-4`} aria-hidden="true" />
-                <h3 className="font-semibold text-charcoal text-base mb-2">{title}</h3>
-                <p className="text-charcoal-500 text-sm leading-relaxed">
-                  {description}
-                </p>
+          {testimonials.map(({ quote, name, role, location, color, quoteColor }, i) => (
+            <ScrollReveal key={name} delay={i * 120}>
+              <div className={`rounded-2xl border p-6 ${color} hover:shadow-md transition-shadow flex flex-col h-full`}>
+                <Quote size={24} className={`${quoteColor} mb-4 opacity-60`} aria-hidden="true" />
+                <blockquote className="text-charcoal-600 text-sm leading-relaxed flex-1 mb-6">
+                  &ldquo;{quote}&rdquo;
+                </blockquote>
+                <div className="border-t border-black/5 pt-4">
+                  <div className="font-semibold text-charcoal text-sm">{name}</div>
+                  <div className="text-charcoal-400 text-xs">
+                    {role} — {location}
+                  </div>
+                </div>
               </div>
             </ScrollReveal>
           ))}

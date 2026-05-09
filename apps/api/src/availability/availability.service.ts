@@ -17,20 +17,22 @@ export class AvailabilityService {
   async saveSlots(userId: string, dto: SaveAvailabilityDto) {
     const psy = await this.getPsychologist(userId);
 
-    // Remplace tous les créneaux par les nouveaux (deleteMany + createMany)
-    await this.prisma.availability.deleteMany({ where: { psychologistId: psy.id } });
+    // Transaction pour éviter la perte de données en cas de crash entre delete et create
+    await this.prisma.$transaction(async (tx) => {
+      await tx.availability.deleteMany({ where: { psychologistId: psy.id } });
 
-    if (dto.slots.length > 0) {
-      await this.prisma.availability.createMany({
-        data: dto.slots.map((s) => ({
-          psychologistId: psy.id,
-          dayOfWeek: s.dayOfWeek,
-          startTime: s.startTime,
-          endTime: s.endTime,
-          isActive: s.isActive ?? true,
-        })),
-      });
-    }
+      if (dto.slots.length > 0) {
+        await tx.availability.createMany({
+          data: dto.slots.map((s) => ({
+            psychologistId: psy.id,
+            dayOfWeek: s.dayOfWeek,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            isActive: s.isActive ?? true,
+          })),
+        });
+      }
+    });
 
     return this.prisma.availability.findMany({
       where: { psychologistId: psy.id },

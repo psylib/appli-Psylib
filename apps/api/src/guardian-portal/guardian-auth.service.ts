@@ -16,7 +16,16 @@ export class GuardianAuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    // Warn at startup if guardian uses same secret as patient
+    const guardianSecret = this.config.get<string>('GUARDIAN_JWT_SECRET');
+    if (!guardianSecret) {
+      this.logger.warn(
+        'GUARDIAN_JWT_SECRET non configuré — fallback sur PATIENT_JWT_SECRET. ' +
+        'Configurez une clé distincte pour isoler les tokens guardian/patient.',
+      );
+    }
+  }
 
   /**
    * Login guardian par email/password

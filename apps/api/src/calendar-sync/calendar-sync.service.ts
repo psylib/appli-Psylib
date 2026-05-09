@@ -50,6 +50,17 @@ export class CalendarSyncService implements OnModuleInit {
     @InjectQueue(CALENDAR_SYNC_QUEUE) private readonly syncQueue: Queue,
   ) {}
 
+  private getOAuthStateSecret(): string {
+    const secret = this.config.get<string>('OAUTH_STATE_SECRET');
+    if (!secret) {
+      this.logger.warn('OAUTH_STATE_SECRET non configuré — fallback sur ENCRYPTION_KEY');
+      const fallback = this.config.get<string>('ENCRYPTION_KEY');
+      if (!fallback) throw new Error('Ni OAUTH_STATE_SECRET ni ENCRYPTION_KEY configuré');
+      return fallback;
+    }
+    return secret;
+  }
+
   // ─── onModuleInit — register repeatable polling job ───────────────────────
 
   async onModuleInit(): Promise<void> {
@@ -70,7 +81,7 @@ export class CalendarSyncService implements OnModuleInit {
    * parameter, so we can validate the callback securely.
    */
   getAuthUrl(psychologistId: string): string {
-    const secret = this.config.get<string>('OAUTH_STATE_SECRET') ?? this.config.get<string>('ENCRYPTION_KEY') ?? '';
+    const secret = this.getOAuthStateSecret();
     const state = jwt.sign({ psychologistId } as StatePayload, secret, { expiresIn: '10m' });
     return this.googleProvider.getAuthUrl(state);
   }
@@ -80,7 +91,7 @@ export class CalendarSyncService implements OnModuleInit {
    * Throws if the token is invalid or expired.
    */
   verifyState(state: string): { psychologistId: string } {
-    const secret = this.config.get<string>('OAUTH_STATE_SECRET') ?? this.config.get<string>('ENCRYPTION_KEY') ?? '';
+    const secret = this.getOAuthStateSecret();
     const payload = jwt.verify(state, secret) as StatePayload;
     return { psychologistId: payload.psychologistId };
   }

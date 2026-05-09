@@ -1,10 +1,16 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
 import { GuardianAuthService } from './guardian-auth.service';
 
 class GuardianLoginDto {
+  @IsEmail()
   email!: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(200)
   password!: string;
 }
 

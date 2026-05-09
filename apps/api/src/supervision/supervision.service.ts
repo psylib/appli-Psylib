@@ -3,6 +3,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
+import { AuditService } from '../common/audit.service';
 import {
   CreateGroupDto, UpdateGroupDto, CreateSessionDto,
   UpdateSessionDto, CreateCaseStudyDto,
@@ -14,6 +15,7 @@ export class SupervisionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly encryption: EncryptionService,
+    private readonly audit: AuditService,
   ) {}
 
   // ─── Groups ─────────────────────────────────────────────────────────────────
@@ -186,6 +188,16 @@ export class SupervisionService {
         presenter: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'asc' },
+    });
+
+    // Audit : lecture de données cliniques chiffrées (obligation HDS)
+    await this.audit.log({
+      actorId: psyKeycloakId,
+      actorType: 'psychologist',
+      action: 'READ',
+      entityType: 'case_study',
+      entityId: sessionId,
+      metadata: { count: cases.length, groupId: session.groupId },
     });
 
     return cases.map((c) => ({

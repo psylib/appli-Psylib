@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Shield, ArrowRight, CheckCircle2, Users } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
 function DashboardMockup() {
@@ -118,7 +118,7 @@ export function HeroSection() {
 
               {/* H1 */}
               <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight tracking-tight">
-                L&apos;atelier numérique du{' '}
+                Le logiciel tout-en-un du{' '}
                 <em className="not-italic text-sage">psy libéral</em>
               </h1>
 
@@ -128,7 +128,7 @@ export function HeroSection() {
                 <strong className="text-charcoal font-medium">Notes, patients, facturation, comptabilité, IA — tout en un, conforme HDS.</strong>
               </p>
 
-              {/* CTAs */}
+              {/* CTA */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Link
                   href="/register"
@@ -138,10 +138,10 @@ export function HeroSection() {
                   <ArrowRight size={16} />
                 </Link>
                 <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal text-charcoal font-medium hover:bg-charcoal hover:text-white transition-colors"
+                  href="#pricing"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full border-2 border-charcoal/20 text-charcoal font-medium hover:border-charcoal hover:bg-charcoal hover:text-white transition-colors"
                 >
-                  Se connecter
+                  Voir les tarifs
                 </Link>
               </div>
 
@@ -165,6 +165,20 @@ export function HeroSection() {
           <div className="hidden lg:flex justify-center items-center py-8">
             <DashboardMockup />
           </div>
+        </div>
+      </div>
+
+      {/* Social proof banner */}
+      <div className="absolute bottom-0 inset-x-0 bg-white/80 backdrop-blur-sm border-t border-cream-200">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-center gap-3 text-sm text-charcoal-500">
+          <Users size={16} className="text-sage" />
+          <span>
+            Rejoint par <strong className="text-charcoal font-medium">7+ psychologues fondateurs</strong> en France
+          </span>
+          <span className="hidden sm:inline text-charcoal-300">|</span>
+          <span className="hidden sm:inline">
+            Notes cliniques, visio HDS, outcome tracking
+          </span>
         </div>
       </div>
     </section>
