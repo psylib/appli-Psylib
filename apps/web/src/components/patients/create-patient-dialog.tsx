@@ -34,6 +34,10 @@ export function CreatePatientDialog({ open, onClose, onCreated }: CreatePatientD
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) { setError('Le nom est requis'); return; }
+    if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setError('Adresse email invalide');
+      return;
+    }
 
     setLoading(true);
     setError(null);

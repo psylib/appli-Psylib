@@ -4,9 +4,10 @@ import { PatientEvolutionContent } from '@/components/outcomes/patient-evolution
 export const metadata: Metadata = { title: 'Évolution patient' };
 
 interface Props {
-  params: { patientId: string };
+  params: Promise<{ patientId: string }>;
 }
 
-export default function PatientEvolutionPage({ params }: Props) {
-  return <PatientEvolutionContent patientId={params.patientId} />;
+export default async function PatientEvolutionPage({ params }: Props) {
+  const { patientId } = await params;
+  return <PatientEvolutionContent patientId={patientId} />;
 }

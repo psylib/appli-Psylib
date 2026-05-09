@@ -89,13 +89,13 @@ export class VideoController {
 
   @Post('join/:token')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
-  async joinAsPatient(@Param('token') token: string) {
+  async joinAsPatient(@Param('token', ParseUUIDPipe) token: string) {
     return this.videoService.generatePatientToken(token);
   }
 
   @Post('consent/:token')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
-  async recordConsent(@Param('token') token: string, @Req() req: Request) {
+  async recordConsent(@Param('token', ParseUUIDPipe) token: string, @Req() req: Request) {
     const ip = req.ip || req.headers['x-forwarded-for']?.toString();
     await this.videoService.recordConsent(token, ip);
     return { ok: true };

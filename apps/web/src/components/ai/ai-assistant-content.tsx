@@ -271,11 +271,16 @@ export function AiAssistantContent() {
   const handleDeleteContent = async (id: string) => {
     if (!session?.accessToken) return;
     const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-    await fetch(`${API}/api/v1/ai/content-library/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${session.accessToken}` },
-    });
-    setLibraryContents(prev => prev.filter(c => c.id !== id));
+    try {
+      const res = await fetch(`${API}/api/v1/ai/content-library/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.accessToken}` },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setLibraryContents(prev => prev.filter(c => c.id !== id));
+    } catch {
+      alert('Impossible de supprimer le contenu');
+    }
   };
 
   const copyExercise = async () => {

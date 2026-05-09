@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Res, UseGuards, BadRequestException } from '@nestjs/common';
 import type { Response } from 'express';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -33,8 +33,8 @@ export class AccountingController {
     @Query('category') category?: string,
   ) {
     return this.accountingService.getBook(user.sub, {
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 20,
+      page: Math.max(1, parseInt(page ?? '1', 10) || 1),
+      limit: Math.min(100, Math.max(1, parseInt(limit ?? '20', 10) || 20)),
       type: type as 'income' | 'expense' | undefined,
       dateFrom,
       dateTo,
@@ -117,7 +117,10 @@ export class AccountingController {
     @Query('year') year: string,
     @Res() res: Response,
   ) {
-    const fiscalYear = year ? parseInt(year, 10) : new Date().getFullYear();
+    const fiscalYear = parseInt(year ?? '', 10) || new Date().getFullYear();
+    if (fiscalYear < 2020 || fiscalYear > 2099) {
+      throw new BadRequestException('Année fiscale invalide (2020-2099)');
+    }
 
     const psychologistId = await this.accountingService.resolvePsychologistId(user.sub);
 
@@ -143,7 +146,8 @@ export class AccountingController {
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,
   ) {
-    const fiscalYear = year ? parseInt(year, 10) : new Date().getFullYear();
+    const fiscalYear = parseInt(year ?? '', 10) || new Date().getFullYear();
+    if (fiscalYear < 2020 || fiscalYear > 2099) throw new BadRequestException('Année fiscale invalide (2020-2099)');
     const psychologistId = await this.accountingService.resolvePsychologistId(user.sub);
     return this.taxPrepService.get2035Prep(psychologistId, fiscalYear);
   }
@@ -160,7 +164,8 @@ export class AccountingController {
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,
   ) {
-    const fiscalYear = year ? parseInt(year, 10) : new Date().getFullYear();
+    const fiscalYear = parseInt(year ?? '', 10) || new Date().getFullYear();
+    if (fiscalYear < 2020 || fiscalYear > 2099) throw new BadRequestException('Année fiscale invalide (2020-2099)');
     const psychologistId = await this.accountingService.resolvePsychologistId(user.sub);
     return this.taxPrepService.estimateSocialCharges(psychologistId, fiscalYear);
   }

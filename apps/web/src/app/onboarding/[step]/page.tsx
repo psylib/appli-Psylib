@@ -9,7 +9,8 @@ export function generateStaticParams() {
   return STEPS.map((step) => ({ step }));
 }
 
-export async function generateMetadata({ params }: { params: { step: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ step: string }> }) {
+  const { step } = await params;
   const titles: Record<string, string> = {
     profile: 'Votre profil',
     practice: 'Votre cabinet',
@@ -17,14 +18,15 @@ export async function generateMetadata({ params }: { params: { step: string } })
     first_patient: 'Premier patient',
     success: 'Bienvenue !',
   };
-  return { title: titles[params.step] ?? 'Onboarding' };
+  return { title: titles[step] ?? 'Onboarding' };
 }
 
-export default async function OnboardingStepPage({ params }: { params: { step: string } }) {
+export default async function OnboardingStepPage({ params }: { params: Promise<{ step: string }> }) {
+  const { step: stepParam } = await params;
   const session = await auth();
   if (!session?.user) redirect('/login');
 
-  const step = params.step as Step;
+  const step = stepParam as Step;
   if (!STEPS.includes(step)) redirect('/onboarding/profile');
 
   const currentStepIndex = STEPS.indexOf(step);

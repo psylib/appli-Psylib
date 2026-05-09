@@ -278,10 +278,13 @@ export class PatientPortalService {
     });
     if (!doc) throw new NotFoundException('Document introuvable');
 
-    // Defense-in-depth: verify file path is within upload base directory
-    const resolvedPath = path.resolve(doc.filePath);
-    if (!resolvedPath.startsWith(path.resolve('/uploads/documents'))) {
-      throw new ForbiddenException('Chemin de fichier invalide');
+    // Defense-in-depth: verify file path is within upload base directory (local storage only)
+    // S3 keys don't start with /uploads/documents so skip this check for S3 paths
+    if (!doc.filePath.startsWith('documents/')) {
+      const resolvedPath = path.resolve(doc.filePath);
+      if (!resolvedPath.startsWith(path.resolve('/uploads/documents'))) {
+        throw new ForbiddenException('Chemin de fichier invalide');
+      }
     }
 
     // Mark first download

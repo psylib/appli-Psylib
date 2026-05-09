@@ -11,8 +11,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 /**
- * Abstraction over file storage. Uses AWS S3 when configured,
- * falls back to local disk for development.
+ * Abstraction over file storage. Uses S3-compatible storage when configured
+ * (AWS S3, OVH Object Storage, MinIO, etc.), falls back to local disk for development.
  */
 @Injectable()
 export class StorageService {
@@ -26,15 +26,18 @@ export class StorageService {
     const region = this.config.get<string>('S3_REGION') ?? 'eu-west-3';
 
     if (bucket) {
+      const endpoint = this.config.get<string>('S3_ENDPOINT');
       this.s3 = new S3Client({
         region,
+        endpoint,
+        forcePathStyle: !!endpoint, // Required for OVH / S3-compatible providers
         credentials: {
           accessKeyId: this.config.getOrThrow<string>('S3_ACCESS_KEY_ID'),
           secretAccessKey: this.config.getOrThrow<string>('S3_SECRET_ACCESS_KEY'),
         },
       });
       this.bucket = bucket;
-      this.logger.log(`StorageService initialized with S3 bucket: ${bucket} (${region})`);
+      this.logger.log(`StorageService initialized with S3 bucket: ${bucket} (${region})${endpoint ? ` endpoint: ${endpoint}` : ''}`);
     } else {
       this.s3 = null;
       this.bucket = '';
@@ -57,7 +60,7 @@ export class StorageService {
           Key: key,
           Body: buffer,
           ContentType: mimeType,
-          ServerSideEncryption: 'aws:kms',
+          ...(this.config.get<string>('S3_ENDPOINT') ? {} : { ServerSideEncryption: 'aws:kms' as const }),
         }),
       );
       return key;

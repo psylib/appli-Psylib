@@ -11,6 +11,7 @@ export class PublicBookingDto {
 
   @IsString()
   @MinLength(6)
+  @MaxLength(20)
   patientPhone!: string;
 
   @IsDateString()

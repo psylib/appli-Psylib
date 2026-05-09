@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../common/prisma.service';
 import { CacheService } from '../common/cache.service';
@@ -8,7 +9,6 @@ import { StripeService } from '../billing/stripe.service';
 import { PublicBookingDto } from './dto/public-booking.dto';
 import { randomUUID } from 'crypto';
 
-const FRONTEND_URL = process.env['FRONTEND_URL'] ?? 'https://psylib.eu';
 const TTL_PROFILE = 300; // 5 min
 const TTL_SLOTS = 120;   // 2 min
 
@@ -16,13 +16,18 @@ const TTL_SLOTS = 120;   // 2 min
 export class PublicBookingService {
   private readonly logger = new Logger(PublicBookingService.name);
 
+  private readonly frontendUrl: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly cache: CacheService,
     private readonly availabilityService: AvailabilityService,
     private readonly email: EmailService,
     private readonly stripeService: StripeService,
-  ) {}
+    private readonly config: ConfigService,
+  ) {
+    this.frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+  }
 
   async getPublicProfile(slug: string) {
     const cacheKey = `profile:${slug}`;
@@ -435,8 +440,8 @@ export class PublicBookingService {
           psyName: psy.name,
           appointmentId: appointment.id,
           motif,
-          successUrl: `${FRONTEND_URL}/psy/${slug}/booking/success?appointment=${appointment.id}`,
-          cancelUrl: `${FRONTEND_URL}/psy/${slug}/booking/cancel?appointment=${appointment.id}`,
+          successUrl: `${this.frontendUrl}/psy/${slug}/booking/success?appointment=${appointment.id}`,
+          cancelUrl: `${this.frontendUrl}/psy/${slug}/booking/cancel?appointment=${appointment.id}`,
         });
 
         // Store the payment intent on the appointment
@@ -454,7 +459,7 @@ export class PublicBookingService {
           scheduledAt,
           duration,
           reason: dto.reason,
-          dashboardUrl: `${FRONTEND_URL}/dashboard/calendar`,
+          dashboardUrl: `${this.frontendUrl}/dashboard/calendar`,
         });
 
         // Send booking received email to patient WITH checkout link as backup
@@ -464,7 +469,7 @@ export class PublicBookingService {
           scheduledAt,
           duration,
           checkoutUrl: checkoutSession.url ?? undefined,
-          cancelUrl: `${FRONTEND_URL}/appointments/cancel/${cancelToken}`,
+          cancelUrl: `${this.frontendUrl}/appointments/cancel/${cancelToken}`,
         });
 
         return {
@@ -494,7 +499,7 @@ export class PublicBookingService {
       scheduledAt,
       duration,
       reason: dto.reason,
-      dashboardUrl: `${FRONTEND_URL}/dashboard/calendar`,
+      dashboardUrl: `${this.frontendUrl}/dashboard/calendar`,
     });
 
     void this.email.sendBookingReceivedToPatient(dto.patientEmail, {
@@ -502,7 +507,7 @@ export class PublicBookingService {
       psychologistName: psy.name,
       scheduledAt,
       duration,
-      cancelUrl: `${FRONTEND_URL}/appointments/cancel/${cancelToken}`,
+      cancelUrl: `${this.frontendUrl}/appointments/cancel/${cancelToken}`,
     });
 
     return { success: true, appointmentId: appointment.id };

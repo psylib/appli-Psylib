@@ -131,7 +131,13 @@ export function CreateAppointmentDialog({
       return;
     }
 
-    const scheduledAt = new Date(`${selectedDate}T${time}:00`).toISOString();
+    const scheduledDate = new Date(`${selectedDate}T${time}:00`);
+    if (scheduledDate < new Date()) {
+      setError('La date du rendez-vous ne peut pas être dans le passé');
+      return;
+    }
+
+    const scheduledAt = scheduledDate.toISOString();
     setError(null);
 
     const amount = paymentMode !== 'none' && paymentAmount ? Number(paymentAmount) : undefined;

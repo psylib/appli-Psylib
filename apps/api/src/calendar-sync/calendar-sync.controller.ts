@@ -54,8 +54,27 @@ export class CalendarSyncController {
   ): Promise<void> {
     const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
 
+    // Validate required params before processing
+    if (!code || !state || typeof code !== 'string' || typeof state !== 'string' || code.length > 2048 || state.length > 2048) {
+      this.logger.warn('Google Calendar OAuth callback: missing or invalid code/state params');
+      res.redirect(`${frontendUrl}/dashboard/settings/practice?calendar=error`);
+      return;
+    }
+
     try {
       const { psychologistId } = this.calendarSyncService.verifyState(state);
+
+      // Verify the psychologist exists before proceeding
+      const psy = await this.prisma.psychologist.findUnique({
+        where: { id: psychologistId },
+        select: { id: true },
+      });
+      if (!psy) {
+        this.logger.warn(`Google Calendar OAuth callback: psychologist ${psychologistId} not found`);
+        res.redirect(`${frontendUrl}/dashboard/settings/practice?calendar=error`);
+        return;
+      }
+
       await this.calendarSyncService.handleCallback(psychologistId, code);
       res.redirect(`${frontendUrl}/dashboard/settings/practice?calendar=connected`);
     } catch (err) {

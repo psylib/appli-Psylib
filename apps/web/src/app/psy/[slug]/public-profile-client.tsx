@@ -50,6 +50,9 @@ function SlotPicker({
   const [loading, setLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
 
+  // Use today's date string as a stable dependency so slots refresh after midnight
+  const todayStr = new Date().toDateString();
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -64,7 +67,7 @@ function SlotPicker({
       .catch(() => setSlots([]))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, weekOffset, consultationTypeId]);
+  }, [slug, weekOffset, consultationTypeId, todayStr]);
 
   // Group by day
   const byDay: Record<string, Date[]> = {};

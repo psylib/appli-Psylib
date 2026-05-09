@@ -90,14 +90,14 @@ class StreamContentRequestDto implements StreamContentDto {
 }
 
 class SaveContentRequestDto {
-  @IsString()
+  @IsEnum(['linkedin', 'newsletter', 'blog'])
   type!: string;
 
   @IsString()
   @MaxLength(200)
   theme!: string;
 
-  @IsString()
+  @IsEnum(['professional', 'warm', 'educational'])
   tone!: string;
 
   @IsString()

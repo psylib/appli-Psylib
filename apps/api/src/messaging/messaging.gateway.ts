@@ -207,6 +207,11 @@ export class MessagingGateway
       throw new WsException('conversationId et content requis');
     }
 
+    // Validate content length to prevent oversized messages
+    if (content.length > 10000) {
+      throw new WsException('Message trop long (max 10000 caractères)');
+    }
+
     try {
       const messageDto = await this.messagingService.sendMessage(
         conversationId,

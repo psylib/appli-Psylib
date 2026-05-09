@@ -62,7 +62,7 @@ export default function ConsultationRoomPage() {
 
   if (loading || !tokenData) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-64px)]">
+      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
           <p className="text-muted-foreground">Connexion a la salle de visio...</p>
@@ -72,6 +72,7 @@ export default function ConsultationRoomPage() {
   }
 
   return (
+    <div className="fixed inset-0 z-50 bg-background">
     <PsyVideoRoom
       token={tokenData.token}
       wsUrl={tokenData.wsUrl}
@@ -84,5 +85,6 @@ export default function ConsultationRoomPage() {
       }
       onCallEnd={handleEndCall}
     />
+    </div>
   );
 }

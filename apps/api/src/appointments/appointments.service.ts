@@ -253,7 +253,9 @@ export class AppointmentsService {
 
     // If status changed to no_show, check if no-show billing is enabled
     if (dto.status === 'no_show' && existing.status !== 'no_show') {
-      void this.handleNoShowBilling(psy.id, existing, userId);
+      this.handleNoShowBilling(psy.id, existing, userId).catch((err) =>
+        this.logger.error(`handleNoShowBilling failed for ${existing.id}: ${err instanceof Error ? err.message : String(err)}`),
+      );
     }
 
     return updated;
@@ -287,8 +289,20 @@ export class AppointmentsService {
       status: 'cancelled',
     });
 
+    // Audit log for psychologist-initiated cancellation (HDS compliance)
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'UPDATE',
+      entityType: 'appointment',
+      entityId: id,
+      metadata: { status: 'cancelled', cancelledBy: 'psychologist' },
+    });
+
     // Notify psy about waitlist candidates when a slot is freed
-    void this.waitlistService.onAppointmentCancelled(psy.id, existing.scheduledAt);
+    this.waitlistService.onAppointmentCancelled(psy.id, existing.scheduledAt).catch((err) =>
+      this.logger.error(`waitlist.onAppointmentCancelled failed: ${err instanceof Error ? err.message : String(err)}`),
+    );
 
     // In-app notification
     const cancelledPatient = await this.prisma.patient.findUnique({
@@ -542,9 +556,11 @@ export class AppointmentsService {
     );
 
     // Notify waitlist candidates
-    void this.waitlistService.onAppointmentCancelled(
+    this.waitlistService.onAppointmentCancelled(
       appointment.psychologist.id,
       appointment.scheduledAt,
+    ).catch((err) =>
+      this.logger.error(`waitlist.onAppointmentCancelled failed: ${err instanceof Error ? err.message : String(err)}`),
     );
 
     return { success: true, refunded, withinDelay };

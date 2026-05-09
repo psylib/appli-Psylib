@@ -77,6 +77,7 @@ import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
           OAUTH_STATE_SECRET: z.string().optional(),
           GUARDIAN_JWT_SECRET: z.string().optional(),
           S3_DOCUMENTS_BUCKET: z.string().optional(),
+          S3_ENDPOINT: z.string().optional(),
           S3_REGION: z.string().optional(),
           S3_ACCESS_KEY_ID: z.string().optional(),
           S3_SECRET_ACCESS_KEY: z.string().optional(),

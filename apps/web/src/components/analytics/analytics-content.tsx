@@ -326,33 +326,35 @@ export function AnalyticsContent() {
   const { data: session } = useSession();
   const token = session?.accessToken;
 
-  const { data: overview, isLoading: overviewLoading } = useQuery({
+  const { data: overview, isLoading: overviewLoading, isError: overviewError } = useQuery({
     queryKey: ['analytics', 'overview'],
-    queryFn: () => analyticsApi.getOverview(token!),
+    queryFn: () => analyticsApi.getOverview(token as string),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: revenue, isLoading: revenueLoading } = useQuery({
+  const { data: revenue, isLoading: revenueLoading, isError: revenueError } = useQuery({
     queryKey: ['analytics', 'revenue', 6],
-    queryFn: () => analyticsApi.getRevenue(token!, 6),
+    queryFn: () => analyticsApi.getRevenue(token as string, 6),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: patientGrowth, isLoading: patientLoading } = useQuery({
+  const { data: patientGrowth, isLoading: patientLoading, isError: patientError } = useQuery({
     queryKey: ['analytics', 'patients', 6],
-    queryFn: () => analyticsApi.getPatientGrowth(token!, 6),
+    queryFn: () => analyticsApi.getPatientGrowth(token as string, 6),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: moodTrends, isLoading: moodLoading } = useQuery({
+  const { data: moodTrends, isLoading: moodLoading, isError: moodError } = useQuery({
     queryKey: ['analytics', 'mood-trends'],
-    queryFn: () => analyticsApi.getMoodTrends(token!),
+    queryFn: () => analyticsApi.getMoodTrends(token as string),
     enabled: !!token,
     staleTime: 5 * 60 * 1000,
   });
+
+  const hasAnyError = overviewError || revenueError || patientError || moodError;
 
   const formatEur = (value: number) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
@@ -373,6 +375,15 @@ export function AnalyticsContent() {
           Suivez vos revenus, patients et tendances thérapeutiques
         </p>
       </div>
+
+      {hasAnyError && (
+        <div
+          className="rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive"
+          role="alert"
+        >
+          Impossible de charger certaines données analytiques. Veuillez réessayer.
+        </div>
+      )}
 
       {/* Section 1 — KPI Cards */}
       <section aria-labelledby="kpi-heading">

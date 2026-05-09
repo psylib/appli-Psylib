@@ -562,6 +562,7 @@ model GuardianInvitation {
 
   @@index([token], name: "idx_guardian_invitations_token")
   @@index([guardianId], name: "idx_guardian_invitations_guardian")
+  @@index([psychologistId], name: "idx_guardian_invitations_psy")
   @@map("guardian_invitations")
 }
 
@@ -584,6 +585,7 @@ model GuardianConsentRequest {
 
   @@index([token], name: "idx_guardian_consent_requests_token")
   @@index([guardianId, patientId], name: "idx_guardian_consent_req_guardian_patient")
+  @@index([psychologistId], name: "idx_guardian_consent_req_psy")
   @@map("guardian_consent_requests")
 }
 
@@ -607,13 +609,15 @@ model Session {
   createdAt      DateTime             @default(now()) @map("created_at")
 
   // Relations
-  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  psychologist Psychologist  @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  template     NoteTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   appointment  Appointment?
   invoices     Invoice[]
 
   @@index([patientId], name: "idx_sessions_patient")
   @@index([psychologistId, date(sort: Desc)], name: "idx_sessions_psy_date")
+  @@index([templateId], name: "idx_sessions_template")
   @@map("sessions")
 }
 
@@ -629,6 +633,7 @@ model NoteTemplate {
   createdAt      DateTime           @default(now()) @map("created_at")
 
   psychologist Psychologist? @relation(fields: [psychologistId], references: [id], onDelete: SetNull)
+  sessions     Session[]
 
   @@index([psychologistId], name: "idx_note_templates_psy")
   @@map("note_templates")
@@ -723,6 +728,7 @@ model NetworkGroupMember {
   psy   Psychologist @relation("NetworkGroupMembership", fields: [psyId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, psyId])
+  @@index([psyId], name: "idx_network_group_members_psy")
   @@map("network_group_members")
 }
 
@@ -765,6 +771,7 @@ model Appointment {
   @@index([psychologistId, scheduledAt], name: "idx_appointments_psy_date")
   @@index([patientId], name: "idx_appointments_patient")
   @@index([consultationTypeId], name: "idx_appointments_consultation_type")
+  @@index([psychologistId, googleEventId], name: "idx_appointments_google_event")
   @@map("appointments")
 }
 
@@ -882,6 +889,8 @@ model Message {
   sender       User?        @relation("MessageSender", fields: [senderId], references: [id], onDelete: SetNull)
 
   @@index([conversationId, readAt], name: "idx_messages_conv_read")
+  @@index([conversationId, createdAt], name: "idx_messages_conv_created")
+  @@index([senderId], name: "idx_messages_sender")
   @@map("messages")
 }
 
@@ -928,11 +937,13 @@ model CourseEnrollment {
   progress   Json     @default("{}")
   enrolledAt DateTime @default(now()) @map("enrolled_at")
 
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
 
   @@unique([courseId, userId])
   @@index([userId], name: "idx_course_enrollments_user")
+  @@index([paymentId], name: "idx_course_enrollments_payment")
   @@map("course_enrollments")
 }
 
@@ -953,11 +964,12 @@ model Payment {
   appointmentId           String?       @map("appointment_id")
   createdAt               DateTime      @default(now()) @map("created_at")
 
-  psychologist      Psychologist      @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  patient           Patient?          @relation(fields: [patientId], references: [id], onDelete: SetNull)
-  appointment       Appointment?      @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  psychologist      Psychologist       @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  patient           Patient?           @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  appointment       Appointment?       @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   invoices          Invoice[]
   accountingEntries AccountingEntry[]
+  courseEnrollments  CourseEnrollment[]
 
   @@index([appointmentId])
   @@index([patientId], name: "idx_payments_patient")
@@ -1041,6 +1053,7 @@ model GdprConsent {
   guardian LegalGuardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
 
   @@index([patientId], name: "idx_gdpr_consents_patient")
+  @@index([guardianId], name: "idx_gdpr_consents_guardian")
   @@map("gdpr_consents")
 }
 
@@ -1091,6 +1104,7 @@ model Assessment {
 
   @@index([patientId, createdAt(sort: Desc)], name: "idx_assessments_patient_date")
   @@index([psychologistId], name: "idx_assessments_psy")
+  @@index([templateId], name: "idx_assessments_template")
   @@map("assessments")
 }
 
@@ -1228,6 +1242,7 @@ model SupervisionMember {
   psy   Psychologist     @relation("SupervisionMembership", fields: [psyId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, psyId])
+  @@index([psyId], name: "idx_supervision_members_psy")
   @@map("supervision_members")
 }
 
@@ -1428,8 +1443,8 @@ model CalendarConnection {
   id              String           @id @default(uuid())
   psychologistId  String           @unique @map("psychologist_id")
   provider        CalendarProvider @default(google)
-  accessToken     String           @map("access_token")
-  refreshToken    String           @map("refresh_token")
+  accessToken     String           @map("access_token") // ENCRYPTED — AES-256-GCM
+  refreshToken    String           @map("refresh_token") // ENCRYPTED — AES-256-GCM
   tokenExpiresAt  DateTime?        @map("token_expires_at")
   email           String?
   calendarId      String           @default("primary") @map("calendar_id")

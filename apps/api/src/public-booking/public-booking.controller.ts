@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { PublicBookingService } from './public-booking.service';
@@ -10,9 +10,11 @@ export class PublicBookingController {
   constructor(private readonly publicBookingService: PublicBookingService) {}
 
   @Get('psychologists')
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Liste des slugs publics pour sitemap' })
   async getPublicSlugs(@Query('limit') limit?: string) {
-    return this.publicBookingService.getPublicSlugs(limit ? parseInt(limit, 10) : 500);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit ?? '100', 10) || 100));
+    return this.publicBookingService.getPublicSlugs(parsedLimit);
   }
 
   @Get('match')
@@ -63,6 +65,9 @@ export class PublicBookingController {
     @Query('to') to: string,
     @Query('consultationTypeId') consultationTypeId?: string,
   ) {
+    if (!from || !to || isNaN(new Date(from).getTime()) || isNaN(new Date(to).getTime())) {
+      throw new BadRequestException('Paramètres from et to requis (format ISO date)');
+    }
     return this.publicBookingService.getAvailableSlots(slug, from, to, consultationTypeId);
   }
 

@@ -92,7 +92,7 @@ export class InvoicesService {
 
     // Generate invoice number: PSY-YYYY-NNN (with retry on unique constraint race condition)
     const year = new Date(dto.issuedAt).getFullYear();
-    const maxRetries = 3;
+    const maxRetries = 5;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       const lastInvoice = await this.prisma.invoice.findFirst({
