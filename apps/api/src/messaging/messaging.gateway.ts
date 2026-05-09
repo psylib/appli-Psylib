@@ -27,6 +27,7 @@ import type {
 interface AuthenticatedSocket extends Socket {
   userId: string;
   userRole: string;
+  tokenExp?: number;
 }
 
 interface JwtTokenPayload {
@@ -112,6 +113,7 @@ export class MessagingGateway
       const authSocket = client as AuthenticatedSocket;
       authSocket.userId = payload.sub;
       authSocket.userRole = this.extractRole(payload);
+      authSocket.tokenExp = payload.exp;
 
       this.logger.log(`[WS] Client connecté: ${client.id} (userId: ${payload.sub})`);
     } catch (error) {
@@ -137,9 +139,7 @@ export class MessagingGateway
   ): Promise<void> {
     const authSocket = client as AuthenticatedSocket;
 
-    if (!authSocket.userId) {
-      throw new WsException('Non authentifié');
-    }
+    this.assertAuthenticated(authSocket);
 
     const { conversationId } = payload;
     if (!conversationId) {
@@ -196,10 +196,7 @@ export class MessagingGateway
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const authSocket = client as AuthenticatedSocket;
-
-    if (!authSocket.userId) {
-      throw new WsException('Non authentifié');
-    }
+    this.assertAuthenticated(authSocket);
 
     const { conversationId, content } = payload;
 
@@ -248,10 +245,7 @@ export class MessagingGateway
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
     const authSocket = client as AuthenticatedSocket;
-
-    if (!authSocket.userId) {
-      throw new WsException('Non authentifié');
-    }
+    this.assertAuthenticated(authSocket);
 
     const { conversationId } = payload;
 
@@ -326,6 +320,22 @@ export class MessagingGateway
   }
 
   // ─── Helpers privés ─────────────────────────────────────────────
+
+  /**
+   * Vérifie que le socket est authentifié et que le token n'a pas expiré.
+   * Si expiré, émet un événement 'token_expired' pour que le client se re-authentifie.
+   */
+  private assertAuthenticated(socket: AuthenticatedSocket): void {
+    if (!socket.userId) {
+      throw new WsException('Non authentifié');
+    }
+
+    if (socket.tokenExp && Date.now() >= socket.tokenExp * 1000) {
+      socket.emit('token_expired', { message: 'Token expiré, veuillez vous reconnecter' });
+      socket.disconnect(true);
+      throw new WsException('Token expiré');
+    }
+  }
 
   private extractToken(client: Socket): string | null {
     // Priorité 1 : handshake.auth.token (recommandé)

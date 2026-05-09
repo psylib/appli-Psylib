@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { SaveAvailabilityDto } from './dto/availability.dto';
 
@@ -16,6 +16,9 @@ export class AvailabilityService {
 
   async saveSlots(userId: string, dto: SaveAvailabilityDto) {
     const psy = await this.getPsychologist(userId);
+
+    // Vérifier qu'il n'y a pas de chevauchement entre les créneaux du même jour
+    this.validateNoOverlap(dto.slots);
 
     // Transaction pour éviter la perte de données en cas de crash entre delete et create
     await this.prisma.$transaction(async (tx) => {
@@ -183,6 +186,40 @@ export class AvailabilityService {
     }
 
     return freeTimes;
+  }
+
+  /**
+   * Vérifie qu'aucun créneau ne chevauche un autre sur le même jour.
+   */
+  private validateNoOverlap(slots: Array<{ dayOfWeek: number; startTime: string; endTime: string }>) {
+    const byDay = new Map<number, Array<{ start: number; end: number }>>();
+
+    for (const slot of slots) {
+      const startMin = this.timeToMinutes(slot.startTime);
+      const endMin = this.timeToMinutes(slot.endTime);
+
+      if (startMin >= endMin) {
+        throw new BadRequestException(
+          `Créneau invalide : ${slot.startTime} doit être avant ${slot.endTime}`,
+        );
+      }
+
+      const daySlots = byDay.get(slot.dayOfWeek) ?? [];
+      for (const existing of daySlots) {
+        if (startMin < existing.end && endMin > existing.start) {
+          throw new BadRequestException(
+            `Chevauchement de créneaux détecté le jour ${slot.dayOfWeek}`,
+          );
+        }
+      }
+      daySlots.push({ start: startMin, end: endMin });
+      byDay.set(slot.dayOfWeek, daySlots);
+    }
+  }
+
+  private timeToMinutes(time: string): number {
+    const [h, m] = time.split(':').map(Number);
+    return (h ?? 0) * 60 + (m ?? 0);
   }
 
   private async getPsychologist(userId: string) {

@@ -19,6 +19,7 @@ import {
   ApiBearerAuth,
   ApiResponse,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import { CoursesService } from './courses.service';
 import {
@@ -177,12 +178,14 @@ export class CoursesPublicController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Liste des formations publiées (publique)' })
   findPublished() {
     return this.coursesService.findPublished();
   }
 
   @Get(':id')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Détail d\'une formation publiée (publique)' })
   findOnePublished(@Param('id', ParseUUIDPipe) id: string) {
     return this.coursesService.findOnePublished(id);

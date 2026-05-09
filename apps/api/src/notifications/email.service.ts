@@ -9,13 +9,17 @@ import { guardianVideoLinkEmail } from './emails/guardian-video-link';
 
 // ─── Shared layout helpers ────────────────────────────────────────────────────
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function emailLayout(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${title}</title>
+  <title>${escapeHtml(title)}</title>
   <style>
     body { margin: 0; padding: 0; background-color: #F8F7FF; font-family: Inter, Arial, sans-serif; color: #1E1B4B; }
     .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(61,82,160,0.08); }

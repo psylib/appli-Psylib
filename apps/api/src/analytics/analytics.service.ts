@@ -158,26 +158,32 @@ export class AnalyticsService {
     const now = new Date();
     const oldestStart = startOfMonth(subtractMonths(now, months - 1));
 
-    // 1 seule requête pour toute la plage — groupage en mémoire
-    const allSessions = await this.prisma.session.findMany({
-      where: {
-        psychologistId,
-        date: { gte: oldestStart, lte: endOfMonth(now) },
-      },
-      select: { date: true, rate: true },
-    });
+    // Groupage côté DB via raw SQL — évite de charger toutes les sessions en mémoire
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ m: string; revenue: string; sessions: string }>>(
+      `SELECT TO_CHAR(date, 'YYYY-MM') AS m,
+              COALESCE(SUM(rate), 0) AS revenue,
+              COUNT(*)::text AS sessions
+       FROM sessions
+       WHERE "psychologistId" = $1
+         AND date >= $2
+         AND date <= $3
+       GROUP BY TO_CHAR(date, 'YYYY-MM')
+       ORDER BY m`,
+      psychologistId,
+      oldestStart,
+      endOfMonth(now),
+    );
 
+    const rowMap = new Map(rows.map((r) => [r.m, r]));
     const results: RevenueMonthResult[] = [];
     for (let i = months - 1; i >= 0; i--) {
       const targetDate = subtractMonths(now, i);
-      const start = startOfMonth(targetDate);
-      const end = endOfMonth(targetDate);
-      const monthSessions = allSessions.filter(s => s.date >= start && s.date <= end);
-      const revenue = monthSessions.reduce((sum, s) => sum + Number(s.rate ?? 0), 0);
+      const key = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}`;
+      const row = rowMap.get(key);
       results.push({
         month: formatMonth(targetDate),
-        revenue: Math.round(revenue * 100) / 100,
-        sessions: monthSessions.length,
+        revenue: row ? Math.round(Number(row.revenue) * 100) / 100 : 0,
+        sessions: row ? Number(row.sessions) : 0,
       });
     }
 
@@ -190,28 +196,41 @@ export class AnalyticsService {
   ): Promise<PatientsMonthResult[]> {
     const psychologistId = await this.resolvePsychologistId(userId);
     const now = new Date();
+    const oldestStart = startOfMonth(subtractMonths(now, months - 1));
     const rangeEnd = endOfMonth(now);
 
-    // 1 seule requête pour tous les patients jusqu'à la fin de la plage
-    const allPatients = await this.prisma.patient.findMany({
-      where: {
-        psychologistId,
-        createdAt: { lte: rangeEnd },
-      },
-      select: { createdAt: true },
+    // Groupage côté DB — évite de charger tous les patients en mémoire
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ m: string; count: string }>>(
+      `SELECT TO_CHAR("createdAt", 'YYYY-MM') AS m, COUNT(*)::text AS count
+       FROM patients
+       WHERE "psychologistId" = $1
+         AND "createdAt" >= $2
+         AND "createdAt" <= $3
+       GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
+       ORDER BY m`,
+      psychologistId,
+      oldestStart,
+      rangeEnd,
+    );
+
+    // Total cumulé : patients créés AVANT la période
+    const priorCount = await this.prisma.patient.count({
+      where: { psychologistId, createdAt: { lt: oldestStart } },
     });
 
+    const rowMap = new Map(rows.map((r) => [r.m, Number(r.count)]));
     const results: PatientsMonthResult[] = [];
+    let runningTotal = priorCount;
+
     for (let i = months - 1; i >= 0; i--) {
       const targetDate = subtractMonths(now, i);
-      const start = startOfMonth(targetDate);
-      const end = endOfMonth(targetDate);
-      const newPatients = allPatients.filter(p => p.createdAt >= start && p.createdAt <= end).length;
-      const totalUpToMonth = allPatients.filter(p => p.createdAt <= end).length;
+      const key = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}`;
+      const newCount = rowMap.get(key) ?? 0;
+      runningTotal += newCount;
       results.push({
         month: formatMonth(targetDate),
-        new: newPatients,
-        total: totalUpToMonth,
+        new: newCount,
+        total: runningTotal,
       });
     }
 

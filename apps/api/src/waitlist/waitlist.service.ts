@@ -98,6 +98,7 @@ export class WaitlistService {
     const psy = await this.prisma.psychologist.findUnique({
       where: { id: psychologistId },
     });
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
 
     await this.prisma.waitlistEntry.update({
       where: { id },
@@ -107,10 +108,10 @@ export class WaitlistService {
       },
     });
 
-    const bookingUrl = `https://psylib.eu/psy/${psy!.slug}/book`;
+    const bookingUrl = `https://psylib.eu/psy/${psy.slug}/book`;
     await this.email.sendWaitlistProposal(entry.patientEmail, {
       patientName: entry.patientName,
-      psychologistName: psy!.name,
+      psychologistName: psy.name,
       slotDate,
       bookingUrl,
     });

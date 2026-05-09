@@ -263,44 +263,27 @@ export class MessagingService {
 
   /**
    * Compte le nombre total de messages non lus pour un utilisateur.
+   * Optimisé : 1 requête au lieu de 4 séquentielles.
    */
   async getUnreadCount(userId: string): Promise<number> {
-    // Chercher si l'utilisateur est un psychologue
-    const psyProfile = await this.prisma.psychologist.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
+    // Résoudre le profil (psy ou patient) en une seule requête parallèle
+    const [psyProfile, patientProfile] = await Promise.all([
+      this.prisma.psychologist.findUnique({ where: { userId }, select: { id: true } }),
+      this.prisma.patient.findFirst({ where: { userId }, select: { id: true } }),
+    ]);
 
-    // Chercher si l'utilisateur est un patient
-    const patientProfile = psyProfile
-      ? null
-      : await this.prisma.patient.findFirst({
-          where: { userId },
-          select: { id: true },
-        });
+    const filter = psyProfile
+      ? { psychologistId: psyProfile.id }
+      : patientProfile
+        ? { patientId: patientProfile.id }
+        : null;
 
-    let conversations: { id: string }[] = [];
+    if (!filter) return 0;
 
-    if (psyProfile) {
-      conversations = await this.prisma.conversation.findMany({
-        where: { psychologistId: psyProfile.id },
-        select: { id: true },
-      });
-    } else if (patientProfile) {
-      conversations = await this.prisma.conversation.findMany({
-        where: { patientId: patientProfile.id },
-        select: { id: true },
-      });
-    } else {
-      return 0;
-    }
-
-    const conversationIds = conversations.map((c) => c.id);
-    if (conversationIds.length === 0) return 0;
-
+    // Compter directement les messages non lus via une relation imbriquée
     return this.prisma.message.count({
       where: {
-        conversationId: { in: conversationIds },
+        conversation: filter,
         senderId: { not: userId },
         readAt: null,
       },
@@ -347,12 +330,23 @@ export class MessagingService {
     return psy;
   }
 
+  /**
+   * Résout le rôle d'un utilisateur. Utilise un cache interne pour éviter
+   * des requêtes DB répétées dans la même requête HTTP.
+   */
+  private readonly actorTypeCache = new Map<string, 'psychologist' | 'patient'>();
+
   private async resolveActorType(userId: string): Promise<'psychologist' | 'patient'> {
+    const cached = this.actorTypeCache.get(userId);
+    if (cached) return cached;
+
     const psy = await this.prisma.psychologist.findUnique({
       where: { userId },
       select: { id: true },
     });
-    return psy ? 'psychologist' : 'patient';
+    const result = psy ? 'psychologist' : 'patient';
+    this.actorTypeCache.set(userId, result);
+    return result;
   }
 
   private safeDecrypt(content: string): string {

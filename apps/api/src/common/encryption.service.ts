@@ -84,7 +84,8 @@ export class EncryptionService implements OnModuleInit {
    * @returns Format: v1:base64(iv):base64(authTag):base64(encryptedData)
    */
   encrypt(plaintext: string): string {
-    if (!plaintext) return plaintext;
+    if (plaintext === null || plaintext === undefined) return plaintext;
+    if (plaintext === '') return plaintext; // chaîne vide = pas de donnée à chiffrer
 
     const iv = crypto.randomBytes(this.IV_LENGTH);
     const cipher = crypto.createCipheriv(this.ALGORITHM, this.encryptionKey, iv, {
