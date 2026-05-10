@@ -46,6 +46,31 @@ export interface DashboardKpis {
   } | null;
 }
 
+/**
+ * Returns the current date/time expressed in Europe/Paris local time.
+ * Uses Intl.DateTimeFormat.formatToParts which is reliable on Node 18+
+ * and avoids the toLocaleString hack that can break on some Node builds.
+ */
+function getParisNow(): Date {
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  const get = (type: string) => parts.find(p => p.type === type)?.value ?? '0';
+  return new Date(
+    parseInt(get('year')),
+    parseInt(get('month')) - 1,
+    parseInt(get('day')),
+    parseInt(get('hour')),
+    parseInt(get('minute')),
+    parseInt(get('second')),
+  );
+}
+
 @Injectable()
 export class DashboardService {
   private readonly kpisCache = new TtlCache<DashboardKpis>(5 * 60 * 1000); // 5 min
@@ -62,7 +87,7 @@ export class DashboardService {
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
 
     // Use Europe/Paris timezone for date boundaries (HDS compliance — French psys)
-    const parisNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+    const parisNow = getParisNow();
     const now = new Date();
     const todayStart = new Date(parisNow.getFullYear(), parisNow.getMonth(), parisNow.getDate());
     const todayEnd = new Date(todayStart.getTime() + 86400000);

@@ -269,7 +269,7 @@ interface Props {
 export function RecurringExpensesCard({ token }: Props) {
   const [showCreate, setShowCreate] = useState(false);
 
-  const { data: items, isLoading } = useQuery({
+  const { data: items, isLoading, isError, refetch } = useQuery({
     queryKey: ['recurring-expenses'],
     queryFn: () => recurringExpensesApi.list(token),
     enabled: !!token,
@@ -291,6 +291,13 @@ export function RecurringExpensesCard({ token }: Props) {
 
       {isLoading ? (
         <div className="p-4 text-sm text-muted-foreground text-center">Chargement…</div>
+      ) : isError ? (
+        <div className="p-6 text-center text-muted-foreground">
+          <p>Une erreur est survenue lors du chargement des données.</p>
+          <button onClick={() => refetch()} className="mt-2 text-primary underline">
+            Réessayer
+          </button>
+        </div>
       ) : !items?.length ? (
         <div className="px-4 py-8 text-center">
           <p className="text-sm text-muted-foreground">Aucune dépense récurrente configurée.</p>

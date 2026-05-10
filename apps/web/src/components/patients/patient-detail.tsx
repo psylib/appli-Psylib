@@ -43,7 +43,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Patient introuvable</p>
-        <Button variant="link" onClick={() => router.back()}>Retour</Button>
+        <Button variant="link" onClick={() => { if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); } }}>Retour</Button>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Retour">
+          <Button variant="ghost" size="icon" onClick={() => { if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); } }} aria-label="Retour">
             <ArrowLeft size={18} />
           </Button>
           <h1 className="text-xl font-bold text-foreground">Fiche patient</h1>

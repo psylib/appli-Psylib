@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Simple in-memory rate limiting: IP → timestamp
-const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
-
 function getClientIp(req: NextRequest): string {
   return (
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -18,15 +14,6 @@ function isValidEmail(email: string): boolean {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-
-  // Rate limit check
-  const lastSubmit = rateLimitMap.get(ip);
-  if (lastSubmit && Date.now() - lastSubmit < RATE_LIMIT_MS) {
-    return NextResponse.json(
-      { error: 'Trop de demandes. Veuillez réessayer dans une heure.' },
-      { status: 429 }
-    );
-  }
 
   let body: unknown;
   try {
@@ -151,11 +138,9 @@ export async function POST(req: NextRequest) {
       console.warn('[leads] RESEND_API_KEY non configuré — emails désactivés');
     }
 
-    rateLimitMap.set(ip, Date.now());
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[leads] Error:', err);
-    rateLimitMap.set(ip, Date.now());
     return NextResponse.json({ success: true });
   }
 }

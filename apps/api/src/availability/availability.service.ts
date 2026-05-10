@@ -145,13 +145,19 @@ export class AvailabilityService {
         const breakBuffer = minBreak * 60000;
 
         for (const daySlot of daySlots) {
-          const [startH, startM] = daySlot.startTime.split(':').map((x: string) => Number(x));
-          const [endH, endM] = daySlot.endTime.split(':').map((x: string) => Number(x));
+          const [rawStartH, rawStartM] = daySlot.startTime.split(':');
+          const [rawEndH, rawEndM] = daySlot.endTime.split(':');
+          const startH = parseInt(rawStartH ?? '9', 10);
+          const startM = parseInt(rawStartM ?? '0', 10);
+          const endH = parseInt(rawEndH ?? '18', 10);
+          const endM = parseInt(rawEndM ?? '0', 10);
+
+          if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) continue;
 
           const slotStart = new Date(current);
-          slotStart.setHours(startH ?? 9, startM ?? 0, 0, 0);
+          slotStart.setHours(startH, startM, 0, 0);
           const slotEnd = new Date(current);
-          slotEnd.setHours(endH ?? 18, endM ?? 0, 0, 0);
+          slotEnd.setHours(endH, endM, 0, 0);
 
           const cursor = new Date(slotStart);
           while (cursor.getTime() + sessionDuration * 60000 <= slotEnd.getTime()) {

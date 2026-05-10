@@ -47,7 +47,7 @@ export function PaymentsDashboard() {
 
   const [refundTarget, setRefundTarget] = useState<PaymentItem | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['payments', filters],
     queryFn: () => billingApi.getPayments(filters, session!.accessToken),
     enabled: !!session?.accessToken,
@@ -201,6 +201,15 @@ export function PaymentsDashboard() {
                     <td className="px-4 py-3"><Skeleton className="h-8 w-24 ml-auto" /></td>
                   </tr>
                 ))
+              ) : isError ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                    <p>Une erreur est survenue lors du chargement des données.</p>
+                    <button onClick={() => refetch()} className="mt-2 text-primary underline">
+                      Réessayer
+                    </button>
+                  </td>
+                </tr>
               ) : payments.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">

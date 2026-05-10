@@ -100,7 +100,7 @@ export function CalendarContent() {
 
   const queryClient = useQueryClient();
 
-  const { data: appointmentsData, isLoading } = useQuery({
+  const { data: appointmentsData, isLoading, isError, refetch } = useQuery({
     queryKey: ['appointments', year, month],
     queryFn: () =>
       apiClient.get<Appointment[]>(
@@ -168,6 +168,17 @@ export function CalendarContent() {
   });
 
   const appointments = appointmentsData ?? [];
+
+  if (isError) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        <p>Une erreur est survenue lors du chargement des données.</p>
+        <button onClick={() => refetch()} className="mt-2 text-primary underline">
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
   // Group appointments by date
   const appointmentsByDate = new Map<string, Appointment[]>();

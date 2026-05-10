@@ -4,6 +4,7 @@ import {
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
@@ -217,7 +218,7 @@ export class AuthService {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-') +
       '-' +
-      Math.random().toString(36).slice(2, 7);
+      randomBytes(4).toString('hex');
 
     try {
       await this.prisma.$transaction(async (tx) => {

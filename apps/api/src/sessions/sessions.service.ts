@@ -322,7 +322,7 @@ export class SessionsService {
     psychologistUserId: string,
     sessionId: string,
     notes: string,
-    _actorId: string,
+    actorId: string,
   ): Promise<{ saved: boolean; at: string }> {
     const psy = await this.getPsychologist(psychologistUserId);
 
@@ -334,6 +334,14 @@ export class SessionsService {
     await this.prisma.session.update({
       where: { id: sessionId },
       data: { notes: notes ? this.encryption.encrypt(notes) : null },
+    });
+
+    await this.audit.log({
+      actorId,
+      actorType: 'psychologist',
+      action: 'UPDATE',
+      entityType: 'session_notes',
+      entityId: sessionId,
     });
 
     return { saved: true, at: new Date().toISOString() };

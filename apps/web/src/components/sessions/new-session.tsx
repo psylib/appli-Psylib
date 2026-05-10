@@ -57,7 +57,7 @@ export function NewSessionContent({ preselectedPatientId }: NewSessionContentPro
   return (
     <div className="p-6 lg:p-8 max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Retour">
+        <Button variant="ghost" size="icon" onClick={() => { if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); } }} aria-label="Retour">
           <ArrowLeft size={18} />
         </Button>
         <h1 className="text-xl font-bold text-foreground">Nouvelle séance</h1>
@@ -139,7 +139,7 @@ export function NewSessionContent({ preselectedPatientId }: NewSessionContentPro
           {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
 
           <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button type="button" variant="outline" onClick={() => { if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); } }}>
               Annuler
             </Button>
             <Button type="submit" loading={loading}>

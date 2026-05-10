@@ -32,7 +32,11 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
     mutationFn: () => sessionsApi.delete(sessionId, authSession?.accessToken ?? ''),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      router.back();
+      if (window.history.length > 1) {
+        router.back();
+      } else {
+        router.push('/dashboard');
+      }
     },
   });
 
@@ -80,7 +84,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Séance introuvable</p>
-        <Button variant="link" onClick={() => router.back()}>Retour</Button>
+        <Button variant="link" onClick={() => { if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); } }}>Retour</Button>
       </div>
     );
   }
@@ -90,7 +94,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Retour">
+          <Button variant="ghost" size="icon" onClick={() => { if (window.history.length > 1) { router.back(); } else { router.push('/dashboard'); } }} aria-label="Retour">
             <ArrowLeft size={18} />
           </Button>
           <div>

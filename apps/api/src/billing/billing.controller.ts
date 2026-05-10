@@ -1,5 +1,6 @@
 import { Controller, Post, Get, Put, Body, Param, Query, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { IsOptional, IsString, IsDateString, MaxLength } from 'class-validator';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -13,6 +14,36 @@ import { CreateCheckoutDto } from './dto/checkout.dto';
 import { ConnectSettingsSchema, type ConnectSettingsDto } from './dto/connect-settings.dto';
 import { PaymentLinkSchema, type PaymentLinkDto } from './dto/payment-link.dto';
 import { RefundSchema, type RefundDto } from './dto/refund.dto';
+
+class GetPaymentsQueryDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  type?: string;
+
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @IsOptional()
+  @IsDateString()
+  to?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  limit?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  offset?: string;
+}
 
 @ApiTags('Billing')
 @ApiBearerAuth()
@@ -118,7 +149,7 @@ export class BillingController {
   @ApiOperation({ summary: 'Liste des paiements avec KPIs' })
   async getPayments(
     @CurrentUser() user: KeycloakUser,
-    @Query() query: Record<string, string>,
+    @Query() query: GetPaymentsQueryDto,
   ) {
     return this.subscriptionService.getPayments(user.sub, query);
   }

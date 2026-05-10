@@ -21,8 +21,6 @@ type FilterTab = 'all' | 'unread';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
-
 function getNotificationIcon(type: string) {
   if (type.includes('network') || type.includes('referral')) {
     return <Network size={16} className="text-blue-500" aria-hidden />;

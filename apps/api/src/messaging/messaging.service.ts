@@ -93,6 +93,7 @@ export class MessagingService {
             take: 1,
           },
         },
+        // Note: Conversation has no updatedAt — we re-sort by last message below
         orderBy: { createdAt: 'desc' },
       });
     } else {
@@ -112,9 +113,18 @@ export class MessagingService {
             take: 1,
           },
         },
+        // Note: Conversation has no updatedAt — we re-sort by last message below
         orderBy: { createdAt: 'desc' },
       });
     }
+
+    // Sort by last message activity (most recent message first).
+    // Conversations with no messages fall back to createdAt.
+    conversations.sort((a, b) => {
+      const aTime = a.messages[0]?.createdAt ?? a.createdAt;
+      const bTime = b.messages[0]?.createdAt ?? b.createdAt;
+      return bTime.getTime() - aTime.getTime();
+    });
 
     // Compter les non-lus en une seule requête groupée (pas de N+1)
     const conversationIds = conversations.map((c) => c.id);
@@ -181,6 +191,16 @@ export class MessagingService {
     });
 
     const actorType = await this.resolveActorType(userId);
+
+    // Audit the decryption of encrypted message content (HDS requirement)
+    await this.audit.log({
+      actorId: userId,
+      actorType,
+      action: 'DECRYPT',
+      entityType: 'message',
+      entityId: conversationId,
+    });
+
     await this.audit.logRead(userId, actorType, 'messages', conversationId);
 
     return messages.map((m) => ({

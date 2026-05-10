@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
-
 const VALID_SLUGS = ['kit-demarrage-cabinet', 'templates-notes-tcc', 'guide-tarifs-facturation', 'guide-rgpd-hds'];
 
 function getClientIp(req: NextRequest): string {
@@ -19,14 +16,6 @@ function isValidEmail(email: string): boolean {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-
-  const lastSubmit = rateLimitMap.get(ip);
-  if (lastSubmit && Date.now() - lastSubmit < RATE_LIMIT_MS) {
-    return NextResponse.json(
-      { error: 'Trop de demandes. Veuillez reessayer dans une heure.' },
-      { status: 429 },
-    );
-  }
 
   let body: unknown;
   try {
@@ -66,11 +55,9 @@ export async function POST(req: NextRequest) {
       console.warn(`[lead-magnets] API responded ${apiRes.status}`);
     }
 
-    rateLimitMap.set(ip, Date.now());
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[lead-magnets] Error:', err);
-    rateLimitMap.set(ip, Date.now());
     return NextResponse.json({ success: true });
   }
 }

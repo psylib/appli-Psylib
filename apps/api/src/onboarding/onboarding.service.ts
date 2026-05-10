@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { IsString, IsOptional, IsBoolean, MinLength, IsInt, IsNumber, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -299,7 +300,7 @@ export class OnboardingService {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '') +
       '-' +
-      Math.random().toString(36).slice(2, 7)
+      randomBytes(4).toString('hex')
     );
   }
 }

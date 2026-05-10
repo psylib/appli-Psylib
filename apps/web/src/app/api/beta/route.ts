@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const rateLimitMap = new Map<string, number>();
-const RATE_LIMIT_MS = 60 * 60 * 1000; // 1 hour
-
 function getClientIp(req: NextRequest): string {
   return (
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -22,14 +19,6 @@ function isValidAdeli(adeli: string): boolean {
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
-
-  const lastSubmit = rateLimitMap.get(ip);
-  if (lastSubmit && Date.now() - lastSubmit < RATE_LIMIT_MS) {
-    return NextResponse.json(
-      { error: 'Trop de demandes. Veuillez réessayer dans une heure.' },
-      { status: 429 },
-    );
-  }
 
   let body: unknown;
   try {
@@ -170,11 +159,9 @@ export async function POST(req: NextRequest) {
       }).catch((err) => console.error('[beta] Resend confirmation error:', err));
     }
 
-    rateLimitMap.set(ip, Date.now());
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[beta] Error:', err);
-    rateLimitMap.set(ip, Date.now());
     return NextResponse.json({ success: true });
   }
 }

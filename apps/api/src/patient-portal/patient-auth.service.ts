@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { AcceptInvitationDto, PatientLoginDto } from './dto/patient-auth.dto';
@@ -206,8 +207,11 @@ export class PatientAuthService {
       }
 
       return this.generateTokens(user.id, patient.id, user.email);
-    } catch {
-      throw new UnauthorizedException('Refresh token invalide ou expiré');
+    } catch (err) {
+      if (err instanceof JsonWebTokenError || err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Refresh token invalide ou expiré');
+      }
+      throw err; // Re-throw DB/unexpected errors
     }
   }
 }

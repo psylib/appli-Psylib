@@ -298,7 +298,7 @@ export function CoursesContent() {
 
   const token = session?.accessToken ?? '';
 
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses, isLoading, isError, refetch } = useQuery({
     queryKey: ['courses'],
     queryFn: () => coursesApi.list(token),
     enabled: !!token,
@@ -366,6 +366,13 @@ export function CoursesContent() {
             <CourseCardSkeleton />
             <CourseCardSkeleton />
             <CourseCardSkeleton />
+          </div>
+        ) : isError ? (
+          <div className="p-6 text-center text-muted-foreground">
+            <p>Une erreur est survenue lors du chargement des données.</p>
+            <button onClick={() => refetch()} className="mt-2 text-primary underline">
+              Réessayer
+            </button>
           </div>
         ) : !courses || courses.length === 0 ? (
           <EmptyState

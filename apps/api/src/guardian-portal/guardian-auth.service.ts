@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { PrismaService } from '../common/prisma.service';
 
 @Injectable()
@@ -80,8 +81,11 @@ export class GuardianAuthService {
       }
 
       return this.generateTokens(user.id, user.email);
-    } catch {
-      throw new UnauthorizedException('Refresh token invalide ou expire');
+    } catch (err) {
+      if (err instanceof JsonWebTokenError || err instanceof TokenExpiredError) {
+        throw new UnauthorizedException('Refresh token invalide ou expiré');
+      }
+      throw err; // Re-throw DB/unexpected errors
     }
   }
 

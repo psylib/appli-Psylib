@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { passportJwtSecret } from 'jwks-rsa';
 import { ConfigService } from '@nestjs/config';
+import { randomBytes } from 'crypto';
 import type { JwtPayload } from '@psyscale/shared-types';
 import { PrismaService } from '../common/prisma.service';
 import { CacheService } from '../common/cache.service';
@@ -99,7 +100,7 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
 
       // Créer le Psychologist
       const baseName = email.split('@')[0] ?? 'praticien';
-      const slug = baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).slice(2, 7);
+      const slug = baseName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + randomBytes(4).toString('hex');
       await this.prisma.psychologist.create({
         data: { userId: sub, name: baseName, slug, isOnboarded: false },
       });

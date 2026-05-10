@@ -22,6 +22,18 @@ export default function ConsultationRoomPage() {
   const [ending, setEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [duration, setDuration] = useState(50);
+  const [notes, setNotes] = useState('');
+
+  // Load notes from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(`video-notes-${roomId}`);
+    if (saved) setNotes(saved);
+  }, [roomId]);
+
+  // Persist notes to localStorage on change
+  useEffect(() => {
+    if (notes) localStorage.setItem(`video-notes-${roomId}`, notes);
+  }, [notes, roomId]);
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -86,6 +98,8 @@ export default function ConsultationRoomPage() {
         <textarea
           className="w-full h-64 border border-border rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
           placeholder="Prenez vos notes ici..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
         />
       }
       onCallEnd={handleEndCall}
