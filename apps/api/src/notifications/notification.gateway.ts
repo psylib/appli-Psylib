@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import type { Server, Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
-import { getAllowedOrigins } from '../common/cors.config';
+import { corsOriginCallback } from '../common/cors.config';
 
 interface AuthenticatedSocket extends Socket {
   userId: string;
@@ -22,7 +22,7 @@ interface JwtTokenPayload {
 
 @WebSocketGateway({
   cors: {
-    origin: getAllowedOrigins(),
+    origin: corsOriginCallback,
     credentials: true,
   },
   namespace: '/notifications',

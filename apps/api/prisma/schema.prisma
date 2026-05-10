@@ -1058,6 +1058,7 @@ model GdprConsent {
   guardian LegalGuardian? @relation(fields: [guardianId], references: [id], onDelete: SetNull)
 
   @@index([patientId], name: "idx_gdpr_consents_patient")
+  @@index([patientId, type], name: "idx_gdpr_consents_patient_type")
   @@index([guardianId], name: "idx_gdpr_consents_guardian")
   @@map("gdpr_consents")
 }
@@ -1152,6 +1153,7 @@ model PatientInvitation {
   token          String           @unique
   status         InvitationStatus @default(pending)
   expiresAt      DateTime         @map("expires_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
   patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)

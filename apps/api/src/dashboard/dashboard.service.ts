@@ -61,12 +61,14 @@ export class DashboardService {
     });
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
 
+    // Use Europe/Paris timezone for date boundaries (HDS compliance — French psys)
+    const parisNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(parisNow.getFullYear(), parisNow.getMonth(), parisNow.getDate());
     const todayEnd = new Date(todayStart.getTime() + 86400000);
-    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+    const firstOfMonth = new Date(parisNow.getFullYear(), parisNow.getMonth(), 1);
+    const firstOfLastMonth = new Date(parisNow.getFullYear(), parisNow.getMonth() - 1, 1);
+    const lastOfLastMonth = new Date(parisNow.getFullYear(), parisNow.getMonth(), 0);
 
     const [
       totalPatients,

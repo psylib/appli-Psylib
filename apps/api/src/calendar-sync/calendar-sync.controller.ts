@@ -11,6 +11,7 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { CalendarSyncService } from './calendar-sync.service';
@@ -106,6 +107,7 @@ export class CalendarSyncController {
 
   @Post('google/webhook')
   @HttpCode(200)
+  @Throttle({ default: { ttl: 60000, limit: 30 } })
   async handleWebhook(
     @Headers('x-goog-channel-id') channelId: string,
     @Headers('x-goog-resource-id') resourceId: string,

@@ -18,3 +18,9 @@ CREATE INDEX IF NOT EXISTS "idx_sessions_psy_payment_date" ON "sessions"("psycho
 
 -- 6. Make Assessment->AssessmentTemplate onDelete explicit (Restrict is already default, no DB change needed)
 -- This is a schema-only annotation change, no SQL needed.
+
+-- 7. Add createdAt to patient_invitations
+ALTER TABLE "patient_invitations" ADD COLUMN IF NOT EXISTS "created_at" TIMESTAMP(3) NOT NULL DEFAULT now();
+
+-- 8. Add composite index on gdpr_consents (patient_id, type) for consent lookups
+CREATE INDEX IF NOT EXISTS "idx_gdpr_consents_patient_type" ON "gdpr_consents"("patient_id", "type");

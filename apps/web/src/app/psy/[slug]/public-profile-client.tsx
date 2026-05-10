@@ -210,7 +210,7 @@ function BookingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-label="Réserver un créneau">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
@@ -277,6 +277,7 @@ function BookingModal({
             <input
               required
               type="email"
+              pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}"
               value={form.patientEmail}
               onChange={(e) => setForm((f) => ({ ...f, patientEmail: e.target.value }))}
               placeholder="marie@exemple.fr"
@@ -291,6 +292,7 @@ function BookingModal({
             <input
               required
               type="tel"
+              pattern="[\d\s\+\-\.()]{7,20}"
               value={form.patientPhone}
               onChange={(e) => setForm((f) => ({ ...f, patientPhone: e.target.value }))}
               placeholder="+33 6 00 00 00 00"

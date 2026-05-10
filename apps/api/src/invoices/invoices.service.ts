@@ -353,24 +353,42 @@ export class InvoicesService {
       const lastSeq = parseInt(parts[2] ?? '0', 10);
       if (!isNaN(lastSeq)) sequence = lastSeq + 1;
     }
-    const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+    let invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
 
     const isPaid = data.type === 'payment_received';
 
-    const invoice = await this.prisma.invoice.create({
-      data: {
-        psychologistId: data.psychologistId,
-        patientId: data.patientId,
-        invoiceNumber,
-        amountTtc: data.amount,
-        status: isPaid ? 'paid' : 'draft',
-        issuedAt: new Date(data.sessionDate),
-        source: 'auto',
-        sessionId: data.sessionId ?? null,
-        paymentId: data.internalPaymentId ?? null,
-        paidAt: isPaid ? new Date() : null,
-      },
-    });
+    // Retry on P2002 (unique constraint on invoiceNumber) — race condition between concurrent workers
+    let invoice: Invoice;
+    let retries = 0;
+    const maxRetries = 3;
+    while (true) {
+      try {
+        invoice = await this.prisma.invoice.create({
+          data: {
+            psychologistId: data.psychologistId,
+            patientId: data.patientId,
+            invoiceNumber,
+            amountTtc: data.amount,
+            status: isPaid ? 'paid' : 'draft',
+            issuedAt: new Date(data.sessionDate),
+            source: 'auto',
+            sessionId: data.sessionId ?? null,
+            paymentId: data.internalPaymentId ?? null,
+            paidAt: isPaid ? new Date() : null,
+          },
+        });
+        break;
+      } catch (err) {
+        const prismaCode = (err as { code?: string }).code;
+        if (prismaCode === 'P2002' && retries < maxRetries) {
+          retries++;
+          sequence += retries;
+          invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+          continue;
+        }
+        throw err;
+      }
+    }
 
     // Emit invoice.paid event for accounting ledger entry
     if (isPaid && invoice) {

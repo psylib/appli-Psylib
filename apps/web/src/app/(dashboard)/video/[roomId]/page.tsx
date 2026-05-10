@@ -63,9 +63,14 @@ export default function ConsultationRoomPage() {
   if (loading || !tokenData) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Connexion a la salle de visio...</p>
+        <div className="w-full max-w-3xl mx-auto px-6 space-y-6">
+          <div className="aspect-video rounded-xl bg-muted animate-pulse" />
+          <div className="flex justify-center gap-4">
+            <div className="h-10 w-24 rounded-lg bg-muted animate-pulse" />
+            <div className="h-10 w-24 rounded-lg bg-muted animate-pulse" />
+            <div className="h-10 w-24 rounded-lg bg-muted animate-pulse" />
+          </div>
+          <p className="text-center text-sm text-muted-foreground">Connexion a la salle de visio...</p>
         </div>
       </div>
     );

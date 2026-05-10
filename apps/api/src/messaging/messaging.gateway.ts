@@ -17,7 +17,7 @@ import { MessagingService } from './messaging.service';
 import { NotificationGateway } from '../notifications/notification.gateway';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../common/prisma.service';
-import { getAllowedOrigins } from '../common/cors.config';
+import { corsOriginCallback } from '../common/cors.config';
 import type {
   JoinConversationPayload,
   SendMessagePayload,
@@ -42,7 +42,7 @@ interface JwtTokenPayload {
 
 @WebSocketGateway({
   cors: {
-    origin: getAllowedOrigins(),
+    origin: corsOriginCallback,
     credentials: true,
   },
   namespace: '/messaging',
