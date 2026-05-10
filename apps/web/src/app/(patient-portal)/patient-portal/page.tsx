@@ -120,7 +120,7 @@ export default function PatientPortalDashboard() {
           <p className="text-xs font-medium text-slate-700 mb-3">Humeur — 7 derniers jours</p>
           <div className="space-y-1.5">
             {data.moodHistory.slice(-7).map((m, i) => (
-              <MoodBar key={i} mood={m.mood} />
+              <MoodBar key={`mood-${i}-${m.mood}`} mood={m.mood} />
             ))}
           </div>
           <Link

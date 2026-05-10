@@ -22,7 +22,7 @@ function PhoneMockup() {
             { emoji: '😄', active: false },
           ].map(({ emoji, active }, i) => (
             <span
-              key={i}
+              key={`mood-emoji-${i}-${emoji}`}
               className={`text-lg ${active ? 'bg-sage-50 rounded-md px-0.5' : 'opacity-35'}`}
             >
               {emoji}

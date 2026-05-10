@@ -86,6 +86,8 @@ playwright-report/
 apps/web/playwright-report/
 test-results/
 apps/web/test-results/
+playwright/.auth/
+apps/web/playwright/.auth/
 
 # Local notes & drafts (non versionné)
 BOOKING/

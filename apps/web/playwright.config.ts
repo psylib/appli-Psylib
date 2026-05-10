@@ -13,6 +13,9 @@ export default defineConfig({
     baseURL: process.env['PLAYWRIGHT_BASE_URL'] ?? 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // storageState: 'playwright/.auth/psychologist.json',
+    // Uncomment above and add globalSetup: './e2e/global-setup.ts' once the
+    // Keycloak-backed auth flow is stable enough to record a reusable session.
   },
   projects: [
     {

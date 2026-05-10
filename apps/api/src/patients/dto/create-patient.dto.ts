@@ -8,10 +8,26 @@ import {
   IsIn,
   MinLength,
   MaxLength,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PatientStatus } from '@psyscale/shared-types';
+
+@ValidatorConstraint({ name: 'isReasonableBirthDate', async: false })
+class IsReasonableBirthDate implements ValidatorConstraintInterface {
+  validate(value: string) {
+    if (!value) return true;
+    const year = new Date(value).getFullYear();
+    const currentYear = new Date().getFullYear();
+    return year >= 1900 && year <= currentYear;
+  }
+  defaultMessage() {
+    return "La date de naissance doit être entre 1900 et aujourd'hui";
+  }
+}
 
 export class CreatePatientDto {
   @ApiProperty({ example: 'Marie Dupont' })
@@ -34,6 +50,7 @@ export class CreatePatientDto {
   @ApiPropertyOptional({ example: '1985-03-15' })
   @IsDateString()
   @IsOptional()
+  @Validate(IsReasonableBirthDate)
   birthDate?: string;
 
   @ApiPropertyOptional({ description: 'Notes cliniques — chiffrées AES-256-GCM' })
@@ -75,6 +92,7 @@ export class UpdatePatientDto {
   @ApiPropertyOptional()
   @IsDateString()
   @IsOptional()
+  @Validate(IsReasonableBirthDate)
   birthDate?: string;
 
   @ApiPropertyOptional()

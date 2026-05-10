@@ -12,7 +12,6 @@ export class StripeService implements OnModuleInit {
   onModuleInit() {
     const secretKey = this.config.getOrThrow<string>('STRIPE_SECRET_KEY');
     this.stripe = new Stripe(secretKey, {
-      apiVersion: '2023-10-16' as Stripe.LatestApiVersion,
       typescript: true,
     });
     this.logger.log('Stripe SDK initialized');

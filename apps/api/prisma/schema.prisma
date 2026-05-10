@@ -379,12 +379,14 @@ model Psychologist {
 }
 
 model Availability {
-  id             String  @id @default(uuid())
-  psychologistId String  @map("psychologist_id")
+  id             String   @id @default(uuid())
+  psychologistId String   @map("psychologist_id")
   dayOfWeek      Int // 0=Lundi, 1=Mardi, ..., 6=Dimanche
   startTime      String // "09:00"
   endTime        String // "17:00"
-  isActive       Boolean @default(true) @map("is_active")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 
@@ -687,7 +689,7 @@ model Referral {
   fromPsyId       String         @map("from_psy_id")
   toPsyId         String         @map("to_psy_id")
   patientInitials String?        @map("patient_initials") // jamais nom complet
-  message         String? // ENCRYPTED AES-256-GCM
+  message         String? // ENCRYPTED — AES-256-GCM
   reason          String? // motif d'adressage
   status          ReferralStatus @default(pending)
   respondedAt     DateTime?      @map("responded_at")
@@ -821,7 +823,7 @@ model MoodTracking {
   id        String   @id @default(uuid())
   patientId String   @map("patient_id")
   mood      Int // 1-10
-  note      String?
+  note      String?  // ENCRYPTED — AES-256-GCM
   createdAt DateTime @default(now()) @map("created_at")
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -921,12 +923,14 @@ model Course {
 }
 
 model CourseModule {
-  id       String  @id @default(uuid())
-  courseId String  @map("course_id")
-  title    String
-  videoUrl String? @map("video_url")
-  content  String?
-  order    Int     @default(0)
+  id        String   @id @default(uuid())
+  courseId  String   @map("course_id")
+  title     String
+  videoUrl  String?  @map("video_url")
+  content   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
@@ -1197,7 +1201,7 @@ model Lead {
   id        String   @id @default(uuid())
   email     String   @unique
   source    String   @default("landing_beta")
-  ip        String?
+  ip        String?  // PII — RGPD: supprimer ou anonymiser après 30 jours
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("leads")
@@ -1260,7 +1264,7 @@ model SupervisionSession {
   duration    Int                      @default(90) // minutes
   location    String? // visio URL ou adresse
   status      SupervisionSessionStatus @default(planned)
-  notes       String?                  @db.Text // ENCRYPTED AES-256-GCM
+  notes       String?                  @db.Text // ENCRYPTED — AES-256-GCM
   createdAt   DateTime                 @default(now()) @map("created_at")
 
   group       SupervisionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)

@@ -41,7 +41,7 @@ function LikertQuestion({
           const selected = value === v;
           return (
             <button
-              key={i}
+              key={`likert-${question.id}-${i}-${v}`}
               onClick={() => onChange(question.id, v)}
               className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition-all ${
                 selected

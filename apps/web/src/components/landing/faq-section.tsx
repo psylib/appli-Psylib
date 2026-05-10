@@ -80,7 +80,7 @@ export function FAQSection() {
           {faqs.map(({ q, a }, i) => {
             const isOpen = open === i;
             return (
-              <ScrollReveal key={i} delay={i * 60}>
+              <ScrollReveal key={`faq-${i}-${q.slice(0, 15)}`} delay={i * 60}>
                 <div
                   className={`rounded-2xl border transition-colors ${
                     isOpen ? 'border-sage-200 bg-sage-50/30' : 'border-cream-200 bg-white hover:border-sage-200'

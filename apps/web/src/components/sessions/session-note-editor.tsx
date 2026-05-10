@@ -107,25 +107,26 @@ function MarkdownBlock({ content }: { content: string }) {
   return (
     <div className="text-sm text-foreground space-y-1 leading-relaxed">
       {lines.map((line, i) => {
+        const lineKey = `line-${i}-${line.slice(0, 20).replace(/[^\w-]/g, '')}`;
         if (line.startsWith('## ')) {
           return (
-            <p key={i} className="font-semibold text-foreground mt-3 first:mt-0">
+            <p key={lineKey} className="font-semibold text-foreground mt-3 first:mt-0">
               {line.slice(3)}
             </p>
           );
         }
         if (line.startsWith('- ')) {
           return (
-            <p key={i} className="pl-3 text-muted-foreground before:content-['•'] before:mr-2 before:text-accent">
+            <p key={lineKey} className="pl-3 text-muted-foreground before:content-['•'] before:mr-2 before:text-accent">
               {line.slice(2)}
             </p>
           );
         }
         if (line.trim() === '') {
-          return <div key={i} className="h-1" />;
+          return <div key={lineKey} className="h-1" />;
         }
         return (
-          <p key={i} className="text-muted-foreground">
+          <p key={lineKey} className="text-muted-foreground">
             {line}
           </p>
         );
@@ -700,9 +701,9 @@ export function SessionNoteEditor({
             <MarkdownBlock content={existingSummary} />
             {existingTags && existingTags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-2">
-                {existingTags.map((tag) => (
+                {existingTags.map((tag, idx) => (
                   <span
-                    key={tag}
+                    key={`tag-saved-${idx}-${tag}`}
                     className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary"
                   >
                     {tag}
@@ -851,9 +852,9 @@ export function SessionNoteEditor({
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground">Tags suggérés (modifiables)</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {editableTags.map((tag) => (
+                    {editableTags.map((tag, idx) => (
                       <span
-                        key={tag}
+                        key={`tag-editable-${idx}-${tag}`}
                         className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary"
                       >
                         {tag}

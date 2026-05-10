@@ -40,7 +40,7 @@ export function BeforeAfterSection() {
 
         <div className="space-y-4">
           {comparison.map(({ before, after }, i) => (
-            <ScrollReveal key={i} delay={i * 80}>
+            <ScrollReveal key={`comparison-${i}-${before.slice(0, 15)}`} delay={i * 80}>
               <div className="grid md:grid-cols-2 gap-0 rounded-xl overflow-hidden border border-cream-200">
                 <div className="bg-red-50/50 p-5 flex items-start gap-3">
                   <span className="mt-0.5 text-red-400 font-bold text-sm shrink-0">Avant</span>

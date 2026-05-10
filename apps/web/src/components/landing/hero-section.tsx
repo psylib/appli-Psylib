@@ -55,7 +55,7 @@ function DashboardMockup() {
               {[
                 [0, 50], [60, 35], [120, 18], [180, 8],
               ].map(([cx, cy], i) => (
-                <circle key={i} cx={cx} cy={cy} r="3" fill="#7B9E87" />
+                <circle key={`chart-point-${i}-${cx}-${cy}`} cx={cx} cy={cy} r="3" fill="#7B9E87" />
               ))}
             </svg>
           </div>

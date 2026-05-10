@@ -49,6 +49,9 @@ COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 
+# Remove devDependencies from production image
+RUN pnpm prune --prod 2>/dev/null || npm prune --production 2>/dev/null || true
+
 # App compilée + schema Prisma
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma

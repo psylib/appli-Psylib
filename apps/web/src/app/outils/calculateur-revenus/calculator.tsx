@@ -508,7 +508,7 @@ export function RevenueCalculator() {
                 a: "PsyLib génère automatiquement les factures conformes (TVA 0%, numéro ADELI obligatoire), exporte les données pour votre comptable, et vous donne une vue en temps réel de vos revenus mensuel/annuel et de votre taux de remplissage.",
               },
             ].map((item, i) => (
-              <details key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <details key={`faq-calc-${i}-${item.q.slice(0, 15)}`} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <summary className="p-5 cursor-pointer font-medium text-gray-900 text-sm hover:bg-gray-50 transition-colors list-none flex items-center justify-between">
                   {item.q}
                   <ChevronDown size={16} className="text-gray-400 flex-shrink-0 ml-2" />
