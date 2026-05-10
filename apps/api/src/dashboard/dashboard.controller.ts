@@ -1,6 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
+import type { DashboardKpis, ActivationChecklist } from './dashboard.service';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -17,13 +18,13 @@ export class DashboardController {
 
   @Get()
   @ApiOperation({ summary: 'KPIs dashboard principal' })
-  async getKpis(@CurrentUser() user: KeycloakUser) {
+  async getKpis(@CurrentUser() user: KeycloakUser): Promise<DashboardKpis> {
     return this.dashboardService.getKpis(user.sub);
   }
 
   @Get('checklist')
   @ApiOperation({ summary: "Checklist d'activation du compte" })
-  async getActivationChecklist(@CurrentUser() user: KeycloakUser) {
+  async getActivationChecklist(@CurrentUser() user: KeycloakUser): Promise<ActivationChecklist> {
     return this.dashboardService.getActivationChecklist(user.sub);
   }
 }

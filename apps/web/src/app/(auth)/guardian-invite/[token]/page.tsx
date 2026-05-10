@@ -79,7 +79,7 @@ export default function GuardianInvitePage() {
           message?: string;
         };
         throw new Error(
-          body.message ?? "Erreur lors de l&apos;activation",
+          body.message ?? "Erreur lors de l'activation",
         );
       }
       setSuccess(true);

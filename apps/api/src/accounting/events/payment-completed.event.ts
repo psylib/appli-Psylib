@@ -1,7 +1,7 @@
 export class PaymentCompletedEvent {
   constructor(
     public readonly psychologistId: string,
-    public readonly paymentId: string,
+    public readonly paymentId: string | null,
     public readonly invoiceId: string | null,
     public readonly patientName: string,
     public readonly amount: number,

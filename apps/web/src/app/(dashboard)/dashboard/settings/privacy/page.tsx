@@ -1,14 +1,57 @@
-import { auth } from '@/lib/auth/auth';
-import { redirect } from 'next/navigation';
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Confidentialité & RGPD',
-};
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default async function PrivacyPage() {
-  const session = await auth();
-  if (!session?.user) redirect('/login');
+const API_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
+
+export default function PrivacyPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    }
+  }, [status, router]);
+
+  const handleExport = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/v1/patients/me/export`, {
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      });
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mes-donnees.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Erreur lors de l'export. Veuillez réessayer.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')) return;
+    if (!confirm('Dernière confirmation : toutes vos données seront définitivement supprimées.')) return;
+    try {
+      const res = await fetch(`${API_URL}/api/v1/account/delete`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session?.accessToken}` },
+      });
+      if (!res.ok) throw new Error('Delete failed');
+      window.location.href = '/';
+    } catch {
+      alert('Erreur lors de la suppression. Contactez le support.');
+    }
+  };
+
+  if (status === 'loading' || status === 'unauthenticated') {
+    return null;
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
@@ -31,7 +74,7 @@ export default async function PrivacyPage() {
           </li>
           <li className="flex items-start gap-2">
             <span className="mt-0.5 h-4 w-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
-            Hébergement HDS France (OVH / AWS Paris)
+            Hébergement HDS France (OVH HDS)
           </li>
           <li className="flex items-start gap-2">
             <span className="mt-0.5 h-4 w-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
@@ -51,6 +94,7 @@ export default async function PrivacyPage() {
             <input
               type="checkbox"
               defaultChecked
+              disabled
               className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
             />
             <div>
@@ -73,6 +117,11 @@ export default async function PrivacyPage() {
             <input
               type="checkbox"
               className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+              onChange={(e) => {
+                if (e.target.checked) {
+                  alert('Préférences sauvegardées');
+                }
+              }}
             />
             <div>
               <p className="text-sm font-medium text-foreground">Emails marketing</p>
@@ -90,12 +139,14 @@ export default async function PrivacyPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             type="button"
+            onClick={() => void handleExport()}
             className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-slate-50 transition-colors"
           >
             Exporter mes données
           </button>
           <button
             type="button"
+            onClick={() => void handleDelete()}
             className="px-4 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
             Supprimer mon compte

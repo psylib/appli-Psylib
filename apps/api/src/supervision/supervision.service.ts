@@ -89,6 +89,10 @@ export class SupervisionService {
     const psy = await this.resolvePsy(psyKeycloakId);
     const group = await this.getGroupOrThrow(groupId);
 
+    if (group.isPrivate) {
+      throw new ForbiddenException('Ce groupe est privé — vous devez être invité');
+    }
+
     const count = await this.prisma.supervisionMember.count({ where: { groupId } });
     if (count >= group.maxMembers) {
       throw new ForbiddenException('Ce groupe est complet');

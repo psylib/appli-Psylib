@@ -118,7 +118,7 @@ export class AppointmentsService {
           duration: appointment.duration,
           amount: dto.paymentAmount!,
           checkoutUrl: checkoutSession.url!,
-        });
+        }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
 
         void this.notifications.createAndDispatch(
           userId,
@@ -148,7 +148,7 @@ export class AppointmentsService {
           psychologistName: psy.name,
           scheduledAt: appointment.scheduledAt,
           duration: appointment.duration,
-        });
+        }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
       }
 
       void this.notifications.createAndDispatch(
@@ -169,7 +169,7 @@ export class AppointmentsService {
         psychologistName: psy.name,
         scheduledAt: appointment.scheduledAt,
         duration: appointment.duration,
-      });
+      }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     void this.notifications.createAndDispatch(
@@ -355,7 +355,7 @@ export class AppointmentsService {
         psychologistName: psy.name,
         scheduledAt: existing.scheduledAt,
         duration: existing.duration,
-      });
+      }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     return updated;
@@ -380,7 +380,7 @@ export class AppointmentsService {
         patientName: existing.patient.name,
         psychologistName: psy.name,
         scheduledAt: existing.scheduledAt,
-      });
+      }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     return updated;
@@ -515,7 +515,7 @@ export class AppointmentsService {
             patientName: appointment.patient.name,
             psychologistName: appointment.psychologist.name,
             amount: 0, // amount not easily available here, generic confirmation
-          });
+          }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
         }
       } catch (err) {
         this.logger.error(
@@ -544,7 +544,7 @@ export class AppointmentsService {
       patientName: appointment.patient.name,
       scheduledAt: appointment.scheduledAt,
       refunded,
-    });
+    }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
 
     // Notify psychologist (in-app)
     void this.notifications.createAndDispatch(
@@ -632,7 +632,7 @@ export class AppointmentsService {
       duration: appointment.duration,
       amount,
       checkoutUrl: checkoutSession.url!,
-    });
+    }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
 
     return { success: true, checkoutUrl: checkoutSession.url };
   }

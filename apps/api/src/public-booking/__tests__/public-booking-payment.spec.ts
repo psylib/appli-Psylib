@@ -49,7 +49,7 @@ const validBookingDto = {
 // ---------------------------------------------------------------------------
 
 function createPrismaMock() {
-  return {
+  const mock = {
     psychologist: {
       findUnique: vi.fn().mockResolvedValue(null),
       findMany: vi.fn().mockResolvedValue([]),
@@ -71,7 +71,9 @@ function createPrismaMock() {
     consultationType: {
       findFirst: vi.fn().mockResolvedValue(null),
     },
+    $transaction: vi.fn().mockImplementation((cb: (tx: any) => any) => cb(mock)),
   };
+  return mock;
 }
 
 function createCacheMock() {

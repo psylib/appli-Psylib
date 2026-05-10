@@ -282,7 +282,7 @@ export class CalendarSyncService implements OnModuleInit {
           'Synchronisation Google Calendar interrompue',
           'Votre connexion Google Calendar a expiré. Veuillez vous reconnecter dans les paramètres.',
           { psychologistId: conn.psychologistId },
-        ).catch(() => {});
+        ).catch((err) => this.logger.warn(`Notification dispatch failed: ${(err as Error).message}`));
       }
 
       throw new ForbiddenException(

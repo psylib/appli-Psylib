@@ -32,6 +32,7 @@ import { AppModule } from './app.module';
 import { corsOriginCallback } from './common/cors.config';
 import { SentryExceptionFilter } from './common/sentry-exception.filter';
 import { PrismaExceptionFilter } from './common/prisma-exception.filter';
+import { ZodExceptionFilter } from './common/zod-exception.filter';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -49,11 +50,13 @@ async function bootstrap() {
   expressApp.set('trust proxy', 1);
 
   // Global exception filters — NestJS evaluates in REVERSE registration order:
-  // PrismaExceptionFilter runs first (catches P2002/P2025/P2003 → 409/404/400),
+  // ZodExceptionFilter runs first (catches ZodError → 400),
+  // PrismaExceptionFilter runs second (catches P2002/P2025/P2003 → 409/404/400),
   // SentryExceptionFilter runs last (catches remaining errors → 5xx to Sentry).
   app.useGlobalFilters(
     new SentryExceptionFilter(),
     new PrismaExceptionFilter(),
+    new ZodExceptionFilter(),
   );
 
   // Security headers

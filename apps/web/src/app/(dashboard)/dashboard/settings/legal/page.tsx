@@ -34,13 +34,12 @@ export default async function LegalPage() {
         <section>
           <h2 className="text-base font-semibold mb-2">Éditeur</h2>
           <p>
-            PsyLib est édité par PsyScale SAS, société par actions simplifiée
-            au capital de 1 000€, immatriculée au RCS de Nancy.
+            PsyLib est édité par Tony Ruppel, micro-entrepreneur, SIRET 102 784 956 00017.
           </p>
           <ul className="mt-2 space-y-1 text-muted-foreground">
-            <li>Siège social : Nancy, France</li>
+            <li>Domiciliation : Nancy, France</li>
             <li>Email : tony@psylib.eu</li>
-            <li>Directeur de la publication : le représentant légal de PsyScale SAS</li>
+            <li>Directeur de la publication : Tony Ruppel</li>
           </ul>
         </section>
 

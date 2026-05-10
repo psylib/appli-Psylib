@@ -3,6 +3,7 @@ import {
   Logger,
   ForbiddenException,
   BadRequestException,
+  NotFoundException,
   type OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -100,7 +101,7 @@ export class AiService implements OnModuleInit {
       where: { id: sessionId },
       select: { patientId: true },
     });
-    if (!session) return;
+    if (!session) throw new NotFoundException('Séance introuvable');
 
     const consent = await this.prisma.gdprConsent.findFirst({
       where: {

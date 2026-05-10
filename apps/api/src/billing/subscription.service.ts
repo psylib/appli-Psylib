@@ -462,7 +462,7 @@ export class SubscriptionService {
         psychologistName: psy.name,
         plan,
         trialEndsAt,
-      });
+      }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     // Referral reward : étendre l'abonnement du referrer de 30 jours
@@ -523,7 +523,7 @@ export class SubscriptionService {
       void this.email.sendSubscriptionCanceled(sub.psychologist.user.email, {
         psychologistName: sub.psychologist.name,
         endDate,
-      });
+      }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     this.logger.log(`Subscription canceled: ${subscription.id}`);
@@ -556,7 +556,7 @@ export class SubscriptionService {
       void this.email.sendPaymentFailed(sub.psychologist.user.email, {
         psychologistName: sub.psychologist.name,
         portalUrl: `${frontendUrl}/dashboard/settings/billing`,
-      });
+      }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     this.logger.warn(`Payment failed for subscription: ${String(invoice.subscription)}`);
@@ -601,7 +601,7 @@ export class SubscriptionService {
         'payment.completed',
         new PaymentCompletedEvent(
           appointment.psychologistId,
-          '',
+          null,
           null,
           patientForEvent?.name ?? 'Patient',
           Number(session.amount_total ?? 0) / 100,
@@ -696,7 +696,7 @@ export class SubscriptionService {
           patientName: appointment.patient.name,
           amount: payment ? Number(payment.amount) : 0,
         },
-      );
+      ).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     this.logger.log(`Payment link completed for appointment ${appointmentId}`);
@@ -929,7 +929,7 @@ export class SubscriptionService {
           amount,
           paymentUrl: session.url ?? '',
         },
-      );
+      ).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     this.logger.log(`Payment link created for appointment ${appointment.id}, amount=${amount}€`);
@@ -990,7 +990,7 @@ export class SubscriptionService {
           psychologistName: psy.name,
           amount: Number(payment.amount),
         },
-      );
+      ).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 
     this.logger.log(`Refund processed for appointment ${appointmentId}, payment ${payment.id}`);
@@ -1044,7 +1044,7 @@ export class SubscriptionService {
         'payment.completed',
         new PaymentCompletedEvent(
           psy.id,
-          '',  // payment id from transaction not easily accessible
+          null,  // payment id from transaction not easily accessible
           null,  // no invoice yet (auto-invoice may be generated separately)
           appointment.patient?.name ?? 'Patient',
           amount ?? 0,

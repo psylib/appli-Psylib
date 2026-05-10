@@ -15,6 +15,19 @@ env:
   IMAGE_NAME: ${{ github.repository_owner }}/psyscale-api
 
 jobs:
+  # ─── Gate: wait for CI workflow to pass on this commit ──────────────────────
+  ci-check:
+    name: Wait for CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI to pass
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.sha }}
+          check-name: 'Tests'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 10
+
   # ─── Détection des changements ──────────────────────────────────────────────
   changes:
     name: Detect changes
@@ -50,7 +63,7 @@ jobs:
   build-api:
     name: Build API image
     runs-on: ubuntu-latest
-    needs: changes
+    needs: [ci-check, changes]
     # Always deploy API on push to main or manual dispatch (paths-filter was unreliable)
     permissions:
       contents: read

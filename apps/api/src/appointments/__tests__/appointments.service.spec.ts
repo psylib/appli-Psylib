@@ -25,10 +25,10 @@ const mockAudit = {
 };
 
 const mockEmail = {
-  sendAppointmentConfirmation: vi.fn(),
-  sendBookingDeclined: vi.fn(),
-  sendRefundConfirmation: vi.fn(),
-  sendCancellationNotification: vi.fn(),
+  sendAppointmentConfirmation: vi.fn().mockResolvedValue(undefined),
+  sendBookingDeclined: vi.fn().mockResolvedValue(undefined),
+  sendRefundConfirmation: vi.fn().mockResolvedValue(undefined),
+  sendCancellationNotification: vi.fn().mockResolvedValue(undefined),
 };
 
 const mockStripeService = {

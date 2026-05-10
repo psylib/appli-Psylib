@@ -17,14 +17,8 @@ export class GuardianAuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
   ) {
-    // Warn at startup if guardian uses same secret as patient
-    const guardianSecret = this.config.get<string>('GUARDIAN_JWT_SECRET');
-    if (!guardianSecret) {
-      this.logger.warn(
-        'GUARDIAN_JWT_SECRET non configuré — fallback sur PATIENT_JWT_SECRET. ' +
-        'Configurez une clé distincte pour isoler les tokens guardian/patient.',
-      );
-    }
+    // Validate at startup that the required secret is configured
+    this.config.getOrThrow<string>('GUARDIAN_JWT_SECRET');
   }
 
   /**
@@ -63,7 +57,7 @@ export class GuardianAuthService {
    * Rafraichit le token guardian via refresh token
    */
   async refreshToken(refreshTokenValue: string) {
-    const secret = this.config.get<string>('GUARDIAN_JWT_SECRET') ?? this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
+    const secret = this.config.getOrThrow<string>('GUARDIAN_JWT_SECRET');
 
     try {
       const decoded = this.jwt.verify(refreshTokenValue, { secret }) as {
@@ -92,7 +86,7 @@ export class GuardianAuthService {
   }
 
   private generateTokens(userId: string, email: string) {
-    const secret = this.config.get<string>('GUARDIAN_JWT_SECRET') ?? this.config.getOrThrow<string>('PATIENT_JWT_SECRET');
+    const secret = this.config.getOrThrow<string>('GUARDIAN_JWT_SECRET');
     const payload = { sub: userId, role: 'guardian', email };
 
     const accessToken = this.jwt.sign(payload, {

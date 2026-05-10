@@ -23,7 +23,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { SessionsService } from './sessions.service';
 import {
   CreateSessionDto,
@@ -40,6 +40,7 @@ import { RequireFeature } from '../billing/decorators/require-plan.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 class AutosaveDto {
+  @IsNotEmpty()
   @IsString()
   @MaxLength(100000)
   notes!: string;

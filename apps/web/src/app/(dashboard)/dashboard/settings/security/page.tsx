@@ -84,7 +84,7 @@ export default function SecurityPage() {
             <CheckCircle2 size={16} className="text-accent mt-0.5 flex-shrink-0" aria-hidden />
             <div>
               <p className="font-medium text-foreground">Chiffrement au repos</p>
-              <p className="text-xs text-muted-foreground">AWS KMS (AES-256) sur la base de données et les fichiers</p>
+              <p className="text-xs text-muted-foreground">OVH HDS (AES-256-GCM) sur la base de données et les fichiers</p>
             </div>
           </div>
           <div className="flex items-start gap-3">

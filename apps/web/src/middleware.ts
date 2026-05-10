@@ -81,6 +81,14 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     }
   }
 
+  // Protection RBAC — /dashboard/admin/* uniquement pour admin
+  if (pathname.startsWith('/dashboard/admin')) {
+    const role = session?.user?.role;
+    if (role !== UserRole.ADMIN) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+  }
+
   // Protection RBAC — patient-portal pour patients et guardians
   if (pathname.startsWith('/patient-portal')) {
     const role = session?.user?.role;

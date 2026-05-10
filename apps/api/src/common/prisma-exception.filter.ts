@@ -23,8 +23,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     switch (exception.code) {
       case 'P2002': {
         status = HttpStatus.CONFLICT;
-        const fields = (exception.meta?.target as string[])?.join(', ') ?? 'unknown';
-        message = `Un enregistrement avec ces valeurs existe déjà (${fields})`;
+        message = 'Un enregistrement avec ces valeurs existe déjà';
         break;
       }
       case 'P2025':

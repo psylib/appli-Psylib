@@ -1,4 +1,4 @@
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { PublicBookingService } from './public-booking.service';
 
@@ -34,7 +34,7 @@ const validBookingDto = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function createPrismaMock() {
-  return {
+  const mock = {
     psychologist: {
       findUnique: vi.fn().mockResolvedValue(null),
       findMany: vi.fn().mockResolvedValue([]),
@@ -54,7 +54,9 @@ function createPrismaMock() {
       findFirst: vi.fn().mockResolvedValue(null),
       findMany: vi.fn().mockResolvedValue([]),
     },
+    $transaction: vi.fn().mockImplementation((cb: (tx: any) => any) => cb(mock)),
   };
+  return mock;
 }
 
 function createAvailabilityMock() {
@@ -281,7 +283,7 @@ describe('PublicBookingService', () => {
       await expect(service.bookAppointment('inconnu', validBookingDto)).rejects.toThrow(NotFoundException);
     });
 
-    it('throws BadRequestException on slot conflict', async () => {
+    it('throws ConflictException on slot conflict', async () => {
       // Mock a conflicting appointment that overlaps with the booking time
       const bookingTime = new Date(validBookingDto.scheduledAt);
       prisma.appointment.findFirst.mockResolvedValue({
@@ -289,7 +291,7 @@ describe('PublicBookingService', () => {
         scheduledAt: bookingTime,
         duration: 50,
       });
-      await expect(service.bookAppointment('dr-martin', validBookingDto)).rejects.toThrow(BadRequestException);
+      await expect(service.bookAppointment('dr-martin', validBookingDto)).rejects.toThrow(ConflictException);
     });
 
     it('creates a new patient when email not already registered', async () => {

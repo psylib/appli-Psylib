@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 import { CacheService } from '../common/cache.service';
 import { AvailabilityService } from '../availability/availability.service';
@@ -366,70 +367,74 @@ export class PublicBookingService {
       }
     }
 
-    // Vérifie que le créneau est toujours libre (détection de chevauchement complet)
-    const newEnd = new Date(scheduledAt.getTime() + duration * 60000);
-    const conflict = await this.prisma.appointment.findFirst({
-      where: {
-        psychologistId: psy.id,
-        status: { not: 'cancelled' },
-        bookingPaymentStatus: { not: 'payment_failed' },
-        // Overlap : existing_start < new_end AND existing_end > new_start
-        scheduledAt: { lt: newEnd },
-      },
-    });
-    // Double-check overlap: appointment end must be after new start
-    if (conflict) {
-      const conflictEnd = new Date(
-        new Date(conflict.scheduledAt).getTime() + conflict.duration * 60000,
-      );
-      if (conflictEnd > scheduledAt) {
-        throw new BadRequestException('Ce créneau est déjà pris');
-      }
-    }
-
-    // Check if psy can accept online payment
+    // Check if psy can accept online payment (determined outside transaction)
     const psyAcceptsPayment =
       psy.allowOnlinePayment &&
       psy.stripeOnboardingComplete &&
       !!psy.stripeAccountId;
     const wantsOnlinePayment = dto.payOnline === true && psyAcceptsPayment;
 
-    // Trouve ou crée le patient
-    let patient = await this.prisma.patient.findFirst({
-      where: { email: dto.patientEmail, psychologistId: psy.id },
-    });
-
-    if (!patient) {
-      patient = await this.prisma.patient.create({
-        data: {
-          psychologistId: psy.id,
-          name: dto.patientName,
-          email: dto.patientEmail,
-          phone: dto.patientPhone,
-          source: 'public',
-          status: 'active',
-        },
-      });
-    }
-
     const cancelToken = randomUUID();
 
-    const appointment = await this.prisma.appointment.create({
-      data: {
-        psychologistId: psy.id,
-        patientId: patient.id,
-        scheduledAt,
-        duration,
-        status: 'scheduled',
-        source: 'public',
-        reason: dto.reason,
-        cancelToken,
-        consultationTypeId: dto.consultationTypeId ?? null,
-        bookingPaymentStatus: wantsOnlinePayment ? 'pending_payment' : 'none',
-        isOnline: dto.isOnline === true,
-        videoJoinToken: dto.isOnline === true ? randomUUID() : undefined,
-      },
-    });
+    // Wrap conflict check + patient upsert + appointment create in a serializable
+    // transaction to prevent double-booking under concurrent requests.
+    const appointment = await this.prisma.$transaction(async (tx) => {
+      // Vérifie que le créneau est toujours libre (détection de chevauchement complet)
+      const newEnd = new Date(scheduledAt.getTime() + duration * 60000);
+      const conflict = await tx.appointment.findFirst({
+        where: {
+          psychologistId: psy.id,
+          status: { not: 'cancelled' },
+          bookingPaymentStatus: { not: 'payment_failed' },
+          // Overlap : existing_start < new_end AND existing_end > new_start
+          scheduledAt: { lt: newEnd },
+        },
+      });
+      // Double-check overlap: appointment end must be after new start
+      if (conflict) {
+        const conflictEnd = new Date(
+          new Date(conflict.scheduledAt).getTime() + conflict.duration * 60000,
+        );
+        if (conflictEnd > scheduledAt) {
+          throw new ConflictException('Ce créneau est déjà pris');
+        }
+      }
+
+      // Trouve ou crée le patient
+      let patient = await tx.patient.findFirst({
+        where: { email: dto.patientEmail, psychologistId: psy.id },
+      });
+
+      if (!patient) {
+        patient = await tx.patient.create({
+          data: {
+            psychologistId: psy.id,
+            name: dto.patientName,
+            email: dto.patientEmail,
+            phone: dto.patientPhone,
+            source: 'public',
+            status: 'active',
+          },
+        });
+      }
+
+      return tx.appointment.create({
+        data: {
+          psychologistId: psy.id,
+          patientId: patient.id,
+          scheduledAt,
+          duration,
+          status: 'scheduled',
+          source: 'public',
+          reason: dto.reason,
+          cancelToken,
+          consultationTypeId: dto.consultationTypeId ?? null,
+          bookingPaymentStatus: wantsOnlinePayment ? 'pending_payment' : 'none',
+          isOnline: dto.isOnline === true,
+          videoJoinToken: dto.isOnline === true ? randomUUID() : undefined,
+        },
+      });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
     // Invalide le cache des créneaux du psy (le slot vient d'être pris)
     void this.cache.delByPattern(`slots:${slug}:*`);

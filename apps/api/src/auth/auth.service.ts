@@ -28,7 +28,7 @@ export class AuthService {
     this.adminClientId =
       config.get<string>('KEYCLOAK_ADMIN_CLIENT_ID') ?? 'psyscale-admin';
     this.adminClientSecret =
-      config.get<string>('KEYCLOAK_ADMIN_SECRET') ?? '';
+      config.getOrThrow<string>('KEYCLOAK_ADMIN_SECRET');
     this.adminEmail =
       config.get<string>('ADMIN_NOTIFICATION_EMAIL') ?? 'tony@psylib.eu';
   }
@@ -76,7 +76,9 @@ export class AuthService {
     await this.sendPasswordSetupEmail(adminToken, userId);
 
     // 5. Notify admin
-    this.notifyAdmin(firstName, lastName, email, adeliOrRpps).catch(() => {});
+    this.notifyAdmin(firstName, lastName, email, adeliOrRpps).catch((err) =>
+      this.logger.warn(`Admin notification failed: ${(err as Error).message}`),
+    );
 
     this.logger.log(`Nouveau psychologue inscrit: ${email}`);
 
@@ -218,18 +220,20 @@ export class AuthService {
       Math.random().toString(36).slice(2, 7);
 
     try {
-      await this.prisma.user.create({
-        data: { id: userId, email: email.toLowerCase(), role: 'psychologist' },
-      });
+      await this.prisma.$transaction(async (tx) => {
+        await tx.user.create({
+          data: { id: userId, email: email.toLowerCase(), role: 'psychologist' },
+        });
 
-      await this.prisma.psychologist.create({
-        data: {
-          userId,
-          name: fullName,
-          slug,
-          adeliNumber: adeliOrRpps.replace(/\s/g, ''),
-          isOnboarded: false,
-        },
+        await tx.psychologist.create({
+          data: {
+            userId,
+            name: fullName,
+            slug,
+            adeliNumber: adeliOrRpps.replace(/\s/g, ''),
+            isOnboarded: false,
+          },
+        });
       });
     } catch (err) {
       this.logger.error(

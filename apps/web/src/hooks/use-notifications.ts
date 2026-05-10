@@ -86,7 +86,7 @@ export function useNotifications(): UseNotificationsReturn {
       socketRef.current = null;
       setIsConnected(false);
     };
-  }, [token, session?.accessToken]);
+  }, [token]);
 
   // Initial fetch + fallback polling (60s)
   useEffect(() => {

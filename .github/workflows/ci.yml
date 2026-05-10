@@ -47,11 +47,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Lint API (skipped — no ESLint config yet)
-        run: echo "Lint API skipped — no ESLint config file in apps/api"
+      - name: Generate Prisma client
+        run: cd apps/api && pnpm prisma generate
 
-      - name: Lint Web (skipped — no ESLint config yet)
-        run: echo "Lint Web skipped — no ESLint config file in apps/web"
+      - name: Lint API
+        run: pnpm --filter api lint
+
+      - name: Lint Web
+        run: pnpm --filter web lint
 
   test:
     name: Tests
@@ -77,5 +80,16 @@ jobs:
       - name: Run API tests
         run: pnpm --filter api test
 
+      - name: Run integration tests
+        run: pnpm --filter api test:integration
+        continue-on-error: true
+
       - name: Run Web tests (skipped — no test script yet)
         run: echo "Web tests skipped — no test script in apps/web"
+
+      - name: Run mobile tests
+        run: pnpm --filter @psyscale/mobile test
+        continue-on-error: true
+
+      - name: Build API
+        run: pnpm --filter api build

@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { Prisma } from '@prisma/client';
 import { WebhookController } from './webhook.controller';
 import type Stripe from 'stripe';
 
@@ -26,7 +27,6 @@ describe('WebhookController', () => {
     stripeEvent: {
       findUnique: ReturnType<typeof vi.fn>;
       create: ReturnType<typeof vi.fn>;
-      upsert: ReturnType<typeof vi.fn>;
     };
   };
   let billingQueue: { add: ReturnType<typeof vi.fn> };
@@ -41,7 +41,6 @@ describe('WebhookController', () => {
       stripeEvent: {
         findUnique: vi.fn().mockResolvedValue(null),
         create: vi.fn().mockResolvedValue({}),
-        upsert: vi.fn().mockResolvedValue({ processedAt: new Date() }),
       },
     };
 
@@ -99,11 +98,28 @@ describe('WebhookController', () => {
 
   describe('idempotency', () => {
     it('returns { received: true } immediately when event already processed', async () => {
-      // upsert returns a record with old processedAt (> 1s ago) → already processed
-      prisma.stripeEvent.upsert.mockResolvedValue({
+      prisma.stripeEvent.findUnique.mockResolvedValue({
         stripeEventId: MOCK_EVENT.id!,
         processedAt: new Date(Date.now() - 10000),
       });
+
+      const req = buildRawRequest();
+      const result = await controller.handleStripeWebhook(req as any, 'valid-sig');
+
+      expect(result).toEqual({ received: true });
+      expect(billingQueue.add).not.toHaveBeenCalled();
+      expect(prisma.stripeEvent.create).not.toHaveBeenCalled();
+    });
+
+    it('handles race condition via P2002 unique constraint error', async () => {
+      prisma.stripeEvent.findUnique.mockResolvedValue(null);
+      const p2002Error = new Prisma.PrismaClientKnownRequestError(
+        'Unique constraint failed',
+        { code: 'P2002', clientVersion: '5.0.0' },
+      );
+      // Simulate: findUnique returns null, but create fails with P2002
+      // because another instance created the record in between
+      prisma.stripeEvent.create.mockRejectedValue(p2002Error);
 
       const req = buildRawRequest();
       const result = await controller.handleStripeWebhook(req as any, 'valid-sig');
@@ -114,9 +130,9 @@ describe('WebhookController', () => {
 
     it('persists event BEFORE enqueuing (guarantees idempotency)', async () => {
       const callOrder: string[] = [];
-      prisma.stripeEvent.upsert.mockImplementation(async () => {
-        callOrder.push('upsert');
-        return { processedAt: new Date() };
+      prisma.stripeEvent.create.mockImplementation(async () => {
+        callOrder.push('create');
+        return {};
       });
       billingQueue.add.mockImplementation(async () => {
         callOrder.push('queue');
@@ -125,7 +141,7 @@ describe('WebhookController', () => {
 
       await controller.handleStripeWebhook(buildRawRequest() as any, 'valid-sig');
 
-      expect(callOrder).toEqual(['upsert', 'queue']);
+      expect(callOrder).toEqual(['create', 'queue']);
     });
   });
 
@@ -137,13 +153,12 @@ describe('WebhookController', () => {
       expect(result).toEqual({ received: true });
     });
 
-    it('records event with correct stripeEventId and type via upsert', async () => {
+    it('records event with correct stripeEventId and type via create', async () => {
       await controller.handleStripeWebhook(buildRawRequest() as any, 'valid-sig');
 
-      expect(prisma.stripeEvent.upsert).toHaveBeenCalledWith(
+      expect(prisma.stripeEvent.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { stripeEventId: MOCK_EVENT.id },
-          create: expect.objectContaining({
+          data: expect.objectContaining({
             stripeEventId: MOCK_EVENT.id,
             type: MOCK_EVENT.type,
           }),

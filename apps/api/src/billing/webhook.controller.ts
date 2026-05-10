@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { ApiTags, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 import { StripeService } from './stripe.service';
 import { BILLING_QUEUE, PROCESS_WEBHOOK_JOB } from './billing.queue';
@@ -54,21 +55,31 @@ export class WebhookController {
       throw new BadRequestException('Signature Stripe invalide');
     }
 
-    // Idempotency — upsert atomique pour éviter les race conditions
-    const record = await this.prisma.stripeEvent.upsert({
+    // Idempotency — check then create with unique constraint catch
+    const existing = await this.prisma.stripeEvent.findUnique({
       where: { stripeEventId: event.id },
-      update: {}, // no-op si déjà existant
-      create: {
-        stripeEventId: event.id,
-        type: event.type,
-        processedAt: new Date(),
-      },
     });
 
-    // Si l'event existait déjà (processedAt antérieur), on skip
-    if (record.processedAt < new Date(Date.now() - 1000)) {
+    if (existing) {
       this.logger.debug(`Stripe event déjà traité: ${event.id}`);
       return { received: true };
+    }
+
+    try {
+      await this.prisma.stripeEvent.create({
+        data: {
+          stripeEventId: event.id,
+          type: event.type,
+          processedAt: new Date(),
+        },
+      });
+    } catch (err) {
+      // Race condition : une autre instance a créé l'event entre le findUnique et le create
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        this.logger.debug(`Stripe event déjà traité (race): ${event.id}`);
+        return { received: true };
+      }
+      throw err;
     }
 
     // Enqueuer pour traitement asynchrone

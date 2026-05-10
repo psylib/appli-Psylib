@@ -23,25 +23,18 @@ export function getAllowedOrigins(): (string | RegExp)[] {
 }
 
 /**
- * CORS origin callback — accepte les origines listees + `null` (apps mobiles natives).
- * Les apps React Native envoient `Origin: null` car elles ne sont pas dans un navigateur.
+ * CORS origin callback — accepte les origines listees.
+ * Les apps mobiles natives (React Native) n'envoient pas d'en-tête Origin
+ * et s'authentifient exclusivement via Bearer token — pas de cookie CSRF possible.
  */
 export function corsOriginCallback(
   origin: string | undefined,
   callback: (err: Error | null, allow?: boolean) => void,
 ): void {
-  // Apps natives (React Native) envoient `Origin: null` (string) — on les accepte
-  // car elles s'authentifient via Bearer token, pas via cookies.
-  // En dev, on accepte aussi les requêtes sans origine (Postman, curl).
+  // Requêtes sans origine (Postman, curl, apps natives) — acceptées uniquement hors prod.
   if (!origin) {
     const isDev = process.env['NODE_ENV'] !== 'production';
     callback(null, isDev);
-    return;
-  }
-
-  // React Native et sandboxed iframes envoient "null" comme string
-  if (origin === 'null') {
-    callback(null, true);
     return;
   }
 

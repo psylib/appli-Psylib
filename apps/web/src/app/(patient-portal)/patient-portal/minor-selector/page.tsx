@@ -13,9 +13,9 @@ import {
 } from '@/lib/api/guardian-portal';
 
 const RELATIONSHIP_LABELS: Record<string, string> = {
-  mother: 'Mere',
-  father: 'Pere',
-  legal_guardian: 'Tuteur legal',
+  mother: 'Mère',
+  father: 'Père',
+  legal_guardian: 'Tuteur légal',
   other: 'Autre',
 };
 
@@ -56,7 +56,7 @@ export default function MinorSelectorPage() {
         <Users className="h-10 w-10 text-primary mx-auto mb-3" />
         <h1 className="text-2xl font-bold">Vos enfants suivis</h1>
         <p className="text-muted-foreground mt-1">
-          Selectionnez un enfant pour acceder a son suivi
+          Sélectionnez un enfant pour accéder à son suivi
         </p>
       </div>
       <div className="space-y-4">
