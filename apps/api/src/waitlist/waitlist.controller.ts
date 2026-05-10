@@ -13,6 +13,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { IsEnum, IsDateString } from 'class-validator';
 import { Throttle } from '@nestjs/throttler';
 import { PrismaService } from '../common/prisma.service';
 import { WaitlistService } from './waitlist.service';
@@ -22,6 +23,16 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
+
+class UpdateWaitlistStatusDto {
+  @IsEnum(['waiting', 'contacted', 'converted', 'cancelled'])
+  status!: string;
+}
+
+class ProposeSlotDto {
+  @IsDateString()
+  slotDate!: string;
+}
 
 // ── Protected routes (psy only) ─────────────────────────────────────────────
 
@@ -63,11 +74,11 @@ export class WaitlistController {
   @ApiOperation({ summary: 'Mettre à jour le statut d\'une entrée' })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('status') status: string,
+    @Body() dto: UpdateWaitlistStatusDto,
     @CurrentUser() user: KeycloakUser,
   ) {
     const psyId = await this.getPsyId(user.sub);
-    return this.waitlistService.updateStatus(psyId, id, status);
+    return this.waitlistService.updateStatus(psyId, id, dto.status);
   }
 
   @Delete(':id')
@@ -85,11 +96,11 @@ export class WaitlistController {
   @ApiOperation({ summary: 'Proposer un créneau à un patient en attente' })
   async proposeSlot(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('slotDate') slotDate: string,
+    @Body() dto: ProposeSlotDto,
     @CurrentUser() user: KeycloakUser,
   ) {
     const psyId = await this.getPsyId(user.sub);
-    return this.waitlistService.proposeSlot(psyId, id, new Date(slotDate));
+    return this.waitlistService.proposeSlot(psyId, id, new Date(dto.slotDate));
   }
 }
 

@@ -127,8 +127,9 @@ export class AvailabilityService {
       const jsDay = current.getDay(); // 0=Dimanche, 1=Lundi...
       const ourDay = jsDay === 0 ? 6 : jsDay - 1;
 
-      const daySlot = slots.find((s) => s.dayOfWeek === ourDay);
-      if (daySlot) {
+      // Tous les créneaux du jour (un psy peut avoir matin + après-midi)
+      const daySlots = slots.filter((s) => s.dayOfWeek === ourDay);
+      if (daySlots.length > 0) {
         // Check if this day is blocked by an all-day external event
         const dayStart = new Date(current);
         const dayEnd = new Date(current);
@@ -141,44 +142,49 @@ export class AvailabilityService {
           continue;
         }
 
-        const [startH, startM] = daySlot.startTime.split(':').map((x: string) => Number(x));
-        const [endH, endM] = daySlot.endTime.split(':').map((x: string) => Number(x));
+        const breakBuffer = minBreak * 60000;
 
-        const slotStart = new Date(current);
-        slotStart.setHours(startH ?? 9, startM ?? 0, 0, 0);
-        const slotEnd = new Date(current);
-        slotEnd.setHours(endH ?? 18, endM ?? 0, 0, 0);
+        for (const daySlot of daySlots) {
+          const [startH, startM] = daySlot.startTime.split(':').map((x: string) => Number(x));
+          const [endH, endM] = daySlot.endTime.split(':').map((x: string) => Number(x));
 
-        const cursor = new Date(slotStart);
-        while (cursor.getTime() + sessionDuration * 60000 <= slotEnd.getTime()) {
-          const slotTime = new Date(cursor);
-          // Vérifie qu'aucun RDV n'est à ce moment (avec buffer de pause si configuré)
-          const hasConflict = existingAppointments.some((appt) => {
-            const apptStart = new Date(appt.scheduledAt).getTime();
-            const apptEnd = apptStart + appt.duration * 60000;
-            // Étend la fenêtre occupée par la pause minimale entre RDV
-            const occupiedEnd = minBreak > 0 ? apptEnd + minBreak * 60000 : apptEnd;
-            const newStart = slotTime.getTime();
-            const newEnd = newStart + sessionDuration * 60000;
-            return newStart < occupiedEnd && newEnd > apptStart;
-          });
+          const slotStart = new Date(current);
+          slotStart.setHours(startH ?? 9, startM ?? 0, 0, 0);
+          const slotEnd = new Date(current);
+          slotEnd.setHours(endH ?? 18, endM ?? 0, 0, 0);
 
-          // Also block slots that overlap with external calendar events
-          const breakBuffer = minBreak * 60000;
-          const hasExternalConflict = externalEvents.some((e) => {
-            if (e.isAllDay) return false; // Already handled above
-            const eStart = e.startAt.getTime() - breakBuffer;
-            const eEnd = e.endAt.getTime() + breakBuffer;
-            const newStart = slotTime.getTime();
-            const newEnd = newStart + sessionDuration * 60000;
-            return newStart < eEnd && newEnd > eStart;
-          });
+          const cursor = new Date(slotStart);
+          while (cursor.getTime() + sessionDuration * 60000 <= slotEnd.getTime()) {
+            const slotTime = new Date(cursor);
+            // Vérifie qu'aucun RDV n'est à ce moment (avec buffer de pause symétrique)
+            const hasConflict = existingAppointments.some((appt) => {
+              const apptStart = new Date(appt.scheduledAt).getTime();
+              const apptEnd = apptStart + appt.duration * 60000;
+              // Étend la fenêtre occupée par la pause minimale AVANT et APRÈS le RDV
+              const occupiedStart = minBreak > 0 ? apptStart - breakBuffer : apptStart;
+              const occupiedEnd = minBreak > 0 ? apptEnd + breakBuffer : apptEnd;
+              const newStart = slotTime.getTime();
+              const newEnd = newStart + sessionDuration * 60000;
+              return newStart < occupiedEnd && newEnd > occupiedStart;
+            });
 
-          if (!hasConflict && !hasExternalConflict && slotTime > new Date()) {
-            freeTimes.push(slotTime);
+            // Also block slots that overlap with external calendar events
+            const hasExternalConflict = externalEvents.some((e) => {
+              if (e.isAllDay) return false; // Already handled above
+              const eStart = e.startAt.getTime() - breakBuffer;
+              const eEnd = e.endAt.getTime() + breakBuffer;
+              const newStart = slotTime.getTime();
+              const newEnd = newStart + sessionDuration * 60000;
+              return newStart < eEnd && newEnd > eStart;
+            });
+
+            if (!hasConflict && !hasExternalConflict && slotTime > new Date()) {
+              freeTimes.push(slotTime);
+            }
+
+            // Avance par session + pause minimum pour éviter les chevauchements
+            cursor.setMinutes(cursor.getMinutes() + sessionDuration + minBreak);
           }
-
-          cursor.setMinutes(cursor.getMinutes() + sessionDuration);
         }
       }
 

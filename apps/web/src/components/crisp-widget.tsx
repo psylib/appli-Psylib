@@ -17,7 +17,7 @@ export function CrispWidget() {
       dangerouslySetInnerHTML={{
         __html: `
           window.$crisp=[];
-          window.CRISP_WEBSITE_ID="${websiteId}";
+          window.CRISP_WEBSITE_ID=${JSON.stringify(websiteId)};
           (function(){
             var d=document;
             var s=d.createElement("script");

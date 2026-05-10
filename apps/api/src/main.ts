@@ -8,11 +8,16 @@ Sentry.init({
   tracesSampleRate: 0.1,
   profilesSampleRate: 0.1,
   integrations: [nodeProfilingIntegration()],
-  // Jamais de données patients dans les erreurs Sentry
+  // HDS : jamais de données patients/tokens dans les erreurs Sentry
   beforeSend(event) {
-    // Supprimer les paramètres de requête qui pourraient contenir des données sensibles
-    if (event.request?.data) {
+    if (event.request) {
       delete event.request.data;
+      delete event.request.query_string;
+      delete event.request.cookies;
+      if (event.request.headers) {
+        delete event.request.headers['authorization'];
+        delete event.request.headers['cookie'];
+      }
     }
     return event;
   },
@@ -90,8 +95,8 @@ async function bootstrap() {
     }),
   );
 
-  // API prefix
-  app.setGlobalPrefix('api/v1');
+  // API prefix — exclude /health for root-level monitoring probes
+  app.setGlobalPrefix('api/v1', { exclude: ['health'] });
 
   // Swagger — désactivé en production
   if (process.env['NODE_ENV'] !== 'production') {

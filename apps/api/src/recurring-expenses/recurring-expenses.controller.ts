@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { RecurringExpensesService } from './recurring-expenses.service';
 import { CreateRecurringExpenseDto } from './dto/create-recurring-expense.dto';
@@ -46,7 +47,7 @@ export class RecurringExpensesController {
   @UseGuards(SubscriptionGuard)
   update(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateRecurringExpenseDto,
   ) {
     return this.service.update(user.sub, id, dto);
@@ -55,7 +56,7 @@ export class RecurringExpensesController {
   @Delete(':id')
   deactivate(
     @CurrentUser() user: KeycloakUser,
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.service.deactivate(user.sub, id);
   }

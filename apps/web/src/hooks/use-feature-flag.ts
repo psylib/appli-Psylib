@@ -24,12 +24,13 @@ export function useFeatureFlag(flag: string): boolean {
 
   useEffect(() => {
     if (!posthog) return;
-    // PostHog feature flags are loaded async
-    posthog.onFeatureFlags(() => {
+    // PostHog feature flags are loaded async — onFeatureFlags returns unsubscribe
+    const unsub = posthog.onFeatureFlags(() => {
       setEnabled(posthog.isFeatureEnabled(flag) ?? false);
     });
     // Also check immediately in case flags are already loaded
     setEnabled(posthog.isFeatureEnabled(flag) ?? false);
+    return () => { unsub(); };
   }, [posthog, flag]);
 
   return enabled;
@@ -45,12 +46,13 @@ export function useFeatureFlagVariant(flag: string): string | undefined {
 
   useEffect(() => {
     if (!posthog) return;
-    posthog.onFeatureFlags(() => {
+    const unsub = posthog.onFeatureFlags(() => {
       const v = posthog.getFeatureFlag(flag);
       setVariant(typeof v === 'string' ? v : undefined);
     });
     const v = posthog.getFeatureFlag(flag);
     setVariant(typeof v === 'string' ? v : undefined);
+    return () => { unsub(); };
   }, [posthog, flag]);
 
   return variant;

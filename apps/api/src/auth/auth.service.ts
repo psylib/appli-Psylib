@@ -235,7 +235,11 @@ export class AuthService {
       this.logger.error(
         `DB record creation failed: ${(err as Error).message}`,
       );
-      // Don't throw — Keycloak user exists, auto-provisioning will handle DB on first login
+      // P2002 = unique constraint (user already exists) → silently continue
+      const prismaCode = (err as { code?: string }).code;
+      if (prismaCode !== 'P2002') {
+        throw err;
+      }
     }
   }
 
@@ -249,15 +253,17 @@ export class AuthService {
       timeZone: 'Europe/Paris',
     });
 
+    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
     await this.emailService.sendRawEmail(
       this.adminEmail,
       `Nouvelle inscription PsyLib — ${firstName} ${lastName}`,
       `<div style="font-family:Inter,Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;">
         <h2 style="color:#3D52A0;margin:0 0 16px;">Nouvelle inscription</h2>
         <table style="width:100%;border-collapse:collapse;font-size:15px;">
-          <tr><td style="padding:8px 0;color:#6B7280;">Nom</td><td style="padding:8px 0;font-weight:600;">${firstName} ${lastName}</td></tr>
-          <tr><td style="padding:8px 0;color:#6B7280;">Email</td><td style="padding:8px 0;">${email}</td></tr>
-          <tr><td style="padding:8px 0;color:#6B7280;">ADELI/RPPS</td><td style="padding:8px 0;font-family:monospace;">${adeliOrRpps}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Nom</td><td style="padding:8px 0;font-weight:600;">${esc(firstName)} ${esc(lastName)}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Email</td><td style="padding:8px 0;">${esc(email)}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">ADELI/RPPS</td><td style="padding:8px 0;font-family:monospace;">${esc(adeliOrRpps)}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Date</td><td style="padding:8px 0;">${date}</td></tr>
         </table>
       </div>`,

@@ -17,12 +17,15 @@ import {
 import { MessagingService } from './messaging.service';
 import { CreateConversationDto } from './dto/messaging.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 @ApiTags('Messaging')
 @ApiBearerAuth()
-@UseGuards(KeycloakGuard)
+@UseGuards(KeycloakGuard, RolesGuard)
+@Roles('psychologist', 'patient')
 @Controller('messaging')
 export class MessagingController {
   constructor(private readonly messagingService: MessagingService) {}

@@ -282,7 +282,13 @@ describe('PublicBookingService', () => {
     });
 
     it('throws BadRequestException on slot conflict', async () => {
-      prisma.appointment.findFirst.mockResolvedValue({ id: 'existing-appt' });
+      // Mock a conflicting appointment that overlaps with the booking time
+      const bookingTime = new Date(validBookingDto.scheduledAt);
+      prisma.appointment.findFirst.mockResolvedValue({
+        id: 'existing-appt',
+        scheduledAt: bookingTime,
+        duration: 50,
+      });
       await expect(service.bookAppointment('dr-martin', validBookingDto)).rejects.toThrow(BadRequestException);
     });
 

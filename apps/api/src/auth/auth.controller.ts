@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { KeycloakGuard } from './guards/keycloak.guard';
 import { CacheService } from '../common/cache.service';
 import { AuthService } from './auth.service';
@@ -43,6 +44,7 @@ export class AuthController {
    */
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
   @ApiOperation({ summary: 'Inscription psychologue' })
   async register(
     @Body() dto: RegisterDto,
@@ -85,6 +87,7 @@ export class AuthController {
    */
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60000, limit: 2 } })
   @ApiOperation({ summary: 'Demande de réinitialisation de mot de passe' })
   async forgotPassword(
     @Body() dto: ForgotPasswordDto,

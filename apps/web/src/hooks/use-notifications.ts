@@ -29,6 +29,8 @@ interface UseNotificationsReturn {
 export function useNotifications(): UseNotificationsReturn {
   const { data: session } = useSession();
   const token = session?.accessToken;
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
   const socketRef = useRef<Socket | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -60,9 +62,9 @@ export function useNotifications(): UseNotificationsReturn {
       reconnectionAttempts: 10,
     });
 
-    // On reconnect, pass fresh token (handles JWT expiry)
+    // On reconnect, pass fresh token via ref (handles JWT expiry)
     socket.io.on('reconnect_attempt', () => {
-      socket.auth = { token: session?.accessToken };
+      socket.auth = { token: tokenRef.current };
     });
 
     socketRef.current = socket;

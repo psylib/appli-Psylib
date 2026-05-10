@@ -20,11 +20,30 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { createReadStream } from 'fs';
+import { IsArray, IsString, IsNumber, ValidateNested, ArrayMaxSize, ArrayMinSize } from 'class-validator';
+import { Type } from 'class-transformer';
 import { PatientJwtGuard } from './guards/patient-jwt.guard';
 import { PatientPortalService } from './patient-portal.service';
 import { CreateMoodDto, CreateJournalEntryDto, UpdateExerciseDto } from './dto/patient-portal.dto';
 import { CurrentPatient } from './decorators/current-patient.decorator';
 import type { PatientUser } from './strategies/patient-jwt.strategy';
+
+class AssessmentAnswerDto {
+  @IsString()
+  questionId!: string;
+
+  @IsNumber()
+  value!: number;
+}
+
+class SubmitAssessmentDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
+  @ValidateNested({ each: true })
+  @Type(() => AssessmentAnswerDto)
+  answers!: AssessmentAnswerDto[];
+}
 
 @ApiTags('Patient Portal')
 @ApiBearerAuth()
@@ -120,9 +139,9 @@ export class PatientPortalController {
   submitAssessment(
     @CurrentPatient() user: PatientUser,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: { answers: Array<{ questionId: string; value: number }> },
+    @Body() dto: SubmitAssessmentDto,
   ) {
-    return this.service.submitPatientAssessment(id, user.patientId, body.answers);
+    return this.service.submitPatientAssessment(id, user.patientId, dto.answers);
   }
 
   // ─── DOCUMENTS ───────────────────────────────────────────────────

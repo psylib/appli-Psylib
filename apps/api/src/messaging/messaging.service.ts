@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { EncryptionService } from '../common/encryption.service';
 import { AuditService } from '../common/audit.service';
+import { TtlCache } from '../common/ttl-cache';
 import type { ConversationSummaryDto, MessageDto } from './dto/messaging.dto';
 import type { Conversation, Message } from '@prisma/client';
 
@@ -334,7 +335,7 @@ export class MessagingService {
    * Résout le rôle d'un utilisateur. Utilise un cache interne pour éviter
    * des requêtes DB répétées dans la même requête HTTP.
    */
-  private readonly actorTypeCache = new Map<string, 'psychologist' | 'patient'>();
+  private readonly actorTypeCache = new TtlCache<'psychologist' | 'patient'>(30 * 60 * 1000, 200);
 
   private async resolveActorType(userId: string): Promise<'psychologist' | 'patient'> {
     const cached = this.actorTypeCache.get(userId);

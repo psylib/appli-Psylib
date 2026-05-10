@@ -366,19 +366,26 @@ export class PublicBookingService {
       }
     }
 
-    // Vérifie que le créneau est toujours libre
+    // Vérifie que le créneau est toujours libre (détection de chevauchement complet)
+    const newEnd = new Date(scheduledAt.getTime() + duration * 60000);
     const conflict = await this.prisma.appointment.findFirst({
       where: {
         psychologistId: psy.id,
         status: { not: 'cancelled' },
         bookingPaymentStatus: { not: 'payment_failed' },
-        scheduledAt: {
-          gte: scheduledAt,
-          lt: new Date(scheduledAt.getTime() + duration * 60000),
-        },
+        // Overlap : existing_start < new_end AND existing_end > new_start
+        scheduledAt: { lt: newEnd },
       },
     });
-    if (conflict) throw new BadRequestException('Ce créneau est déjà pris');
+    // Double-check overlap: appointment end must be after new start
+    if (conflict) {
+      const conflictEnd = new Date(
+        new Date(conflict.scheduledAt).getTime() + conflict.duration * 60000,
+      );
+      if (conflictEnd > scheduledAt) {
+        throw new BadRequestException('Ce créneau est déjà pris');
+      }
+    }
 
     // Check if psy can accept online payment
     const psyAcceptsPayment =

@@ -299,6 +299,7 @@ model User {
   sentMessages      Message[]          @relation("MessageSender")
   guardianRecords   LegalGuardian[]
 
+  @@index([role])
   @@map("users")
 }
 
@@ -618,6 +619,7 @@ model Session {
   @@index([patientId], name: "idx_sessions_patient")
   @@index([psychologistId, date(sort: Desc)], name: "idx_sessions_psy_date")
   @@index([templateId], name: "idx_sessions_template")
+  @@index([psychologistId, paymentStatus, date], name: "idx_sessions_psy_payment_date")
   @@map("sessions")
 }
 
@@ -772,6 +774,7 @@ model Appointment {
   @@index([patientId], name: "idx_appointments_patient")
   @@index([consultationTypeId], name: "idx_appointments_consultation_type")
   @@index([psychologistId, googleEventId], name: "idx_appointments_google_event")
+  @@index([psychologistId, status, scheduledAt], name: "idx_appointments_psy_status_date")
   @@map("appointments")
 }
 
@@ -837,6 +840,7 @@ model Exercise {
   dueDate         DateTime?      @map("due_date") @db.Date
   completedAt     DateTime?      @map("completed_at")
   patientFeedback String?        @map("patient_feedback")
+  createdAt       DateTime       @default(now()) @map("created_at")
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
@@ -874,6 +878,7 @@ model Conversation {
   messages     Message[]
 
   @@unique([psychologistId, patientId])
+  @@index([patientId])
   @@map("conversations")
 }
 
@@ -1098,7 +1103,7 @@ model Assessment {
   completedAt    DateTime?        @map("completed_at")
   createdAt      DateTime         @default(now()) @map("created_at")
 
-  template     AssessmentTemplate @relation(fields: [templateId], references: [id])
+  template     AssessmentTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
   patient      Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
   psychologist Psychologist       @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
 

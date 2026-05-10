@@ -1,5 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { TtlCache } from '../common/ttl-cache';
 
 export interface ActivationStep {
   id: string;
@@ -47,9 +48,13 @@ export interface DashboardKpis {
 
 @Injectable()
 export class DashboardService {
+  private readonly kpisCache = new TtlCache<DashboardKpis>(5 * 60 * 1000); // 5 min
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getKpis(psychologistUserId: string): Promise<DashboardKpis> {
+    const cached = this.kpisCache.get(psychologistUserId);
+    if (cached) return cached;
     const psy = await this.prisma.psychologist.findUnique({
       where: { userId: psychologistUserId },
       include: { subscription: true },
@@ -68,8 +73,10 @@ export class DashboardService {
       activePatients,
       newPatientsThisMonth,
       newPatientsLastMonth,
-      sessionsThisMonthAgg,
-      sessionsLastMonthAgg,
+      sessionsThisMonthCount,
+      sessionsLastMonthCount,
+      revenueThisMonthAgg,
+      revenueLastMonthAgg,
       upcomingAppointments,
       todayAppointments,
     ] = await Promise.all([
@@ -84,10 +91,20 @@ export class DashboardService {
           createdAt: { gte: firstOfLastMonth, lte: lastOfLastMonth },
         },
       }),
+      // Count ALL sessions (not just paid) for the sessions KPI
+      this.prisma.session.count({
+        where: { psychologistId: psy.id, date: { gte: firstOfMonth } },
+      }),
+      this.prisma.session.count({
+        where: {
+          psychologistId: psy.id,
+          date: { gte: firstOfLastMonth, lte: lastOfLastMonth },
+        },
+      }),
+      // Revenue: only paid sessions
       this.prisma.session.aggregate({
         where: { psychologistId: psy.id, date: { gte: firstOfMonth }, paymentStatus: 'paid' },
         _sum: { rate: true },
-        _count: { id: true },
       }),
       this.prisma.session.aggregate({
         where: {
@@ -96,7 +113,6 @@ export class DashboardService {
           paymentStatus: 'paid',
         },
         _sum: { rate: true },
-        _count: { id: true },
       }),
       this.prisma.appointment.count({
         where: {
@@ -114,15 +130,15 @@ export class DashboardService {
       }),
     ]);
 
-    const revenueThisMonth = Number(sessionsThisMonthAgg._sum.rate) || 0;
-    const revenueLastMonth = Number(sessionsLastMonthAgg._sum.rate) || 0;
+    const revenueThisMonth = Number(revenueThisMonthAgg._sum.rate) || 0;
+    const revenueLastMonth = Number(revenueLastMonthAgg._sum.rate) || 0;
 
     const calcTrend = (current: number, previous: number) => {
       if (previous === 0) return current > 0 ? 100 : 0;
       return Math.round(((current - previous) / previous) * 100);
     };
 
-    return {
+    const result: DashboardKpis = {
       patients: {
         total: totalPatients,
         active: activePatients,
@@ -130,9 +146,9 @@ export class DashboardService {
         trend: calcTrend(newPatientsThisMonth, newPatientsLastMonth),
       },
       sessions: {
-        totalThisMonth: sessionsThisMonthAgg._count.id,
-        totalLastMonth: sessionsLastMonthAgg._count.id,
-        trend: calcTrend(sessionsThisMonthAgg._count.id, sessionsLastMonthAgg._count.id),
+        totalThisMonth: sessionsThisMonthCount,
+        totalLastMonth: sessionsLastMonthCount,
+        trend: calcTrend(sessionsThisMonthCount, sessionsLastMonthCount),
       },
       revenue: {
         thisMonth: revenueThisMonth,
@@ -161,6 +177,9 @@ export class DashboardService {
           }
         : null,
     };
+
+    this.kpisCache.set(psychologistUserId, result);
+    return result;
   }
 
   async getActivationChecklist(psychologistUserId: string): Promise<ActivationChecklist> {

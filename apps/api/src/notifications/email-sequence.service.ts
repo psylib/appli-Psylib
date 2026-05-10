@@ -125,10 +125,12 @@ export class EmailSequenceService {
     daysAgo: number,
     action: string,
   ): Promise<void> {
-    const windowStart = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000 - 30 * 60 * 1000);
-    const windowEnd = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000 + 30 * 60 * 1000);
+    // Fenêtre = toute la journée J-N (00:00 → 23:59:59) pour ne rater aucune inscription
+    const targetDay = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+    const windowStart = new Date(targetDay.getFullYear(), targetDay.getMonth(), targetDay.getDate());
+    const windowEnd = new Date(windowStart.getTime() + 24 * 60 * 60 * 1000 - 1);
 
-    // Psys créées dans la fenêtre de ±30min autour de J-N
+    // Psys créées dans la fenêtre de la journée J-N
     const psys = await this.prisma.psychologist.findMany({
       where: { user: { createdAt: { gte: windowStart, lte: windowEnd } } },
       include: { user: true, subscription: true },
@@ -511,9 +513,9 @@ export class EmailSequenceService {
         dashboardUrl,
       });
     } else if (action === SEQUENCE_ACTIONS.day14) {
-      // Ne pas envoyer aux psys déjà payants
-      const status = psy.subscription?.status;
-      if (status && status !== 'free' && status !== 'trialing') return;
+      // Ne pas envoyer aux psys déjà sur un plan payant
+      const plan = (psy.subscription as { plan?: string } | null)?.plan;
+      if (plan && plan !== 'free') return;
 
       await this.email.sendActivationDay14(psy.user.email, {
         psychologistName: psy.name,

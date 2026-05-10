@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsEnum } from 'class-validator';
@@ -57,10 +58,14 @@ export class OnboardingController {
   @Post('steps/:step/complete')
   @ApiOperation({ summary: 'Marquer une étape comme complète' })
   async completeStep(
-    @Param('step') step: OnboardingStep,
+    @Param('step') step: string,
     @CurrentUser() user: KeycloakUser,
   ) {
-    return this.onboardingService.completeStep(user.sub, step);
+    const validSteps = ['profile', 'practice', 'preferences', 'first_patient', 'billing'];
+    if (!validSteps.includes(step)) {
+      throw new BadRequestException(`Étape invalide: ${step}`);
+    }
+    return this.onboardingService.completeStep(user.sub, step as OnboardingStep);
   }
 
   @Post('complete')

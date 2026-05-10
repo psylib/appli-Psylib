@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
+import { TtlCache } from '../common/ttl-cache';
 
-interface OverviewResult {
+export interface OverviewResult {
   totalPatients: number;
   activePatients: number;
   totalSessions: number;
@@ -12,19 +13,19 @@ interface OverviewResult {
   portalAdoptionRate: number;
 }
 
-interface RevenueMonthResult {
+export interface RevenueMonthResult {
   month: string;
   revenue: number;
   sessions: number;
 }
 
-interface PatientsMonthResult {
+export interface PatientsMonthResult {
   month: string;
   new: number;
   total: number;
 }
 
-interface MoodTrendResult {
+export interface MoodTrendResult {
   week: string;
   avgMood: number;
   count: number;
@@ -55,6 +56,10 @@ function subtractMonths(date: Date, months: number): Date {
 
 @Injectable()
 export class AnalyticsService {
+  private readonly overviewCache = new TtlCache<OverviewResult>(15 * 60 * 1000); // 15 min
+  private readonly revenueCache = new TtlCache<RevenueMonthResult[]>(15 * 60 * 1000);
+  private readonly patientsCache = new TtlCache<PatientsMonthResult[]>(15 * 60 * 1000);
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -72,6 +77,9 @@ export class AnalyticsService {
   }
 
   async getOverview(userId: string): Promise<OverviewResult> {
+    const cached = this.overviewCache.get(userId);
+    if (cached) return cached;
+
     const psychologistId = await this.resolvePsychologistId(userId);
     const now = new Date();
     const thisMonthStart = startOfMonth(now);
@@ -111,6 +119,7 @@ export class AnalyticsService {
           psychologistId,
           date: { gte: thisMonthStart, lte: thisMonthEnd },
           rate: { not: null },
+          paymentStatus: 'paid',
         },
         _sum: { rate: true },
       }),
@@ -119,6 +128,7 @@ export class AnalyticsService {
           psychologistId,
           date: { gte: lastMonthStart, lte: lastMonthEnd },
           rate: { not: null },
+          paymentStatus: 'paid',
         },
         _sum: { rate: true },
       }),
@@ -138,7 +148,7 @@ export class AnalyticsService {
         ? Math.round((patientsWithPortal / totalPatients) * 10000) / 100
         : 0;
 
-    return {
+    const result: OverviewResult = {
       totalPatients,
       activePatients,
       totalSessions,
@@ -148,31 +158,35 @@ export class AnalyticsService {
       avgSessionsPerPatient,
       portalAdoptionRate,
     };
+
+    this.overviewCache.set(userId, result);
+    return result;
   }
 
   async getRevenueByMonth(
     userId: string,
     months: number,
   ): Promise<RevenueMonthResult[]> {
+    const cacheKey = `${userId}:${months}`;
+    const cached = this.revenueCache.get(cacheKey);
+    if (cached) return cached;
+
     const psychologistId = await this.resolvePsychologistId(userId);
     const now = new Date();
     const oldestStart = startOfMonth(subtractMonths(now, months - 1));
 
     // Groupage côté DB via raw SQL — évite de charger toutes les sessions en mémoire
-    const rows = await this.prisma.$queryRawUnsafe<Array<{ m: string; revenue: string; sessions: string }>>(
-      `SELECT TO_CHAR(date, 'YYYY-MM') AS m,
+    const endDate = endOfMonth(now);
+    const rows = await this.prisma.$queryRaw<Array<{ m: string; revenue: string; sessions: string }>>`
+      SELECT TO_CHAR(date, 'YYYY-MM') AS m,
               COALESCE(SUM(rate), 0) AS revenue,
               COUNT(*)::text AS sessions
        FROM sessions
-       WHERE "psychologistId" = $1
-         AND date >= $2
-         AND date <= $3
+       WHERE "psychologist_id" = ${psychologistId}
+         AND date >= ${oldestStart}
+         AND date <= ${endDate}
        GROUP BY TO_CHAR(date, 'YYYY-MM')
-       ORDER BY m`,
-      psychologistId,
-      oldestStart,
-      endOfMonth(now),
-    );
+       ORDER BY m`;
 
     const rowMap = new Map(rows.map((r) => [r.m, r]));
     const results: RevenueMonthResult[] = [];
@@ -187,6 +201,7 @@ export class AnalyticsService {
       });
     }
 
+    this.revenueCache.set(cacheKey, results);
     return results;
   }
 
@@ -194,24 +209,24 @@ export class AnalyticsService {
     userId: string,
     months: number,
   ): Promise<PatientsMonthResult[]> {
+    const cacheKey = `${userId}:${months}`;
+    const cached = this.patientsCache.get(cacheKey);
+    if (cached) return cached;
+
     const psychologistId = await this.resolvePsychologistId(userId);
     const now = new Date();
     const oldestStart = startOfMonth(subtractMonths(now, months - 1));
     const rangeEnd = endOfMonth(now);
 
     // Groupage côté DB — évite de charger tous les patients en mémoire
-    const rows = await this.prisma.$queryRawUnsafe<Array<{ m: string; count: string }>>(
-      `SELECT TO_CHAR("createdAt", 'YYYY-MM') AS m, COUNT(*)::text AS count
+    const rows = await this.prisma.$queryRaw<Array<{ m: string; count: string }>>`
+      SELECT TO_CHAR("created_at", 'YYYY-MM') AS m, COUNT(*)::text AS count
        FROM patients
-       WHERE "psychologistId" = $1
-         AND "createdAt" >= $2
-         AND "createdAt" <= $3
-       GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
-       ORDER BY m`,
-      psychologistId,
-      oldestStart,
-      rangeEnd,
-    );
+       WHERE "psychologist_id" = ${psychologistId}
+         AND "created_at" >= ${oldestStart}
+         AND "created_at" <= ${rangeEnd}
+       GROUP BY TO_CHAR("created_at", 'YYYY-MM')
+       ORDER BY m`;
 
     // Total cumulé : patients créés AVANT la période
     const priorCount = await this.prisma.patient.count({
@@ -234,6 +249,7 @@ export class AnalyticsService {
       });
     }
 
+    this.patientsCache.set(cacheKey, results);
     return results;
   }
 
@@ -291,6 +307,10 @@ export class AnalyticsService {
       });
     }
 
-    return results.sort((a, b) => a.week.localeCompare(b.week));
+    return results.sort((a, b) => {
+      const [aD, aM] = a.week.split('/').map(Number);
+      const [bD, bM] = b.week.split('/').map(Number);
+      return (aM! - bM!) || (aD! - bD!);
+    });
   }
 }

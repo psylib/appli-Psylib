@@ -13,6 +13,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
+import type { OverviewResult, RevenueMonthResult, PatientsMonthResult, MoodTrendResult } from './analytics.service';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -29,7 +30,7 @@ export class AnalyticsController {
 
   @Get('overview')
   @ApiOperation({ summary: 'Vue d\'ensemble du cabinet (KPIs)' })
-  async getOverview(@CurrentUser() user: KeycloakUser): Promise<unknown> {
+  async getOverview(@CurrentUser() user: KeycloakUser): Promise<OverviewResult> {
     return this.analyticsService.getOverview(user.sub);
   }
 
@@ -39,8 +40,8 @@ export class AnalyticsController {
   async getRevenue(
     @CurrentUser() user: KeycloakUser,
     @Query('months', new DefaultValuePipe(6), ParseIntPipe) months: number,
-  ): Promise<unknown> {
-    return this.analyticsService.getRevenueByMonth(user.sub, months);
+  ): Promise<RevenueMonthResult[]> {
+    return this.analyticsService.getRevenueByMonth(user.sub, Math.min(Math.max(months, 1), 24));
   }
 
   @Get('patients')
@@ -49,13 +50,13 @@ export class AnalyticsController {
   async getPatients(
     @CurrentUser() user: KeycloakUser,
     @Query('months', new DefaultValuePipe(6), ParseIntPipe) months: number,
-  ): Promise<unknown> {
-    return this.analyticsService.getPatientsByMonth(user.sub, months);
+  ): Promise<PatientsMonthResult[]> {
+    return this.analyticsService.getPatientsByMonth(user.sub, Math.min(Math.max(months, 1), 24));
   }
 
   @Get('mood-trends')
   @ApiOperation({ summary: 'Tendances humeur des patients (30 derniers jours)' })
-  async getMoodTrends(@CurrentUser() user: KeycloakUser): Promise<unknown> {
+  async getMoodTrends(@CurrentUser() user: KeycloakUser): Promise<MoodTrendResult[]> {
     return this.analyticsService.getMoodTrends(user.sub);
   }
 }
