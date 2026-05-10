@@ -258,6 +258,33 @@ export default function ComparaisonPage() {
           </div>
         </section>
 
+        {/* Detailed comparisons */}
+        <section className="max-w-5xl mx-auto px-6 py-8">
+          <h2 className="font-playfair text-2xl font-bold text-charcoal text-center mb-8">
+            Comparaisons détaillées
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { name: 'PsyLib vs Docorga', href: '/comparaison/psylib-vs-docorga', price: '54,90€/mois', desc: 'Gestion de cabinet classique vs tout-en-un avec IA et visio.' },
+              { name: 'PsyLib vs MaGestionPsy', href: '/comparaison/psylib-vs-magestionpsy', price: '29€/mois', desc: 'Outil généraliste thérapeutes vs spécialisé psychologues.' },
+              { name: 'PsyLib vs Scriboupsy', href: '/comparaison/psylib-vs-scriboupsy', price: '27€/mois', desc: 'Écrits cliniques vs logiciel tout-en-un complet.' },
+            ].map((comp) => (
+              <Link
+                key={comp.href}
+                href={comp.href}
+                className="group rounded-2xl border border-cream-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-sage/30 transition-all"
+              >
+                <h3 className="font-semibold text-charcoal mb-1 group-hover:text-sage transition-colors">{comp.name}</h3>
+                <p className="text-xs text-charcoal-300 mb-3">À partir de {comp.price}</p>
+                <p className="text-sm text-charcoal-400 leading-relaxed mb-4">{comp.desc}</p>
+                <span className="inline-flex items-center gap-1 text-sm font-medium text-sage group-hover:gap-2 transition-all">
+                  Voir le comparatif <ArrowRight size={14} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* CTA */}
         <section className="bg-sage py-16">
           <div className="max-w-2xl mx-auto px-6 text-center space-y-6">

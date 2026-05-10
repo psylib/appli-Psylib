@@ -426,9 +426,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Comparaison
     {
       url: `${BASE}/comparaison`,
-      lastModified: new Date('2026-03-20'),
+      lastModified: new Date('2026-05-10'),
       changeFrequency: 'monthly',
       priority: 0.85,
+    },
+    {
+      url: `${BASE}/comparaison/psylib-vs-docorga`,
+      lastModified: new Date('2026-05-10'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE}/comparaison/psylib-vs-magestionpsy`,
+      lastModified: new Date('2026-05-10'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE}/comparaison/psylib-vs-scriboupsy`,
+      lastModified: new Date('2026-05-10'),
+      changeFrequency: 'monthly',
+      priority: 0.8,
     },
     // Legal
     {
