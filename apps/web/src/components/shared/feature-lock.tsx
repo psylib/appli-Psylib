@@ -15,7 +15,7 @@ const PLAN_CONFIG = {
     badge: 'Pro',
     price: '40€/mois',
     highlights: [
-      'Patients et séances illimités',
+      'Patients illimités + séances illimitées',
       'IA illimitée',
       'Analytics avancées',
       'Portail patient sécurisé',

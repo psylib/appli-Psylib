@@ -44,7 +44,7 @@ const tarifsJsonLd = {
           price: "0",
           priceCurrency: "EUR",
           description:
-            "Patients illimites, sessions illimitees, notes cliniques, chiffrement HDS",
+            "15 patients max, sessions illimitees, notes cliniques, chiffrement HDS",
         },
         {
           "@type": "Offer",
@@ -106,7 +106,7 @@ const tarifsJsonLd = {
           name: "Comment fonctionne le plan Free ?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut patients et sessions illimites. Pour acceder a l'IA, la visio et les fonctionnalites avancees, passez a un plan payant a tout moment.",
+            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu'a 15 patients et des sessions illimitees. Pour acceder a l'IA, la visio et des patients illimites, passez a un plan payant a tout moment.",
           },
         },
         {
@@ -146,7 +146,7 @@ const plans = [
     priceAnnual: 0,
     highlighted: false,
     features: [
-      "Patients illimites",
+      "15 patients max",
       "Sessions illimitees",
       "Notes cliniques SOAP / DAP",
       "Comptabilite integree",
@@ -221,7 +221,7 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { name: "Patients", free: "Illimite", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
+  { name: "Patients", free: "15 max", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
   { name: "Sessions / mois", free: "Illimite", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
   { name: "Resumes IA / mois", free: "0", solo: "10", pro: "Illimite", clinic: "Illimite" },
   { name: "Visio securisee", free: false, solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
@@ -250,7 +250,7 @@ const faqs = [
   {
     question: "Comment fonctionne le plan gratuit ?",
     answer:
-      "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut patients et sessions illimites. Pour acceder a l\"IA, la visio et les fonctionnalites avancees, passez a un plan payant a tout moment.",
+      "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 15 patients et des sessions illimitees. Pour acceder a l\"IA, la visio et des patients illimites, passez a un plan payant a tout moment.",
   },
   {
     question: "Y a-t-il un engagement de duree ?",

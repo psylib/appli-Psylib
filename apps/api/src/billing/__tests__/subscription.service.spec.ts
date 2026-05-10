@@ -305,12 +305,12 @@ describe('SubscriptionService', () => {
       expect(mockPrisma.patient.count).not.toHaveBeenCalled();
     });
 
-    it('ne lève pas d\'erreur sur plan FREE (patients illimités)', async () => {
-      // FREE: patients = null (illimité)
+    it('lève une erreur sur plan FREE quand la limite de 15 patients est atteinte', async () => {
+      // FREE: patients = 15
       mockPrisma.subscription.findUnique.mockResolvedValue(null);
+      mockPrisma.patient.count.mockResolvedValue(15);
 
-      await expect(service.checkPatientLimit('psy-1')).resolves.toBeUndefined();
-      expect(mockPrisma.patient.count).not.toHaveBeenCalled();
+      await expect(service.checkPatientLimit('psy-1')).rejects.toThrow();
     });
   });
 

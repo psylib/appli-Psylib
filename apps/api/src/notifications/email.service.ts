@@ -1407,7 +1407,7 @@ export class EmailService {
         <span style="font-size:24px;">&#128680;</span>
         <div>
           <strong>Votre essai gratuit expire aujourd'hui.</strong>
-          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan Free (patients et sessions illimit&eacute;s, sans IA ni visio).</p>
+          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan Free (15 patients max, sessions illimit&eacute;es, sans IA ni visio).</p>
         </div>
       </div>
       <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>

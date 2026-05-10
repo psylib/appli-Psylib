@@ -8,7 +8,6 @@ import { NetworkSection } from '@/components/landing/network-section';
 import { ComparisonSection } from '@/components/landing/comparison-section';
 import { TrustSection } from '@/components/landing/trust-section';
 import { PricingSection } from '@/components/landing/pricing-section';
-import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { FAQSection } from '@/components/landing/faq-section';
 import { BeforeAfterSection } from '@/components/landing/before-after-section';
 import { LeadNurtureCTA } from '@/components/landing/lead-nurture-cta';
@@ -90,7 +89,7 @@ const jsonLd = {
           name: "Combien coute PsyLib ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "PsyLib propose quatre formules : Free (gratuit, patients et sessions illimites), Solo a 25 EUR/mois (IA + visio), Pro a 40 EUR/mois (IA illimitee + portail patient) et Clinic a 79 EUR/mois (multi-praticiens).",
+            text: "PsyLib propose quatre formules : Free (gratuit, 15 patients max), Solo a 25 EUR/mois (patients illimites + IA + visio), Pro a 40 EUR/mois (IA illimitee + portail patient) et Clinic a 79 EUR/mois (multi-praticiens).",
           },
         },
         {
@@ -106,7 +105,7 @@ const jsonLd = {
           name: "Comment fonctionne le plan gratuit ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut patients et sessions illimites. Passez a un plan payant pour acceder a l'IA et la visio. Vos donnees restent exportables.",
+            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu'a 15 patients et des sessions illimitees. Passez a un plan payant pour acceder a l'IA, la visio et des patients illimites. Vos donnees restent exportables.",
           },
         },
         {
@@ -183,7 +182,6 @@ export default function HomePage() {
         <TrustSection />
         <PricingSection />
         <LeadNurtureCTA />
-        <TestimonialsSection />
         <FAQSection />
         <CTASection />
       </main>

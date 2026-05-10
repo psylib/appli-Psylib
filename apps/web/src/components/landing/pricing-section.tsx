@@ -12,7 +12,7 @@ const plans = [
     annual: 0,
     description: 'Pour découvrir PsyLib',
     features: [
-      'Patients illimités',
+      '15 patients max',
       'Séances illimitées',
       'Notes cliniques',
       'Comptabilité intégrée',

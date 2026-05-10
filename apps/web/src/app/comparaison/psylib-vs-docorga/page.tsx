@@ -263,7 +263,7 @@ export default function PsyLibVsDocorgaPage() {
                 Le plan gratuit ne permet pas aux patients de voir votre agenda.
               </p>
               <p>
-                PsyLib propose un <strong>plan Free vraiment fonctionnel</strong> (patients illimités, sessions illimitées, comptabilité incluse),
+                PsyLib propose un <strong>plan Free vraiment fonctionnel</strong> (15 patients, sessions illimitées, comptabilité incluse),
                 puis un plan Solo à <strong>25€/mois</strong> avec la visio, et Pro à <strong>40€/mois</strong> avec l&apos;IA illimitée.
                 Plus de fonctionnalités, pour moins cher.
               </p>
@@ -295,7 +295,7 @@ export default function PsyLibVsDocorgaPage() {
               Passez de la gestion administrative à la gestion clinique
             </h2>
             <p className="text-sage-100 text-lg">
-              Commencez gratuitement. Patients illimités. Sans carte bancaire.
+              Commencez gratuitement. 15 patients inclus. Sans carte bancaire.
             </p>
             <Link
               href="/register"

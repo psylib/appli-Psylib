@@ -10,7 +10,7 @@ import type { SubscriptionDetails } from '@/lib/api/billing';
 
 const PLAN_FEATURES: Record<string, string[]> = {
   [SubscriptionPlan.FREE]: [
-    'Patients illimités',
+    '15 patients max',
     'Séances illimitées',
     'Comptabilité intégrée',
     'Support email',

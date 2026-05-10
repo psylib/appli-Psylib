@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: 'Comment fonctionne le plan gratuit ?',
-    a: 'Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut patients et séances illimités. Passez à un plan payant pour accéder à l\'IA et la visio. Vos données restent exportables à tout moment.',
+    a: 'Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\'à 15 patients et des séances illimitées. Passez à un plan payant pour accéder à l\'IA, la visio et des patients illimités. Vos données restent exportables à tout moment.',
   },
   {
     q: 'Puis-je annuler à tout moment ?',
