@@ -113,6 +113,7 @@ export class UpdateSessionDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(10000)
   notes?: string;
 }
 
@@ -140,5 +141,6 @@ export class CreateCaseStudyDto {
 
   @ApiProperty()
   @IsString()
+  @MaxLength(50000)
   content!: string;
 }

@@ -1,4 +1,4 @@
-import { IsInt, Min, Max, IsString, IsOptional, IsArray, IsBoolean } from 'class-validator';
+import { IsInt, Min, Max, IsString, IsOptional, IsArray, IsBoolean, MaxLength, IsIn } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateMoodDto {
@@ -11,12 +11,14 @@ export class CreateMoodDto {
   @ApiPropertyOptional({ example: 'Journée difficile au travail' })
   @IsString()
   @IsOptional()
+  @MaxLength(2000)
   note?: string;
 }
 
 export class CreateJournalEntryDto {
   @ApiProperty({ example: 'Aujourd\'hui j\'ai remarqué que...' })
   @IsString()
+  @MaxLength(50000)
   content!: string;
 
   @ApiPropertyOptional({ example: 6 })
@@ -40,11 +42,12 @@ export class CreateJournalEntryDto {
 
 export class UpdateExerciseDto {
   @ApiProperty({ enum: ['in_progress', 'completed', 'skipped'] })
-  @IsString()
+  @IsIn(['in_progress', 'completed', 'skipped'])
   status!: 'in_progress' | 'completed' | 'skipped';
 
   @ApiPropertyOptional({ example: 'J\'ai trouvé cet exercice très utile' })
   @IsString()
   @IsOptional()
+  @MaxLength(5000)
   patientFeedback?: string;
 }

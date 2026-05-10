@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { PatientAuthService } from './patient-auth.service';
 import { AcceptInvitationDto, PatientLoginDto } from './dto/patient-auth.dto';
+import { ParseTokenPipe } from '../common/parse-slug.pipe';
 
 @ApiTags('Patient Portal — Auth')
 @Controller('patient-portal/auth')
@@ -11,7 +12,7 @@ export class PatientAuthController {
 
   @Get('invitation/:token')
   @ApiOperation({ summary: 'Valider et lire les infos d\'une invitation' })
-  validateInvitation(@Param('token') token: string) {
+  validateInvitation(@Param('token', ParseTokenPipe) token: string) {
     return this.authService.validateInvitationToken(token);
   }
 

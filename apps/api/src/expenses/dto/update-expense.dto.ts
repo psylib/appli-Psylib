@@ -36,22 +36,27 @@ export class UpdateExpenseDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   category?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   subcategory?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   paymentMethod?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   supplier?: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   notes?: string;
 
   @IsOptional()

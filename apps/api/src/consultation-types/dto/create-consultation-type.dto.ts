@@ -57,11 +57,13 @@ export class CreateConsultationTypeDto {
   @ApiPropertyOptional({ example: '12 rue de la Paix, 75002 Paris', description: 'Lieu spécifique pour ce type' })
   @IsString()
   @IsOptional()
+  @MaxLength(500)
   location?: string;
 
   @ApiPropertyOptional({ example: 'Merci de vous munir de votre carte vitale', description: 'Instructions pour le patient' })
   @IsString()
   @IsOptional()
+  @MaxLength(2000)
   instructions?: string;
 
   @ApiPropertyOptional({ enum: ['online', 'on_site', 'both'], description: 'Modes de paiement acceptés (null = hérite du psy)' })

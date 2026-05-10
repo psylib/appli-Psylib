@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { PublicBookingService } from './public-booking.service';
 import { PublicBookingDto } from './dto/public-booking.dto';
+import { ParseSlugPipe } from '../common/parse-slug.pipe';
 
 @ApiTags('Public Booking')
 @Controller('public/psy')
@@ -52,7 +53,7 @@ export class PublicBookingController {
 
   @Get(':slug')
   @ApiOperation({ summary: 'Profil public de la psy' })
-  async getProfile(@Param('slug') slug: string) {
+  async getProfile(@Param('slug', ParseSlugPipe) slug: string) {
     return this.publicBookingService.getPublicProfile(slug);
   }
 
@@ -60,7 +61,7 @@ export class PublicBookingController {
   @Throttle({ short: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Créneaux disponibles' })
   async getSlots(
-    @Param('slug') slug: string,
+    @Param('slug', ParseSlugPipe) slug: string,
     @Query('from') from: string,
     @Query('to') to: string,
     @Query('consultationTypeId') consultationTypeId?: string,
@@ -73,7 +74,7 @@ export class PublicBookingController {
 
   @Get(':slug/consultation-types')
   @ApiOperation({ summary: 'Types de consultation publics du psychologue' })
-  async getConsultationTypes(@Param('slug') slug: string) {
+  async getConsultationTypes(@Param('slug', ParseSlugPipe) slug: string) {
     return this.publicBookingService.getPublicConsultationTypes(slug);
   }
 
@@ -81,7 +82,7 @@ export class PublicBookingController {
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ short: { ttl: 60000, limit: 3 }, long: { ttl: 3600000, limit: 10 } })
   @ApiOperation({ summary: 'Soumettre une demande de RDV' })
-  async book(@Param('slug') slug: string, @Body() dto: PublicBookingDto) {
+  async book(@Param('slug', ParseSlugPipe) slug: string, @Body() dto: PublicBookingDto) {
     return this.publicBookingService.bookAppointment(slug, dto);
   }
 }

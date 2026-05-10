@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, Matches, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches, MinLength, MaxLength } from 'class-validator';
 
 export class CreateBetaLeadDto {
   @IsEmail()
@@ -6,6 +6,7 @@ export class CreateBetaLeadDto {
 
   @IsString()
   @MinLength(2)
+  @MaxLength(100)
   name!: string;
 
   @IsString()
@@ -15,9 +16,11 @@ export class CreateBetaLeadDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(2000)
   message?: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(45)
   ip?: string;
 }

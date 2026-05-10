@@ -95,45 +95,54 @@ export function useNotifications(): UseNotificationsReturn {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Mark single as read
+  // Mark single as read (optimistic with rollback)
   const markRead = useCallback(async (id: string) => {
     if (!token) return;
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
+    const prev = notifications;
+    setNotifications((p) =>
+      p.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
     );
     try {
       await fetch(`${API_BASE}/api/v1/notifications/${id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       });
-    } catch { /* optimistic */ }
-  }, [token]);
+    } catch {
+      setNotifications(prev);
+    }
+  }, [token, notifications]);
 
-  // Mark all as read
+  // Mark all as read (optimistic with rollback)
   const markAllRead = useCallback(async () => {
     if (!token) return;
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
+    const prev = notifications;
+    setNotifications((p) =>
+      p.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
     );
     try {
       await fetch(`${API_BASE}/api/v1/notifications/read-all`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
-    } catch { /* optimistic */ }
-  }, [token]);
+    } catch {
+      setNotifications(prev);
+    }
+  }, [token, notifications]);
 
-  // Delete notification
+  // Delete notification (optimistic with rollback)
   const deleteNotification = useCallback(async (id: string) => {
     if (!token) return;
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    const prev = notifications;
+    setNotifications((p) => p.filter((n) => n.id !== id));
     try {
       await fetch(`${API_BASE}/api/v1/notifications/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-    } catch { /* optimistic */ }
-  }, [token]);
+    } catch {
+      setNotifications(prev);
+    }
+  }, [token, notifications]);
 
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 

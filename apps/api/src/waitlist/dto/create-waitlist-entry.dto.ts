@@ -20,6 +20,7 @@ export class CreateWaitlistEntryDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   patientPhone?: string;
 
   @IsOptional()

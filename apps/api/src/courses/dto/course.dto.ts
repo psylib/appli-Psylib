@@ -1,14 +1,16 @@
-import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, IsInt, Min, ValidateNested, ArrayNotEmpty } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsBoolean, IsArray, IsInt, Min, MaxLength, ValidateNested, ArrayNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateCourseDto {
   @ApiProperty()
   @IsString()
+  @MaxLength(200)
   title!: string;
 
   @ApiProperty()
   @IsString()
+  @MaxLength(5000)
   description!: string;
 
   @ApiProperty()
@@ -21,11 +23,13 @@ export class UpdateCourseDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   title?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(5000)
   description?: string;
 
   @ApiPropertyOptional()
@@ -38,16 +42,19 @@ export class UpdateCourseDto {
 export class CreateModuleDto {
   @ApiProperty()
   @IsString()
+  @MaxLength(200)
   title!: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   videoUrl?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(50000)
   content?: string;
 
   @ApiPropertyOptional()
@@ -61,16 +68,19 @@ export class UpdateModuleDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   title?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   videoUrl?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(50000)
   content?: string;
 
   @ApiPropertyOptional()
@@ -83,6 +93,7 @@ export class UpdateModuleDto {
 export class ModuleOrderItem {
   @ApiProperty()
   @IsString()
+  @MaxLength(100)
   id!: string;
 
   @ApiProperty()
@@ -103,6 +114,7 @@ export class ReorderModulesDto {
 export class UpdateProgressDto {
   @ApiProperty()
   @IsString()
+  @MaxLength(100)
   moduleId!: string;
 
   @ApiProperty()

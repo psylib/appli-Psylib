@@ -113,6 +113,7 @@ export class PatientQueryDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   search?: string;
 
   @ApiPropertyOptional({ enum: PatientStatus })

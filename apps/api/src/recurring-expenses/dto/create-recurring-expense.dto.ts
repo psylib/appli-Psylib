@@ -24,18 +24,22 @@ export class CreateRecurringExpenseDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   category!: string; // ExpenseCategory enum value
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   paymentMethod!: string; // ExpensePaymentMethod enum value
 
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   supplier?: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20)
   frequency!: string; // 'monthly' | 'quarterly' | 'yearly'
 
   @IsInt()

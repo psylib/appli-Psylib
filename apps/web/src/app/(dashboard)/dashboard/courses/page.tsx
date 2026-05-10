@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 
 const CoursesGated = dynamic(
   () => import('@/components/courses/courses-gated').then(mod => ({ default: mod.CoursesGated })),
-  { loading: () => <div className="flex items-center justify-center min-h-[400px]"><div className="animate-spin h-8 w-8 border-2 border-[#3D52A0] border-t-transparent rounded-full" /></div> }
+  { loading: () => <div className="p-6 space-y-4"><div className="h-8 w-48 rounded-lg bg-muted animate-pulse" /><div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[1,2,3,4].map(i => <div key={i} className="h-40 rounded-xl bg-muted animate-pulse" />)}</div></div> }
 );
 
 export const metadata = {
