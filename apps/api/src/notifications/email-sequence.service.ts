@@ -8,7 +8,10 @@ import { ConfigService } from '@nestjs/config';
 const SEQUENCE_ACTIONS = {
   day1: 'EMAIL_SEQUENCE_DAY_1',
   day3: 'EMAIL_SEQUENCE_DAY_3',
+  day5: 'EMAIL_SEQUENCE_DAY_5',
   day7: 'EMAIL_SEQUENCE_DAY_7',
+  day10: 'EMAIL_SEQUENCE_DAY_10',
+  day14: 'EMAIL_SEQUENCE_DAY_14',
   reEngagement: 'RE_ENGAGEMENT_EMAIL',
   postTrialDay1: 'POST_TRIAL_DAY_1',
   postTrialDay3: 'POST_TRIAL_DAY_3',
@@ -110,7 +113,10 @@ export class EmailSequenceService {
     await Promise.all([
       this.processWindow(now, 1, SEQUENCE_ACTIONS.day1),
       this.processWindow(now, 3, SEQUENCE_ACTIONS.day3),
+      this.processWindow(now, 5, SEQUENCE_ACTIONS.day5),
       this.processWindow(now, 7, SEQUENCE_ACTIONS.day7),
+      this.processWindow(now, 10, SEQUENCE_ACTIONS.day10),
+      this.processWindow(now, 14, SEQUENCE_ACTIONS.day14),
     ]);
   }
 
@@ -484,6 +490,11 @@ export class EmailSequenceService {
         dashboardUrl,
         profileUrl,
       });
+    } else if (action === SEQUENCE_ACTIONS.day5) {
+      await this.email.sendActivationDay5(psy.user.email, {
+        psychologistName: psy.name,
+        dashboardUrl,
+      });
     } else if (action === SEQUENCE_ACTIONS.day7) {
       const trialEndsAt = psy.subscription?.trialEndsAt;
       const daysLeft = trialEndsAt
@@ -493,6 +504,21 @@ export class EmailSequenceService {
         psychologistName: psy.name,
         dashboardUrl,
         daysLeft,
+      });
+    } else if (action === SEQUENCE_ACTIONS.day10) {
+      await this.email.sendActivationDay10(psy.user.email, {
+        psychologistName: psy.name,
+        dashboardUrl,
+      });
+    } else if (action === SEQUENCE_ACTIONS.day14) {
+      // Ne pas envoyer aux psys déjà payants
+      const status = psy.subscription?.status;
+      if (status && status !== 'free' && status !== 'trialing') return;
+
+      await this.email.sendActivationDay14(psy.user.email, {
+        psychologistName: psy.name,
+        dashboardUrl,
+        billingUrl: `${this.frontendUrl}/dashboard/settings/billing`,
       });
     }
   }

@@ -800,6 +800,134 @@ export class EmailService {
     );
   }
 
+  // ─── SÉQUENCE ACTIVATION — DAY 5 ────────────────────────────────────────────
+
+  async sendActivationDay5(
+    to: string,
+    data: { psychologistName: string; dashboardUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'La visio sécurisée est incluse',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <p>
+        PsyLib intègre la <strong>visio-consultation sécurisée</strong> directement dans votre cabinet — sans Zoom, sans Doctolib, sans frais supplémentaires.
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;line-height:1.7;">
+          <strong>Ce qui est inclus :</strong><br />
+          🔒 Visio hébergée en France (HDS) — conforme données de santé<br />
+          👥 Séances couple & famille (jusqu'à 5 participants)<br />
+          📅 Disponibilités en ligne — vos patients réservent en autonomie
+        </p>
+      </div>
+      <p>
+        Configurez vos créneaux en 2 minutes et recevez vos premiers rendez-vous en ligne.
+      </p>
+      <div style="text-align:center;">
+        <a href="${data.dashboardUrl}/settings/profile" class="btn">Configurer mes disponibilités</a>
+      </div>
+      <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
+        Des questions sur la visio ? Répondez à cet email, je vous aide.
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      'La visio sécurisée est incluse dans PsyLib',
+      html,
+      'sendActivationDay5',
+    );
+  }
+
+  // ─── SÉQUENCE ACTIVATION — DAY 10 ───────────────────────────────────────────
+
+  async sendActivationDay10(
+    to: string,
+    data: { psychologistName: string; dashboardUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Le portail patient PsyLib',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <p>
+        Vos patients ont leur propre espace sur PsyLib — et c'est un vrai plus pour le suivi thérapeutique.
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;line-height:1.7;">
+          <strong>Le portail patient permet :</strong><br />
+          📊 Suivi de l'humeur quotidien (échelle 1-10 + notes)<br />
+          📝 Journal personnel — accessible ou partagé avec vous<br />
+          🧘 Exercices thérapeutiques personnalisés par l'IA<br />
+          📅 Prise de rendez-vous autonome
+        </p>
+      </div>
+      <p>
+        Invitez un patient en 1 clic depuis sa fiche — il reçoit un lien d'accès sécurisé.
+      </p>
+      <div style="text-align:center;">
+        <a href="${data.dashboardUrl}/patients" class="btn">Inviter un patient</a>
+      </div>
+      <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
+        Le portail patient est disponible à partir du plan Solo (25€/mois).
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      'Vos patients ont leur propre espace sur PsyLib',
+      html,
+      'sendActivationDay10',
+    );
+  }
+
+  // ─── SÉQUENCE ACTIVATION — DAY 14 ───────────────────────────────────────────
+
+  async sendActivationDay14(
+    to: string,
+    data: { psychologistName: string; dashboardUrl: string; billingUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      '2 semaines sur PsyLib',
+      `<h1>2 semaines ensemble, ${data.psychologistName} !</h1>
+      <p>
+        Vous avez exploré PsyLib pendant 14 jours — voici ce que vous pourriez débloquer avec un plan payant.
+      </p>
+      <div class="info-box">
+        <p style="margin:0;font-size:15px;line-height:1.7;">
+          <strong>Plan Solo (25€/mois) :</strong><br />
+          ✅ Visio-consultation illimitée<br />
+          ✅ 10 résumés IA / mois<br />
+          ✅ Portail patient & exercices<br />
+          ✅ Facturation PDF automatique
+        </p>
+      </div>
+      <div class="info-box" style="margin-top:12px;">
+        <p style="margin:0;font-size:15px;line-height:1.7;">
+          <strong>Plan Pro (40€/mois) :</strong><br />
+          ✅ Tout Solo + IA illimitée<br />
+          ✅ AI Scribe audio<br />
+          ✅ Portail patient complet<br />
+          ✅ Groupes de supervision
+        </p>
+      </div>
+      <p>
+        <em>"PsyLib m'a fait gagner 3h par semaine sur l'administratif."</em> — Pauline F., psychologue fondatrice
+      </p>
+      <div style="text-align:center;">
+        <a href="${data.billingUrl}" class="btn">Voir les plans</a>
+      </div>
+      <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
+        Le plan Free reste gratuit — mais vous méritez les outils complets. Une question ? Répondez à cet email.
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      '2 semaines sur PsyLib — votre bilan',
+      html,
+      'sendActivationDay14',
+    );
+  }
+
   // ─── RE-ENGAGEMENT (inactif 14 jours) ───────────────────────────────────────
 
   async sendReEngagement(
