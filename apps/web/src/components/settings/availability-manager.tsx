@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api/client';
+import { apiClient, ApiError } from '@/lib/api/client';
 import { Loader2, Save, Globe } from 'lucide-react';
 
 const DAYS = [
@@ -16,10 +16,12 @@ const DAYS = [
   { label: 'Dimanche', value: 6 },
 ];
 
-const HOURS = Array.from({ length: 24 }, (_, i) => {
-  const h = String(i).padStart(2, '0');
-  return `${h}:00`;
-});
+// Génère des créneaux toutes les 30 minutes de 06:00 à 23:30
+const HOURS: string[] = [];
+for (let h = 6; h <= 23; h++) {
+  HOURS.push(`${String(h).padStart(2, '0')}:00`);
+  HOURS.push(`${String(h).padStart(2, '0')}:30`);
+}
 
 interface AvailabilitySlot {
   id?: string;
@@ -65,8 +67,11 @@ export function AvailabilityManager({ token: tokenProp }: { token?: string }) {
     );
   }, [slots]);
 
+  const [errorMsg, setErrorMsg] = useState('');
+
   const saveMutation = useMutation({
     mutationFn: () => {
+      setErrorMsg('');
       const activeSlots = DAYS.filter((_, i) => days[i]?.isActive).map(({ value }, _i) => {
         const dayState = days[value];
         return {
@@ -76,12 +81,31 @@ export function AvailabilityManager({ token: tokenProp }: { token?: string }) {
           isActive: true,
         };
       });
+
+      // Validation côté client : heure de début doit être avant heure de fin
+      for (const slot of activeSlots) {
+        if (slot.startTime >= slot.endTime) {
+          const dayLabel = DAYS.find(d => d.value === slot.dayOfWeek)?.label ?? '';
+          throw new Error(`${dayLabel} : l'heure de début (${slot.startTime}) doit être avant l'heure de fin (${slot.endTime})`);
+        }
+      }
+
       return apiClient.post('/availability', { slots: activeSlots }, token);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['availability'] });
       setSaved(true);
+      setErrorMsg('');
       setTimeout(() => setSaved(false), 3000);
+    },
+    onError: (err: unknown) => {
+      if (err instanceof ApiError) {
+        setErrorMsg(err.message || `Erreur ${err.statusCode}`);
+      } else if (err instanceof Error) {
+        setErrorMsg(err.message);
+      } else {
+        setErrorMsg('Une erreur est survenue. Veuillez réessayer.');
+      }
     },
   });
 
@@ -214,9 +238,9 @@ export function AvailabilityManager({ token: tokenProp }: { token?: string }) {
         {saved ? 'Sauvegardé !' : 'Sauvegarder mes disponibilités'}
       </button>
 
-      {saveMutation.isError && (
+      {(saveMutation.isError || errorMsg) && (
         <p className="text-sm text-red-600">
-          Une erreur est survenue. Veuillez réessayer.
+          {errorMsg || 'Une erreur est survenue. Veuillez réessayer.'}
         </p>
       )}
     </div>
