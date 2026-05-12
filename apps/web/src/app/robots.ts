@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const PRIVATE_PATHS = ['/dashboard', '/patient-portal', '/api/', '/onboarding', '/login'];
+const PRIVATE_PATHS = ['/dashboard', '/patient-portal', '/api/'];
 
 export default function robots(): MetadataRoute.Robots {
   return {

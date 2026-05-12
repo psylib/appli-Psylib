@@ -448,6 +448,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    // Inscription
+    {
+      url: `${BASE}/register`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    // Modèle consentement patient
+    {
+      url: `${BASE}/modele-consentement`,
+      lastModified: new Date('2026-05-08'),
+      changeFrequency: 'yearly',
+      priority: 0.6,
+    },
     // Legal
     {
       url: `${BASE}/privacy`,

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   Shield,
@@ -6,6 +7,11 @@ import {
   ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Programme Fondateurs — PsyLib',
+  robots: { index: false, follow: false },
+};
 
 export default function BetaPage() {
   return (

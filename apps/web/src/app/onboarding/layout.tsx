@@ -1,9 +1,14 @@
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
 const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function OnboardingLayout({ children }: { children: ReactNode }) {
   const session = await auth();

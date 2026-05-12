@@ -13,6 +13,7 @@ import {
 export const metadata = {
   title: 'Connexion — PsyLib',
   description: 'Connectez-vous à votre espace professionnel PsyLib',
+  robots: { index: false, follow: false },
 };
 
 const VALUE_PROPS = [
