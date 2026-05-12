@@ -72,6 +72,7 @@ export class AvailabilityService {
   /**
    * Génère les créneaux disponibles sur une période (max 30 jours).
    * Exclut les RDV existants.
+   * Toutes les heures de disponibilité sont interprétées en Europe/Paris.
    */
   async getAvailableTimeslots(
     psychologistId: string,
@@ -116,88 +117,137 @@ export class AvailabilityService {
     });
 
     const freeTimes: Date[] = [];
-    const current = new Date(from);
-    current.setHours(0, 0, 0, 0);
 
-    const endDate = new Date(to);
-    endDate.setHours(23, 59, 59, 999);
+    // Iterate day-by-day using Paris calendar dates to avoid timezone drift
+    const startParis = this.toParisDateParts(from);
+    const endParis = this.toParisDateParts(to);
 
-    while (current <= endDate) {
+    let dayYear = startParis.year;
+    let dayMonth = startParis.month;
+    let dayDate = startParis.date;
+
+    // Safety: max 35 days to prevent infinite loop
+    for (let safety = 0; safety < 35; safety++) {
+      // Check if we've passed the end date
+      const dayMidnightUtc = this.parisToUtc(dayYear, dayMonth, dayDate, 0, 0);
+      const endMidnightUtc = this.parisToUtc(endParis.year, endParis.month, endParis.date, 23, 59);
+      if (dayMidnightUtc > endMidnightUtc) break;
+
       // dayOfWeek: 0=Lundi ... 6=Dimanche (notre convention)
-      const jsDay = current.getDay(); // 0=Dimanche, 1=Lundi...
+      const jsDay = dayMidnightUtc.getUTCDay();
       const ourDay = jsDay === 0 ? 6 : jsDay - 1;
 
       // Tous les créneaux du jour (un psy peut avoir matin + après-midi)
       const daySlots = slots.filter((s) => s.dayOfWeek === ourDay);
       if (daySlots.length > 0) {
         // Check if this day is blocked by an all-day external event
-        const dayStart = new Date(current);
-        const dayEnd = new Date(current);
-        dayEnd.setDate(dayEnd.getDate() + 1);
+        const dayStartUtc = dayMidnightUtc;
+        const dayEndUtc = this.parisToUtc(dayYear, dayMonth, dayDate + 1, 0, 0);
         const isBlockedByAllDay = externalEvents.some(
-          (e) => e.isAllDay && e.startAt < dayEnd && e.endAt > dayStart,
+          (e) => e.isAllDay && e.startAt < dayEndUtc && e.endAt > dayStartUtc,
         );
-        if (isBlockedByAllDay) {
-          current.setDate(current.getDate() + 1);
-          continue;
-        }
+        if (!isBlockedByAllDay) {
+          const breakBuffer = minBreak * 60000;
 
-        const breakBuffer = minBreak * 60000;
+          for (const daySlot of daySlots) {
+            const [rawStartH, rawStartM] = daySlot.startTime.split(':');
+            const [rawEndH, rawEndM] = daySlot.endTime.split(':');
+            const startH = parseInt(rawStartH ?? '9', 10);
+            const startM = parseInt(rawStartM ?? '0', 10);
+            const endH = parseInt(rawEndH ?? '18', 10);
+            const endM = parseInt(rawEndM ?? '0', 10);
 
-        for (const daySlot of daySlots) {
-          const [rawStartH, rawStartM] = daySlot.startTime.split(':');
-          const [rawEndH, rawEndM] = daySlot.endTime.split(':');
-          const startH = parseInt(rawStartH ?? '9', 10);
-          const startM = parseInt(rawStartM ?? '0', 10);
-          const endH = parseInt(rawEndH ?? '18', 10);
-          const endM = parseInt(rawEndM ?? '0', 10);
+            if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) continue;
 
-          if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) continue;
+            // Create slot boundaries in Paris timezone → UTC
+            const slotStartUtc = this.parisToUtc(dayYear, dayMonth, dayDate, startH, startM);
+            const slotEndUtc = this.parisToUtc(dayYear, dayMonth, dayDate, endH, endM);
 
-          const slotStart = new Date(current);
-          slotStart.setHours(startH, startM, 0, 0);
-          const slotEnd = new Date(current);
-          slotEnd.setHours(endH, endM, 0, 0);
+            const cursorMs = slotStartUtc.getTime();
+            const slotEndMs = slotEndUtc.getTime();
+            let pos = cursorMs;
 
-          const cursor = new Date(slotStart);
-          while (cursor.getTime() + sessionDuration * 60000 <= slotEnd.getTime()) {
-            const slotTime = new Date(cursor);
-            // Vérifie qu'aucun RDV n'est à ce moment (avec buffer de pause symétrique)
-            const hasConflict = existingAppointments.some((appt) => {
-              const apptStart = new Date(appt.scheduledAt).getTime();
-              const apptEnd = apptStart + appt.duration * 60000;
-              // Étend la fenêtre occupée par la pause minimale AVANT et APRÈS le RDV
-              const occupiedStart = minBreak > 0 ? apptStart - breakBuffer : apptStart;
-              const occupiedEnd = minBreak > 0 ? apptEnd + breakBuffer : apptEnd;
-              const newStart = slotTime.getTime();
-              const newEnd = newStart + sessionDuration * 60000;
-              return newStart < occupiedEnd && newEnd > occupiedStart;
-            });
+            while (pos + sessionDuration * 60000 <= slotEndMs) {
+              const slotTime = new Date(pos);
+              // Vérifie qu'aucun RDV n'est à ce moment (avec buffer de pause symétrique)
+              const hasConflict = existingAppointments.some((appt) => {
+                const apptStart = new Date(appt.scheduledAt).getTime();
+                const apptEnd = apptStart + appt.duration * 60000;
+                const occupiedStart = minBreak > 0 ? apptStart - breakBuffer : apptStart;
+                const occupiedEnd = minBreak > 0 ? apptEnd + breakBuffer : apptEnd;
+                const newStart = pos;
+                const newEnd = newStart + sessionDuration * 60000;
+                return newStart < occupiedEnd && newEnd > occupiedStart;
+              });
 
-            // Also block slots that overlap with external calendar events
-            const hasExternalConflict = externalEvents.some((e) => {
-              if (e.isAllDay) return false; // Already handled above
-              const eStart = e.startAt.getTime() - breakBuffer;
-              const eEnd = e.endAt.getTime() + breakBuffer;
-              const newStart = slotTime.getTime();
-              const newEnd = newStart + sessionDuration * 60000;
-              return newStart < eEnd && newEnd > eStart;
-            });
+              // Also block slots that overlap with external calendar events
+              const hasExternalConflict = externalEvents.some((e) => {
+                if (e.isAllDay) return false;
+                const eStart = e.startAt.getTime() - breakBuffer;
+                const eEnd = e.endAt.getTime() + breakBuffer;
+                const newStart = pos;
+                const newEnd = newStart + sessionDuration * 60000;
+                return newStart < eEnd && newEnd > eStart;
+              });
 
-            if (!hasConflict && !hasExternalConflict && slotTime > new Date()) {
-              freeTimes.push(slotTime);
+              if (!hasConflict && !hasExternalConflict && slotTime > new Date()) {
+                freeTimes.push(slotTime);
+              }
+
+              pos += (sessionDuration + minBreak) * 60000;
             }
-
-            // Avance par session + pause minimum pour éviter les chevauchements
-            cursor.setMinutes(cursor.getMinutes() + sessionDuration + minBreak);
           }
         }
       }
 
-      current.setDate(current.getDate() + 1);
+      // Advance to next day
+      const nextDay = new Date(Date.UTC(dayYear, dayMonth, dayDate + 1));
+      dayYear = nextDay.getUTCFullYear();
+      dayMonth = nextDay.getUTCMonth();
+      dayDate = nextDay.getUTCDate();
     }
 
     return freeTimes;
+  }
+
+  /**
+   * Convert a date/time in Europe/Paris to a UTC Date.
+   * Availability HH:MM are always in Paris timezone.
+   */
+  private parisToUtc(year: number, month: number, day: number, hours: number, minutes: number): Date {
+    // Build a UTC date at the desired hours
+    const guess = new Date(Date.UTC(year, month, day, hours, minutes, 0, 0));
+    // Find the Paris offset at this UTC point
+    const offsetMs = this.getTimezoneOffsetMs('Europe/Paris', guess);
+    // Correct: desired Paris time = UTC time + offset, so UTC = Paris - offset
+    return new Date(guess.getTime() - offsetMs);
+  }
+
+  /**
+   * Extract Paris calendar date parts from a UTC Date.
+   */
+  private toParisDateParts(date: Date): { year: number; month: number; date: number } {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Europe/Paris',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(date);
+    return {
+      year: parseInt(parts.find((p) => p.type === 'year')!.value),
+      month: parseInt(parts.find((p) => p.type === 'month')!.value) - 1,
+      date: parseInt(parts.find((p) => p.type === 'day')!.value),
+    };
+  }
+
+  /**
+   * Returns timezone offset in ms (positive = ahead of UTC).
+   * E.g., Europe/Paris in summer (CEST) returns +7200000 (2h).
+   */
+  private getTimezoneOffsetMs(tz: string, date: Date): number {
+    const utcStr = date.toLocaleString('en-US', { timeZone: 'UTC' });
+    const tzStr = date.toLocaleString('en-US', { timeZone: tz });
+    return new Date(tzStr).getTime() - new Date(utcStr).getTime();
   }
 
   /**

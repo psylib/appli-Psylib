@@ -39,7 +39,7 @@ function moodBg(m: number) {
   return 'bg-emerald-100 text-emerald-700';
 }
 
-export function PatientPortalSection({ patientId }: { patientId: string }) {
+export function PatientPortalSection({ patientId, patientEmail }: { patientId: string; patientEmail?: string | null }) {
   const { data: session } = useSession();
   const [status, setStatus] = useState<PortalStatus | null>(null);
   const [moods, setMoods] = useState<MoodEntry[]>([]);
@@ -57,17 +57,22 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
       .catch(() => setLoadError('Impossible de charger le statut du portail patient'));
   }, [patientId, session?.accessToken]);
 
+  // Always fetch exercises (not gated behind portal access)
+  useEffect(() => {
+    if (!session?.accessToken) return;
+    patientsApi
+      .portalExercises(patientId, session.accessToken)
+      .then(setExercises)
+      .catch(() => {/* exercises might not exist yet */});
+  }, [patientId, session?.accessToken]);
+
+  // Mood data only when portal access is active
   useEffect(() => {
     if (!status?.hasPortalAccess || !session?.accessToken) return;
-    Promise.all([
-      patientsApi.portalMood(patientId, session.accessToken),
-      patientsApi.portalExercises(patientId, session.accessToken),
-    ])
-      .then(([m, e]) => {
-        setMoods(m);
-        setExercises(e);
-      })
-      .catch(() => setLoadError('Impossible de charger les donnees du portail'));
+    patientsApi
+      .portalMood(patientId, session.accessToken)
+      .then(setMoods)
+      .catch(() => setLoadError('Impossible de charger les données du portail'));
   }, [status?.hasPortalAccess, patientId, session?.accessToken]);
 
   const handleInvite = async () => {
@@ -129,6 +134,10 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Actif
             </span>
+          ) : !patientEmail ? (
+            <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+              Ajoutez un email au patient pour l&apos;inviter
+            </span>
           ) : (
             <button
               onClick={handleInvite}
@@ -160,15 +169,61 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
 
       {/* Invite feedback */}
       {inviteResult && (
-        <div className="px-6 py-3 bg-slate-50 border-b border-border text-xs text-slate-600">
+        <div className={`px-6 py-3 border-b text-sm ${
+          inviteResult.startsWith('Erreur')
+            ? 'bg-red-50 border-red-200 text-red-700'
+            : inviteResult.includes('mais')
+              ? 'bg-amber-50 border-amber-200 text-amber-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+        }`}>
           {inviteResult}
         </div>
       )}
 
-      {/* Portal data — only if patient has access */}
-      {status?.hasPortalAccess && (
-        <div className="p-6 space-y-6">
-          {/* Mood */}
+      {/* Exercises — always visible regardless of portal access */}
+      <div className="p-6 space-y-6">
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-foreground">Exercices</h4>
+            <button
+              onClick={() => setExerciseDialogOpen(true)}
+              className="inline-flex items-center gap-1 text-xs text-[#3D52A0] hover:text-[#2d3f7c] font-medium"
+            >
+              <Plus size={14} />
+              Nouvel exercice
+            </button>
+          </div>
+          {exercises.length > 0 ? (
+            <div className="space-y-2">
+              {exercises.slice(0, 5).map((e) => (
+                <div key={e.id} className="flex items-center gap-2 text-sm">
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${
+                      e.status === 'completed'
+                        ? 'bg-emerald-500'
+                        : e.status === 'in_progress'
+                        ? 'bg-amber-500'
+                        : 'bg-slate-300'
+                    }`}
+                  />
+                  <span className="flex-1 truncate text-foreground">{e.title}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">
+                    {e.status === 'completed'
+                      ? '✓ Terminé'
+                      : e.status === 'in_progress'
+                      ? 'En cours'
+                      : 'À faire'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Aucun exercice assigné</p>
+          )}
+        </div>
+
+        {/* Mood — only if patient has portal access */}
+        {status?.hasPortalAccess && (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-sm font-semibold text-foreground">Humeur — 30 derniers jours</h4>
@@ -197,49 +252,8 @@ export function PatientPortalSection({ patientId }: { patientId: string }) {
               </div>
             )}
           </div>
-
-          {/* Exercises */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-foreground">Exercices</h4>
-              <button
-                onClick={() => setExerciseDialogOpen(true)}
-                className="inline-flex items-center gap-1 text-xs text-[#3D52A0] hover:text-[#2d3f7c] font-medium"
-              >
-                <Plus size={14} />
-                Nouvel exercice
-              </button>
-            </div>
-            {exercises.length > 0 ? (
-              <div className="space-y-2">
-                {exercises.slice(0, 5).map((e) => (
-                  <div key={e.id} className="flex items-center gap-2 text-sm">
-                    <span
-                      className={`w-2 h-2 rounded-full shrink-0 ${
-                        e.status === 'completed'
-                          ? 'bg-emerald-500'
-                          : e.status === 'in_progress'
-                          ? 'bg-amber-500'
-                          : 'bg-slate-300'
-                      }`}
-                    />
-                    <span className="flex-1 truncate text-foreground">{e.title}</span>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {e.status === 'completed'
-                        ? '✓ Terminé'
-                        : e.status === 'in_progress'
-                        ? 'En cours'
-                        : 'À faire'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">Aucun exercice assigné</p>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Not activated empty state */}
       {!status?.hasPortalAccess && !status?.invitation && (

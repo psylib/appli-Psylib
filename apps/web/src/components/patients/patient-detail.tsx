@@ -129,7 +129,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
       <MspTracker patientId={patientId} />
 
       {/* Portal patient */}
-      <PatientPortalSection patientId={patientId} />
+      <PatientPortalSection patientId={patientId} patientEmail={patient.email} />
 
       {/* Tuteurs (only shown for minor patients) */}
       {patient.isMinor && (

@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Bell,
   Video,
+  Settings2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -126,6 +127,22 @@ export function CalendarContent() {
     enabled: !!session?.accessToken,
   });
 
+  // Fetch availability slots to show which days have configured availability
+  const { data: availabilitySlots = [] } = useQuery({
+    queryKey: ['availability'],
+    queryFn: () =>
+      apiClient.get<Array<{ dayOfWeek: number; startTime: string; endTime: string; isActive: boolean }>>(
+        '/availability',
+        session?.accessToken,
+      ),
+    enabled: !!session?.accessToken,
+  });
+
+  // Build a set of active days-of-week (0=Mon..6=Sun)
+  const activeDays = new Set(
+    availabilitySlots.filter((s) => s.isActive).map((s) => s.dayOfWeek),
+  );
+
   const { data: pendingAppointments = [] } = useQuery({
     queryKey: ['appointments', 'pending'],
     queryFn: () => appointmentsApi.getPending(session?.accessToken ?? ''),
@@ -225,10 +242,20 @@ export function CalendarContent() {
           <h1 className="text-2xl font-bold text-foreground">Calendrier</h1>
           <p className="text-muted-foreground mt-1">Gérez vos rendez-vous et séances</p>
         </div>
-        <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-          <Plus size={16} />
-          Nouveau RDV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/dashboard/settings/practice')}
+          >
+            <Settings2 size={14} />
+            Disponibilités
+          </Button>
+          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
+            <Plus size={16} />
+            Nouveau RDV
+          </Button>
+        </div>
       </div>
 
       {/* Demandes en attente */}
@@ -339,6 +366,10 @@ export function CalendarContent() {
                 const isSelected = isSameDay(date, selectedDate);
                 const dayAppts = appointmentsByDate.get(date.toDateString()) ?? [];
                 const hasAppts = dayAppts.length > 0;
+                // Check if this day has configured availability
+                const jsDay = date.getDay();
+                const ourDayOfWeek = jsDay === 0 ? 6 : jsDay - 1;
+                const hasAvailability = activeDays.has(ourDayOfWeek);
 
                 return (
                   <button
@@ -348,6 +379,7 @@ export function CalendarContent() {
                       'h-14 p-1.5 text-left border-b border-r border-border/50 hover:bg-surface transition-colors relative',
                       (i + 1) % 7 === 0 && 'border-r-0',
                       isSelected && 'bg-primary/5',
+                      hasAvailability && !isSelected && 'bg-emerald-50/40',
                     )}
                   >
                     <span
@@ -408,6 +440,13 @@ export function CalendarContent() {
               {selectedDateAppointments.length === 0
                 ? 'Aucun rendez-vous'
                 : `${selectedDateAppointments.length} rendez-vous`}
+              {(() => {
+                const selJsDay = selectedDate.getDay();
+                const selOurDay = selJsDay === 0 ? 6 : selJsDay - 1;
+                return activeDays.has(selOurDay)
+                  ? ''
+                  : ' · Pas de disponibilité configurée';
+              })()}
             </p>
           </div>
 
@@ -570,6 +609,32 @@ export function CalendarContent() {
                     <span className="text-[10px] text-gray-400">Google</span>
                   </div>
                 ))}
+            </div>
+          )}
+
+          {/* Légende */}
+          {availabilitySlots.length > 0 && (
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded border border-emerald-200 bg-emerald-50" />
+                Jour avec disponibilités
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                RDV
+              </span>
+            </div>
+          )}
+
+          {availabilitySlots.length === 0 && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+              Vous n&apos;avez pas encore configuré vos disponibilités.{' '}
+              <button
+                onClick={() => router.push('/dashboard/settings/practice')}
+                className="underline font-medium"
+              >
+                Configurer maintenant
+              </button>
             </div>
           )}
 
