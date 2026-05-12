@@ -103,7 +103,7 @@ export function Sidebar({ userEmail, userName }: SidebarProps) {
   };
 
   return (
-    <aside className="hidden md:flex w-64 flex-col bg-white border-r border-border flex-shrink-0">
+    <aside className="hidden md:flex w-64 flex-col bg-white border-r border-border flex-shrink-0 relative z-20">
       {/* Logo */}
       <div className="p-5 border-b border-border">
         <Link href="/dashboard" className="flex items-center gap-2">

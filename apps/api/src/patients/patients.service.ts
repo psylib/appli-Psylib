@@ -362,22 +362,24 @@ export class PatientsService {
       orderBy: { createdAt: 'asc' },
     });
 
-    const sanitize = (v: string) =>
-      /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
-    const escape = (v: string | null | undefined) =>
-      v ? `"${sanitize(v).replace(/"/g, '""')}"` : '';
+    const csvCell = (v: string | null | undefined): string => {
+      if (!v) return '""';
+      let safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+      safe = safe.replace(/"/g, '""');
+      return `"${safe}"`;
+    };
 
     const header = 'id,nom,email,téléphone,statut,source,date_naissance,date_création';
     const rows = patients.map((p) =>
       [
-        p.id,
-        escape(p.name),
-        escape(p.email),
-        escape(p.phone),
-        p.status,
-        p.source ?? '',
-        p.birthDate ? p.birthDate.toISOString().split('T')[0] : '',
-        p.createdAt.toISOString().split('T')[0],
+        csvCell(p.id),
+        csvCell(p.name),
+        csvCell(p.email),
+        csvCell(p.phone),
+        csvCell(p.status),
+        csvCell(p.source),
+        csvCell(p.birthDate ? p.birthDate.toISOString().split('T')[0] : null),
+        csvCell(p.createdAt.toISOString().split('T')[0]),
       ].join(','),
     );
 

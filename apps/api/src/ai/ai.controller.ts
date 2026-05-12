@@ -151,7 +151,7 @@ export class AiController {
 
   @Post('generate-content')
   @UseGuards(SubscriptionGuard)
-  @RequireFeature('ai_summary')
+  @RequireFeature('ai_exercise') // Content generation uses exercise quota (separate from session summaries)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({
     summary: 'Générer du contenu marketing (LinkedIn, newsletter, blog)',
@@ -167,7 +167,7 @@ export class AiController {
   @Post('stream-content')
   @HttpCode(HttpStatus.OK)
   @UseGuards(SubscriptionGuard)
-  @RequireFeature('ai_summary')
+  @RequireFeature('ai_exercise') // Content generation uses exercise quota (separate from session summaries)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Génération streaming de contenu marketing (SSE)' })
   async streamContent(

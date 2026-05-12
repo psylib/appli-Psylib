@@ -72,8 +72,10 @@ export async function downloadFile(
   const a = document.createElement('a');
   a.href = objectUrl;
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(objectUrl);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }
 
 export const apiClient = {

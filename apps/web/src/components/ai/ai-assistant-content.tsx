@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/ui/toast';
 import { useQuery } from '@tanstack/react-query';
 import {
   Sparkles,
@@ -86,6 +87,7 @@ interface SavedContent {
 
 export function AiAssistantContent() {
   const { data: session } = useSession();
+  const { error: showError } = useToast();
   const [activeTab, setActiveTab] = useState<ActiveTab>('exercise');
 
   const { data: usage } = useQuery({
@@ -279,7 +281,7 @@ export function AiAssistantContent() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setLibraryContents(prev => prev.filter(c => c.id !== id));
     } catch {
-      alert('Impossible de supprimer le contenu');
+      showError('Impossible de supprimer le contenu');
     }
   };
 

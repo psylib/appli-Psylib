@@ -1,14 +1,16 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
 
 const API_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
 
 export default function PrivacyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { error: showError } = useToast();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -17,9 +19,13 @@ export default function PrivacyPage() {
   }, [status, router]);
 
   const handleExport = async () => {
+    if (!session?.accessToken) {
+      showError('Session expirée. Veuillez vous reconnecter.');
+      return;
+    }
     try {
       const res = await fetch(`${API_URL}/api/v1/patients/me/export`, {
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
+        headers: { Authorization: `Bearer ${session.accessToken}` },
       });
       if (!res.ok) throw new Error('Export failed');
       const blob = await res.blob();
@@ -27,25 +33,31 @@ export default function PrivacyPage() {
       const a = document.createElement('a');
       a.href = url;
       a.download = 'mes-donnees.json';
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch {
-      alert("Erreur lors de l'export. Veuillez réessayer.");
+      showError("Erreur lors de l'export. Veuillez réessayer.");
     }
   };
 
   const handleDelete = async () => {
+    if (!session?.accessToken) {
+      showError('Session expirée. Veuillez vous reconnecter.');
+      return;
+    }
     if (!confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')) return;
     if (!confirm('Dernière confirmation : toutes vos données seront définitivement supprimées.')) return;
     try {
       const res = await fetch(`${API_URL}/api/v1/account/delete`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${session?.accessToken}` },
+        headers: { Authorization: `Bearer ${session.accessToken}` },
       });
       if (!res.ok) throw new Error('Delete failed');
-      window.location.href = '/';
+      await signOut({ callbackUrl: '/' });
     } catch {
-      alert('Erreur lors de la suppression. Contactez le support.');
+      showError('Erreur lors de la suppression. Contactez le support.');
     }
   };
 
@@ -89,6 +101,7 @@ export default function PrivacyPage() {
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-4">
         <h2 className="text-base font-medium text-foreground">Consentements</h2>
+        {/* TODO: Load consent state from GET /gdpr/consents API */}
         <div className="space-y-3">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -106,6 +119,7 @@ export default function PrivacyPage() {
             <input
               type="checkbox"
               defaultChecked
+              disabled
               className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
             />
             <div>
@@ -116,16 +130,12 @@ export default function PrivacyPage() {
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
+              disabled
               className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
-              onChange={(e) => {
-                if (e.target.checked) {
-                  alert('Préférences sauvegardées');
-                }
-              }}
             />
             <div>
               <p className="text-sm font-medium text-foreground">Emails marketing</p>
-              <p className="text-xs text-muted-foreground">Conseils pratiques, nouvelles fonctionnalités et offres PsyLib.</p>
+              <p className="text-xs text-muted-foreground">Conseils pratiques, nouvelles fonctionnalités et offres PsyLib. (Bientôt disponible)</p>
             </div>
           </label>
         </div>

@@ -174,12 +174,11 @@ function MessageBubble({ message, isMine }: MessageBubbleProps) {
 interface ChatPanelProps {
   conversation: ConversationSummary | null;
   currentUserId: string;
-  isConnected: boolean;
 }
 
-function ChatPanel({ conversation, currentUserId, isConnected }: ChatPanelProps) {
+function ChatPanel({ conversation, currentUserId }: ChatPanelProps) {
   const { data: session } = useSession();
-  const { messages, sendMessage, setMessages } = useMessaging(conversation?.id ?? null);
+  const { messages, sendMessage, setMessages, isConnected } = useMessaging(conversation?.id ?? null);
   const [input, setInput] = useState('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -349,7 +348,6 @@ export default function MessagesPage() {
   const [activeConversation, setActiveConversation] = useState<ConversationSummary | null>(null);
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [showChat, setShowChat] = useState(false); // mobile: toggle liste/chat
-  const { isConnected } = useMessaging(activeConversation?.id ?? null);
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -437,7 +435,6 @@ export default function MessagesPage() {
         <ChatPanel
           conversation={activeConversation}
           currentUserId={currentUserId}
-          isConnected={isConnected}
         />
       </div>
     </div>

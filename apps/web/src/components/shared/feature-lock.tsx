@@ -11,6 +11,16 @@ import { KpiCardSkeleton } from '@/components/ui/skeleton';
 // ─── Config par plan ──────────────────────────────────────────────────────────
 
 const PLAN_CONFIG = {
+  solo: {
+    badge: 'Solo',
+    price: '25€/mois',
+    highlights: [
+      'Patients illimités + séances illimitées',
+      '10 résumés IA / mois',
+      'Visio illimitée',
+      'Comptabilité intégrée',
+    ],
+  },
   pro: {
     badge: 'Pro',
     price: '40€/mois',
@@ -36,7 +46,7 @@ const PLAN_CONFIG = {
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface FeatureLockProps {
-  requiredPlan: 'pro' | 'clinic';
+  requiredPlan: 'solo' | 'pro' | 'clinic';
   featureName: string;
   featureDescription: string;
   icon: LucideIcon;

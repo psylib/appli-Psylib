@@ -89,8 +89,27 @@ export class DocumentsService {
     }
     // Validate actual file content via magic bytes (not just client-declared MIME)
     const detectedMime = detectMimeFromMagicBytes(file.buffer);
+    if (detectedMime === 'application/octet-stream') {
+      throw new BadRequestException('Le contenu du fichier ne correspond pas au type déclaré.');
+    }
     if (detectedMime && !ALLOWED_MIME_TYPES.includes(detectedMime)) {
       throw new BadRequestException('Le contenu du fichier ne correspond pas au type déclaré.');
+    }
+    if (detectedMime === null) {
+      // ZIP-based file (DOCX, ODT) — validate declared MIME is an allowed ZIP-based type
+      const ZIP_BASED_MIME_TYPES = [
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.oasis.opendocument.text',
+      ];
+      const isZip = file.buffer.length >= 4
+        && file.buffer[0] === 0x50 && file.buffer[1] === 0x4B
+        && file.buffer[2] === 0x03 && file.buffer[3] === 0x04;
+      if (isZip && !ZIP_BASED_MIME_TYPES.includes(file.mimetype)) {
+        throw new BadRequestException('Type de fichier ZIP non autorisé. Seuls les fichiers DOCX et ODT sont acceptés.');
+      }
+      if (!isZip && file.buffer.length >= 4) {
+        throw new BadRequestException('Le contenu du fichier ne correspond pas au type déclaré.');
+      }
     }
     if (file.size > MAX_FILE_SIZE) {
       throw new BadRequestException('Fichier trop volumineux (max 10 Mo).');

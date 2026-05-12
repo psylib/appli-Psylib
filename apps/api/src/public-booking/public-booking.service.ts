@@ -402,7 +402,7 @@ export class PublicBookingService {
 
       // Trouve ou crée le patient
       let patient = await tx.patient.findFirst({
-        where: { email: dto.patientEmail, psychologistId: psy.id },
+        where: { email: dto.patientEmail, psychologistId: psy.id, status: { not: 'archived' } },
       });
 
       if (!patient) {

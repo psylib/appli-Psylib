@@ -50,6 +50,9 @@ export function useMessaging(conversationId: string | null): UseMessagingReturn 
     });
 
     return () => {
+      if (conversationId) {
+        socket.emit('leave_conversation', { conversationId });
+      }
       socket.disconnect();
       socketRef.current = null;
       setIsConnected(false);

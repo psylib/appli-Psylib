@@ -95,13 +95,14 @@ export function useNotifications(): UseNotificationsReturn {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Mark single as read (optimistic with rollback)
+  // Mark single as read (optimistic with rollback — no stale closure)
   const markRead = useCallback(async (id: string) => {
     if (!token) return;
-    const prev = notifications;
-    setNotifications((p) =>
-      p.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n)),
-    );
+    let prev: Notification[] = [];
+    setNotifications((p) => {
+      prev = p;
+      return p.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n));
+    });
     try {
       await fetch(`${API_BASE}/api/v1/notifications/${id}/read`, {
         method: 'PATCH',
@@ -110,15 +111,16 @@ export function useNotifications(): UseNotificationsReturn {
     } catch {
       setNotifications(prev);
     }
-  }, [token, notifications]);
+  }, [token]);
 
   // Mark all as read (optimistic with rollback)
   const markAllRead = useCallback(async () => {
     if (!token) return;
-    const prev = notifications;
-    setNotifications((p) =>
-      p.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })),
-    );
+    let prev: Notification[] = [];
+    setNotifications((p) => {
+      prev = p;
+      return p.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() }));
+    });
     try {
       await fetch(`${API_BASE}/api/v1/notifications/read-all`, {
         method: 'POST',
@@ -127,13 +129,16 @@ export function useNotifications(): UseNotificationsReturn {
     } catch {
       setNotifications(prev);
     }
-  }, [token, notifications]);
+  }, [token]);
 
   // Delete notification (optimistic with rollback)
   const deleteNotification = useCallback(async (id: string) => {
     if (!token) return;
-    const prev = notifications;
-    setNotifications((p) => p.filter((n) => n.id !== id));
+    let prev: Notification[] = [];
+    setNotifications((p) => {
+      prev = p;
+      return p.filter((n) => n.id !== id);
+    });
     try {
       await fetch(`${API_BASE}/api/v1/notifications/${id}`, {
         method: 'DELETE',
@@ -142,7 +147,7 @@ export function useNotifications(): UseNotificationsReturn {
     } catch {
       setNotifications(prev);
     }
-  }, [token, notifications]);
+  }, [token]);
 
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 

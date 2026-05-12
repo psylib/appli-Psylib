@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import * as path from 'path';
 import type { Request } from 'express';
 import { PrismaService } from '../common/prisma.service';
@@ -10,6 +10,8 @@ import { CreateMoodDto, CreateJournalEntryDto, UpdateExerciseDto } from './dto/p
 
 @Injectable()
 export class PatientPortalService {
+  private readonly logger = new Logger(PatientPortalService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly encryption: EncryptionService,
@@ -61,13 +63,13 @@ export class PatientPortalService {
     ]);
 
     if (patient?.psychologist) {
-      // Email générique sans données patient (transit non HDS)
-      await this.emailService.sendMoodLogged(patient.psychologist.user.email, {
+      // Email générique sans données patient (transit non HDS) — fire-and-forget
+      void this.emailService.sendMoodLogged(patient.psychologist.user.email, {
         patientName: patient.name,
         mood: dto.mood,
         note: undefined,
         psychologistName: patient.psychologist.name,
-      });
+      }).catch((err) => this.logger.error('Failed to send mood email', err));
     }
 
     // Retourner la note en clair au patient
@@ -181,10 +183,15 @@ export class PatientPortalService {
       entityId: patientId,
     });
 
-    return entries.map((e) => ({
-      ...e,
-      content: this.encryption.decrypt(e.content),
-    }));
+    return entries.map((e) => {
+      let content: string;
+      try {
+        content = this.encryption.decrypt(e.content);
+      } catch {
+        content = '[Contenu illisible]';
+      }
+      return { ...e, content };
+    });
   }
 
   async deleteJournalEntry(patientId: string, entryId: string, userId: string) {

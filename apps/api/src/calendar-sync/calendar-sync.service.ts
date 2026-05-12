@@ -53,7 +53,7 @@ export class CalendarSyncService implements OnModuleInit {
   private getOAuthStateSecret(): string {
     const secret = this.config.get<string>('OAUTH_STATE_SECRET');
     if (!secret) {
-      this.logger.warn('OAUTH_STATE_SECRET non configuré — fallback sur ENCRYPTION_KEY');
+      this.logger.error('OAUTH_STATE_SECRET not configured — using ENCRYPTION_KEY as fallback. Set a dedicated OAUTH_STATE_SECRET in production.');
       const fallback = this.config.get<string>('ENCRYPTION_KEY');
       if (!fallback) throw new Error('Ni OAUTH_STATE_SECRET ni ENCRYPTION_KEY configuré');
       return fallback;

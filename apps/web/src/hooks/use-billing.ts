@@ -3,6 +3,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { billingApi } from '@/lib/api/billing';
+import { useToast } from '@/components/ui/toast';
 import { SubscriptionPlan } from '@psyscale/shared-types';
 
 export function useSubscription() {
@@ -27,21 +28,29 @@ export function useInvoices() {
 
 export function useCreateCheckout() {
   const { data: session } = useSession();
+  const { error: showError } = useToast();
   return useMutation({
     mutationFn: (plan: SubscriptionPlan) =>
       billingApi.createCheckout(plan, session?.accessToken ?? ''),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },
+    onError: (err: Error) => {
+      showError(err.message || 'Impossible de créer la session de paiement');
+    },
   });
 }
 
 export function useCreatePortal() {
   const { data: session } = useSession();
+  const { error: showError } = useToast();
   return useMutation({
     mutationFn: () => billingApi.createPortal(session?.accessToken ?? ''),
     onSuccess: ({ url }) => {
       window.location.href = url;
+    },
+    onError: (err: Error) => {
+      showError(err.message || 'Impossible d\'accéder au portail de facturation');
     },
   });
 }

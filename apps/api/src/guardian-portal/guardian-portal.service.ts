@@ -110,10 +110,22 @@ export class GuardianPortalService {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    return this.prisma.moodTracking.findMany({
+    const entries = await this.prisma.moodTracking.findMany({
       where: { patientId, createdAt: { gte: since } },
       orderBy: { createdAt: 'asc' },
       select: { id: true, mood: true, note: true, createdAt: true },
+    });
+
+    return entries.map((e) => {
+      let note: string | null = null;
+      if (e.note) {
+        try {
+          note = this.encryption.decrypt(e.note);
+        } catch {
+          note = null;
+        }
+      }
+      return { ...e, note };
     });
   }
 

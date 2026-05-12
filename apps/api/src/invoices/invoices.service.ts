@@ -14,11 +14,12 @@ import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PaymentCompletedEvent } from '../accounting/events/payment-completed.event';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
-import type {
-  Invoice,
-  Patient,
-  Psychologist,
-  Session,
+import {
+  Prisma,
+  type Invoice,
+  type Patient,
+  type Psychologist,
+  type Session,
 } from '@prisma/client';
 
 type InvoiceWithRelations = Invoice & {
@@ -90,41 +91,43 @@ export class InvoicesService {
       }
     }
 
-    // Generate invoice number: PSY-YYYY-NNN (with retry on unique constraint race condition)
+    // Generate invoice number: PSY-YYYY-NNN (serializable transaction to prevent race conditions)
     const year = new Date(dto.issuedAt).getFullYear();
     const maxRetries = 5;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
-      const lastInvoice = await this.prisma.invoice.findFirst({
-        where: {
-          psychologistId,
-          invoiceNumber: { startsWith: `PSY-${year}-` },
-        },
-        orderBy: { invoiceNumber: 'desc' },
-      });
-
-      let sequence = 1;
-      if (lastInvoice) {
-        const parts = lastInvoice.invoiceNumber.split('-');
-        const lastSeq = parseInt(parts[2] ?? '0', 10);
-        if (!isNaN(lastSeq)) {
-          sequence = lastSeq + 1;
-        }
-      }
-
-      const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
-
       try {
-        return await this.prisma.invoice.create({
-          data: {
-            psychologistId,
-            patientId: dto.patientId,
-            invoiceNumber,
-            amountTtc: dto.amountTtc,
-            status: 'draft',
-            issuedAt: new Date(dto.issuedAt),
-          },
-        });
+        return await this.prisma.$transaction(async (tx) => {
+          const lastInvoice = await tx.invoice.findFirst({
+            where: {
+              psychologistId,
+              invoiceNumber: { startsWith: `PSY-${year}-` },
+            },
+            orderBy: { invoiceNumber: 'desc' },
+          });
+
+          let sequence = 1;
+          if (lastInvoice) {
+            const parts = lastInvoice.invoiceNumber.split('-');
+            const lastSeq = parseInt(parts[2] ?? '0', 10);
+            if (!isNaN(lastSeq)) {
+              sequence = lastSeq + 1;
+            }
+          }
+
+          const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+
+          return tx.invoice.create({
+            data: {
+              psychologistId,
+              patientId: dto.patientId,
+              invoiceNumber,
+              amountTtc: dto.amountTtc,
+              status: 'draft',
+              issuedAt: new Date(dto.issuedAt),
+            },
+          });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
       } catch (err: unknown) {
         // P2002 = unique constraint violation — retry with next sequence
         if (
@@ -318,72 +321,76 @@ export class InvoicesService {
     appointmentId?: string;
     internalPaymentId?: string;
   }): Promise<Invoice | null> {
-    // Idempotence check
-    if (data.sessionId) {
-      const existing = await this.prisma.invoice.findFirst({
-        where: { sessionId: data.sessionId },
-      });
-      if (existing) {
-        this.logger.warn(`Invoice already exists for session ${data.sessionId}, skipping`);
-        return null;
-      }
-    }
-    if (data.internalPaymentId) {
-      const existing = await this.prisma.invoice.findFirst({
-        where: { paymentId: data.internalPaymentId },
-      });
-      if (existing) {
-        this.logger.warn(`Invoice already exists for payment ${data.internalPaymentId}, skipping`);
-        return null;
-      }
-    }
-
-    // Generate invoice number (same logic as existing create())
-    const year = new Date(data.sessionDate).getFullYear();
-    const lastInvoice = await this.prisma.invoice.findFirst({
-      where: {
-        psychologistId: data.psychologistId,
-        invoiceNumber: { startsWith: `PSY-${year}-` },
-      },
-      orderBy: { invoiceNumber: 'desc' },
-    });
-    let sequence = 1;
-    if (lastInvoice) {
-      const parts = lastInvoice.invoiceNumber.split('-');
-      const lastSeq = parseInt(parts[2] ?? '0', 10);
-      if (!isNaN(lastSeq)) sequence = lastSeq + 1;
-    }
-    let invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
-
     const isPaid = data.type === 'payment_received';
+    const year = new Date(data.sessionDate).getFullYear();
 
-    // Retry on P2002 (unique constraint on invoiceNumber) — race condition between concurrent workers
+    // Serializable transaction: idempotency check + sequence read + create — prevents race conditions
     let invoice: Invoice;
     let retries = 0;
     const maxRetries = 3;
     while (true) {
       try {
-        invoice = await this.prisma.invoice.create({
-          data: {
-            psychologistId: data.psychologistId,
-            patientId: data.patientId,
-            invoiceNumber,
-            amountTtc: data.amount,
-            status: isPaid ? 'paid' : 'draft',
-            issuedAt: new Date(data.sessionDate),
-            source: 'auto',
-            sessionId: data.sessionId ?? null,
-            paymentId: data.internalPaymentId ?? null,
-            paidAt: isPaid ? new Date() : null,
-          },
-        });
+        const result = await this.prisma.$transaction(async (tx) => {
+          // Idempotence check inside transaction
+          if (data.sessionId) {
+            const existing = await tx.invoice.findFirst({
+              where: { sessionId: data.sessionId },
+            });
+            if (existing) {
+              this.logger.warn(`Invoice already exists for session ${data.sessionId}, skipping`);
+              return null;
+            }
+          }
+          if (data.internalPaymentId) {
+            const existing = await tx.invoice.findFirst({
+              where: { paymentId: data.internalPaymentId },
+            });
+            if (existing) {
+              this.logger.warn(`Invoice already exists for payment ${data.internalPaymentId}, skipping`);
+              return null;
+            }
+          }
+
+          // Generate invoice number
+          const lastInvoice = await tx.invoice.findFirst({
+            where: {
+              psychologistId: data.psychologistId,
+              invoiceNumber: { startsWith: `PSY-${year}-` },
+            },
+            orderBy: { invoiceNumber: 'desc' },
+          });
+          let sequence = 1;
+          if (lastInvoice) {
+            const parts = lastInvoice.invoiceNumber.split('-');
+            const lastSeq = parseInt(parts[2] ?? '0', 10);
+            if (!isNaN(lastSeq)) sequence = lastSeq + 1;
+          }
+          sequence += retries;
+          const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+
+          return tx.invoice.create({
+            data: {
+              psychologistId: data.psychologistId,
+              patientId: data.patientId,
+              invoiceNumber,
+              amountTtc: data.amount,
+              status: isPaid ? 'paid' : 'draft',
+              issuedAt: new Date(data.sessionDate),
+              source: 'auto',
+              sessionId: data.sessionId ?? null,
+              paymentId: data.internalPaymentId ?? null,
+              paidAt: isPaid ? new Date() : null,
+            },
+          });
+        }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+
+        if (result === null) return null;
+        invoice = result;
         break;
       } catch (err) {
         const prismaCode = (err as { code?: string }).code;
         if (prismaCode === 'P2002' && retries < maxRetries) {
           retries++;
-          sequence += retries;
-          invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
           continue;
         }
         throw err;

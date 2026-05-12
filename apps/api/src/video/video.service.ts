@@ -301,8 +301,9 @@ export class VideoService {
       actorId: patientId,
       actorType: 'patient',
       action: 'VIDEO_PATIENT_JOIN',
-      entityType: 'video_room',
-      entityId: room.id,
+      entityType: 'appointment',
+      entityId: appointment!.id,
+      metadata: { roomId: room.id },
     });
 
     return {

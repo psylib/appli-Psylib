@@ -197,7 +197,8 @@ export const authConfig: NextAuthConfig = {
         token.refreshToken = refreshed.refresh_token ?? token.refreshToken;
         token.expiresAt = Math.floor(Date.now() / 1000) + (refreshed.expires_in ?? 900);
       } catch {
-        // En cas d'erreur réseau, conserver l'ancien token
+        // Erreur réseau — forcer reconnexion pour éviter une UI semi-fonctionnelle
+        return { ...token, accessToken: '', refreshToken: undefined };
       }
 
       return token;
@@ -236,5 +237,6 @@ export const authConfig: NextAuthConfig = {
 function extractRole(roles: string[]): UserRole {
   if (roles.includes('admin')) return UserRole.ADMIN;
   if (roles.includes('psychologist')) return UserRole.PSYCHOLOGIST;
+  if (roles.includes('guardian')) return UserRole.GUARDIAN;
   return UserRole.PATIENT;
 }

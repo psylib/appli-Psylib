@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import { UserRole } from '@psyscale/shared-types';
 import { PatientLogoutButton } from '@/components/patient-portal/patient-logout-button';
+import { PatientBottomNav } from '@/components/patient-portal/patient-bottom-nav';
 
 export default async function PatientPortalLayout({
   children,
@@ -39,24 +39,8 @@ export default async function PatientPortalLayout({
 
       <main className="flex-1 p-4">{children}</main>
 
-      {/* Bottom nav — mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border flex md:hidden pb-safe">
-        {[
-          { label: 'Accueil', href: '/patient-portal' },
-          { label: 'Humeur', href: '/patient-portal/mood' },
-          { label: 'Exercices', href: '/patient-portal/exercises' },
-          { label: 'Journal', href: '/patient-portal/journal' },
-          { label: 'Documents', href: '/patient-portal/documents' },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex-1 flex flex-col items-center justify-center py-3 text-xs text-muted-foreground hover:text-primary transition-colors min-h-touch"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      {/* Bottom nav — mobile (client component for active state) */}
+      <PatientBottomNav />
     </div>
   );
 }

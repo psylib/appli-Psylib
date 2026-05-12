@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { PrismaService } from '../common/prisma.service';
+import { AuditService } from '../common/audit.service';
 
 @Injectable()
 export class GuardianAuthService {
@@ -17,6 +18,7 @@ export class GuardianAuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly audit: AuditService,
   ) {
     // Validate at startup that the required secret is configured
     this.config.getOrThrow<string>('GUARDIAN_JWT_SECRET');
@@ -50,6 +52,16 @@ export class GuardianAuthService {
     });
 
     this.logger.log(`Guardian login: ${user.id}`);
+
+    // Audit log for guardian login (HDS compliance)
+    await this.audit.log({
+      actorId: user.id,
+      actorType: 'patient',
+      action: 'CREATE',
+      entityType: 'guardian',
+      entityId: guardianLink.id,
+      metadata: { event: 'login' },
+    });
 
     return this.generateTokens(user.id, user.email);
   }

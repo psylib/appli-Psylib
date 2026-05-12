@@ -508,7 +508,7 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
     psychologistUserId: string,
     dto: GenerateExerciseDto & { patientId?: string },
   ): Promise<object> {
-    await this.getPsychologist(psychologistUserId);
+    const psy = await this.getPsychologist(psychologistUserId);
 
     // Vérifier le consentement IA si un patient est associé
     if (dto.patientId) {
@@ -528,6 +528,8 @@ RAPPEL ABSOLU : N'utilise JAMAIS de données patients réels.`;
 
     this.requireAiKey();
 
+    const startedAt = Date.now();
+
     const prompt = `Type d'exercice: ${dto.exerciseType}
 Thème thérapeutique: ${dto.theme}
 Contexte patient (anonymisé): ${dto.patientContext}
@@ -535,6 +537,10 @@ Contexte patient (anonymisé): ${dto.patientContext}
 Génère un exercice thérapeutique adapté au format JSON demandé.`;
 
     const result = await this.callAiJson(prompt, SYSTEM_PROMPTS.exercise);
+
+    // Track AI usage for exercise generation
+    await this.trackUsage(psy.id, 'exercise', 0, startedAt, this.modelFast);
+
     return result;
   }
 

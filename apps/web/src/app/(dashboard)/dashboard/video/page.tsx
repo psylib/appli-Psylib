@@ -66,7 +66,7 @@ export default function VideoPage() {
         ) : (
           <div className="divide-y divide-border">
             {rooms.map((room) => {
-              const config = STATUS_CONFIG[room.status];
+              const config = STATUS_CONFIG[room.status as keyof typeof STATUS_CONFIG] ?? { label: room.status, color: 'text-muted-foreground', bg: 'bg-muted' };
               const time = new Date(room.scheduledAt).toLocaleTimeString('fr-FR', {
                 hour: '2-digit', minute: '2-digit',
               });

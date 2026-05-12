@@ -47,7 +47,7 @@ export class AuditInterceptor implements NestInterceptor {
       tap(() => {
         if (!user || !action) return;
 
-        const entityId = (req.params['id'] as string | undefined) ?? 'unknown';
+        const entityId = (req.params['id'] as string | undefined) ?? (Object.values(req.params)[0] as string) ?? 'unknown';
         const entityType = this.extractEntityType(req.path);
         const actorType = user.role === 'psychologist' ? 'psychologist' : 'patient';
 

@@ -30,7 +30,7 @@ export function Topbar({ userEmail, userName }: TopbarProps) {
   const displayName = userName || userEmail;
 
   return (
-    <header className="h-14 flex items-center justify-end gap-2 px-4 border-b border-border bg-white flex-shrink-0">
+    <header className="h-14 flex items-center justify-end gap-2 px-4 border-b border-border bg-white flex-shrink-0 relative z-20">
       {/* Notification bell */}
       <NotificationBell />
 

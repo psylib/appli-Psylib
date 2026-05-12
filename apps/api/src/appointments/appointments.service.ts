@@ -186,14 +186,14 @@ export class AppointmentsService {
   async findAll(userId: string, query: AppointmentQueryDto) {
     const psy = await this.getPsychologist(userId);
 
+    const dateFilter: Record<string, Date> = {};
+    if (query.from) dateFilter.gte = new Date(query.from);
+    if (query.to) dateFilter.lte = new Date(query.to);
+
     return this.prisma.appointment.findMany({
       where: {
         psychologistId: psy.id,
-        ...(query.from && { scheduledAt: { gte: new Date(query.from) } }),
-        ...(query.to && { scheduledAt: { lte: new Date(query.to) } }),
-        ...(query.from && query.to && {
-          scheduledAt: { gte: new Date(query.from), lte: new Date(query.to) },
-        }),
+        ...(Object.keys(dateFilter).length > 0 ? { scheduledAt: dateFilter } : {}),
       },
       orderBy: { scheduledAt: 'asc' },
       ...(query.limit && { take: query.limit }),
@@ -249,6 +249,16 @@ export class AppointmentsService {
       consultationTypeId: updated.consultationTypeId ?? undefined,
       isOnline: updated.isOnline,
       status: updated.status,
+    });
+
+    // Audit log for appointment update (HDS compliance)
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'UPDATE',
+      entityType: 'appointment',
+      entityId: id,
+      metadata: { fields: Object.keys(dto) },
     });
 
     // If status changed to no_show, check if no-show billing is enabled

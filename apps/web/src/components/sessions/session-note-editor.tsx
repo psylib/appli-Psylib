@@ -243,8 +243,9 @@ export function SessionNoteEditor({
   );
 
   // Keep notesRef current for autosave — in structured mode, serialize before saving
-  const getNotesForSave = useCallback((): string => {
-    if (editorMode === 'structured' && selectedTemplateId && selectedOrientation) {
+  const getNotesForSave = useCallback((): string | null => {
+    if (editorMode === 'structured') {
+      if (!selectedTemplateId || !selectedOrientation) return null; // Don't save empty when template not selected
       return serializeStructured(selectedTemplateId, selectedOrientation, structuredValues);
     }
     return notesRef.current;
@@ -255,9 +256,12 @@ export function SessionNoteEditor({
     if (!isDirty && silent) return;
     if (!session?.accessToken) return;
 
+    const notes = getNotesForSave();
+    if (notes === null) return; // Structured mode without template — skip save
+
     setSaveStatus('saving');
     try {
-      await sessionsApi.autosave(sessionId, getNotesForSave(), session.accessToken);
+      await sessionsApi.autosave(sessionId, notes, session.accessToken);
       setSaveStatus('saved');
       setLastSaved(new Date());
       setIsDirty(false);
@@ -369,7 +373,7 @@ export function SessionNoteEditor({
     setAiError('');
 
     await streamSessionSummary(
-      { rawNotes: getNotesForSave(), sessionId },
+      { rawNotes: getNotesForSave() ?? '', sessionId },
       session.accessToken,
       {
         onChunk: (text) => setAiSummary((prev) => prev + text),
