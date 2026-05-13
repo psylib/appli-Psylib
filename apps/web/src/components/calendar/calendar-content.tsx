@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -85,19 +85,73 @@ function isWithinVideoWindow(scheduledAt: string): boolean {
   return now >= windowStart;
 }
 
+const HOUR_HEIGHT = 60;
+const START_HOUR = 7;
+const END_HOUR = 21;
+const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => i + START_HOUR);
+
+function getWeekDates(date: Date): Date[] {
+  const d = new Date(date);
+  const dayOfWeek = d.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diff);
+  return Array.from({ length: 7 }, (_, i) => {
+    const result = new Date(monday);
+    result.setDate(monday.getDate() + i);
+    return result;
+  });
+}
+
+function getAppointmentStyle(scheduledAt: string, duration: number): { top: number; height: number } | null {
+  const date = new Date(scheduledAt);
+  const totalMinutes = date.getHours() * 60 + date.getMinutes();
+  const startMinutes = START_HOUR * 60;
+  const endMinutes = END_HOUR * 60;
+  const visibleStart = Math.max(totalMinutes, startMinutes);
+  const visibleEnd = Math.min(totalMinutes + duration, endMinutes);
+  if (visibleStart >= visibleEnd) return null;
+  const top = ((visibleStart - startMinutes) / 60) * HOUR_HEIGHT;
+  const height = Math.max(((visibleEnd - visibleStart) / 60) * HOUR_HEIGHT, 22);
+  return { top, height };
+}
+
+function NowIndicator() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+  const h = now.getHours();
+  const m = now.getMinutes();
+  if (h < START_HOUR || h >= END_HOUR) return null;
+  const top = (h - START_HOUR + m / 60) * HOUR_HEIGHT;
+  return (
+    <div className="absolute left-0 right-0 z-10 pointer-events-none" style={{ top }}>
+      <div className="w-2 h-2 rounded-full bg-red-500 absolute -left-1 -top-1" />
+      <div className="h-px bg-red-500 w-full" />
+    </div>
+  );
+}
+
 export function CalendarContent() {
   const { data: session } = useSession();
   const router = useRouter();
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [selectedDate, setSelectedDate] = useState<Date>(today);
-  const [view, setView] = useState<'month' | 'week'>('month');
+  const [view, setView] = useState<'month' | 'week' | 'day'>('month');
+  const timeGridRef = useRef<HTMLDivElement>(null);
 
   const { year, month } = currentMonth;
 
-  // Fetch appointments for the current month
-  const from = new Date(year, month, 1).toISOString();
-  const to = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+  // Fetch range: pad by 7 days to cover weeks spanning month boundaries
+  const fetchFrom = new Date(year, month, 1);
+  fetchFrom.setDate(fetchFrom.getDate() - 7);
+  const fetchTo = new Date(year, month + 1, 0, 23, 59, 59);
+  fetchTo.setDate(fetchTo.getDate() + 7);
+  const from = fetchFrom.toISOString();
+  const to = fetchTo.toISOString();
 
   const queryClient = useQueryClient();
 
@@ -186,6 +240,42 @@ export function CalendarContent() {
 
   const appointments = appointmentsData ?? [];
 
+  // Sync currentMonth with selectedDate for week/day views
+  useEffect(() => {
+    if (view !== 'month') {
+      setCurrentMonth(prev => {
+        const m = selectedDate.getMonth();
+        const y = selectedDate.getFullYear();
+        if (m !== prev.month || y !== prev.year) return { year: y, month: m };
+        return prev;
+      });
+    }
+  }, [selectedDate, view]);
+
+  // Scroll time grid to 8am on view change
+  useEffect(() => {
+    if (timeGridRef.current && view !== 'month') {
+      timeGridRef.current.scrollTop = (8 - START_HOUR) * HOUR_HEIGHT;
+    }
+  }, [view]);
+
+  // Week dates for week view
+  const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
+
+  // Header label based on view
+  const headerLabel = useMemo(() => {
+    if (view === 'month') return `${MONTHS[month]} ${year}`;
+    if (view === 'week') {
+      const start = weekDates[0]!;
+      const end = weekDates[6]!;
+      if (start.getMonth() === end.getMonth()) {
+        return `${start.getDate()} – ${end.getDate()} ${MONTHS[start.getMonth()]} ${start.getFullYear()}`;
+      }
+      return `${start.getDate()} ${MONTHS[start.getMonth()]!.slice(0, 3)} – ${end.getDate()} ${MONTHS[end.getMonth()]!.slice(0, 3)} ${end.getFullYear()}`;
+    }
+    return selectedDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }, [view, month, year, selectedDate, weekDates]);
+
   if (isError) {
     return (
       <div className="p-6 text-center text-muted-foreground">
@@ -210,18 +300,35 @@ export function CalendarContent() {
   // Selected date appointments
   const selectedDateAppointments = appointmentsByDate.get(selectedDate.toDateString()) ?? [];
 
-  const prevMonth = () => {
-    setCurrentMonth(({ year, month }) => {
-      if (month === 0) return { year: year - 1, month: 11 };
-      return { year, month: month - 1 };
-    });
+  // Navigation
+  const navigatePrev = () => {
+    if (view === 'month') {
+      setCurrentMonth(({ year, month }) =>
+        month === 0 ? { year: year - 1, month: 11 } : { year, month: month - 1 }
+      );
+    } else if (view === 'week') {
+      setSelectedDate(prev => { const d = new Date(prev); d.setDate(d.getDate() - 7); return d; });
+    } else {
+      setSelectedDate(prev => { const d = new Date(prev); d.setDate(d.getDate() - 1); return d; });
+    }
   };
 
-  const nextMonth = () => {
-    setCurrentMonth(({ year, month }) => {
-      if (month === 11) return { year: year + 1, month: 0 };
-      return { year, month: month + 1 };
-    });
+  const navigateNext = () => {
+    if (view === 'month') {
+      setCurrentMonth(({ year, month }) =>
+        month === 11 ? { year: year + 1, month: 0 } : { year, month: month + 1 }
+      );
+    } else if (view === 'week') {
+      setSelectedDate(prev => { const d = new Date(prev); d.setDate(d.getDate() + 7); return d; });
+    } else {
+      setSelectedDate(prev => { const d = new Date(prev); d.setDate(d.getDate() + 1); return d; });
+    }
+  };
+
+  const goToToday = () => {
+    const t = new Date();
+    setSelectedDate(t);
+    setCurrentMonth({ year: t.getFullYear(), month: t.getMonth() });
   };
 
   const daysInMonth = getDaysInMonth(year, month);
@@ -237,12 +344,27 @@ export function CalendarContent() {
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* En-tête */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Calendrier</h1>
           <p className="text-muted-foreground mt-1">Gérez vos rendez-vous et séances</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* View toggle */}
+          <div className="inline-flex items-center rounded-lg border border-border bg-surface p-0.5">
+            {(['day', 'week', 'month'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={cn(
+                  'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                  view === v ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {v === 'day' ? 'Jour' : v === 'week' ? 'Semaine' : 'Mois'}
+              </button>
+            ))}
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -321,106 +443,300 @@ export function CalendarContent() {
         {/* Calendrier */}
         <div className="lg:col-span-2">
           <div className="rounded-xl border border-border bg-white overflow-hidden">
-            {/* Navigation mois */}
+            {/* Navigation */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
               <button
-                onClick={prevMonth}
+                onClick={navigatePrev}
                 className="p-1.5 rounded-lg hover:bg-surface transition-colors"
-                aria-label="Mois précédent"
+                aria-label="Précédent"
               >
                 <ChevronLeft size={18} className="text-muted-foreground" />
               </button>
-              <h2 className="text-sm font-semibold text-foreground">
-                {MONTHS[month]} {year}
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-sm font-semibold text-foreground capitalize">{headerLabel}</h2>
+                {!isSameDay(selectedDate, today) && (
+                  <button
+                    onClick={goToToday}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    Aujourd&apos;hui
+                  </button>
+                )}
+              </div>
               <button
-                onClick={nextMonth}
+                onClick={navigateNext}
                 className="p-1.5 rounded-lg hover:bg-surface transition-colors"
-                aria-label="Mois suivant"
+                aria-label="Suivant"
               >
                 <ChevronRight size={18} className="text-muted-foreground" />
               </button>
             </div>
 
-            {/* Jours de la semaine */}
-            <div className="grid grid-cols-7 border-b border-border">
-              {WEEKDAYS.map((day) => (
-                <div
-                  key={day}
-                  className="py-2 text-center text-xs font-medium text-muted-foreground"
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Grille calendrier */}
-            <div className="grid grid-cols-7">
-              {calendarDays.map((day, i) => {
-                if (day === null) {
-                  return <div key={`empty-${i}`} className="h-14 border-b border-r border-border/50 last:border-r-0" />;
-                }
-
-                const date = new Date(year, month, day);
-                const isToday = isSameDay(date, today);
-                const isSelected = isSameDay(date, selectedDate);
-                const dayAppts = appointmentsByDate.get(date.toDateString()) ?? [];
-                const hasAppts = dayAppts.length > 0;
-                // Check if this day has configured availability
-                const jsDay = date.getDay();
-                const ourDayOfWeek = jsDay === 0 ? 6 : jsDay - 1;
-                const hasAvailability = activeDays.has(ourDayOfWeek);
-
-                return (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDate(date)}
-                    className={cn(
-                      'h-14 p-1.5 text-left border-b border-r border-border/50 hover:bg-surface transition-colors relative',
-                      (i + 1) % 7 === 0 && 'border-r-0',
-                      isSelected && 'bg-primary/5',
-                      hasAvailability && !isSelected && 'bg-emerald-50/40',
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        'text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full',
-                        isToday && 'bg-primary text-white',
-                        !isToday && isSelected && 'text-primary font-bold',
-                        !isToday && !isSelected && 'text-foreground',
-                      )}
-                    >
+            {/* === MONTH VIEW === */}
+            {view === 'month' && (
+              <>
+                <div className="grid grid-cols-7 border-b border-border">
+                  {WEEKDAYS.map((day) => (
+                    <div key={day} className="py-2 text-center text-xs font-medium text-muted-foreground">
                       {day}
-                    </span>
-                    {(hasAppts || externalEvents.some(e => isSameDay(new Date(e.startAt), date))) && (
-                      <div className="flex gap-0.5 mt-0.5 flex-wrap">
-                        {dayAppts.slice(0, 3).map((appt) => (
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7">
+                  {calendarDays.map((day, i) => {
+                    if (day === null) {
+                      return <div key={`empty-${i}`} className="h-14 border-b border-r border-border/50 last:border-r-0" />;
+                    }
+                    const date = new Date(year, month, day);
+                    const isToday_ = isSameDay(date, today);
+                    const isSelected_ = isSameDay(date, selectedDate);
+                    const dayAppts = appointmentsByDate.get(date.toDateString()) ?? [];
+                    const hasAppts = dayAppts.length > 0;
+                    const jsDay = date.getDay();
+                    const ourDayOfWeek = jsDay === 0 ? 6 : jsDay - 1;
+                    const hasAvailability = activeDays.has(ourDayOfWeek);
+                    return (
+                      <button
+                        key={day}
+                        onClick={() => setSelectedDate(date)}
+                        className={cn(
+                          'h-14 p-1.5 text-left border-b border-r border-border/50 hover:bg-surface transition-colors relative',
+                          (i + 1) % 7 === 0 && 'border-r-0',
+                          isSelected_ && 'bg-primary/5',
+                          hasAvailability && !isSelected_ && 'bg-emerald-50/40',
+                        )}
+                      >
+                        <span className={cn(
+                          'text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full',
+                          isToday_ && 'bg-primary text-white',
+                          !isToday_ && isSelected_ && 'text-primary font-bold',
+                          !isToday_ && !isSelected_ && 'text-foreground',
+                        )}>
+                          {day}
+                        </span>
+                        {(hasAppts || externalEvents.some(e => isSameDay(new Date(e.startAt), date))) && (
+                          <div className="flex gap-0.5 mt-0.5 flex-wrap">
+                            {dayAppts.slice(0, 3).map((appt) => (
+                              <div key={appt.id} className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0" title={appt.patient.name} />
+                            ))}
+                            {dayAppts.length > 3 && (
+                              <span className="text-[9px] text-muted-foreground">+{dayAppts.length - 3}</span>
+                            )}
+                            {externalEvents
+                              .filter(e => isSameDay(new Date(e.startAt), date))
+                              .slice(0, 2)
+                              .map(e => (
+                                <div key={`ext-${e.id}`} className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0" title={`Google: ${e.title || 'Occupé'}`} />
+                              ))}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* === WEEK VIEW === */}
+            {view === 'week' && (
+              <>
+                {/* Week day headers */}
+                <div className="grid border-b border-border" style={{ gridTemplateColumns: '50px repeat(7, 1fr)' }}>
+                  <div className="py-2" />
+                  {weekDates.map((date, i) => {
+                    const isToday_ = isSameDay(date, today);
+                    const isSelected_ = isSameDay(date, selectedDate);
+                    const jsDay = date.getDay();
+                    const ourDow = jsDay === 0 ? 6 : jsDay - 1;
+                    const hasAvail = activeDays.has(ourDow);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedDate(date)}
+                        className={cn(
+                          'py-2 text-center border-l border-border/50 transition-colors',
+                          isSelected_ && 'bg-primary/5',
+                          hasAvail && !isSelected_ && 'bg-emerald-50/40',
+                        )}
+                      >
+                        <span className="text-[10px] text-muted-foreground block">{WEEKDAYS[i]}</span>
+                        <span className={cn(
+                          'text-sm font-medium inline-flex items-center justify-center w-7 h-7 rounded-full',
+                          isToday_ && 'bg-primary text-white',
+                          !isToday_ && isSelected_ && 'text-primary font-bold',
+                        )}>
+                          {date.getDate()}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Time grid */}
+                <div ref={timeGridRef} className="overflow-y-auto overflow-x-auto" style={{ maxHeight: 600 }}>
+                  <div className="flex" style={{ minWidth: 600 }}>
+                    {/* Hour labels */}
+                    <div className="w-[50px] flex-shrink-0 relative" style={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT }}>
+                      {HOURS.map(hour => (
+                        <div key={hour} className="absolute right-2 text-[11px] text-muted-foreground" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT - 6 }}>
+                          {hour}h
+                        </div>
+                      ))}
+                    </div>
+                    {/* Day columns */}
+                    <div className="flex-1 grid grid-cols-7 relative">
+                      {/* Hour lines */}
+                      {HOURS.map(hour => (
+                        <div key={`line-${hour}`} className="absolute left-0 right-0 border-t border-border/30" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
+                      ))}
+                      {HOURS.map(hour => (
+                        <div key={`half-${hour}`} className="absolute left-0 right-0 border-t border-border/10" style={{ top: (hour - START_HOUR + 0.5) * HOUR_HEIGHT }} />
+                      ))}
+                      {/* Columns */}
+                      {weekDates.map((date, colIdx) => {
+                        const dayAppts = appointmentsByDate.get(date.toDateString()) ?? [];
+                        const dayExternal = externalEvents.filter(e => !e.isAllDay && isSameDay(new Date(e.startAt), date));
+                        return (
+                          <div
+                            key={colIdx}
+                            className={cn('relative border-l border-border/30', colIdx === 0 && 'border-l-0')}
+                            style={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT }}
+                          >
+                            {dayAppts.map(appt => {
+                              const pos = getAppointmentStyle(appt.scheduledAt, appt.duration);
+                              if (!pos) return null;
+                              const time = new Date(appt.scheduledAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                              return (
+                                <button
+                                  key={appt.id}
+                                  onClick={() => setSelectedDate(date)}
+                                  className={cn(
+                                    'absolute left-0.5 right-0.5 rounded-md px-1 py-0.5 text-left overflow-hidden text-[11px] leading-tight transition-colors',
+                                    appt.status === 'cancelled' && 'bg-red-50 border border-red-200/60 text-red-400 line-through',
+                                    appt.status === 'completed' && 'bg-gray-50 border border-gray-200/60 text-gray-500',
+                                    appt.status === 'no_show' && 'bg-amber-50 border border-amber-200/60 text-amber-600',
+                                    (appt.status === 'scheduled' || appt.status === 'confirmed') && 'bg-primary/10 border border-primary/20 text-foreground hover:bg-primary/15',
+                                  )}
+                                  style={{ top: pos.top, height: pos.height }}
+                                  title={`${appt.patient.name} · ${time} · ${appt.duration}min`}
+                                >
+                                  <span className="font-medium truncate block">{appt.patient.name}</span>
+                                  {pos.height > 30 && <span className="text-muted-foreground">{time}</span>}
+                                </button>
+                              );
+                            })}
+                            {dayExternal.map(evt => {
+                              const start = new Date(evt.startAt);
+                              const end = new Date(evt.endAt);
+                              const dur = Math.max((end.getTime() - start.getTime()) / 60000, 15);
+                              const pos = getAppointmentStyle(evt.startAt, dur);
+                              if (!pos) return null;
+                              return (
+                                <div
+                                  key={`ext-${evt.id}`}
+                                  className="absolute left-0.5 right-0.5 rounded-md px-1 py-0.5 bg-gray-100 border border-gray-200/60 text-[11px] text-gray-500 overflow-hidden"
+                                  style={{ top: pos.top, height: pos.height }}
+                                  title={`Google: ${evt.title || 'Occupé'}`}
+                                >
+                                  <span className="truncate block">{evt.title || 'Occupé'}</span>
+                                </div>
+                              );
+                            })}
+                            {isSameDay(date, today) && <NowIndicator />}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* === DAY VIEW === */}
+            {view === 'day' && (() => {
+              const dayAppts = appointmentsByDate.get(selectedDate.toDateString()) ?? [];
+              const dayExternal = externalEvents.filter(e => !e.isAllDay && isSameDay(new Date(e.startAt), selectedDate));
+              return (
+                <div ref={timeGridRef} className="overflow-y-auto" style={{ maxHeight: 600 }}>
+                  <div className="flex">
+                    {/* Hour labels */}
+                    <div className="w-[50px] flex-shrink-0 relative" style={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT }}>
+                      {HOURS.map(hour => (
+                        <div key={hour} className="absolute right-2 text-[11px] text-muted-foreground" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT - 6 }}>
+                          {hour}h
+                        </div>
+                      ))}
+                    </div>
+                    {/* Day column */}
+                    <div className="flex-1 relative" style={{ height: (END_HOUR - START_HOUR) * HOUR_HEIGHT }}>
+                      {HOURS.map(hour => (
+                        <div key={`line-${hour}`} className="absolute left-0 right-0 border-t border-border/30" style={{ top: (hour - START_HOUR) * HOUR_HEIGHT }} />
+                      ))}
+                      {HOURS.map(hour => (
+                        <div key={`half-${hour}`} className="absolute left-0 right-0 border-t border-border/10" style={{ top: (hour - START_HOUR + 0.5) * HOUR_HEIGHT }} />
+                      ))}
+                      {dayAppts.map(appt => {
+                        const pos = getAppointmentStyle(appt.scheduledAt, appt.duration);
+                        if (!pos) return null;
+                        const time = new Date(appt.scheduledAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        const config = STATUS_CONFIG[appt.status];
+                        const StatusIcon = config.icon;
+                        return (
                           <div
                             key={appt.id}
-                            className="w-1.5 h-1.5 rounded-full bg-accent flex-shrink-0"
-                            title={appt.patient.name}
-                          />
-                        ))}
-                        {dayAppts.length > 3 && (
-                          <span className="text-[9px] text-muted-foreground">+{dayAppts.length - 3}</span>
-                        )}
-                        {/* External Google Calendar events */}
-                        {externalEvents
-                          .filter(e => isSameDay(new Date(e.startAt), date))
-                          .slice(0, 2)
-                          .map(e => (
-                            <div
-                              key={`ext-${e.id}`}
-                              className="w-1.5 h-1.5 rounded-full bg-gray-400 flex-shrink-0"
-                              title={`Google: ${e.title || 'Occupé'}`}
-                            />
-                          ))}
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                            className={cn(
+                              'absolute left-1 right-1 rounded-lg px-2.5 py-1.5 text-left overflow-hidden transition-colors',
+                              appt.status === 'cancelled' && 'bg-red-50 border border-red-200/60 text-red-400',
+                              appt.status === 'completed' && 'bg-gray-50 border border-gray-200/60 text-gray-600',
+                              appt.status === 'no_show' && 'bg-amber-50 border border-amber-200/60 text-amber-700',
+                              (appt.status === 'scheduled' || appt.status === 'confirmed') && 'bg-primary/10 border border-primary/20 text-foreground',
+                            )}
+                            style={{ top: pos.top, height: pos.height }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-sm font-medium truncate">{appt.patient.name}</span>
+                              <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0', config.color)}>
+                                <StatusIcon size={9} className="inline mr-0.5" />
+                                {config.label}
+                              </span>
+                            </div>
+                            {pos.height > 40 && (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                <span>{time}</span>
+                                <span>{appt.duration}min</span>
+                                {appt.isOnline && (
+                                  <span className="inline-flex items-center gap-0.5 text-accent">
+                                    <Video className="h-3 w-3" /> Visio
+                                  </span>
+                                )}
+                                {appt.consultationType && <span>{appt.consultationType.name}</span>}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {dayExternal.map(evt => {
+                        const start = new Date(evt.startAt);
+                        const end = new Date(evt.endAt);
+                        const dur = Math.max((end.getTime() - start.getTime()) / 60000, 15);
+                        const pos = getAppointmentStyle(evt.startAt, dur);
+                        if (!pos) return null;
+                        return (
+                          <div
+                            key={`ext-${evt.id}`}
+                            className="absolute left-1 right-1 rounded-lg px-2.5 py-1.5 bg-gray-100 border border-gray-200/60 text-sm text-gray-500 overflow-hidden"
+                            style={{ top: pos.top, height: pos.height }}
+                            title={`Google: ${evt.title || 'Occupé'}`}
+                          >
+                            <span className="truncate block">{evt.title || 'Occupé'}</span>
+                          </div>
+                        );
+                      })}
+                      {isSameDay(selectedDate, today) && <NowIndicator />}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
