@@ -284,7 +284,7 @@ export class AvailabilityService {
     return (h ?? 0) * 60 + (m ?? 0);
   }
 
-  private async getPsychologist(userId: string) {
+  async getPsychologist(userId: string) {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
     return psy;

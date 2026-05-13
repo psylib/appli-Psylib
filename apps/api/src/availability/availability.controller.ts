@@ -6,15 +6,18 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsOptional, IsString, IsBoolean, Matches } from 'class-validator';
 import { AvailabilityService } from './availability.service';
 import { SaveAvailabilityDto } from './dto/availability.dto';
+import { TimeslotsQueryDto } from './dto/timeslots-query.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 
 class UpdateSlotDto {
@@ -44,6 +47,30 @@ import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 @Controller('availability')
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}
+
+  @Get('timeslots')
+  @ApiOperation({ summary: 'Créneaux disponibles pour la psy connectée' })
+  async getTimeslots(
+    @Query() query: TimeslotsQueryDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    const psy = await this.availabilityService.getPsychologist(user.sub);
+    const from = new Date(query.from);
+    const to = new Date(query.to);
+
+    const diffDays = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
+    if (diffDays > 30) {
+      throw new BadRequestException('La plage ne peut pas dépasser 30 jours');
+    }
+
+    const slots = await this.availabilityService.getAvailableTimeslots(
+      psy.id,
+      from,
+      to,
+      query.duration ?? 50,
+    );
+    return slots.map((d) => d.toISOString());
+  }
 
   @Get()
   @ApiOperation({ summary: 'Récupère les créneaux de la psy connectée' })

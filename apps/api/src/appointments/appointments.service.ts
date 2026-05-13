@@ -74,6 +74,7 @@ export class AppointmentsService {
         paymentMode,
         paymentAmount: hasPayment ? dto.paymentAmount : null,
         bookingPaymentStatus: paymentMode === 'prepayment' && hasPayment ? 'pending_payment' : 'none',
+        reason: dto.reason,
       },
     });
 

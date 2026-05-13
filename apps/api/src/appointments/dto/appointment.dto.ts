@@ -46,6 +46,12 @@ export class CreateAppointmentDto {
   @Max(1000)
   @IsOptional()
   paymentAmount?: number;
+
+  @ApiPropertyOptional({ description: 'Motif ou notes préliminaires' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(2000)
+  reason?: string;
 }
 
 export class UpdateAppointmentDto {
