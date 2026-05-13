@@ -62,6 +62,8 @@ export class EmailSequenceService {
     this.logger.log(`[Reminders] ${appointments.length} RDV à rappeler`);
 
     for (const appt of appointments) {
+      if (!appt.patient) continue;
+
       const reminderData = {
         patientName: appt.patient.name,
         psychologistName: appt.psychologist.name,
@@ -353,6 +355,7 @@ export class EmailSequenceService {
         videoLinkSentAt: null,
         scheduledAt: { lte: inTenMin, gt: now },
         status: { in: ['scheduled', 'confirmed'] },
+        patientId: { not: null },
       },
       include: {
         patient: { select: { id: true, name: true, email: true, isMinor: true } },
@@ -365,6 +368,8 @@ export class EmailSequenceService {
     });
 
     for (const appt of appointments) {
+      if (!appt.patient) continue;
+
       // Send to primary patient
       if (appt.patient.email) {
         const joinUrl = `${this.frontendUrl}/patient-portal/video/${appt.videoJoinToken}`;

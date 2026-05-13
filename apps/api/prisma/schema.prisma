@@ -739,7 +739,7 @@ model NetworkGroupMember {
 model Appointment {
   id                   String                 @id @default(uuid())
   psychologistId       String                 @map("psychologist_id")
-  patientId            String                 @map("patient_id")
+  patientId            String?                @map("patient_id")
   sessionId            String?                @unique @map("session_id")
   scheduledAt          DateTime               @map("scheduled_at")
   duration             Int // minutes
@@ -747,7 +747,7 @@ model Appointment {
   reminderSentAt       DateTime?              @map("reminder_sent_at")
   smsReminderSentAt    DateTime?              @map("sms_reminder_sent_at")
   reason               String? // motif de consultation
-  source               String                 @default("internal") // "internal" | "public"
+  source               String                 @default("internal") // "internal" | "public" | "instant"
   cancelToken          String?                @unique @map("cancel_token")
   consultationTypeId   String?                @map("consultation_type_id")
   paymentIntentId      String?                @map("payment_intent_id")
@@ -765,7 +765,7 @@ model Appointment {
   createdAt              DateTime               @default(now()) @map("created_at")
 
   psychologist     Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
-  patient          Patient                  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patient          Patient?                 @relation(fields: [patientId], references: [id], onDelete: Cascade)
   session          Session?                 @relation(fields: [sessionId], references: [id], onDelete: SetNull)
   consultationType ConsultationType?        @relation(fields: [consultationTypeId], references: [id], onDelete: SetNull)
   payments         Payment[]

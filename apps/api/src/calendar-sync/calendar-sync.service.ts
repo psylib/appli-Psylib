@@ -352,6 +352,29 @@ export class CalendarSyncService implements OnModuleInit {
     });
     if (!appointment) return;
 
+    // Skip instant rooms without patient
+    if (!appointment.patient) {
+      const summary = 'Visio instantanée';
+      const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+      const description = `${frontendUrl}/dashboard/calendar`;
+      const colorId = DEFAULT_GOOGLE_COLOR;
+      const startIso = appointment.scheduledAt.toISOString();
+      const endDate = new Date(appointment.scheduledAt.getTime() + appointment.duration * 60 * 1000);
+      const endIso = endDate.toISOString();
+
+      if (action === 'create') {
+        const googleEventId = await this.googleProvider.createEvent(
+          accessToken, conn.calendarId,
+          { summary, start: startIso, end: endIso, description, colorId },
+        );
+        await this.prisma.appointment.update({
+          where: { id: event.appointmentId },
+          data: { googleEventId },
+        });
+      }
+      return;
+    }
+
     // HDS: first name only in Google Calendar title
     const firstName = (appointment.patient.name ?? '').split(' ')[0] ?? 'Patient';
     const summary = `Consultation - ${firstName}`;

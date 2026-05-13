@@ -18,7 +18,8 @@ import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { RequirePlan } from '../billing/decorators/require-plan.decorator';
 import { SubscriptionPlan } from '@psyscale/shared-types';
 import { VideoService } from './video.service';
-import { CreateVideoRoomDto } from './dto/video.dto';
+import { CreateVideoRoomDto, CreateInstantVideoDto } from './dto/video.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
@@ -29,6 +30,21 @@ export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 
   // --- Protected endpoints (psy only, plan-gated) ---
+
+  @Post('instant')
+  @ApiBearerAuth()
+  @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
+  @Roles('psychologist', 'admin')
+  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Créer une visio instantanée (sans RDV préalable)' })
+  @ApiResponse({ status: 201, description: 'Visio instantanée créée' })
+  async createInstantRoom(
+    @Body() dto: CreateInstantVideoDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.videoService.createInstantRoom(user.sub, dto.patientId);
+  }
 
   @Post('rooms')
   @ApiBearerAuth()

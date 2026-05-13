@@ -1,8 +1,14 @@
-import { IsUUID } from 'class-validator';
+import { IsUUID, IsOptional } from 'class-validator';
 
 export class CreateVideoRoomDto {
   @IsUUID()
   appointmentId!: string;
+}
+
+export class CreateInstantVideoDto {
+  @IsOptional()
+  @IsUUID()
+  patientId?: string;
 }
 
 export interface VideoTokenResponse {
@@ -24,7 +30,7 @@ export interface VideoRoomResponse {
 
 export interface TodayVideoRoom {
   appointmentId: string;
-  patientName: string;
+  patientName: string | null;
   scheduledAt: Date;
   duration: number;
   status: 'upcoming' | 'ready' | 'patient_waiting' | 'active' | 'ended';

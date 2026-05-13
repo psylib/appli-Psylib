@@ -50,6 +50,8 @@ export class ReminderService {
           status: { in: ['scheduled', 'confirmed'] },
           scheduledAt: { gt: now, lte: reminderWindow },
           reminderSentAt: null,
+          patientId: { not: null },
+          source: { not: 'instant' },
         },
         include: {
           patient: { select: { name: true, email: true, phone: true } },
@@ -58,6 +60,8 @@ export class ReminderService {
       });
 
       for (const appt of appointments) {
+        if (!appt.patient) continue;
+
         try {
           const templateVars = {
             patient_name: appt.patient.name,

@@ -1,8 +1,17 @@
 import { apiClient } from './client';
 
+export interface InstantRoomResponse {
+  appointmentId: string;
+  token: string;
+  wsUrl: string;
+  roomName: string;
+  patientLink: string;
+  durationMin: number;
+}
+
 export interface TodayRoom {
   appointmentId: string;
-  patientName: string;
+  patientName: string | null;
   scheduledAt: string;
   duration: number;
   status: 'upcoming' | 'ready' | 'patient_waiting' | 'active' | 'ended';
@@ -29,6 +38,14 @@ export interface PatientJoinResponse {
 }
 
 export const videoApi = {
+  /** Create an instant video room (no prior appointment needed) */
+  createInstantRoom: (token: string, patientId?: string) =>
+    apiClient.post<InstantRoomResponse>(
+      '/video/instant',
+      patientId ? { patientId } : {},
+      token,
+    ),
+
   /** Create a LiveKit room for an appointment */
   createRoom: (appointmentId: string, token: string) =>
     apiClient.post<{ id: string; roomName: string; status: string }>(

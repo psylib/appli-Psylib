@@ -693,7 +693,7 @@ export class SubscriptionService {
         appointment.psychologist.user.email,
         {
           psychologistName: appointment.psychologist.name,
-          patientName: appointment.patient.name,
+          patientName: appointment.patient?.name ?? 'Patient',
           amount: payment ? Number(payment.amount) : 0,
         },
       ).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
@@ -889,7 +889,7 @@ export class SubscriptionService {
     const session = await this.stripe.createPaymentLinkSession({
       connectedAccountId: psy.stripeAccountId,
       amount,
-      patientEmail: appointment.patient.email ?? '',
+      patientEmail: appointment.patient?.email ?? '',
       psychologistName: psy.name,
       appointmentId: appointment.id,
       successUrl: `${frontendUrl}/payment/success?appointmentId=${appointment.id}`,
@@ -920,7 +920,7 @@ export class SubscriptionService {
     });
 
     // Send payment link email to patient
-    if (appointment.patient.email) {
+    if (appointment.patient?.email) {
       void this.email.sendPaymentLinkToPatient(
         appointment.patient.email,
         {
@@ -982,7 +982,7 @@ export class SubscriptionService {
     });
 
     // Send refund email to patient
-    if (appointment.patient.email) {
+    if (appointment.patient?.email) {
       void this.email.sendRefundConfirmation(
         appointment.patient.email,
         {

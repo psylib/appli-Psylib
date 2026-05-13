@@ -12,6 +12,7 @@ import { AuditService } from '../common/audit.service';
 import { NotificationGateway } from '../notifications/notification.gateway';
 import { RoomServiceClient, AccessToken, VideoGrant } from 'livekit-server-sdk';
 import { Cron } from '@nestjs/schedule';
+import * as crypto from 'crypto';
 import { VideoTokenResponse, TodayVideoRoom } from './dto/video.dto';
 
 @Injectable()
@@ -68,14 +69,16 @@ export class VideoService {
     // Idempotent: return existing room
     if (appointment.videoRoom) return appointment.videoRoom;
 
-    // Check time window: 10 min before to end of appointment
-    const now = new Date();
-    const windowStart = new Date(appointment.scheduledAt.getTime() - 10 * 60 * 1000);
-    const windowEnd = new Date(
-      appointment.scheduledAt.getTime() + appointment.duration * 60 * 1000,
-    );
-    if (now < windowStart || now > windowEnd) {
-      throw new BadRequestException('La visio ne peut être démarrée que 10 min avant le RDV');
+    // Skip time window for instant rooms (source === 'instant')
+    if (appointment.source !== 'instant') {
+      const now = new Date();
+      const windowStart = new Date(appointment.scheduledAt.getTime() - 10 * 60 * 1000);
+      const windowEnd = new Date(
+        appointment.scheduledAt.getTime() + appointment.duration * 60 * 1000,
+      );
+      if (now < windowStart || now > windowEnd) {
+        throw new BadRequestException('La visio ne peut être démarrée que 10 min avant le RDV');
+      }
     }
 
     // Check if this is a group appointment
@@ -115,6 +118,101 @@ export class VideoService {
     });
 
     return videoRoom;
+  }
+
+  // ─── Instant Video ──────────────────────────────────────────────────────────────
+
+  /**
+   * Creates an instant video room — no prior appointment required.
+   * Optionally linked to a patient. Returns psy token + patient link.
+   */
+  async createInstantRoom(userId: string, patientId?: string) {
+    if (!this.livekitApiKey || !this.livekitApiSecret || !this.livekitWsUrl) {
+      throw new ForbiddenException('Visio non configurée — clés LiveKit manquantes');
+    }
+
+    const psy = await this.getPsychologist(userId);
+
+    if (patientId) {
+      const patient = await this.prisma.patient.findFirst({
+        where: { id: patientId, psychologistId: psy.id },
+      });
+      if (!patient) throw new NotFoundException('Patient introuvable');
+    }
+
+    const videoJoinToken = crypto.randomUUID();
+
+    const appointment = await this.prisma.appointment.create({
+      data: {
+        psychologistId: psy.id,
+        patientId: patientId ?? null,
+        scheduledAt: new Date(),
+        duration: 120,
+        status: 'confirmed',
+        isOnline: true,
+        source: 'instant',
+        videoJoinToken,
+      },
+    });
+
+    const roomName = `psylib-${appointment.id}`;
+    try {
+      await this.roomService.createRoom({
+        name: roomName,
+        emptyTimeout: 300,
+      });
+    } catch (e) {
+      await this.prisma.appointment.delete({ where: { id: appointment.id } });
+      this.logger.error(`Failed to create LiveKit room for instant video: ${e}`);
+      throw new BadRequestException('Impossible de créer la salle de visio — le serveur vidéo est indisponible');
+    }
+
+    const videoRoom = await this.prisma.videoRoom.create({
+      data: {
+        appointmentId: appointment.id,
+        psychologistId: psy.id,
+        roomName,
+        status: 'waiting',
+      },
+    });
+
+    const token = new AccessToken(this.livekitApiKey, this.livekitApiSecret, {
+      identity: `psy-${psy.id}`,
+      name: psy.name || 'Psychologue',
+      ttl: 150 * 60,
+    });
+    const grant: VideoGrant = {
+      room: roomName,
+      roomJoin: true,
+      canPublish: true,
+      canSubscribe: true,
+    };
+    token.addGrant(grant);
+
+    await this.prisma.videoRoom.update({
+      where: { id: videoRoom.id },
+      data: { psyJoinedAt: new Date(), status: 'active' },
+    });
+
+    await this.audit.log({
+      actorId: psy.userId,
+      actorType: 'psychologist',
+      action: 'VIDEO_INSTANT_CREATED',
+      entityType: 'video_room',
+      entityId: videoRoom.id,
+      metadata: { appointmentId: appointment.id, patientId: patientId ?? null },
+    });
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+
+    return {
+      appointmentId: appointment.id,
+      token: await token.toJwt(),
+      wsUrl: this.livekitWsUrl,
+      roomName,
+      patientLink: `${frontendUrl}/patient-portal/video/${videoJoinToken}`,
+      durationMin: 120,
+    };
   }
 
   // ─── Token Generation ─────────────────────────────────────────────────────────
@@ -203,6 +301,10 @@ export class VideoService {
     let psychologistName: string;
 
     if (appointment) {
+      // Instant room without patient — no patient token needed
+      if (!appointment.patient) {
+        throw new BadRequestException('Cette visio instantanée n\'a pas de patient associé');
+      }
       patientId = appointment.patient.id;
       patientName = appointment.patient.name;
       psychologistName = appointment.psychologist.name;
@@ -324,6 +426,8 @@ export class VideoService {
     });
 
     if (appointment) {
+      // Skip consent for instant rooms without patient
+      if (!appointment.patientId) return;
       await this.prisma.gdprConsent.create({
         data: {
           patientId: appointment.patientId,
@@ -394,8 +498,8 @@ export class VideoService {
     });
     const participantIds = participants.map((p) => p.patientId);
 
-    // Auto-create session if none linked
-    if (!room.appointment.sessionId) {
+    // Auto-create session if none linked AND patient exists
+    if (!room.appointment.sessionId && room.appointment.patientId) {
       const session = await this.prisma.session.create({
         data: {
           patientId: room.appointment.patientId,
@@ -460,6 +564,7 @@ export class VideoService {
     const now = new Date();
     return appointments.map((appt) => {
       let status: TodayVideoRoom['status'] = 'upcoming';
+      const isInstant = appt.source === 'instant';
       const windowStart = new Date(appt.scheduledAt.getTime() - 10 * 60 * 1000);
 
       if (appt.videoRoom?.status === 'ended') {
@@ -468,7 +573,7 @@ export class VideoService {
         status = 'active';
       } else if (appt.videoRoom?.patientJoinedAt) {
         status = 'patient_waiting';
-      } else if (now >= windowStart) {
+      } else if (isInstant || now >= windowStart) {
         status = 'ready';
       }
 
@@ -479,7 +584,7 @@ export class VideoService {
 
       return {
         appointmentId: appt.id,
-        patientName: appt.patient.name,
+        patientName: appt.patient?.name ?? null,
         scheduledAt: appt.scheduledAt,
         duration: appt.duration,
         status,

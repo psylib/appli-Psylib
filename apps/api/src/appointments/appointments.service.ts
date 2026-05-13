@@ -315,10 +315,12 @@ export class AppointmentsService {
     );
 
     // In-app notification
-    const cancelledPatient = await this.prisma.patient.findUnique({
-      where: { id: existing.patientId },
-      select: { name: true },
-    });
+    const cancelledPatient = existing.patientId
+      ? await this.prisma.patient.findUnique({
+          where: { id: existing.patientId },
+          select: { name: true },
+        })
+      : null;
     void this.notifications.createAndDispatch(
       userId,
       'appointment_update',
@@ -353,6 +355,7 @@ export class AppointmentsService {
       include: { patient: { select: { name: true, email: true } } },
     });
     if (!existing) throw new NotFoundException('RDV introuvable');
+    if (!existing.patient) throw new NotFoundException('Patient introuvable pour ce rendez-vous');
 
     const updated = await this.prisma.appointment.update({
       where: { id },
@@ -379,6 +382,7 @@ export class AppointmentsService {
       include: { patient: { select: { name: true, email: true } } },
     });
     if (!existing) throw new NotFoundException('RDV introuvable');
+    if (!existing.patient) throw new NotFoundException('Patient introuvable pour ce rendez-vous');
 
     const updated = await this.prisma.appointment.update({
       where: { id },
@@ -419,6 +423,7 @@ export class AppointmentsService {
     });
 
     if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+    if (!appointment.patient) throw new NotFoundException('Patient introuvable pour ce rendez-vous');
 
     const alreadyCancelled = appointment.status === 'cancelled';
     const hoursUntil =
@@ -464,6 +469,7 @@ export class AppointmentsService {
     });
 
     if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+    if (!appointment.patient) throw new NotFoundException('Patient introuvable pour ce rendez-vous');
 
     if (appointment.status === 'cancelled') {
       return { success: true, alreadyCancelled: true, refunded: false, withinDelay: false };
@@ -588,6 +594,7 @@ export class AppointmentsService {
       include: { patient: { select: { name: true, email: true } } },
     });
     if (!appointment) throw new NotFoundException('RDV introuvable');
+    if (!appointment.patient) throw new NotFoundException('Patient introuvable pour ce rendez-vous');
 
     if (!appointment.patient.email) {
       throw new BadRequestException('Le patient n\'a pas d\'email');
@@ -771,7 +778,7 @@ export class AppointmentsService {
       userId,
       'appointment_update',
       'Paiement enregistré',
-      `Paiement sur place (${dto.offlinePaymentMethod}) enregistré pour ${existing.patient.name}`,
+      `Paiement sur place (${dto.offlinePaymentMethod}) enregistré pour ${existing.patient?.name ?? 'un patient'}`,
       { href: '/dashboard/calendar' },
     );
 
@@ -806,6 +813,9 @@ export class AppointmentsService {
         this.logger.warn(`No-show billing enabled but no fee could be determined for appointment ${appointment.id}`);
         return;
       }
+
+      // Skip no-show billing for instant rooms without patient
+      if (!appointment.patientId) return;
 
       const invoice = await this.invoicesService.createAutoInvoice({
         type: 'session_completed',

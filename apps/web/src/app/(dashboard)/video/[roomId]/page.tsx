@@ -1,17 +1,21 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Copy, Check } from 'lucide-react';
 import { videoApi } from '@/lib/api/video';
 import { PsyVideoRoom } from '@/components/video/video-room';
 
 export default function ConsultationRoomPage() {
   const { roomId } = useParams<{ roomId: string }>(); // roomId = appointmentId
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  const patientLink = searchParams.get('patientLink') || null;
 
   const [tokenData, setTokenData] = useState<{
     token: string;
@@ -23,6 +27,7 @@ export default function ConsultationRoomPage() {
   const [error, setError] = useState<string | null>(null);
   const [duration, setDuration] = useState(50);
   const [notes, setNotes] = useState('');
+  const [copied, setCopied] = useState(false);
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -72,6 +77,13 @@ export default function ConsultationRoomPage() {
     }
   };
 
+  const handleCopyLink = async () => {
+    if (!patientLink) return;
+    await navigator.clipboard.writeText(patientLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (loading || !tokenData) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
@@ -90,20 +102,37 @@ export default function ConsultationRoomPage() {
 
   return (
     <div className="fixed inset-0 z-50 bg-background">
-    <PsyVideoRoom
-      token={tokenData.token}
-      wsUrl={tokenData.wsUrl}
-      plannedDurationMin={duration}
-      notesPanel={
-        <textarea
-          className="w-full h-64 border border-border rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          placeholder="Prenez vos notes ici..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      }
-      onCallEnd={handleEndCall}
-    />
+      {patientLink && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[60] bg-white/95 backdrop-blur border border-border rounded-lg shadow-lg px-4 py-2 flex items-center gap-3 max-w-lg">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Lien patient :</span>
+          <input
+            readOnly
+            value={patientLink}
+            className="flex-1 text-xs bg-transparent border-none outline-none text-foreground min-w-0"
+          />
+          <button
+            onClick={handleCopyLink}
+            className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors whitespace-nowrap"
+          >
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            {copied ? 'Copie !' : 'Copier'}
+          </button>
+        </div>
+      )}
+      <PsyVideoRoom
+        token={tokenData.token}
+        wsUrl={tokenData.wsUrl}
+        plannedDurationMin={duration}
+        notesPanel={
+          <textarea
+            className="w-full h-64 border border-border rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            placeholder="Prenez vos notes ici..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        }
+        onCallEnd={handleEndCall}
+      />
     </div>
   );
 }
