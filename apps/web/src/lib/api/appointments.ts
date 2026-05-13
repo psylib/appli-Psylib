@@ -21,6 +21,7 @@ export interface CreateAppointmentData {
   isOnline?: boolean;
   paymentMode?: 'none' | 'prepayment' | 'post_session';
   paymentAmount?: number;
+  reason?: string;
 }
 
 export interface CreateGroupAppointmentData {
