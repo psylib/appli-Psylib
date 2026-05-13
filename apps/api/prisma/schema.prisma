@@ -991,7 +991,7 @@ model Invoice {
   id             String        @id @default(uuid())
   psychologistId String        @map("psychologist_id")
   patientId      String?       @map("patient_id")
-  invoiceNumber  String        @unique @map("invoice_number")
+  invoiceNumber  String        @map("invoice_number")
   amountTtc      Decimal       @map("amount_ttc") @db.Decimal(10, 2)
   status         InvoiceStatus @default(draft)
   issuedAt       DateTime      @map("issued_at") @db.Date
@@ -1007,6 +1007,7 @@ model Invoice {
   payment           Payment?          @relation(fields: [paymentId], references: [id], onDelete: SetNull)
   accountingEntries AccountingEntry[]
 
+  @@unique([psychologistId, invoiceNumber], name: "idx_invoices_psy_number")
   @@index([psychologistId], name: "idx_invoices_psy")
   @@index([patientId], name: "idx_invoices_patient")
   @@index([paymentId], name: "idx_invoices_payment")

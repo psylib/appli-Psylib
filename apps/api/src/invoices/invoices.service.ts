@@ -114,6 +114,7 @@ export class InvoicesService {
               sequence = lastSeq + 1;
             }
           }
+          sequence += attempt;
 
           const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
 
