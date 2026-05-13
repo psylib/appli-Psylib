@@ -174,7 +174,20 @@ export class SubscriptionService {
       };
     }
 
-    const status = await this.stripe.getAccountStatus(psy.stripeAccountId);
+    let status: { chargesEnabled: boolean; payoutsEnabled: boolean; detailsSubmitted: boolean };
+    try {
+      status = await this.stripe.getAccountStatus(psy.stripeAccountId);
+    } catch {
+      // Stripe account invalid or API unreachable — treat as not connected
+      return {
+        hasAccount: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+        allowOnlinePayment: psy.allowOnlinePayment,
+        stripeOnboardingComplete: false,
+      };
+    }
 
     // Auto-update onboarding status if charges are now enabled
     if (status.chargesEnabled && status.detailsSubmitted && !psy.stripeOnboardingComplete) {

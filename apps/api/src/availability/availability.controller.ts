@@ -59,8 +59,8 @@ export class AvailabilityController {
     const to = new Date(query.to);
 
     const diffDays = (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
-    if (diffDays > 30) {
-      throw new BadRequestException('La plage ne peut pas dépasser 30 jours');
+    if (diffDays > 62) {
+      throw new BadRequestException('La plage ne peut pas dépasser 62 jours');
     }
 
     const slots = await this.availabilityService.getAvailableTimeslots(
