@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layouts/sidebar';
 import { MobileNav } from '@/components/layouts/mobile-nav';
 import { Topbar } from '@/components/layouts/topbar';
 import { CrispWidget } from '@/components/crisp-widget';
+import { DashboardDialogs } from '@/components/dashboard/dashboard-dialogs';
 
 const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
 
@@ -40,6 +41,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       </div>
       <MobileNav />
       <CrispWidget />
+      <DashboardDialogs />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { PatientPortalSection } from './patient-portal-section';
 import { MspTracker } from './msp-tracker';
 import { PatientDocumentsTab } from './patient-documents-tab';
 import { GuardianTab } from './guardian-tab';
+import { useUIStore } from '@/store/ui.store';
 
 interface PatientDetailContentProps {
   patientId: string;
@@ -25,6 +26,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
   const { data: patient, isLoading } = usePatient(patientId);
   const { data: sessions } = useSessions({ patientId });
   const [editOpen, setEditOpen] = useState(false);
+  const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
 
   if (isLoading) {
     return (
@@ -152,7 +154,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
           </h3>
           <Button
             size="sm"
-            onClick={() => router.push(`/dashboard/sessions/new?patientId=${patientId}`)}
+            onClick={() => openSlotPicker(patient.id)}
           >
             <Plus size={14} />
             Nouvelle séance

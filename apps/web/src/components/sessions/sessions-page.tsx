@@ -9,11 +9,13 @@ import { PatientRowSkeleton } from '@/components/ui/skeleton';
 import { ExportButton } from '@/components/shared/export-button';
 import { useSessions } from '@/hooks/use-dashboard';
 import { formatDateTime } from '@/lib/utils';
+import { useUIStore } from '@/store/ui.store';
 
 export function SessionsPageContent() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, refetch } = useSessions({ page });
+  const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
@@ -30,7 +32,7 @@ export function SessionsPageContent() {
             filename={`seances-${new Date().toISOString().split('T')[0]}.csv`}
             label="Exporter CSV"
           />
-          <Button onClick={() => router.push('/dashboard/sessions/new')}>
+          <Button onClick={() => openSlotPicker()}>
             <Plus size={16} />
             Nouvelle séance
           </Button>
@@ -52,7 +54,7 @@ export function SessionsPageContent() {
             icon={CalendarCheck}
             title="Aucune séance"
             description="Commencez par créer votre première séance"
-            action={{ label: 'Créer une séance', onClick: () => router.push('/dashboard/sessions/new') }}
+            action={{ label: 'Créer une séance', onClick: () => openSlotPicker() }}
           />
         ) : (
           <ul role="list" className="divide-y divide-border">

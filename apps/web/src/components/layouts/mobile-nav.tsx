@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, CalendarCheck, Sparkles, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUIStore } from '@/store/ui.store';
 
 const BOTTOM_NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
@@ -14,6 +15,7 @@ const BOTTOM_NAV_ITEMS = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
 
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
@@ -21,8 +23,8 @@ export function MobileNav() {
   return (
     <>
       {/* FAB — Nouvelle séance */}
-      <Link
-        href="/dashboard/sessions/new"
+      <button
+        onClick={() => openSlotPicker()}
         className={cn(
           'fixed bottom-20 right-4 z-50 md:hidden',
           'h-14 w-14 rounded-full bg-primary text-white shadow-lg',
@@ -33,7 +35,7 @@ export function MobileNav() {
         aria-label="Nouvelle séance"
       >
         <Plus size={24} aria-hidden />
-      </Link>
+      </button>
 
       {/* Bottom navigation bar */}
       <nav

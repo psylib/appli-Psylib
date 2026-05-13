@@ -31,6 +31,7 @@ import {
   usePsychologistProfile,
 } from '@/hooks/use-dashboard';
 import { formatCurrency, formatTrend, cn } from '@/lib/utils';
+import { useUIStore } from '@/store/ui.store';
 
 interface DashboardContentProps {
   userName: string;
@@ -147,7 +148,7 @@ function greet(): string {
 const QUICK_ACTIONS = [
   {
     label: 'Nouvelle séance',
-    href: '/dashboard/sessions/new',
+    href: null, // opens SmartSlotPickerDialog instead
     icon: Plus,
     bgClass: 'bg-primary/10 group-hover:bg-primary/15',
     iconClass: 'text-primary',
@@ -177,7 +178,7 @@ const QUICK_ACTIONS = [
     iconClass: 'text-amber-600',
     borderClass: 'border-amber-200 hover:border-amber-300',
   },
-] as const;
+];
 
 // ---------------------------------------------------------------------------
 // Main Component
@@ -190,6 +191,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
   const { data: profile } = usePsychologistProfile();
   const { data: session } = useSession();
   const { track, identify } = useAnalytics();
+  const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
 
   const [profileLinkCopied, setProfileLinkCopied] = useState(false);
 
@@ -495,15 +497,12 @@ export function DashboardContent({ userName }: DashboardContentProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {QUICK_ACTIONS.map((action) => {
             const Icon = action.icon;
-            return (
-              <Link
-                key={action.href}
-                href={action.href}
-                className={cn(
-                  'group rounded-xl border p-4 flex items-center gap-3 transition-all hover:shadow-sm',
-                  action.borderClass,
-                )}
-              >
+            const sharedClassName = cn(
+              'group rounded-xl border p-4 flex items-center gap-3 transition-all hover:shadow-sm text-left w-full',
+              action.borderClass,
+            );
+            const inner = (
+              <>
                 <div
                   className={cn(
                     'p-2 rounded-lg transition-colors flex-shrink-0',
@@ -515,6 +514,26 @@ export function DashboardContent({ userName }: DashboardContentProps) {
                 <span className="text-sm font-medium text-foreground leading-tight">
                   {action.label}
                 </span>
+              </>
+            );
+            if (action.href === null) {
+              return (
+                <button
+                  key={action.label}
+                  onClick={() => openSlotPicker()}
+                  className={sharedClassName}
+                >
+                  {inner}
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={action.href}
+                href={action.href}
+                className={sharedClassName}
+              >
+                {inner}
               </Link>
             );
           })}
