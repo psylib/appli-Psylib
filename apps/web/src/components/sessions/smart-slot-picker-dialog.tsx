@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Video, CreditCard, Calendar, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
+import { Search, Video, MapPin, CreditCard, Calendar, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -697,19 +697,37 @@ function Step2({
         </button>
       </div>
 
-      {/* Visio toggle */}
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="isOnline"
-          checked={isOnline}
-          onChange={(e) => setIsOnline(e.target.checked)}
-          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-        />
-        <label htmlFor="isOnline" className="text-sm text-muted-foreground flex items-center gap-1.5">
-          <Video className="h-4 w-4" />
-          Consultation en visio
-        </label>
+      {/* Mode de consultation */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground">Mode de consultation</label>
+        <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+          <button
+            type="button"
+            onClick={() => setIsOnline(false)}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-2 px-4 py-2 font-medium transition',
+              !isOnline
+                ? 'bg-primary text-white'
+                : 'bg-white text-muted-foreground hover:bg-surface',
+            )}
+          >
+            <MapPin className="h-4 w-4" />
+            Au cabinet
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsOnline(true)}
+            className={cn(
+              'flex-1 flex items-center justify-center gap-2 px-4 py-2 font-medium transition',
+              isOnline
+                ? 'bg-primary text-white'
+                : 'bg-white text-muted-foreground hover:bg-surface',
+            )}
+          >
+            <Video className="h-4 w-4" />
+            En visio
+          </button>
+        </div>
       </div>
 
       {/* Group participants (visio only) */}

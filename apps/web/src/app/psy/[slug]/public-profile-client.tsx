@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock, Info } from 'lucide-react';
+import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock, Info, Home } from 'lucide-react';
 import { publicBookingApi } from '@/lib/api/public-booking';
 import type { PublicPsyProfile, ConsultationType } from '@/lib/api/public-booking';
 import { ConsultationTypePicker } from '@/components/booking/consultation-type-picker';
@@ -179,9 +179,21 @@ function BookingModal({
     reason: '',
   });
   const [payOnline, setPayOnline] = useState(false);
-  const [isOnline, setIsOnline] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Determine modality from consultation type
+  const typeModality = consultationType?.modality;
+  const modalityIsFixed = typeModality === 'in_person' || typeModality === 'online' || typeModality === 'home_visit';
+  const showModalityChoice = !modalityIsFixed && (typeModality === 'any' || offersVisio);
+  const defaultOnline = typeModality === 'online';
+  const [isOnline, setIsOnline] = useState(defaultOnline);
+
+  // Sync isOnline when consultation type changes
+  useEffect(() => {
+    if (typeModality === 'online') setIsOnline(true);
+    else if (typeModality === 'in_person' || typeModality === 'home_visit') setIsOnline(false);
+  }, [typeModality]);
 
   const rate = consultationType?.rate ?? 0;
   const showPaymentChoice = acceptsOnlinePayment && rate > 0;
@@ -199,7 +211,7 @@ function BookingModal({
         reason: form.reason || undefined,
         consultationTypeId: consultationType?.id,
         payOnline: showPaymentChoice ? payOnline : undefined,
-        isOnline: offersVisio ? isOnline : undefined,
+        isOnline: (modalityIsFixed || showModalityChoice) ? isOnline : undefined,
       });
       onSuccess(result.appointmentId, result.checkoutUrl);
     } catch (err) {
@@ -313,36 +325,52 @@ function BookingModal({
             />
           </div>
 
-          {/* Visio / Cabinet choice */}
-          {offersVisio && (
+          {/* Mode de consultation */}
+          {modalityIsFixed ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-sky-50 border border-sky-200">
-              <Video className="w-5 h-5 text-sky-600 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Mode de consultation</p>
-                <p className="text-xs text-muted-foreground">Ce praticien propose aussi des séances en visio</p>
+              {typeModality === 'online' ? (
+                <Video className="w-5 h-5 text-sky-600 flex-shrink-0" />
+              ) : typeModality === 'home_visit' ? (
+                <Home className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              ) : (
+                <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              )}
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {typeModality === 'online' ? 'Consultation en visio' : typeModality === 'home_visit' ? 'Consultation à domicile' : 'Consultation au cabinet'}
+                </p>
+                {consultationType?.location && typeModality !== 'online' && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{consultationType.location}</p>
+                )}
               </div>
+            </div>
+          ) : showModalityChoice ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-foreground">Mode de consultation</p>
               <div className="flex rounded-lg border border-sky-200 overflow-hidden text-sm">
                 <button
                   type="button"
                   onClick={() => setIsOnline(false)}
-                  className={`px-3 py-1.5 font-medium transition ${
-                    !isOnline ? 'bg-white text-foreground shadow-sm' : 'bg-transparent text-muted-foreground hover:bg-sky-100'
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 font-medium transition ${
+                    !isOnline ? 'bg-[#3D52A0] text-white' : 'bg-white text-muted-foreground hover:bg-sky-50'
                   }`}
                 >
+                  <MapPin className="w-4 h-4" />
                   Au cabinet
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsOnline(true)}
-                  className={`px-3 py-1.5 font-medium transition ${
-                    isOnline ? 'bg-sky-600 text-white' : 'bg-transparent text-muted-foreground hover:bg-sky-100'
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 font-medium transition ${
+                    isOnline ? 'bg-sky-600 text-white' : 'bg-white text-muted-foreground hover:bg-sky-50'
                   }`}
                 >
+                  <Video className="w-4 h-4" />
                   En visio
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Payment choice */}
           {showPaymentChoice && (
