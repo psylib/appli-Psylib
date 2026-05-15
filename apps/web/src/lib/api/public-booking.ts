@@ -37,6 +37,7 @@ export interface PublicPsyProfile {
   acceptsMonSoutienPsy: boolean;
   offersVisio: boolean;
   acceptsOnlinePayment?: boolean;
+  bookingConfirmationMessage?: string | null;
   consultationTypes?: ConsultationType[];
 }
 

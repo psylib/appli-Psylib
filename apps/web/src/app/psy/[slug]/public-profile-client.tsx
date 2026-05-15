@@ -427,7 +427,8 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
       // Redirect to Stripe Checkout
       window.location.href = checkoutUrl;
     } else {
-      router.push(`/psy/${profile.slug}/confirmation?id=${appointmentId}`);
+      const ctParam = selectedTypeId ? `&ct=${selectedTypeId}` : '';
+      router.push(`/psy/${profile.slug}/confirmation?id=${appointmentId}${ctParam}`);
     }
   };
 

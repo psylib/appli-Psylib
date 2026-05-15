@@ -374,6 +374,7 @@ model Psychologist {
   noShowFee                Decimal?                 @map("no_show_fee") @db.Decimal(10, 2)
   calendarConnection       CalendarConnection?
   externalCalendarEvents   ExternalCalendarEvent[]
+  bookingConfirmationMessage String?                @map("booking_confirmation_message")
 
   @@map("psychologists")
 }

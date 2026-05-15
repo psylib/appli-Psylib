@@ -48,6 +48,7 @@ export class PublicBookingService {
         adeliNumber: true,
         defaultSessionDuration: true,
         defaultSessionRate: true,
+        bookingConfirmationMessage: true,
         allowOnlinePayment: true,
         stripeOnboardingComplete: true,
         networkProfile: {
@@ -102,6 +103,7 @@ export class PublicBookingService {
       adeliNumber: psy.adeliNumber,
       defaultSessionDuration: psy.defaultSessionDuration,
       defaultSessionRate: psy.defaultSessionRate ? Number(psy.defaultSessionRate) : null,
+      bookingConfirmationMessage: psy.bookingConfirmationMessage,
       avatarUrl: psy.networkProfile?.avatarUrl ?? psy.user.avatarUrl,
       city: psy.networkProfile?.city,
       department: psy.networkProfile?.department,

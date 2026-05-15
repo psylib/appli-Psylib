@@ -2,6 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CheckCircle2, CalendarPlus, ArrowLeft, CreditCard } from 'lucide-react';
 
+const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
+
+const DEFAULT_TIPS = [
+  'Votre praticien peut vous contacter avant la séance si nécessaire.',
+  "N'hésitez pas à noter vos questions ou sujets à aborder.",
+  'En cas d\'empêchement, prévenez votre praticien le plus tôt possible.',
+  'Vous pouvez poser toutes vos questions lors du rendez-vous.',
+];
+
 export const metadata: Metadata = {
   title: 'Demande envoyée — PsyLib',
   robots: { index: false, follow: false },
@@ -9,13 +18,36 @@ export const metadata: Metadata = {
 
 interface Props {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ id?: string; paid?: string }>;
+  searchParams: Promise<{ id?: string; paid?: string; ct?: string }>;
+}
+
+async function fetchConfirmationMessage(slug: string, consultationTypeId?: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/public/psy/${slug}`, { next: { revalidate: 300 } });
+    if (!res.ok) return null;
+    const profile = await res.json() as {
+      bookingConfirmationMessage?: string | null;
+      consultationTypes?: Array<{ id: string; instructions?: string | null }>;
+    };
+
+    // Priority: per-type instructions > global message > null (fallback to defaults)
+    if (consultationTypeId && profile.consultationTypes) {
+      const ct = profile.consultationTypes.find((t) => t.id === consultationTypeId);
+      if (ct?.instructions) return ct.instructions;
+    }
+    if (profile.bookingConfirmationMessage) return profile.bookingConfirmationMessage;
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export default async function ConfirmationPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { id, paid } = await searchParams;
+  const { id, paid, ct } = await searchParams;
   const isPaid = paid === 'true';
+
+  const customMessage = await fetchConfirmationMessage(slug, ct);
 
   const calendarUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rendez-vous psychologue')}&details=${encodeURIComponent(`Rendez-vous pris via PsyLib. Profil : https://psylib.eu/psy/${slug}`)}`;
 
@@ -40,7 +72,7 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
               {isPaid ? (
                 <>Rendez-vous<br />confirmé et payé.</>
               ) : (
-                <>Vous avez franchi<br />le premier pas.</>
+                <>Votre demande a bien<br />été envoyée.</>
               )}
             </h1>
             <p className="mt-3 text-base text-gray-500">
@@ -78,26 +110,25 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
             )}
           </div>
 
-          {/* Réassurance émotionnelle */}
+          {/* Informations avant la séance */}
           <div className="bg-[#F8F7FF] rounded-2xl border border-[#E5E7EB] p-6 mb-6">
             <p className="text-sm font-semibold text-[#1E1B4B] mb-3">
               Quelques repères avant votre séance
             </p>
-            <div className="space-y-3">
-              {[
-                'Il est tout à fait normal de se sentir nerveux(se) avant une première séance.',
-                "Vous n'avez rien à préparer ni à rédiger à l'avance.",
-                'Vous pouvez poser toutes vos questions lors du premier rendez-vous.',
-                "Vous pouvez changer d'avis ou annuler à tout moment — sans justification.",
-              ].map((text) => (
-                <div key={text} className="flex items-start gap-3">
-                  <span className="mt-1 h-4 w-4 rounded-full bg-[#0D9488]/10 flex items-center justify-center flex-shrink-0">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#0D9488]" />
-                  </span>
-                  <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
-                </div>
-              ))}
-            </div>
+            {customMessage ? (
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{customMessage}</p>
+            ) : (
+              <div className="space-y-3">
+                {DEFAULT_TIPS.map((text) => (
+                  <div key={text} className="flex items-start gap-3">
+                    <span className="mt-1 h-4 w-4 rounded-full bg-[#0D9488]/10 flex items-center justify-center flex-shrink-0">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#0D9488]" />
+                    </span>
+                    <p className="text-sm text-gray-600 leading-relaxed">{text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Actions */}

@@ -132,6 +132,11 @@ export class UpdatePsychologistProfileDto {
   @IsOptional()
   @Type(() => Number)
   noShowFee?: number;
+
+  @ApiPropertyOptional({ description: 'Custom message shown on booking confirmation page' })
+  @IsString()
+  @IsOptional()
+  bookingConfirmationMessage?: string;
 }
 
 export type OnboardingStep =
@@ -219,6 +224,7 @@ export class OnboardingService {
         ...(dto.minBreakMinutes !== undefined && { minBreakMinutes: dto.minBreakMinutes }),
         ...(dto.noShowBillingEnabled !== undefined && { noShowBillingEnabled: dto.noShowBillingEnabled }),
         ...(dto.noShowFee !== undefined && { noShowFee: dto.noShowFee }),
+        ...(dto.bookingConfirmationMessage !== undefined && { bookingConfirmationMessage: dto.bookingConfirmationMessage }),
       },
     });
 

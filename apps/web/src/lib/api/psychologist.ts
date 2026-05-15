@@ -32,6 +32,8 @@ export interface PsychologistProfile {
   minBreakMinutes: number;
   noShowBillingEnabled: boolean;
   noShowFee: number | null;
+  // Booking confirmation
+  bookingConfirmationMessage: string | null;
 }
 
 export interface UpdateProfileData {
@@ -60,6 +62,8 @@ export interface UpdateProfileData {
   minBreakMinutes?: number;
   noShowBillingEnabled?: boolean;
   noShowFee?: number;
+  // Booking confirmation
+  bookingConfirmationMessage?: string;
 }
 
 export const psychologistApi = {

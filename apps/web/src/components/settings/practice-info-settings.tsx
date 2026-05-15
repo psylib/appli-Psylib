@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { psychologistApi } from '@/lib/api/psychologist';
-import { MapPin, Euro, Phone, Save, Clock } from 'lucide-react';
+import { MapPin, Euro, Phone, Save, Clock, MessageSquareText } from 'lucide-react';
 
 interface PracticeInfoSettingsProps {
   token?: string;
@@ -25,6 +25,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
   const [sessionRate, setSessionRate] = useState('');
   const [sessionDuration, setSessionDuration] = useState('');
   const [minBreakMinutes, setMinBreakMinutes] = useState('0');
+  const [bookingConfirmationMessage, setBookingConfirmationMessage] = useState('');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -37,6 +38,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         setSessionRate(profile.defaultSessionRate != null ? String(profile.defaultSessionRate) : '');
         setSessionDuration(profile.defaultSessionDuration != null ? String(profile.defaultSessionDuration) : '');
         setMinBreakMinutes(profile.minBreakMinutes != null ? String(profile.minBreakMinutes) : '0');
+        setBookingConfirmationMessage(profile.bookingConfirmationMessage ?? '');
       })
       .catch(() => {
         toastError('Impossible de charger les informations du cabinet.');
@@ -59,6 +61,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         defaultSessionRate: sessionRate ? Number(sessionRate) : undefined,
         defaultSessionDuration: sessionDuration ? Number(sessionDuration) : undefined,
         minBreakMinutes: Number(minBreakMinutes) || 0,
+        bookingConfirmationMessage: bookingConfirmationMessage || undefined,
       }, token);
       success('Informations du cabinet enregistrées');
       setDirty(false);
@@ -186,6 +189,27 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
             className={inputClass}
           />
         </div>
+      </div>
+
+      {/* Message de confirmation de RDV */}
+      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <MessageSquareText size={18} className="text-primary" />
+          <h2 className="text-base font-medium text-foreground">Message de confirmation de rendez-vous</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Ce message sera affiché aux patients après la prise de rendez-vous. Vous pouvez y inclure des consignes de préparation, votre politique d&apos;annulation, etc.
+        </p>
+        <textarea
+          placeholder={"Ex: Merci de prévoir d'arriver 5 minutes avant votre rendez-vous.\nEn cas d'annulation moins de 24h à l'avance, la séance pourra être facturée.\nN'hésitez pas à noter vos questions ou sujets à aborder."}
+          value={bookingConfirmationMessage}
+          onChange={(e) => { setBookingConfirmationMessage(e.target.value); setDirty(true); }}
+          rows={4}
+          className={`${inputClass} resize-none`}
+        />
+        <p className="text-xs text-muted-foreground">
+          Si vide, un message par défaut sera affiché. Vous pouvez aussi définir des consignes spécifiques par type de consultation.
+        </p>
       </div>
 
       {/* Bouton enregistrer */}
