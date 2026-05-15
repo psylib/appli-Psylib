@@ -426,7 +426,7 @@ export class PublicBookingService {
           patientId: patient.id,
           scheduledAt,
           duration,
-          status: 'scheduled',
+          status: 'confirmed',
           source: 'public',
           reason: dto.reason,
           cancelToken,

@@ -97,9 +97,9 @@ export default async function SuccessPage({ params, searchParams }: Props) {
                 ? 'Vous recevrez un email de confirmation avec les informations pratiques pour votre rendez-vous.'
                 : (
                   <>
-                    Le praticien va confirmer votre rendez-vous dans les{' '}
-                    <strong>24 à 48 heures</strong>. Vous recevrez un email de
-                    confirmation avec toutes les informations pratiques.
+                    Vous recevrez un rappel par email avant votre séance. En cas
+                    d&apos;empêchement, vous pouvez annuler via le lien dans votre
+                    email de confirmation.
                   </>
                 )}
             </p>

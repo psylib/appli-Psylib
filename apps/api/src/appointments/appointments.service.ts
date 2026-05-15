@@ -315,6 +315,27 @@ export class AppointmentsService {
       this.logger.error(`waitlist.onAppointmentCancelled failed: ${err instanceof Error ? err.message : String(err)}`),
     );
 
+    // Email notification to patient when psy cancels a public booking
+    if (existing.source === 'public' && existing.patientId) {
+      const patientForEmail = await this.prisma.patient.findUnique({
+        where: { id: existing.patientId },
+        select: { name: true, email: true },
+      });
+      if (patientForEmail?.email) {
+        const psyRecord = await this.prisma.psychologist.findUnique({
+          where: { id: psy.id },
+          select: { name: true, slug: true },
+        });
+        const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+        void this.email.sendBookingCancelledToPatient(patientForEmail.email, {
+          patientName: patientForEmail.name,
+          psychologistName: psyRecord?.name ?? psy.name,
+          scheduledAt: existing.scheduledAt,
+          rebookUrl: psyRecord?.slug ? `${frontendUrl}/psy/${psyRecord.slug}` : undefined,
+        }).catch((err) => this.logger.warn(`Cancel email to patient failed: ${(err as Error).message}`));
+      }
+    }
+
     // In-app notification
     const cancelledPatient = existing.patientId
       ? await this.prisma.patient.findUnique({
@@ -387,14 +408,20 @@ export class AppointmentsService {
 
     const updated = await this.prisma.appointment.update({
       where: { id },
-      data: { status: 'cancelled' },
+      data: { status: 'cancelled', cancelledBy: 'psychologist' },
     });
 
     if (existing.patient.email) {
-      void this.email.sendBookingDeclined(existing.patient.email, {
+      const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+      const psyRecord = await this.prisma.psychologist.findUnique({
+        where: { id: psy.id },
+        select: { slug: true },
+      });
+      void this.email.sendBookingCancelledToPatient(existing.patient.email, {
         patientName: existing.patient.name,
         psychologistName: psy.name,
         scheduledAt: existing.scheduledAt,
+        rebookUrl: psyRecord?.slug ? `${frontendUrl}/psy/${psyRecord.slug}` : undefined,
       }).catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
     }
 

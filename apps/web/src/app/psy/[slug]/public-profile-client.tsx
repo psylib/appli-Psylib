@@ -231,7 +231,7 @@ function BookingModal({
           <X className="w-4 h-4" />
         </button>
 
-        <h2 className="text-lg font-semibold text-foreground mb-1">Confirmer la demande</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Réserver un rendez-vous</h2>
 
         {/* Consultation type info */}
         {consultationType ? (
@@ -393,13 +393,13 @@ function BookingModal({
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {showPaymentChoice && payOnline
               ? `Payer ${rate}€ et réserver`
-              : 'Envoyer ma demande'}
+              : 'Réserver'}
           </button>
 
           <p className="text-xs text-muted-foreground text-center">
             {showPaymentChoice && payOnline
               ? 'Paiement sécurisé par Stripe · Vous serez redirigé(e) pour finaliser'
-              : 'Aucun compte requis · Votre demande sera confirmée par le praticien'}
+              : 'Aucun compte requis · Confirmation immédiate'}
           </p>
         </form>
       </div>

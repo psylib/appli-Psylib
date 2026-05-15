@@ -501,7 +501,7 @@ export class EmailService {
     );
   }
 
-  // ─── NOUVELLE DEMANDE DE RDV (notif à la psy) ────────────────────────────────
+  // ─── NOUVEAU RDV CONFIRMÉ (notif à la psy) ───────────────────────────────────
 
   async sendBookingRequestToPsy(
     to: string,
@@ -518,9 +518,11 @@ export class EmailService {
   ): Promise<void> {
     const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      timeZone: 'Europe/Paris',
     });
     const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
       hour: '2-digit', minute: '2-digit',
+      timeZone: 'Europe/Paris',
     });
     const phoneHtml = data.patientPhone
       ? `<br /><span style="color:#6B7280;">Tél : ${data.patientPhone}</span>`
@@ -530,14 +532,14 @@ export class EmailService {
       : '';
 
     const html = emailLayout(
-      'Nouvelle demande de RDV',
-      `<h1>Nouvelle demande de RDV</h1>
-      <div class="badge badge-warning">En attente de confirmation</div>
+      'Nouveau rendez-vous',
+      `<h1>Nouveau rendez-vous</h1>
+      <div class="badge badge-success">Confirmé automatiquement</div>
       <p>Bonjour ${data.psychologistName},<br />
-      <strong>${data.patientName}</strong> souhaite prendre rendez-vous avec vous.</p>
+      <strong>${data.patientName}</strong> a réservé un rendez-vous avec vous.</p>
       <div class="info-box">
         <p style="margin:0;font-size:15px;">
-          <strong>📅 ${dateFormatted}</strong><br />
+          <strong>${dateFormatted}</strong><br />
           <span style="color:#6B7280;">à ${timeFormatted} · durée ${data.duration} min</span><br />
           <span style="color:#6B7280;">Patient : ${data.patientName} — ${data.patientEmail}</span>
           ${phoneHtml}
@@ -545,19 +547,19 @@ export class EmailService {
       </div>
       ${reasonHtml}
       <div style="text-align:center;margin-top:24px;">
-        <a href="${data.dashboardUrl}" class="btn">Confirmer ou refuser</a>
+        <a href="${data.dashboardUrl}" class="btn">Voir dans l&apos;agenda</a>
       </div>`,
     );
 
     await this.send(
       to,
-      `Nouvelle demande de RDV — ${data.patientName} le ${dateFormatted}`,
+      `Nouveau RDV confirmé — ${data.patientName} le ${dateFormatted}`,
       html,
       'sendBookingRequestToPsy',
     );
   }
 
-  // ─── ACCUSÉ DE RÉCEPTION PATIENT ─────────────────────────────────────────────
+  // ─── CONFIRMATION RDV PATIENT ────────────────────────────────────────────────
 
   async sendBookingReceivedToPatient(
     to: string,
@@ -572,9 +574,11 @@ export class EmailService {
   ): Promise<void> {
     const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      timeZone: 'Europe/Paris',
     });
     const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
       hour: '2-digit', minute: '2-digit',
+      timeZone: 'Europe/Paris',
     });
 
     const paymentHtml = data.checkoutUrl
@@ -598,16 +602,16 @@ export class EmailService {
           </a>
         </div>`
       : `<p style="font-size:14px;color:#6B7280;margin-top:16px;">
-          Si vous souhaitez annuler cette demande, répondez à cet email en indiquant votre souhait.
+          Pour annuler, contactez directement votre praticien.
         </p>`;
 
     const html = emailLayout(
-      'Demande de RDV reçue',
+      'Rendez-vous confirmé',
       `<h1>Bonjour ${data.patientName},</h1>
-      <div class="badge badge-warning">En attente de confirmation</div>
+      <div class="badge badge-success">Confirmé</div>
       <p>
-        Votre demande de rendez-vous avec <strong>${data.psychologistName}</strong> a bien été reçue.
-        ${data.checkoutUrl ? 'Merci de procéder au paiement pour confirmer votre créneau.' : 'Vous recevrez une confirmation dès que le praticien aura validé le créneau.'}
+        Votre rendez-vous avec <strong>${data.psychologistName}</strong> est confirmé.
+        ${data.checkoutUrl ? 'Merci de procéder au paiement pour finaliser votre réservation.' : 'Vous recevrez un rappel avant la séance.'}
       </p>
       <div class="info-box">
         <p style="margin:0;font-size:15px;">
@@ -621,7 +625,7 @@ export class EmailService {
 
     await this.send(
       to,
-      `Demande de RDV bien reçue — ${data.psychologistName}`,
+      `Rendez-vous confirmé — ${data.psychologistName} le ${dateFormatted}`,
       html,
       'sendBookingReceivedToPatient',
     );
@@ -665,6 +669,50 @@ export class EmailService {
       `Demande de RDV — ${data.psychologistName}`,
       html,
       'sendBookingDeclined',
+    );
+  }
+
+  // ─── ANNULATION RDV PAR LE PSY (notif patient) ──────────────────────────────
+
+  async sendBookingCancelledToPatient(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      scheduledAt: Date;
+      rebookUrl?: string;
+    },
+  ): Promise<void> {
+    const dateFormatted = data.scheduledAt.toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      timeZone: 'Europe/Paris',
+    });
+    const timeFormatted = data.scheduledAt.toLocaleTimeString('fr-FR', {
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'Europe/Paris',
+    });
+
+    const html = emailLayout(
+      'Rendez-vous annulé',
+      `<h1>Bonjour ${data.patientName},</h1>
+      <div class="badge badge-error">Annulé</div>
+      <p>
+        Votre rendez-vous avec <strong>${data.psychologistName}</strong>
+        prévu le <strong>${dateFormatted}</strong> à <strong>${timeFormatted}</strong>
+        a été annulé par le praticien.
+      </p>
+      <p>Nous vous invitons à reprendre rendez-vous si vous le souhaitez.</p>
+      ${data.rebookUrl ? `<div style="text-align:center;margin-top:24px;"><a href="${data.rebookUrl}" class="btn">Reprendre rendez-vous</a></div>` : ''}
+      <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
+        Si vous avez des questions, contactez directement votre praticien.
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      `Rendez-vous annulé — ${data.psychologistName}`,
+      html,
+      'sendBookingCancelledToPatient',
     );
   }
 

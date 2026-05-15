@@ -598,7 +598,7 @@ export class SubscriptionService {
         bookingPaymentStatus: 'paid',
         paidOnline: true,
         paymentIntentId: (session.payment_intent as string) ?? null,
-        status: 'scheduled',
+        status: 'confirmed',
       },
     });
 

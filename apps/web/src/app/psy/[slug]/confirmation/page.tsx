@@ -12,7 +12,7 @@ const DEFAULT_TIPS = [
 ];
 
 export const metadata: Metadata = {
-  title: 'Demande envoyée — PsyLib',
+  title: 'Rendez-vous confirmé — PsyLib',
   robots: { index: false, follow: false },
 };
 
@@ -72,13 +72,13 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
               {isPaid ? (
                 <>Rendez-vous<br />confirmé et payé.</>
               ) : (
-                <>Votre demande a bien<br />été envoyée.</>
+                <>Votre rendez-vous<br />est confirmé !</>
               )}
             </h1>
             <p className="mt-3 text-base text-gray-500">
               {isPaid
                 ? 'Votre paiement a été accepté et votre rendez-vous est confirmé.'
-                : 'Votre demande de rendez-vous a bien été envoyée au praticien.'}
+                : 'Votre rendez-vous est confirmé. Vous recevrez un rappel avant la séance.'}
             </p>
           </div>
 
@@ -101,7 +101,7 @@ export default async function ConfirmationPage({ params, searchParams }: Props) 
             <p className="text-sm text-gray-600 leading-relaxed">
               {isPaid
                 ? 'Vous recevrez un email de confirmation avec les informations pratiques pour votre rendez-vous.'
-                : <>Le praticien va confirmer votre rendez-vous dans les <strong>24 à 48 heures</strong>. Vous recevrez un email de confirmation avec toutes les informations pratiques.</>}
+                : <>Vous recevrez un rappel par email avant votre séance. En cas d&apos;empêchement, vous pouvez annuler via le lien dans votre email de confirmation.</>}
             </p>
             {id && (
               <p className="text-xs text-gray-400 mt-3">
