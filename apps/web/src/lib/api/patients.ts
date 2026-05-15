@@ -53,7 +53,7 @@ export const patientsApi = {
 
   portalExercises: (id: string, token: string) =>
     apiClient.get<
-      { id: string; title: string; status: string; completedAt?: string; patientFeedback?: string }[]
+      { id: string; title: string; description: string; status: string; createdByAi: boolean; createdAt: string; completedAt?: string; patientFeedback?: string }[]
     >(`/patients/${id}/portal-exercises`, token),
 
   createExercise: (

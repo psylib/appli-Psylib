@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { patientsApi } from '@/lib/api/patients';
 import { ExerciseDialog } from './exercise-dialog';
 
@@ -23,7 +23,10 @@ interface MoodEntry {
 interface Exercise {
   id: string;
   title: string;
+  description: string;
   status: string;
+  createdByAi: boolean;
+  createdAt: string;
   completedAt?: string;
   patientFeedback?: string;
 }
@@ -47,6 +50,7 @@ export function PatientPortalSection({ patientId, patientEmail }: { patientId: s
   const [inviting, setInviting] = useState(false);
   const [inviteResult, setInviteResult] = useState<string | null>(null);
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
+  const [expandedExercise, setExpandedExercise] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -195,27 +199,71 @@ export function PatientPortalSection({ patientId, patientEmail }: { patientId: s
           </div>
           {exercises.length > 0 ? (
             <div className="space-y-2">
-              {exercises.slice(0, 5).map((e) => (
-                <div key={e.id} className="flex items-center gap-2 text-sm">
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      e.status === 'completed'
-                        ? 'bg-emerald-500'
-                        : e.status === 'in_progress'
-                        ? 'bg-amber-500'
-                        : 'bg-slate-300'
-                    }`}
-                  />
-                  <span className="flex-1 truncate text-foreground">{e.title}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {e.status === 'completed'
-                      ? '✓ Terminé'
-                      : e.status === 'in_progress'
-                      ? 'En cours'
-                      : 'À faire'}
-                  </span>
-                </div>
-              ))}
+              {exercises.slice(0, 10).map((e) => {
+                const isExpanded = expandedExercise === e.id;
+                return (
+                  <div key={e.id} className="rounded-lg border border-border overflow-hidden">
+                    <button
+                      onClick={() => setExpandedExercise(isExpanded ? null : e.id)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-left hover:bg-surface/50 transition-colors"
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          e.status === 'completed'
+                            ? 'bg-emerald-500'
+                            : e.status === 'in_progress'
+                            ? 'bg-amber-500'
+                            : 'bg-slate-300'
+                        }`}
+                      />
+                      <span className="flex-1 truncate text-foreground font-medium">{e.title}</span>
+                      {e.createdByAi && (
+                        <Sparkles size={12} className="shrink-0 text-violet-500" />
+                      )}
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {e.status === 'completed'
+                          ? '✓ Terminé'
+                          : e.status === 'in_progress'
+                          ? 'En cours'
+                          : 'À faire'}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp size={14} className="shrink-0 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+                      )}
+                    </button>
+                    {isExpanded && (
+                      <div className="px-3 pb-3 border-t border-border bg-surface/30">
+                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed mt-2.5">
+                          {e.description}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          {e.createdByAi && (
+                            <span className="inline-flex items-center gap-1 text-violet-600 bg-violet-50 rounded px-1.5 py-0.5">
+                              <Sparkles size={10} />
+                              Généré par IA
+                            </span>
+                          )}
+                          <span>
+                            Créé le {new Date(e.createdAt).toLocaleDateString('fr-FR')}
+                          </span>
+                          {e.completedAt && (
+                            <span>
+                              Terminé le {new Date(e.completedAt).toLocaleDateString('fr-FR')}
+                            </span>
+                          )}
+                        </div>
+                        {e.patientFeedback && (
+                          <div className="mt-2 rounded-md bg-blue-50 border border-blue-100 px-3 py-2 text-sm text-blue-800">
+                            <span className="font-medium">Retour patient :</span> {e.patientFeedback}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Aucun exercice assigné</p>
