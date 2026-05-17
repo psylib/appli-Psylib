@@ -1,8 +1,8 @@
 # Registre des sous-traitants techniques — PsyLib
 
 **Responsable de traitement :** PsyLib (psylib.eu)
-**Date :** 2026-05-08
-**Version :** 1.0
+**Date :** 2026-05-15
+**Version :** 1.1
 **Objet :** Conformement a l'article 28 du RGPD, ce document recense l'ensemble des sous-traitants techniques auxquels PsyLib fait appel dans le cadre de son activite de plateforme SaaS destinee aux psychologues liberaux.
 
 ---
@@ -81,7 +81,37 @@
 
 ---
 
-### 1.6 LiveKit (auto-heberge)
+### 1.6 Sentry
+
+| Champ | Detail |
+|---|---|
+| **Raison sociale** | Functional Software Inc. (dba Sentry) |
+| **Role** | Monitoring des erreurs applicatives — detection et diagnostic des dysfonctionnements techniques de la plateforme |
+| **Donnees transmises** | Traces d'erreurs techniques (stack traces, URL de la page, navigateur, version de l'application). Les messages d'erreur sont anonymises cote serveur avant envoi : aucune donnee patient (nom, email, notes, contenu clinique) n'est jamais transmise a Sentry |
+| **Sensibilite des donnees** | Aucune — donnees techniques uniquement, aucune donnee de sante ni donnee personnelle identifiante |
+| **Localisation** | Etats-Unis |
+| **Certification HDS** | Non applicable (aucune donnee de sante traitee) |
+| **DPA / Contrat** | [sentry.io/legal/dpa](https://sentry.io/legal/dpa) — Standard Contractual Clauses (SCCs) pour le transfert hors UE |
+| **Note** | Sentry est configure pour ne capturer que les metadonnees techniques d'erreur. Un filtre cote serveur (scrubbing) empeche toute fuite accidentelle de donnees personnelles ou cliniques dans les rapports d'erreur. |
+
+---
+
+### 1.7 PostHog
+
+| Champ | Detail |
+|---|---|
+| **Raison sociale** | PostHog Inc. |
+| **Role** | Analytics produit — mesure d'utilisation de l'interface par les psychologues uniquement, pour ameliorer l'ergonomie et les fonctionnalites de la plateforme |
+| **Donnees transmises** | Evenements d'interaction anonymises des psychologues (pages visitees, clics sur fonctionnalites, duree de session). Aucune donnee patient n'est jamais collectee — le tracking est strictement limite aux comptes psychologues |
+| **Sensibilite des donnees** | Faible — donnees d'usage anonymisees, aucune donnee de sante, aucune donnee patient |
+| **Localisation** | Union europeenne (hebergement EU disponible et selectionne) |
+| **Certification HDS** | Non applicable (aucune donnee de sante traitee) |
+| **DPA / Contrat** | [posthog.com/docs/privacy/dpa](https://posthog.com/docs/privacy/dpa) |
+| **Note** | PostHog ne suit que l'activite des psychologues sur l'interface de gestion. Les espaces patients (portail patient, mood tracking, journal) ne sont pas instruments. Aucun identifiant patient n'est jamais transmis. |
+
+---
+
+### 1.8 LiveKit (auto-heberge)
 
 | Champ | Detail |
 |---|---|
@@ -130,4 +160,5 @@ Ce registre est mis a jour a chaque ajout, modification ou suppression d'un sous
 
 ---
 
-*Document genere le 2026-05-08 — PsyLib v1.0*
+*Document mis a jour le 2026-05-15 — PsyLib v1.1*
+*Changements v1.1 : ajout de Sentry (§1.6) et PostHog (§1.7) au registre*
