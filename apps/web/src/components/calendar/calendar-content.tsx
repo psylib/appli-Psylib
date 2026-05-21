@@ -19,12 +19,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-import { CreateAppointmentDialog } from '@/components/calendar/create-appointment-dialog';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api/client';
 import { appointmentsApi } from '@/lib/api/appointments';
 import type { PendingAppointment } from '@/lib/api/appointments';
 import { PaymentActions } from '@/components/billing/payment-actions';
+import { useUIStore } from '@/store/ui.store';
 import { cn } from '@/lib/utils';
 
 interface Appointment {
@@ -226,9 +226,9 @@ export function CalendarContent() {
     },
   });
 
+  const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
   const [cancelTarget, setCancelTarget] = useState<Appointment | null>(null);
   const [noShowTarget, setNoShowTarget] = useState<Appointment | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const noShowMutation = useMutation({
     mutationFn: (id: string) => appointmentsApi.update(id, { status: 'no_show' }, session?.accessToken ?? ''),
@@ -373,7 +373,7 @@ export function CalendarContent() {
             <Settings2 size={14} />
             Disponibilités
           </Button>
-          <Button size="sm" onClick={() => setShowCreateDialog(true)}>
+          <Button size="sm" onClick={() => openSlotPicker()}>
             <Plus size={16} />
             Nouveau RDV
           </Button>
@@ -781,7 +781,7 @@ export function CalendarContent() {
               <p className="text-sm text-muted-foreground">Pas de RDV ce jour</p>
               <button
                 className="text-xs text-primary hover:underline mt-1"
-                onClick={() => setShowCreateDialog(true)}
+                onClick={() => openSlotPicker()}
               >
                 Planifier un RDV
               </button>
@@ -975,12 +975,6 @@ export function CalendarContent() {
         </div>
       </div>
 
-      {/* Create appointment dialog */}
-      <CreateAppointmentDialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        defaultDate={selectedDate}
-      />
 
       {/* No-show confirmation dialog */}
       <ConfirmDialog

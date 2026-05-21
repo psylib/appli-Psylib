@@ -94,6 +94,8 @@ export function AvailabilityManager({ token: tokenProp }: { token?: string }) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['availability'] });
+      // Invalide aussi les créneaux du dialog "Nouvelle séance" pour qu'il se rafraîchisse
+      void queryClient.invalidateQueries({ queryKey: ['available-timeslots'] });
       setSaved(true);
       setErrorMsg('');
       setTimeout(() => setSaved(false), 3000);

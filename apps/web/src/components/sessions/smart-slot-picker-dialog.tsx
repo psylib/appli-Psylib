@@ -157,7 +157,7 @@ export function SmartSlotPickerDialog() {
     queryKey: ['available-timeslots', fromDate, toDate, duration],
     queryFn: () => availabilityApi.getTimeslots(fromDate, toDate, duration, session?.accessToken ?? ''),
     enabled: smartSlotPickerOpen && !!session?.accessToken,
-    staleTime: 30_000,
+    staleTime: 0, // Toujours rafraîchir à l'ouverture pour respecter les dispos configurées
   });
 
   // ── Derived data ──
