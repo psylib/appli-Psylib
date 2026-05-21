@@ -58,7 +58,7 @@ const tarifsJsonLd = {
             billingDuration: "P1M",
           },
           description:
-            "Patients illimites, sessions illimitees, 10 resumes IA/mois, visio illimitee, comptabilite integree",
+            "Patients illimites, sessions illimitees, 10 resumes IA/mois, visio illimitee, facturation PDF",
         },
         {
           "@type": "Offer",
@@ -149,7 +149,6 @@ const plans = [
       "15 patients max",
       "Sessions illimitees",
       "Notes cliniques SOAP / DAP",
-      "Comptabilite integree",
       "Dossiers patients securises",
       "Chiffrement HDS AES-256",
       "Profil public psylib.eu/psy/votre-nom",
@@ -169,7 +168,6 @@ const plans = [
       "Sessions illimitees",
       "10 resumes IA par mois",
       "Visio illimitee",
-      "Comptabilite integree",
       "Profil public psylib.eu/psy/votre-nom",
       "Prise de RDV en ligne",
       "Notes cliniques SOAP / DAP",
@@ -229,7 +227,7 @@ const comparisonFeatures = [
   { name: "Profil public", free: true, solo: true, pro: true, clinic: true },
   { name: "Prise de RDV en ligne", free: true, solo: true, pro: true, clinic: true },
   { name: "Chiffrement HDS", free: true, solo: true, pro: true, clinic: true },
-  { name: "Comptabilite integree", free: true, solo: true, pro: true, clinic: true },
+  { name: "Comptabilite integree", free: false, solo: false, pro: true, clinic: true },
   { name: "Facturation PDF", free: false, solo: false, pro: true, clinic: true },
   { name: "Outcome tracking", free: false, solo: false, pro: true, clinic: true },
   { name: "Espace patient", free: false, solo: false, pro: true, clinic: true },

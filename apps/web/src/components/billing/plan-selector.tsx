@@ -12,7 +12,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
   [SubscriptionPlan.FREE]: [
     '15 patients max',
     'Séances illimitées',
-    'Comptabilité intégrée',
     'Support email',
   ],
   [SubscriptionPlan.SOLO]: [
@@ -20,7 +19,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Séances illimitées',
     '10 résumés IA / mois',
     'Visio illimitée',
-    'Comptabilité intégrée',
     'Support email',
   ],
   [SubscriptionPlan.PRO]: [

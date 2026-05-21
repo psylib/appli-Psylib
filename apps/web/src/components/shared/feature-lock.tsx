@@ -18,7 +18,7 @@ const PLAN_CONFIG = {
       'Patients illimités + séances illimitées',
       '10 résumés IA / mois',
       'Visio illimitée',
-      'Comptabilité intégrée',
+      'Facturation PDF',
     ],
   },
   pro: {

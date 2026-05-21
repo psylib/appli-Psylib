@@ -23,6 +23,8 @@ export class AccountingController {
   ) {}
 
   @Get('book')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   getBook(
     @CurrentUser() user: KeycloakUser,
     @Query('page') page?: string,
@@ -43,6 +45,8 @@ export class AccountingController {
   }
 
   @Get('summary')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   getSummary(
     @CurrentUser() user: KeycloakUser,
     @Query('dateFrom') dateFrom?: string,
@@ -52,6 +56,8 @@ export class AccountingController {
   }
 
   @Get('dashboard')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   getDashboard(@CurrentUser() user: KeycloakUser) {
     return this.accountingService.getDashboard(user.sub);
   }
@@ -63,9 +69,11 @@ export class AccountingController {
   /**
    * GET /accounting/export/csv
    * Download all accounting entries as a CSV file for the given period.
-   * Available on all plans.
+   * Requires Pro or Clinic plan.
    */
   @Get('export/csv')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async exportCsv(
     @CurrentUser() user: KeycloakUser,
     @Res() res: Response,
@@ -107,11 +115,11 @@ export class AccountingController {
   /**
    * GET /accounting/export/fec?year=2025
    * Download the FEC (Fichier des Écritures Comptables) for the given fiscal year.
-   * Requires Solo plan or higher (not available on Free).
+   * Requires Pro or Clinic plan.
    */
   @Get('export/fec')
   @UseGuards(SubscriptionGuard)
-  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async exportFec(
     @CurrentUser() user: KeycloakUser,
     @Query('year') year: string,
