@@ -16,11 +16,13 @@ const DAYS = [
   { label: 'Dimanche', value: 6 },
 ];
 
-// Génère des créneaux toutes les 30 minutes de 06:00 à 23:30
+// Génère des créneaux toutes les 15 minutes de 06:00 à 23:45
 const HOURS: string[] = [];
 for (let h = 6; h <= 23; h++) {
   HOURS.push(`${String(h).padStart(2, '0')}:00`);
+  HOURS.push(`${String(h).padStart(2, '0')}:15`);
   HOURS.push(`${String(h).padStart(2, '0')}:30`);
+  HOURS.push(`${String(h).padStart(2, '0')}:45`);
 }
 
 interface AvailabilitySlot {
