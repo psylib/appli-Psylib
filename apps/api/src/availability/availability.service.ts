@@ -134,7 +134,9 @@ export class AvailabilityService {
       if (dayMidnightUtc > endMidnightUtc) break;
 
       // dayOfWeek: 0=Lundi ... 6=Dimanche (notre convention)
-      const jsDay = dayMidnightUtc.getUTCDay();
+      // IMPORTANT: utiliser Date.UTC(dayYear, dayMonth, dayDate) pour le calcul du jour,
+      // PAS dayMidnightUtc (qui est minuit Paris en UTC = veille UTC → décalage d'1 jour).
+      const jsDay = new Date(Date.UTC(dayYear, dayMonth, dayDate)).getUTCDay();
       const ourDay = jsDay === 0 ? 6 : jsDay - 1;
 
       // Tous les créneaux du jour (un psy peut avoir matin + après-midi)
