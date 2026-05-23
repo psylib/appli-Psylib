@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { SubscriptionPlan, SubscriptionStatus } from '@psyscale/shared-types';
 
 @Injectable()
 export class AuthService {
@@ -123,10 +124,8 @@ export class AuthService {
     }
 
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      this.logger.error(
-        `Keycloak user creation failed: ${res.status} — ${body}`,
-      );
+      // Ne pas logger le body Keycloak — peut contenir email/PII (HDS)
+      this.logger.error(`Keycloak user creation failed: ${res.status}`);
       throw new InternalServerErrorException(
         'Erreur lors de la création du compte',
       );
@@ -198,10 +197,8 @@ export class AuthService {
     );
 
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      this.logger.warn(
-        `Keycloak password setup email failed: ${res.status} — ${body}`,
-      );
+      // Ne pas logger le body Keycloak — peut contenir PII (HDS)
+      this.logger.warn(`Keycloak password setup email failed: ${res.status}`);
     }
   }
 
@@ -220,19 +217,33 @@ export class AuthService {
       '-' +
       randomBytes(4).toString('hex');
 
+    // Pro trial : 6 months from now
+    const trialEndsAt = new Date();
+    trialEndsAt.setMonth(trialEndsAt.getMonth() + 6);
+
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.user.create({
           data: { id: userId, email: email.toLowerCase(), role: 'psychologist' },
         });
 
-        await tx.psychologist.create({
+        const psy = await tx.psychologist.create({
           data: {
             userId,
             name: fullName,
             slug,
             adeliNumber: adeliOrRpps.replace(/\s/g, ''),
             isOnboarded: false,
+          },
+        });
+
+        // Auto-activate 6-month Pro trial for every new registration
+        await tx.subscription.create({
+          data: {
+            psychologistId: psy.id,
+            plan: SubscriptionPlan.PRO,
+            status: SubscriptionStatus.TRIALING,
+            trialEndsAt,
           },
         });
       });
@@ -270,6 +281,7 @@ export class AuthService {
           <tr><td style="padding:8px 0;color:#6B7280;">Email</td><td style="padding:8px 0;">${esc(email)}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">ADELI/RPPS</td><td style="padding:8px 0;font-family:monospace;">${esc(adeliOrRpps)}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Date</td><td style="padding:8px 0;">${date}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Plan activé</td><td style="padding:8px 0;"><strong style="color:#0D9488;">Pro — 6 mois offerts (trial auto)</strong></td></tr>
         </table>
       </div>`,
     );

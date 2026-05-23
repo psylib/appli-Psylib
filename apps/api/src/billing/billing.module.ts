@@ -6,6 +6,7 @@ import { StripeService } from './stripe.service';
 import { SubscriptionService } from './subscription.service';
 import { BillingQueueProcessor, BILLING_QUEUE } from './billing.queue';
 import { SubscriptionGuard } from './guards/subscription.guard';
+import { TrialExpiryCron } from './trial-expiry.cron';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { ReferralModule } from '../referral/referral.module';
 import { InvoicesModule } from '../invoices/invoices.module';
@@ -18,7 +19,7 @@ import { InvoicesModule } from '../invoices/invoices.module';
     InvoicesModule,
   ],
   controllers: [BillingController, WebhookController],
-  providers: [StripeService, SubscriptionService, BillingQueueProcessor, SubscriptionGuard],
+  providers: [StripeService, SubscriptionService, BillingQueueProcessor, SubscriptionGuard, TrialExpiryCron],
   exports: [StripeService, SubscriptionService, SubscriptionGuard],
 })
 export class BillingModule {}
