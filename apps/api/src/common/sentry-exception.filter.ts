@@ -18,9 +18,14 @@ export class SentryExceptionFilter implements ExceptionFilter {
 
     // Ne reporter à Sentry que les erreurs serveur (5xx), pas les erreurs client (4xx)
     if (status >= 500) {
+      // Masquer les UUIDs dans l'URL pour ne pas exposer les IDs de patients/sessions
+      const safePath = request.url.replace(
+        /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+        '{id}',
+      );
       Sentry.captureException(exception, {
         extra: {
-          path: request.url,
+          path: safePath,
           method: request.method,
           // Jamais de body (données patients)
         },

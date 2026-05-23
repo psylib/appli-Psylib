@@ -9,10 +9,12 @@ Sentry.init({
   // Ne jamais capturer les données patients
   beforeBreadcrumb(breadcrumb: Sentry.Breadcrumb) {
     // Supprimer les breadcrumbs contenant des URLs de données sensibles
-    if (
-      breadcrumb.data?.url?.includes('/patients') ||
-      breadcrumb.data?.url?.includes('/sessions')
-    ) {
+    const sensitivePatterns = [
+      '/patients', '/sessions', '/journal-entries',
+      '/mood-tracking', '/messages', '/exercises',
+      '/ai/', '/invoices', '/video/', '/documents',
+    ];
+    if (sensitivePatterns.some((p) => breadcrumb.data?.url?.includes(p))) {
       return null;
     }
     return breadcrumb;
