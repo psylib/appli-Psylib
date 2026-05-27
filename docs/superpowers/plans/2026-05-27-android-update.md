@@ -54,11 +54,12 @@ async function loadPlanFromApi(token: string): Promise<void> {
     if (!res.ok) return;
     const data = await res.json() as { plan?: string };
     if (data.plan) {
-      useAuthStore.getState().setPsychologist({
-        ...useAuthStore.getState(),
-        psychologistId: useAuthStore.getState().psychologistId ?? '',
-        name: useAuthStore.getState().name ?? '',
-        email: useAuthStore.getState().email ?? '',
+      const s = useAuthStore.getState();
+      s.setPsychologist({
+        psychologistId: s.psychologistId ?? '',
+        name: s.name ?? '',
+        email: s.email ?? '',
+        role: s.role ?? 'psychologist',
         plan: data.plan,
       });
     }
@@ -256,7 +257,7 @@ npx expo install @livekit/react-native livekit-client @livekit/react-native-webr
 
 > `@livekit/react-native-webrtc` est la dépendance WebRTC requise par le SDK LiveKit RN.
 
-- [ ] **Step 3.2 — Ajouter les permissions manquantes dans `app.config.ts`**
+- [ ] **Step 3.2 — Ajouter les permissions + plugin LiveKit dans `app.config.ts`**
 
 Dans le tableau `android.permissions`, ajouter `'RECORD_AUDIO'` et `'FOREGROUND_SERVICE'` :
 
@@ -271,6 +272,21 @@ permissions: [
   'FOREGROUND_SERVICE',   // ← nouveau
   'READ_CALENDAR',
   'WRITE_CALENDAR',
+],
+```
+
+Dans le tableau `plugins`, ajouter `'@livekit/react-native'` (requis pour configurer les modules natifs WebRTC) :
+
+```typescript
+plugins: [
+  'expo-router',
+  'expo-secure-store',
+  '@livekit/react-native',   // ← nouveau
+  [
+    'expo-notifications',
+    // ...
+  ],
+  // ...
 ],
 ```
 
@@ -337,8 +353,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   LiveKitRoom,
   VideoTrack,
-  useParticipants,
   useLocalParticipant,
+  useRoomContext,
   useTracks,
   TrackReferenceOrPlaceholder,
 } from '@livekit/react-native';
@@ -371,24 +387,25 @@ export default function VideoRoomScreen() {
 }
 
 function RoomContent({ onLeave }: { onLeave: () => void }) {
+  const room = useRoomContext();  // ← room.disconnect() est sur Room, pas sur localParticipant
   const { localParticipant } = useLocalParticipant();
   const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare]);
 
   const isMuted = localParticipant?.isMicrophoneEnabled === false;
   const isCameraOff = localParticipant?.isCameraEnabled === false;
 
-  // Intercepter le bouton retour Android
+  // Intercepter le bouton retour Android — déconnecter la Room avant de naviguer
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      void localParticipant?.disconnect?.().finally(() => onLeave());
+      void room.disconnect().finally(() => onLeave());
       return true;
     });
     return () => sub.remove();
-  }, [localParticipant, onLeave]);
+  }, [room, onLeave]);
 
   const handleLeave = useCallback(() => {
-    void localParticipant?.disconnect?.().finally(() => onLeave());
-  }, [localParticipant, onLeave]);
+    void room.disconnect().finally(() => onLeave());
+  }, [room, onLeave]);
 
   const toggleMic = useCallback(() => {
     void localParticipant?.setMicrophoneEnabled(isMuted);
@@ -574,6 +591,7 @@ export function InstantVideoSheet({ visible, onClose }: InstantVideoSheetProps) 
           size="lg"
           fullWidth
           loading={instantVideo.isPending}
+          accessibilityLabel="Lancer la visio instantanee"
         >
           Lancer la visio
         </Button>
@@ -885,9 +903,13 @@ export default function NewAppointmentScreen() {
                       value={selectedDate}
                       mode="date"
                       minimumDate={new Date()}
-                      onChange={(_e, date) => {
-                        setShowDatePicker(Platform.OS === 'ios');
-                        if (date) { setSelectedDate(date); setSelectedSlot(null); }
+                      onChange={(e, date) => {
+                        if (Platform.OS === 'android') {
+                          setShowDatePicker(false);
+                          if (e.type === 'set' && date) { setSelectedDate(date); setSelectedSlot(null); }
+                        } else {
+                          if (date) { setSelectedDate(date); setSelectedSlot(null); }
+                        }
                       }}
                     />
                   )}
@@ -919,7 +941,7 @@ export default function NewAppointmentScreen() {
                   )}
                 </Card>
 
-                <Button onPress={goToStep2} variant="primary" size="lg" fullWidth disabled={!selectedSlot || !selectedPatientId}>
+                <Button onPress={goToStep2} variant="primary" size="lg" fullWidth disabled={!selectedSlot || !selectedPatientId} accessibilityLabel="Passer a l'etape suivante">
                   Suivant →
                 </Button>
               </>
@@ -989,7 +1011,7 @@ export default function NewAppointmentScreen() {
                   />
                 </Card>
 
-                <Button onPress={() => void handleSubmit()} variant="primary" size="lg" fullWidth loading={isPending}>
+                <Button onPress={() => void handleSubmit()} variant="primary" size="lg" fullWidth loading={isPending} accessibilityLabel="Confirmer le rendez-vous">
                   Confirmer le rendez-vous
                 </Button>
               </>
@@ -1210,6 +1232,7 @@ export default function PracticeSettingsScreen() {
               onPress={() => void handleSaveMessage()}
               variant="primary"
               loading={updateProfile.isPending}
+              accessibilityLabel="Sauvegarder le message de confirmation"
             >
               Sauvegarder
             </Button>
@@ -1228,7 +1251,7 @@ export default function PracticeSettingsScreen() {
                 </Text>
               </View>
             ) : (
-              <Button onPress={handleConnectCalendar} variant="outline">
+              <Button onPress={handleConnectCalendar} variant="outline" accessibilityLabel="Connecter Google Calendar">
                 Connecter Google Calendar
               </Button>
             )}
@@ -1264,9 +1287,14 @@ const styles = StyleSheet.create({
 
 - [ ] **Step 7.3 — Ajouter l'entrée "Cabinet" dans `app/settings/index.tsx`**
 
-Dans la liste `items`, ajouter avant l'entrée "Gerer mon abonnement" :
+Dans le tableau `items`, insérer à l'index 1 (entre "Mon profil" et "Gerer mon abonnement") :
 ```typescript
-{ icon: '🏢', label: 'Parametres cabinet', onPress: () => router.push('/settings/practice') },
+const items: SettingsItem[] = [
+  { icon: '👤', label: 'Mon profil', onPress: () => router.push('/settings/profile') },
+  { icon: '🏢', label: 'Parametres cabinet', onPress: () => router.push('/settings/practice') }, // ← nouveau
+  { icon: '💳', label: 'Gerer mon abonnement', onPress: handleManageSubscription },
+  // ... reste inchangé
+];
 ```
 
 - [ ] **Step 7.4 — Commit**
