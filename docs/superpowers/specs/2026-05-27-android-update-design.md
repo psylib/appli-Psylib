@@ -24,13 +24,14 @@ Les endpoints backend sont déjà tous disponibles — le travail est 100% front
 
 **Solution :**
 - Nouveau hook `usePlanFeatures()` dans `hooks/usePlanFeatures.ts`
-  - Lit le `plan` depuis le store auth (`useAuth`)
-  - Expose `{ canAccessAccounting, canAccessAI, canAccessVideo, ... }`
+  - Le plan Stripe n'est **pas** dans le JWT Keycloak (pas de claim custom configuré).
+  - Après login réussi, charger le plan via `GET /api/v1/billing/subscription` et persister `plan` dans le store auth (`auth.store.ts` — champ `plan` existe déjà mais n'est jamais renseigné).
+  - Expose `{ canAccessAccounting, canAccessAI, canAccessVideo, ... }` basé sur ce plan chargé.
 - `app/(tabs)/more.tsx` — entrée Comptabilité grisée + badge "Pro" si Free/Solo
 - `app/accounting/index.tsx` — écran FeatureLock si accès direct (deep link)
 - Même pattern applicable aux autres features gatées (AI, visio instantanée)
 
-**Endpoints :** aucun nouveau — plan lu depuis le JWT existant.
+**Endpoints :** `GET /api/v1/billing/subscription` appelé une fois après login, résultat persisté en store.
 
 ---
 
@@ -58,20 +59,17 @@ livekit-client
 - `LiveKitRoom` connecté au serveur LiveKit OVH HDS (`wss://livekit.psylib.eu`)
 - Grille participants : `VideoTrack` par participant actif
 - Barre de contrôles fixe en bas : mute micro, couper caméra, raccrocher
-- Déconnexion propre sur raccrocher ou retour arrière
+- **Avant tout retour arrière** (bouton raccrocher ET geste system back Android) : appeler `room.disconnect()` explicitement avant `router.back()` pour éviter que le flux vidéo reste actif.
 
-**Nouveau hook `useRoomToken(appointmentId)` dans `hooks/useVideoRooms.ts` :**
-- `POST /api/v1/video/token` — token pour rejoindre un room existant
-
-**Nouveau hook `useInstantVideo()` :**
-- `POST /api/v1/video/instant` → `{ roomName, token }`
-- Gated Solo+ via `usePlanFeatures()`
+**Hooks dans `hooks/useVideoRooms.ts` :**
+- `useGetPsyToken(appointmentId)` — **déjà existant**, appelle `POST /api/v1/video/rooms/:appointmentId/token`. Réutiliser tel quel, ne pas recréer.
+- **Nouveau** `useInstantVideo()` — `POST /api/v1/video/instant` → `{ roomName, token }`. Gated Solo+ via `usePlanFeatures()`.
 
 **Modifications `app/video.tsx` :**
 - Bouton "Visio instantanée" en haut (Solo+) → bottom sheet `InstantVideoSheet`
   - Sélecteur patient optionnel
   - Bouton "Lancer" → appel `useInstantVideo()` → navigate vers `video-room`
-- Bouton "Rejoindre" sur chaque room du jour → `useRoomToken()` → navigate vers `video-room`
+- Bouton "Rejoindre" sur chaque room du jour → `useGetPsyToken()` (existant) → navigate vers `video-room`
 
 **Nouveau composant `components/InstantVideoSheet.tsx` :**
 - Modal React Native (bottom sheet)
@@ -121,20 +119,19 @@ Le web crée un `Appointment` basé sur les disponibilités configurées.
 **Solution :**
 
 **Nouveau fichier `app/settings/practice.tsx` :**
-- **Section Modalité par défaut** — pills "Au cabinet" / "En visio" / "Les deux"
-  - Sauvegardé via `PUT /api/v1/psychologists/me` → champ `default_modality`
 - **Section Message de confirmation** — textarea libre
-  - Sauvegardé via `PUT /api/v1/psychologists/me` → champ `booking_confirmation_message`
+  - Chargé + sauvegardé via `GET/PUT /api/v1/onboarding/profile` → champ `bookingConfirmationMessage`
+  - *(La modalité par défaut est hors périmètre : le champ `default_modality` n'existe pas dans le schéma Prisma — la modalité est gérée au niveau des `ConsultationType`, pas du profil psy)*
 - **Section Google Calendar** — statut connexion + bouton Connecter/Déconnecter
-  - Connexion : `Linking.openURL` vers `https://api.psylib.eu/api/v1/calendar/connect/google`
-  - Statut lu depuis `GET /api/v1/calendar/status`
+  - Connexion : `Linking.openURL` vers `https://api.psylib.eu/api/v1/calendar-sync/google/auth`
+  - Statut lu depuis `GET /api/v1/calendar-sync/status`
 
 **Modification `app/settings/index.tsx` :**
 - Nouvelle entrée "Cabinet" dans le menu → navigate vers `settings/practice`
 
 **Hook `usePracticeSettings()` dans `hooks/usePracticeSettings.ts` :**
-- `GET /api/v1/psychologists/me` (déjà partiellement en place)
-- `PUT /api/v1/psychologists/me` pour les mises à jour
+- `GET /api/v1/onboarding/profile` — chargement du profil psy
+- `PUT /api/v1/onboarding/profile` — mise à jour (même endpoint que le web)
 
 ---
 
@@ -163,7 +160,7 @@ Le web crée un `Appointment` basé sur les disponibilités configurées.
 | `app/accounting/index.tsx` | Modifié |
 | `app/settings/index.tsx` | Modifié |
 | `app/settings/practice.tsx` | Nouveau |
-| `hooks/useVideoRooms.ts` | Modifié (nouveaux hooks) |
+| `hooks/useVideoRooms.ts` | Modifié (ajouter `useInstantVideo` uniquement — `useGetPsyToken` existant réutilisé) |
 | `hooks/useAppointments.ts` | Modifié (useAvailableTimeslots) |
 | `AndroidManifest.xml` | Modifié (permissions) |
 | `package.json` | Modifié (@livekit/react-native) |
@@ -172,6 +169,7 @@ Le web crée un `Appointment` basé sur les disponibilités configurées.
 
 ## Hors périmètre
 
+- Modalité par défaut psy (`default_modality`) — champ absent du schéma Prisma, hors périmètre
 - Minor patients / guardians (complexité élevée, peu d'usage immédiat)
 - Document sharing (pas de viewer PDF natif en place)
 - iOS build (placeholders Apple non configurés dans eas.json)
