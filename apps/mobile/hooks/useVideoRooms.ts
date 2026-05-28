@@ -89,3 +89,24 @@ export function useEndRoom() {
     },
   });
 }
+
+export interface InstantVideoResult {
+  roomName: string;
+  token: string;
+  wsUrl: string;
+}
+
+export function useInstantVideo() {
+  const { getValidToken } = useAuth();
+
+  return useMutation({
+    mutationFn: async (patientId?: string) => {
+      const token = await getValidToken();
+      return apiClient.post<InstantVideoResult>(
+        '/video/instant',
+        patientId ? { patientId } : {},
+        token ?? undefined,
+      );
+    },
+  });
+}
