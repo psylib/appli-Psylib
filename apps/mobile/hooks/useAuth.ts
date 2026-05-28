@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import Constants from 'expo-constants';
 import {
   useKeycloakAuth,
   exchangeCodeForTokens,
@@ -21,6 +22,29 @@ import {
 } from '@/lib/auth';
 import { useAuthStore } from '@/store/auth.store';
 import type { AuthRequest, AuthSessionResult } from 'expo-auth-session';
+
+async function loadPlanFromApi(token: string): Promise<void> {
+  try {
+    const API_BASE = (Constants.expoConfig?.extra?.apiBaseUrl as string | undefined) ?? 'https://api.psylib.eu';
+    const res = await fetch(`${API_BASE}/api/v1/billing/subscription`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const data = await res.json() as { plan?: string };
+    if (data.plan) {
+      const s = useAuthStore.getState();
+      s.setPsychologist({
+        psychologistId: s.psychologistId ?? '',
+        name: s.name ?? '',
+        email: s.email ?? '',
+        role: s.role ?? 'psychologist',
+        plan: data.plan,
+      });
+    }
+  } catch {
+    // silently fail — feature flags degrade to "free"
+  }
+}
 
 /**
  * Decode JWT payload (no verification — server validates the token).
@@ -122,6 +146,7 @@ export function useAuthProvider(): AuthContextValue {
           if (refreshed) {
             setTokenSet(refreshed);
             syncStoreFromToken(refreshed.accessToken);
+            void loadPlanFromApi(refreshed.accessToken);
             setState({
               accessToken: refreshed.accessToken,
               isAuthenticated: true,
@@ -137,6 +162,7 @@ export function useAuthProvider(): AuthContextValue {
         setTokenSet(stored);
         if (!isTokenExpired(stored.expiresAt)) {
           syncStoreFromToken(stored.accessToken);
+          void loadPlanFromApi(stored.accessToken);
         }
         setState({
           accessToken: stored.accessToken,
@@ -165,6 +191,7 @@ export function useAuthProvider(): AuthContextValue {
           );
           setTokenSet(tokens);
           syncStoreFromToken(tokens.accessToken);
+          void loadPlanFromApi(tokens.accessToken);
           setState({
             accessToken: tokens.accessToken,
             isAuthenticated: true,
@@ -253,6 +280,7 @@ export function useAuthProvider(): AuthContextValue {
 
     setTokenSet(refreshed);
     syncStoreFromToken(refreshed.accessToken);
+    void loadPlanFromApi(refreshed.accessToken);
     setState((prev) => ({ ...prev, accessToken: refreshed.accessToken, isAuthenticated: true }));
     return refreshed.accessToken;
   }, [tokenSet, discovery]);
