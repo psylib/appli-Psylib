@@ -88,7 +88,7 @@ export default function SettingsScreen() {
 
   const items: SettingsItem[] = [
     { icon: '👤', label: 'Mon profil', onPress: () => router.push('/settings/profile') },
-    { icon: '🏢', label: 'Parametres cabinet', onPress: () => router.push('/settings/practice') },
+    { icon: '🏢', label: 'Parametres cabinet', onPress: () => router.push('/settings/practice' as any) },
     { icon: '💳', label: 'Gerer mon abonnement', onPress: handleManageSubscription },
     { icon: '🔔', label: 'Notifications', onPress: () => {} },
     { icon: '🔒', label: 'Securite', onPress: () => {} },

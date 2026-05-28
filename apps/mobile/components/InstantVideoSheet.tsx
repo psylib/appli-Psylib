@@ -30,7 +30,7 @@ export function InstantVideoSheet({ visible, onClose }: InstantVideoSheetProps) 
       const result = await instantVideo.mutateAsync(selectedPatientId ?? undefined);
       onClose();
       router.push({
-        pathname: '/video-room',
+        pathname: '/video-room' as any,
         params: { roomName: result.roomName, token: result.token, wsUrl: result.wsUrl },
       });
     } catch {

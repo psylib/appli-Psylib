@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { Input } from '@/components/ui/Input';
@@ -147,7 +147,7 @@ export default function NewAppointmentScreen() {
                       value={selectedDate}
                       mode="date"
                       minimumDate={new Date()}
-                      onChange={(e, date) => {
+                      onChange={(e: DateTimePickerEvent, date?: Date) => {
                         if (Platform.OS === 'android') {
                           setShowDatePicker(false);
                           if (e.type === 'set' && date) { setSelectedDate(date); setSelectedSlot(null); }

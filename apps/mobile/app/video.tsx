@@ -55,7 +55,7 @@ export default function VideoScreen() {
     try {
       const result = await getPsyToken.mutateAsync(appointmentId);
       router.push({
-        pathname: '/video-room',
+        pathname: '/video-room' as any,
         params: { roomName: result.roomName, token: result.token, wsUrl: result.wsUrl },
       });
     } catch {

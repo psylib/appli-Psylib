@@ -15,14 +15,14 @@ import {
   useLocalParticipant,
   useRoomContext,
   useTracks,
-  type TrackReferenceOrPlaceholder,
+  isTrackReference,
 } from '@livekit/react-native';
 import { Track } from 'livekit-client';
 import { Colors } from '@/constants/colors';
 
 export default function VideoRoomScreen() {
   const router = useRouter();
-  const { roomName, token, wsUrl } = useLocalSearchParams<{
+  const { token, wsUrl } = useLocalSearchParams<{
     roomName: string;
     token: string;
     wsUrl: string;
@@ -81,9 +81,9 @@ function RoomContent({ onLeave }: { onLeave: () => void }) {
             <Text style={styles.noVideoText}>En attente du patient...</Text>
           </View>
         ) : (
-          tracks.map((track: TrackReferenceOrPlaceholder) => (
+          tracks.filter(isTrackReference).map((track) => (
             <VideoTrack
-              key={`${track.participant?.identity ?? 'local'}-${track.source}`}
+              key={`${track.participant.identity}-${track.source}`}
               trackRef={track}
               style={styles.videoTrack}
             />
