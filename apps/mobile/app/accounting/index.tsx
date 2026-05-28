@@ -10,12 +10,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { useAccountingDashboard } from '@/hooks/useAccounting';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
 
 function formatEur(n: number): string {
   return n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
@@ -23,7 +25,28 @@ function formatEur(n: number): string {
 
 export default function AccountingDashboardScreen() {
   const router = useRouter();
+  const { canAccessAccounting } = usePlanFeatures();
   const { data, isLoading, refetch, isRefetching } = useAccountingDashboard();
+
+  if (!canAccessAccounting) {
+    return (
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <View style={styles.lockContainer}>
+          <Text style={styles.lockIcon}>🔒</Text>
+          <Text style={styles.lockTitle}>Comptabilite Pro+</Text>
+          <Text style={styles.lockDesc}>
+            {'La comptabilite integree est disponible\na partir du plan Pro (40€/mois).'}
+          </Text>
+          <TouchableOpacity
+            style={styles.lockBtn}
+            onPress={() => void Linking.openURL('https://app.psylib.eu/dashboard/settings/billing')}
+          >
+            <Text style={styles.lockBtnText}>Voir les plans</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -188,4 +211,12 @@ const styles = StyleSheet.create({
   },
   navBtnIcon: { fontSize: 28 },
   navBtnLabel: { fontSize: 14, fontFamily: 'DMSans_600SemiBold', color: Colors.text },
+
+  // Feature lock
+  lockContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 },
+  lockIcon: { fontSize: 48 },
+  lockTitle: { fontSize: 22, fontFamily: 'DMSans_700Bold', color: Colors.text },
+  lockDesc: { fontSize: 15, color: Colors.muted, textAlign: 'center', lineHeight: 22 },
+  lockBtn: { backgroundColor: Colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, marginTop: 8 },
+  lockBtnText: { color: '#FFF', fontSize: 15, fontFamily: 'DMSans_600SemiBold' },
 });

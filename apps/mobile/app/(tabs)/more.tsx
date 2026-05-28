@@ -2,11 +2,12 @@
  * More Screen — Menu grille des features secondaires
  */
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { useUnreadCount } from '@/hooks/useNotifications';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
 
 interface MenuItem {
   icon: string;
@@ -14,16 +15,18 @@ interface MenuItem {
   route: string;
   badge?: number;
   color?: string;
+  locked?: boolean;
 }
 
 export default function MoreScreen() {
   const router = useRouter();
   const unreadCount = useUnreadCount();
+  const { canAccessAccounting } = usePlanFeatures();
 
   const menuItems: MenuItem[] = [
     { icon: '🔔', label: 'Notifications', route: '/notifications', badge: unreadCount },
     { icon: '💬', label: 'Messages', route: '/messages', color: Colors.accent },
-    { icon: '📒', label: 'Comptabilite', route: '/accounting', color: Colors.success },
+    { icon: '📒', label: 'Comptabilite', route: '/accounting', color: Colors.success, locked: !canAccessAccounting },
     { icon: '📹', label: 'Visio', route: '/video', color: Colors.primary },
     { icon: '📊', label: 'Analytics', route: '/analytics', color: Colors.warm },
     { icon: '🧾', label: 'Factures', route: '/invoices', color: Colors.primary },
@@ -41,7 +44,13 @@ export default function MoreScreen() {
             <TouchableOpacity
               key={item.route}
               style={styles.menuItem}
-              onPress={() => router.push(item.route as any)}
+              onPress={() => {
+                if (item.locked) {
+                  Alert.alert('Plan Pro requis', 'La comptabilite est disponible a partir du plan Pro.');
+                  return;
+                }
+                router.push(item.route as any);
+              }}
               accessibilityLabel={item.label}
               accessibilityRole="button"
             >
@@ -50,6 +59,11 @@ export default function MoreScreen() {
                 {item.badge != null && item.badge > 0 && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>{item.badge}</Text>
+                  </View>
+                )}
+                {item.locked === true && (
+                  <View style={styles.lockBadge}>
+                    <Text style={styles.lockBadgeText}>PRO</Text>
                   </View>
                 )}
               </View>
@@ -112,6 +126,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
   badgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
+  lockBadge: {
+    position: 'absolute', top: -4, right: -4,
+    backgroundColor: Colors.warm, borderRadius: 9, paddingHorizontal: 5, height: 18,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  lockBadgeText: { color: '#FFF', fontSize: 9, fontWeight: '700' },
   menuLabel: { fontSize: 13, fontFamily: 'DMSans_500Medium', color: Colors.text, textAlign: 'center' },
   legalSection: { backgroundColor: Colors.surface, borderRadius: 12, padding: 16, gap: 12 },
   legalTitle: { fontSize: 14, fontFamily: 'DMSans_600SemiBold', color: Colors.muted, marginBottom: 4 },
