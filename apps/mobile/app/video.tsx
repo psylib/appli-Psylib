@@ -1,7 +1,7 @@
 /**
  * Video Consultation — Today's rooms with status and actions
  */
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,17 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-  Linking,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useTodayRooms, useCreateRoom, useGetPsyToken, useEndRoom } from '@/hooks/useVideoRooms';
 import type { TodayRoom } from '@/hooks/useVideoRooms';
+import { InstantVideoSheet } from '@/components/InstantVideoSheet';
+import { usePlanFeatures } from '@/hooks/usePlanFeatures';
 
 const STATUS_CONFIG: Record<TodayRoom['status'], { label: string; color: string; bg: string }> = {
   upcoming: { label: 'A venir', color: Colors.muted, bg: `${Colors.muted}15` },
@@ -32,6 +35,9 @@ function formatTime(iso: string): string {
 }
 
 export default function VideoScreen() {
+  const router = useRouter();
+  const { canAccessInstantVideo } = usePlanFeatures();
+  const [showInstantSheet, setShowInstantSheet] = useState(false);
   const { data: rooms, isLoading, refetch, isRefetching } = useTodayRooms();
   const createRoom = useCreateRoom();
   const getPsyToken = useGetPsyToken();
@@ -48,9 +54,10 @@ export default function VideoScreen() {
   const handleJoin = async (appointmentId: string) => {
     try {
       const result = await getPsyToken.mutateAsync(appointmentId);
-      // Open LiveKit room in browser (mobile doesn't have native LiveKit yet)
-      const url = `https://app.psylib.eu/dashboard/video?room=${result.roomName}`;
-      await Linking.openURL(url);
+      router.push({
+        pathname: '/video-room',
+        params: { roomName: result.roomName, token: result.token, wsUrl: result.wsUrl },
+      });
     } catch {
       Alert.alert('Erreur', 'Impossible de rejoindre la salle');
     }
@@ -143,7 +150,22 @@ export default function VideoScreen() {
         refreshing={isRefetching}
         onRefresh={() => void refetch()}
         ListHeaderComponent={
-          <Text style={styles.title}>Consultations video</Text>
+          <>
+            <Text style={styles.title}>Consultations video</Text>
+            {canAccessInstantVideo ? (
+              <TouchableOpacity
+                style={styles.instantBtn}
+                onPress={() => setShowInstantSheet(true)}
+              >
+                <Text style={styles.instantBtnText}>⚡ Visio instantanee</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.instantBtnLocked}>
+                <Text style={styles.instantBtnLockedText}>⚡ Visio instantanee — Plan Solo+</Text>
+              </View>
+            )}
+            <InstantVideoSheet visible={showInstantSheet} onClose={() => setShowInstantSheet(false)} />
+          </>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -174,6 +196,19 @@ const styles = StyleSheet.create({
   statusPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   statusText: { fontSize: 12, fontFamily: 'DMSans_600SemiBold' },
   roomActions: { flexDirection: 'row', gap: 8 },
+
+  // Instant video
+  instantBtn: {
+    marginBottom: 16, padding: 14, borderRadius: 12,
+    backgroundColor: `${Colors.accent}15`, borderWidth: 1.5, borderColor: Colors.accent,
+    alignItems: 'center',
+  },
+  instantBtnText: { color: Colors.accent, fontFamily: 'DMSans_600SemiBold', fontSize: 15 },
+  instantBtnLocked: {
+    marginBottom: 16, padding: 14, borderRadius: 12,
+    backgroundColor: Colors.surface, alignItems: 'center',
+  },
+  instantBtnLockedText: { color: Colors.muted, fontSize: 14 },
 
   // Empty
   empty: { alignItems: 'center', paddingTop: 80, gap: 8 },
