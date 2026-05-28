@@ -45,6 +45,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'USE_BIOMETRIC',
       'USE_FINGERPRINT',
       'CAMERA',
+      'RECORD_AUDIO',
+      'FOREGROUND_SERVICE',
       'READ_CALENDAR',
       'WRITE_CALENDAR',
     ],
@@ -56,6 +58,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: [
     'expo-router',
     'expo-secure-store',
+    '@livekit/react-native',
     [
       'expo-notifications',
       {
