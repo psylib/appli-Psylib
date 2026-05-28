@@ -24,6 +24,13 @@ interface CreateAppointmentDto {
   scheduledAt: string;
   duration: number;
   type?: string;
+  notes?: string;
+  rate?: number;
+  modality?: 'in_person' | 'online';
+}
+
+interface TimeslotResponse {
+  slots: string[];
 }
 
 const APPOINTMENTS_KEY = 'appointments';
@@ -90,6 +97,24 @@ export function useConfirmAppointment() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: [APPOINTMENTS_KEY] });
     },
+  });
+}
+
+export function useAvailableTimeslots(date: string | null) {
+  const { getValidToken } = useAuth();
+
+  return useQuery<string[]>({
+    queryKey: [APPOINTMENTS_KEY, 'timeslots', date],
+    queryFn: async () => {
+      const token = await getValidToken();
+      const res = await apiClient.get<TimeslotResponse | string[]>(
+        `/availability/timeslots?date=${date}`,
+        token ?? undefined,
+      );
+      return Array.isArray(res) ? res : (res as TimeslotResponse).slots ?? [];
+    },
+    enabled: date !== null && date.length > 0,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
