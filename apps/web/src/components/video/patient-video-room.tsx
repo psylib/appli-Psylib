@@ -7,6 +7,7 @@ import {
   useRoomContext,
   RoomAudioRenderer,
   useLocalParticipant,
+  useRemoteParticipants,
 } from '@livekit/components-react';
 import { Track, RoomEvent } from 'livekit-client';
 import { useEffect, useState } from 'react';
@@ -32,9 +33,13 @@ function PatientLayout() {
     };
   }, [room]);
 
+  const remoteParticipants = useRemoteParticipants();
+  const psyIsPresent = remoteParticipants.length > 0;
+
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]);
   const remoteTracks = tracks.filter(t => !t.participant.isLocal);
   const localTrack = tracks.find(t => t.participant.isLocal);
+  const psyVideoTrack = remoteTracks.find(t => t.publication != null);
 
   if (reconnecting) {
     return (
@@ -68,8 +73,18 @@ function PatientLayout() {
   return (
     <div className="flex flex-col h-screen bg-gray-900">
       <div className="flex-1 relative">
-        {remoteTracks.length > 0 && remoteTracks[0]?.publication ? (
-          <VideoTrack trackRef={remoteTracks[0]!} className="w-full h-full object-cover" />
+        {psyIsPresent ? (
+          psyVideoTrack ? (
+            <VideoTrack trackRef={psyVideoTrack} className="w-full h-full object-cover" />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-white/60">
+                <User className="h-20 w-20 mx-auto mb-4 opacity-40" />
+                <p>Psychologue connecté</p>
+                <p className="text-sm mt-1 opacity-60">Caméra désactivée</p>
+              </div>
+            </div>
+          )
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-white/60">
