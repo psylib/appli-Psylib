@@ -42,7 +42,7 @@ function moodBg(m: number) {
   return 'bg-emerald-100 text-emerald-700';
 }
 
-export function PatientPortalSection({ patientId, patientEmail }: { patientId: string; patientEmail?: string | null }) {
+export function PatientPortalSection({ patientId, patientEmail, onEditPatient }: { patientId: string; patientEmail?: string | null; onEditPatient?: () => void }) {
   const { data: session } = useSession();
   const [status, setStatus] = useState<PortalStatus | null>(null);
   const [moods, setMoods] = useState<MoodEntry[]>([]);
@@ -139,9 +139,12 @@ export function PatientPortalSection({ patientId, patientEmail }: { patientId: s
               Actif
             </span>
           ) : !patientEmail ? (
-            <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
-              Ajoutez un email au patient pour l&apos;inviter
-            </span>
+            <button
+              onClick={onEditPatient}
+              className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition-colors"
+            >
+              Ajouter un email pour inviter
+            </button>
           ) : (
             <button
               onClick={handleInvite}

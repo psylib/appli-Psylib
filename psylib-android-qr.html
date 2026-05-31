@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PsyLib — Télécharger l'appli Android</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #F8F7FF; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { background: white; border-radius: 20px; padding: 40px 36px; max-width: 380px; width: 100%; text-align: center; box-shadow: 0 4px 24px rgba(61,82,160,0.10); border: 1px solid #E8E7F5; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; background: #EEF2FF; color: #3D52A0; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 99px; margin-bottom: 20px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .dot { width: 6px; height: 6px; background: #0D9488; border-radius: 50%; }
+    h1 { font-size: 22px; font-weight: 700; color: #1E1B4B; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: #6B7280; margin-bottom: 28px; }
+    .qr-wrap { display: inline-block; padding: 16px; border-radius: 16px; background: white; border: 2px solid #E8E7F5; margin-bottom: 24px; }
+    .qr-wrap img { display: block; border-radius: 8px; }
+    .steps { text-align: left; background: #F8F7FF; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+    .step { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: #374151; }
+    .step + .step { margin-top: 10px; }
+    .step-num { flex-shrink: 0; width: 20px; height: 20px; background: #3D52A0; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+    .link { font-size: 11px; color: #9CA3AF; word-break: break-all; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; margin-bottom: 20px; font-family: monospace; }
+    .version { font-size: 11px; color: #9CA3AF; }
+    .accent { color: #0D9488; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge"><span class="dot"></span> Test interne</div>
+    <h1>PsyLib Android</h1>
+    <p class="subtitle">Scannez pour installer la dernière version</p>
+    <div class="qr-wrap">
+      <img src="data:image/png;base64,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" width="240" height="240" alt="QR code PsyLib Android" />
+    </div>
+    <div class="steps">
+      <div class="step"><span class="step-num">1</span><span>Scannez le QR code avec votre appareil Android</span></div>
+      <div class="step"><span class="step-num">2</span><span>Acceptez de rejoindre le programme de test</span></div>
+      <div class="step"><span class="step-num">3</span><span>Téléchargez <span class="accent">PsyLib</span> depuis le Play Store</span></div>
+    </div>
+    <div class="link">play.google.com/apps/internaltest/4701322018459384531</div>
+    <p class="version">Version 9 · Android uniquement · Test interne</p>
+  </div>
+</body>
+</html>

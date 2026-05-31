@@ -47,7 +47,6 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
         jwksUri,
       }),
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      audience: configService.get<string>('KEYCLOAK_CLIENT_ID'),
       issuer: `${keycloakUrl}/realms/${realm}`,
       algorithms: ['RS256'],
     });

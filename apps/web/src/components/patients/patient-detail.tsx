@@ -131,7 +131,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
       <MspTracker patientId={patientId} />
 
       {/* Portal patient */}
-      <PatientPortalSection patientId={patientId} patientEmail={patient.email} />
+      <PatientPortalSection patientId={patientId} patientEmail={patient.email} onEditPatient={() => setEditOpen(true)} />
 
       {/* Tuteurs (only shown for minor patients) */}
       {patient.isMinor && (

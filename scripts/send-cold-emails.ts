@@ -57,7 +57,7 @@ import * as crypto from 'node:crypto';
 
 const RESEND_API_KEY = process.env['RESEND_API_KEY'];
 const UNSUBSCRIBE_SECRET = process.env['UNSUBSCRIBE_SECRET'] || 'change-me-in-prod';
-const FROM_EMAIL = process.env['COLD_FROM_EMAIL'] || 'Tony de PsyLib <tony@psylib.eu>';
+const FROM_EMAIL = process.env['COLD_FROM_EMAIL'] || 'Tony de PsyLib <tony@send.psylib.eu>';
 const REPLY_TO = process.env['COLD_REPLY_TO'] || 'tony@psylib.eu';
 
 const INPUT_CSV = './tmp/psychologues-liberaux-brevo-ready.csv';
@@ -254,18 +254,26 @@ function footerText(unsubUrl: string): string {
 function template1(lead: Lead): { subject: string; html: string; text: string } {
   const fn = lead.firstName || 'Docteur';
   const unsub = unsubscribePageUrl(lead.email);
-  const subject = `${fn}, petite question sur votre logiciel de cabinet`;
+  const subject = `${fn}, 6 mois offerts sur PsyLib — logiciel cabinet 100% HDS`;
 
   const html = `<div style="${baseStyle()}">
 <p>Bonjour ${fn},</p>
-<p>Je vous écris depuis <strong>PsyLib</strong> — le premier logiciel de gestion de cabinet 100% HDS pour psy libéraux.</p>
-<p>Petite question franche : votre logiciel actuel est-il certifié HDS (Hébergeur de Données de Santé) ?</p>
-<p>L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée patient hébergée en ligne. En pratique, ~80% des psys utilisent des outils non conformes (Drive, Dropbox, Excel, SaaS hébergés hors France) — souvent sans le savoir. Sanction CNIL potentielle : jusqu'à 20 M€ ou 4% du CA.</p>
-<p>PsyLib combine tout ce que Doctolib ne fait <em>pas</em> :<br />
-agenda + notes de séance structurées + comptabilité intégrée + facturation auto + IA clinique + visio sécurisée + espace patient — 100% HDS France.</p>
-<p><strong>Gratuit pour démarrer</strong> — patients et séances illimités, 0€/mois. Les fonctionnalités IA et visio sont disponibles dès 25€/mois (plan Solo).</p>
-<p style="margin:24px 0;"><a href="https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Créer mon compte gratuit →</a></p>
-<p>Ou si vous préférez, je peux vous faire une démo de 15 minutes — répondez simplement à cet email.</p>
+<p>Je vous écris depuis <strong>PsyLib</strong> — le premier logiciel de gestion de cabinet 100% HDS pour psychologues libéraux.</p>
+<p>Je vous contacte avec une offre simple : <strong>6 mois offerts sur le plan Pro</strong> (valeur 240€), sans engagement, sans carte bancaire requise à l'inscription.</p>
+<p>Pourquoi ? Parce que je cherche des psychologues libéraux qui veulent tester sérieusement un outil conforme HDS et me donner leurs retours terrain.</p>
+<p style="background:#F1F0F9;border-left:4px solid #3D52A0;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;">
+  <strong>Plan Pro inclus pendant 6 mois :</strong><br />
+  ✓ Agenda + prise de RDV en ligne<br />
+  ✓ Notes de séance structurées + autosave<br />
+  ✓ Comptabilité intégrée + facturation automatique<br />
+  ✓ IA clinique illimitée (résumés de séance, exercices)<br />
+  ✓ Visio sécurisée HDS (patients individuels ou en groupe)<br />
+  ✓ Espace patient (humeur, journal, exercices)<br />
+  ✓ 100% HDS France — chiffrement AES-256-GCM
+</p>
+<p>Petite question franche au passage : votre logiciel actuel est-il certifié HDS (Hébergeur de Données de Santé) ? L'article L.1111-8 du Code de la santé publique l'impose. En pratique, ~80% des psys utilisent des outils non conformes — souvent sans le savoir. Sanction CNIL : jusqu'à 20 M€.</p>
+<p style="margin:24px 0;"><a href="https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Créer mon compte — 6 mois Pro offerts automatiquement →</a></p>
+<p style="font-size:13px;color:#666;">Le plan Pro s'active automatiquement dès votre inscription — aucune carte bancaire, aucune action supplémentaire.</p>
 <p>Cordialement,<br />
 <strong>Tony</strong><br />
 Fondateur PsyLib — <a href="https://psylib.eu" style="color:#3D52A0;">psylib.eu</a></p>
@@ -275,19 +283,27 @@ ${footerHtml(unsub)}
 
   const text = `Bonjour ${fn},
 
-Je vous écris depuis PsyLib — le premier logiciel de gestion de cabinet 100% HDS pour psy libéraux.
+Je vous écris depuis PsyLib — le premier logiciel de gestion de cabinet 100% HDS pour psychologues libéraux.
 
-Petite question franche : votre logiciel actuel est-il certifié HDS ?
+Je vous contacte avec une offre simple : 6 mois offerts sur le plan Pro (valeur 240€), sans engagement, sans carte bancaire requise à l'inscription.
 
-L'article L.1111-8 du Code de la santé publique l'impose pour toute donnée patient hébergée en ligne. ~80% des psys utilisent des outils non conformes (Drive, Dropbox, Excel, SaaS non-HDS) - souvent sans le savoir. Sanction CNIL : jusqu'à 20 M€ ou 4% du CA.
+Pourquoi ? Parce que je cherche des psychologues libéraux qui veulent tester sérieusement un outil conforme HDS et me donner leurs retours terrain.
 
-PsyLib combine tout ce que Doctolib ne fait PAS : agenda + notes de séance + comptabilité intégrée + facturation auto + IA clinique + visio sécurisée + espace patient - 100% HDS France.
+Plan Pro inclus pendant 6 mois :
+✓ Agenda + prise de RDV en ligne
+✓ Notes de séance structurées + autosave
+✓ Comptabilité intégrée + facturation automatique
+✓ IA clinique illimitée (résumés de séance, exercices)
+✓ Visio sécurisée HDS
+✓ Espace patient (humeur, journal, exercices)
+✓ 100% HDS France — chiffrement AES-256-GCM
 
-Gratuit pour démarrer — patients et séances illimités, 0€/mois. IA et visio dès 25€/mois (Solo).
+Petite question franche : votre logiciel actuel est-il certifié HDS ? L'article L.1111-8 l'impose. ~80% des psys utilisent des outils non conformes - souvent sans le savoir. Sanction CNIL : jusqu'à 20 M€.
 
-Créer mon compte gratuit : https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1
+Créer mon compte — 6 mois Pro offerts automatiquement :
+https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1
 
-Ou répondez à cet email pour une démo de 15 minutes.
+Le plan Pro s'active automatiquement dès votre inscription. Aucune carte bancaire requise.
 
 Cordialement,
 Tony - Fondateur PsyLib
