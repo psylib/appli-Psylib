@@ -70,6 +70,19 @@ export const Colors = {
   savePending: '#F59E0B',
   saveSuccess: '#10B981',
   saveError: '#EF4444',
+
+  // Warm — Sauge / Forêt (dashboard redesign)
+  sageBase: '#4A7C59',
+  sageDark: '#3D6B4A',
+  sageLight: '#6B9E78',
+  sageSurface: '#EEF5EE',
+  sageCard: '#E4F0E4',
+  sageMuted: 'rgba(74,124,89,0.12)',
+  cream: '#FAFAF8',
+  stone: '#F5F4F1',
+  warmText: '#1C1917',
+  warmMuted: '#78716C',
+  warmBorder: '#DDE8DD',
 } as const;
 
 export type ColorKey = keyof typeof Colors;
