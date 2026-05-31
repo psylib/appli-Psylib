@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  scheduleBtnText: { fontSize: 13, fontFamily: 'DMSans_600SemiBold', color: Colors.sageBase },
+  scheduleBtnText: { fontSize: 13, fontFamily: 'DMSans_700Bold', color: Colors.sageBase },
   slot: { flexDirection: 'row', alignItems: 'stretch', gap: 8, minHeight: 48 },
   slotTime: {
     width: 36,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   avatarText: { fontSize: 10, fontWeight: '700', color: '#FFF' },
   apptInfo: { flex: 1 },
-  apptName: { fontSize: 13, fontFamily: 'DMSans_600SemiBold', color: Colors.warmText },
+  apptName: { fontSize: 13, fontFamily: 'DMSans_700Bold', color: Colors.warmText },
   apptSub: { fontSize: 10, color: Colors.warmMuted, marginTop: 1 },
   badge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3, flexShrink: 0 },
   badgeText: { fontSize: 9, fontWeight: '700' },

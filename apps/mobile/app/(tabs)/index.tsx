@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: 11,
-    fontFamily: 'DMSans_600SemiBold',
+    fontFamily: 'DMSans_700Bold',
     color: Colors.sageBase,
   },
   fab: {
