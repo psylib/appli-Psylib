@@ -1,21 +1,22 @@
-/**
- * Tabs Layout — Navigation pills inline (no bottom tab bar)
- * Tab bar hidden — navigation handled by NavPills component in each screen header.
- */
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Colors } from '@/constants/colors';
+import { IconHome, IconPatient, IconCalendar } from '@/components/icons/AppIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarStyle: { display: 'none' },
-        headerStyle: { backgroundColor: Colors.bg },
-        headerTintColor: Colors.text,
+        headerStyle: { backgroundColor: Colors.cream },
+        headerTintColor: Colors.warmText,
         headerTitleStyle: styles.headerTitle,
         headerShadowVisible: false,
+        tabBarActiveTintColor: Colors.sageBase,
+        tabBarInactiveTintColor: '#A8A29E',
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabLabel,
       }}
     >
       <Tabs.Screen
@@ -23,6 +24,9 @@ export default function TabsLayout() {
         options={{
           title: 'Accueil',
           headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <IconHome size={size ?? 22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -30,6 +34,9 @@ export default function TabsLayout() {
         options={{
           title: 'Patients',
           headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <IconPatient size={size ?? 22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -37,9 +44,11 @@ export default function TabsLayout() {
         options={{
           title: 'Agenda',
           headerShown: false,
+          tabBarIcon: ({ color, size }) => (
+            <IconCalendar size={size ?? 22} color={color} />
+          ),
         }}
       />
-      {/* Sessions: accessible via push navigation */}
       <Tabs.Screen
         name="sessions"
         options={{
@@ -47,11 +56,13 @@ export default function TabsLayout() {
           headerShown: false,
         }}
       />
-      {/* More: content moved to ProfileSheet */}
       <Tabs.Screen
         name="more"
         options={{
-          href: null,
+          title: 'Plus',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="ellipsis-horizontal" size={size ?? 22} color={color} />
+          ),
         }}
       />
     </Tabs>
@@ -62,6 +73,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'DMSans_700Bold',
     fontSize: 17,
-    color: Colors.text,
+    color: Colors.warmText,
+  },
+  tabBar: {
+    backgroundColor: '#FFFFFF',
+    borderTopColor: Colors.warmBorder,
+    borderTopWidth: 1,
+    height: 56,
+    paddingBottom: 6,
+  },
+  tabLabel: {
+    fontFamily: 'DMSans_500Medium',
+    fontSize: 11,
   },
 });
