@@ -1,8 +1,4 @@
-/**
- * Dashboard — Accueil
- * Header greeting (no "Dr.") + [+] [bell] + hero today card + 2 KPI + checklist + quick actions + week strip
- */
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,32 +10,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/colors';
-import {
-  IconAdd,
-  IconBell,
-  IconPersonAdd,
-  IconCreate,
-  IconCircleOutline,
-} from '@/components/icons/AppIcons';
-import { KpiCard } from '@/components/KpiCard';
-import { HeroTodayCard } from '@/components/HeroTodayCard';
+import { DashboardHeader } from '@/components/DashboardHeader';
 import { WeekStrip } from '@/components/WeekStrip';
-import { SkeletonKpiRow } from '@/components/SkeletonCard';
+import { DayTimeline } from '@/components/DayTimeline';
 import { ProfileSheet } from '@/components/ProfileSheet';
 import { NotificationDrawer } from '@/components/NotificationDrawer';
 import { useAuthStore } from '@/store/auth.store';
-import { useDashboardStats, useTodayAppointments, useDashboardChecklist } from '@/hooks/useDashboard';
+import { useDashboardStats, useTodayAppointments } from '@/hooks/useDashboard';
 import { useUnreadCount } from '@/hooks/useNotifications';
-import { NavPills } from '@/components/NavPills';
+import { useAppointmentsByDate } from '@/hooks/useAppointmentsByDate';
+import { IconAdd } from '@/components/icons/AppIcons';
 
-function formatDateFR(): string {
-  const now = new Date();
-  const days = ['Dim.', 'Lun.', 'Mar.', 'Mer.', 'Jeu.', 'Ven.', 'Sam.'];
-  const months = [
-    'janvier', 'fevrier', 'mars', 'avril', 'mai', 'juin',
-    'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre',
-  ];
-  return `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+const DAYS_LONG = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+
+function formatSectionLabel(date: Date): string {
+  return `${DAYS_LONG[date.getDay()]} ${date.getDate()} ${MONTHS_FR[date.getMonth()]}`;
 }
 
 export default function DashboardScreen() {
@@ -47,172 +34,90 @@ export default function DashboardScreen() {
   const { name } = useAuthStore();
   const unreadCount = useUnreadCount();
 
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useDashboardStats();
-  const { data: appointments, refetch: refetchAppts } = useTodayAppointments();
-  const { data: checklist } = useDashboardChecklist();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [profileVisible, setProfileVisible] = useState(false);
+  const [notifVisible, setNotifVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [profileVisible, setProfileVisible] = React.useState(false);
-  const [notifVisible, setNotifVisible] = React.useState(false);
+  const { data: stats, refetch: refetchStats } = useDashboardStats();
+  const { data: todayAppts, refetch: refetchToday } = useTodayAppointments();
+  const { appointments, isLoading: apptLoading, refetch: refetchAppts } = useAppointmentsByDate(selectedDate);
+
+  const firstName = name ? name.split(' ')[0] ?? 'Psy' : 'Psy';
+
+  const weekAppointmentDates = useMemo(() => {
+    if (!todayAppts) return new Set<string>();
+    return new Set(todayAppts.map((a) => new Date(a.scheduledAt).toDateString()));
+  }, [todayAppts]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([refetchStats(), refetchAppts()]);
+    await Promise.all([refetchStats(), refetchToday(), refetchAppts()]);
     setRefreshing(false);
   };
 
-  // Extract first name — psychologues are NOT doctors, no "Dr." prefix
-  const displayName = name
-    ? name.split(' ')[0]
-    : 'Psychologue';
-
-  const initials = (name ?? 'U')
-    .split(' ')
-    .map((p) => p[0] ?? '')
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
-  const incompleteChecklist = checklist?.filter((c) => !c.completed) ?? [];
-
-  // Week strip appointment dates
-  const weekAppointmentDates = useMemo(() => {
-    if (!appointments) return new Set<string>();
-    return new Set(appointments.map((a) => new Date(a.scheduledAt).toDateString()));
-  }, [appointments]);
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <DashboardHeader
+        firstName={firstName}
+        todayCount={todayAppts?.length ?? 0}
+        activePatients={stats?.activePatients ?? 0}
+        sessionsThisMonth={stats?.sessionsThisMonth ?? 0}
+        unreadCount={unreadCount}
+        onBellPress={() => setNotifVisible(true)}
+        onAddPress={() => router.push('/(tabs)/sessions/new')}
+      />
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.sageBase}
+          />
         }
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.avatarButton}
-            onPress={() => setProfileVisible(true)}
-            accessibilityLabel="Ouvrir le profil"
-            accessibilityRole="button"
-          >
-            <View style={styles.avatarSmall}>
-              <Text style={styles.avatarSmallText}>{initials}</Text>
-            </View>
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.greeting}>Bonjour {displayName}</Text>
-            <Text style={styles.date}>{formatDateFR()}</Text>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.headerIconButton}
-              onPress={() => router.push('/(tabs)/sessions/new')}
-              accessibilityLabel="Nouvelle seance"
-              accessibilityRole="button"
-            >
-              <IconAdd size={22} color={Colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.headerIconButton}
-              onPress={() => setNotifVisible(true)}
-              accessibilityLabel={`Notifications, ${unreadCount} non lues`}
-              accessibilityRole="button"
-            >
-              <IconBell size={22} color={Colors.text} />
-              {unreadCount > 0 && (
-                <View style={styles.notifBadge}>
-                  <Text style={styles.notifBadgeText}>
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+        {/* Week strip */}
+        <View style={styles.weekContainer}>
+          <WeekStrip
+            appointmentDates={weekAppointmentDates}
+            selectedDate={selectedDate}
+            onDayChange={setSelectedDate}
+          />
+        </View>
+
+        {/* Section label */}
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>{formatSectionLabel(selectedDate)}</Text>
+          <View style={styles.countBadge}>
+            <Text style={styles.countText}>{appointments.length} RDV</Text>
           </View>
         </View>
 
-        {/* Navigation Pills */}
-        <NavPills />
-
-        {/* Hero Today Card */}
-        <HeroTodayCard
-          appointments={appointments ?? []}
+        {/* Day timeline */}
+        <DayTimeline
+          appointments={appointments}
+          isLoading={apptLoading}
           onAppointmentPress={(patientId) => router.push(`/(tabs)/patients/${patientId}`)}
-        />
-
-        {/* KPI Cards — 2 cards only (Revenus moved to Analytics) */}
-        {statsLoading ? (
-          <SkeletonKpiRow />
-        ) : (
-          <View style={styles.kpiRow}>
-            <KpiCard
-              title="Patients actifs"
-              value={String(stats?.activePatients ?? 0)}
-              accentColor={Colors.primary}
-              icon="people"
-            />
-            <KpiCard
-              title="Seances ce mois"
-              value={String(stats?.sessionsThisMonth ?? 0)}
-              accentColor={Colors.accent}
-              icon="document-text"
-            />
-          </View>
-        )}
-
-        {/* Activation checklist for new users */}
-        {incompleteChecklist.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pour commencer</Text>
-            <View style={styles.checklistContainer}>
-              {incompleteChecklist.map((item) => (
-                <View key={item.key} style={styles.checklistItem}>
-                  <IconCircleOutline size={16} color={Colors.muted} />
-                  <Text style={styles.checklistLabel}>{item.label}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Quick Actions — 2 buttons only (RDV via Agenda tab) */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={[styles.quickAction, { backgroundColor: `${Colors.primary}10` }]}
-            onPress={() => router.push('/(tabs)/patients/new')}
-            accessibilityLabel="Ajouter un patient"
-          >
-            <View style={[styles.quickActionIconCircle, { backgroundColor: `${Colors.primary}20` }]}>
-              <IconPersonAdd size={20} color={Colors.primary} />
-            </View>
-            <Text style={styles.quickActionLabel}>+ Patient</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.quickAction, { backgroundColor: `${Colors.accent}10` }]}
-            onPress={() => router.push('/(tabs)/sessions/new')}
-            accessibilityLabel="Nouvelle seance"
-          >
-            <View style={[styles.quickActionIconCircle, { backgroundColor: `${Colors.accent}20` }]}>
-              <IconCreate size={20} color={Colors.accent} />
-            </View>
-            <Text style={styles.quickActionLabel}>+ Seance</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Week Strip */}
-        <WeekStrip
-          appointmentDates={weekAppointmentDates}
-          onDayPress={() => router.push('/(tabs)/calendar')}
+          onSchedulePress={() => router.push('/(tabs)/sessions/new')}
         />
       </ScrollView>
 
-      {/* Profile Sheet */}
-      <ProfileSheet visible={profileVisible} onClose={() => setProfileVisible(false)} />
+      {/* FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/(tabs)/sessions/new')}
+        accessibilityLabel="Nouveau rendez-vous"
+        accessibilityRole="button"
+        activeOpacity={0.85}
+      >
+        <IconAdd size={22} color="#FFF" />
+      </TouchableOpacity>
 
-      {/* Notification Drawer */}
+      <ProfileSheet visible={profileVisible} onClose={() => setProfileVisible(false)} />
       <NotificationDrawer
         visible={notifVisible}
         onClose={() => setNotifVisible(false)}
@@ -224,100 +129,49 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.bg },
-  scroll: { flex: 1 },
-  content: { padding: 20, gap: 24, paddingBottom: 40 },
-  header: {
+  safeArea: { flex: 1, backgroundColor: Colors.sageBase },
+  scroll: { flex: 1, backgroundColor: Colors.cream },
+  content: { padding: 14, gap: 12, paddingBottom: 80 },
+  weekContainer: {
+    backgroundColor: Colors.cream,
+    borderRadius: 14,
+    paddingVertical: 6,
+  },
+  sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
   },
-  avatarButton: {
-    flexShrink: 0,
-  },
-  avatarSmall: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: `${Colors.primary}1A`,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarSmallText: {
+  sectionTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  headerCenter: { flex: 1 },
-  greeting: {
-    fontSize: 22,
     fontFamily: 'DMSans_700Bold',
-    color: Colors.text,
-    letterSpacing: -0.3,
+    color: Colors.warmText,
   },
-  date: {
-    fontSize: 14,
-    fontFamily: 'DMSans_400Regular',
-    color: Colors.muted,
-    marginTop: 1,
+  countBadge: {
+    backgroundColor: Colors.sageCard,
+    borderRadius: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
   },
-  headerActions: {
-    flexDirection: 'row',
-    gap: 4,
-  },
-  headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: Colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  notifBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: Colors.error,
-    borderRadius: 9,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    borderWidth: 2,
-    borderColor: Colors.bg,
-  },
-  notifBadgeText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
-  kpiRow: { flexDirection: 'row', gap: 12 },
-  section: { gap: 12 },
-  sectionTitle: { fontSize: 17, fontFamily: 'DMSans_700Bold', color: Colors.text },
-  checklistContainer: {
-    backgroundColor: Colors.surfaceElevated, borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: Colors.border, gap: 12,
-  },
-  checklistItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  checklistLabel: { fontSize: 14, fontFamily: 'DMSans_400Regular', color: Colors.text },
-  quickActions: { flexDirection: 'row', gap: 12 },
-  quickAction: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 20,
-    borderRadius: 16,
-    gap: 10,
-  },
-  quickActionIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quickActionLabel: {
-    fontSize: 13,
+  countText: {
+    fontSize: 11,
     fontFamily: 'DMSans_600SemiBold',
-    color: Colors.text,
+    color: Colors.sageBase,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 68,
+    right: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: Colors.sageBase,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.sageBase,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
   },
 });
