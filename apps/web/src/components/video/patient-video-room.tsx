@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import { Mic, MicOff, VideoIcon, VideoOff, User } from 'lucide-react';
 
 function PatientLayout() {
-  const { localParticipant } = useLocalParticipant();
+  const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
   const room = useRoomContext();
   const [disconnected, setDisconnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
@@ -35,9 +35,6 @@ function PatientLayout() {
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]);
   const remoteTracks = tracks.filter(t => !t.participant.isLocal);
   const localTrack = tracks.find(t => t.participant.isLocal);
-
-  const isMicOn = localParticipant.isMicrophoneEnabled;
-  const isCamOn = localParticipant.isCameraEnabled;
 
   if (reconnecting) {
     return (

@@ -19,9 +19,7 @@ export function VideoControls({
   onToggleNotes,
   onEndCall,
 }: VideoControlsProps) {
-  const { localParticipant } = useLocalParticipant();
-  const isMicOn = localParticipant.isMicrophoneEnabled;
-  const isCamOn = localParticipant.isCameraEnabled;
+  const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
 
   return (
     <div className="flex items-center justify-between border-t border-border bg-white px-4 py-3">
