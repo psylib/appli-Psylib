@@ -10,28 +10,45 @@ import {
   useRemoteParticipants,
 } from '@livekit/components-react';
 import { Track, RoomEvent } from 'livekit-client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, VideoIcon, VideoOff, User } from 'lucide-react';
 
-function PatientLayout() {
+interface PatientLayoutProps {
+  onConnectionFailed: () => void;
+}
+
+function PatientLayout({ onConnectionFailed }: PatientLayoutProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
   const room = useRoomContext();
   const [disconnected, setDisconnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
+  // Track whether we ever successfully connected — prevents treating a failed
+  // initial connection as "consultation terminée"
+  const hasConnected = useRef(false);
 
   useEffect(() => {
-    const onDisconnected = () => setDisconnected(true);
+    const onConnected = () => { hasConnected.current = true; };
+    const onDisconnected = () => {
+      if (hasConnected.current) {
+        setDisconnected(true);
+      } else {
+        // Never connected — token expired or room gone, retry from the top
+        onConnectionFailed();
+      }
+    };
     const onReconnecting = () => setReconnecting(true);
     const onReconnected = () => setReconnecting(false);
+    room.on(RoomEvent.Connected, onConnected);
     room.on(RoomEvent.Disconnected, onDisconnected);
     room.on(RoomEvent.Reconnecting, onReconnecting);
     room.on(RoomEvent.Reconnected, onReconnected);
     return () => {
+      room.off(RoomEvent.Connected, onConnected);
       room.off(RoomEvent.Disconnected, onDisconnected);
       room.off(RoomEvent.Reconnecting, onReconnecting);
       room.off(RoomEvent.Reconnected, onReconnected);
     };
-  }, [room]);
+  }, [room, onConnectionFailed]);
 
   const remoteParticipants = useRemoteParticipants();
   const psyIsPresent = remoteParticipants.length > 0;
@@ -124,12 +141,13 @@ function PatientLayout() {
 interface PatientVideoRoomProps {
   token: string;
   wsUrl: string;
+  onConnectionFailed: () => void;
 }
 
-export function PatientVideoRoom({ token, wsUrl }: PatientVideoRoomProps) {
+export function PatientVideoRoom({ token, wsUrl, onConnectionFailed }: PatientVideoRoomProps) {
   return (
     <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true}>
-      <PatientLayout />
+      <PatientLayout onConnectionFailed={onConnectionFailed} />
     </LiveKitRoom>
   );
 }

@@ -62,6 +62,14 @@ export default function PatientVideoPage() {
     if (tokenData) setPhase('call');
   };
 
+  // Called by PatientVideoRoom when the LiveKit connection never established
+  // (token expired, room gone). Re-fetch a fresh token then go back to waiting room.
+  const handleConnectionFailed = useCallback(async () => {
+    setPhase('loading');
+    setTokenData(null);
+    await checkToken();
+  }, [checkToken]);
+
   if (phase === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -96,7 +104,13 @@ export default function PatientVideoPage() {
   }
 
   if (phase === 'call' && tokenData) {
-    return <PatientVideoRoom token={tokenData.token} wsUrl={tokenData.wsUrl} />;
+    return (
+      <PatientVideoRoom
+        token={tokenData.token}
+        wsUrl={tokenData.wsUrl}
+        onConnectionFailed={handleConnectionFailed}
+      />
+    );
   }
 
   return null;
