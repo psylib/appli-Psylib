@@ -1,25 +1,44 @@
 # PsyScale — LiveKit Server Configuration (OVH HDS)
-# Ports : 7880 (HTTP API), 7881 (RTC UDP), 50000-50200 (media), 7882 (TURN TLS)
+#
+# Ports :
+#   7880/tcp  — HTTP/WebSocket API (derrière nginx https://video.psylib.eu)
+#   7881/udp  — RTC media (UDP mux, un seul port pour tout le WebRTC)
+#   7881/tcp  — RTC fallback ICE-TCP
+#   7882/tcp  — TURN TLS (turns:)
+#   50000-50200/udp — plage de relais TURN (distincte du media RTC)
+#
+# ⚠️ NE JAMAIS combiner `udp_port` ET `port_range_start/end` dans rtc:
+#    ce sont deux modes mutuellement exclusifs. Les mettre ensemble empêche
+#    LiveKit de binder le socket UDP → AUCUNE connexion WebRTC ne fonctionne.
+#    (cause racine de la panne visio diagnostiquée le 2026-06-01)
 
 port: 7880
 bind_addresses:
   - ""
 rtc:
+  # UDP mux : un seul port UDP persistant (7881) pour tout le media WebRTC.
   udp_port: 7881
-  port_range_start: 50000
-  port_range_end: 50200
-  use_external_ip: true
-  # Le VPS a une seule IP publique — LiveKit la détecte automatiquement
+  # Fallback ICE-TCP quand l'UDP est bloqué côté client (réseaux restrictifs).
+  tcp_port: 7881
+  # Le VPS OVH a l'IP publique DIRECTEMENT sur l'interface (pas de NAT) →
+  # use_external_ip: false + node_ip. (Mettre true seulement derrière NAT type AWS.)
+  use_external_ip: false
+  node_ip: 51.178.31.68
 redis:
   address: localhost:6380
 keys:
-  # IMPORTANT: Remplacer par les vraies clés avant déploiement
-  # Générer avec: docker run --rm livekit/generate
+  # IMPORTANT : remplacer par les vraies clés avant déploiement.
+  # Générer avec : docker run --rm livekit/generate
   REPLACE_API_KEY: REPLACE_API_SECRET
 turn:
   enabled: true
   domain: video.psylib.eu
   tls_port: 7882
+  cert_file: /etc/letsencrypt/live/video.psylib.eu/fullchain.pem
+  key_file: /etc/letsencrypt/live/video.psylib.eu/privkey.pem
+  # Plage de relais TURN — NE DOIT PAS chevaucher le media RTC (udp_port 7881).
+  relay_range_start: 50000
+  relay_range_end: 50200
 room:
   empty_timeout: 300  # 5 minutes — nettoyage rooms vides
 logging:

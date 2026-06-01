@@ -4,13 +4,17 @@
 
 services:
   livekit:
-    image: livekit/livekit-server:v1.8
+    # Version épinglée — NE PAS utiliser :latest en prod (un pull surprise
+    # peut casser la visio). Bumper volontairement après test.
+    image: livekit/livekit-server:v1.12.0
     container_name: livekit
     restart: unless-stopped
     network_mode: host
     command: ["--config", "/etc/livekit.yaml"]
     volumes:
       - ./livekit.yaml:/etc/livekit.yaml:ro
+      # Certificats Let's Encrypt requis pour le TURN TLS (turns:7882)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       redis-livekit:
         condition: service_healthy
