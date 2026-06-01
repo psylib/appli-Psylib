@@ -64,16 +64,20 @@ export default function ConsultationRoomPage() {
   }, [session?.accessToken, roomId, router]);
 
   const handleEndCall = async () => {
-    if (!session?.accessToken || ending) return;
+    if (ending) return;
     setEnding(true);
+    // Quitter la visio doit TOUJOURS faire sortir le psy de la salle, même si
+    // l'appel backend échoue ou si le token a expiré pendant une longue séance.
+    // Le cron de nettoyage des rooms orphelines fermera toute room non close ici.
     try {
-      await videoApi.endRoom(roomId, session.accessToken);
+      if (session?.accessToken) {
+        await videoApi.endRoom(roomId, session.accessToken);
+      }
+    } catch (err: unknown) {
+      console.error('Fermeture de la visio échouée (sortie forcée) :', err);
+    } finally {
       void queryClient.invalidateQueries({ queryKey: ['video-today'] });
       router.push('/dashboard/video');
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur lors de la fermeture';
-      setError(message);
-      setEnding(false);
     }
   };
 
