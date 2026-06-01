@@ -13,6 +13,7 @@ import { Track, RoomEvent } from 'livekit-client';
 import { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff } from 'lucide-react';
 import { videoRoomOptions } from '@/lib/video/livekit-options';
+import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 
 interface PatientLayoutProps {
   onConnectionFailed: () => void;
@@ -20,6 +21,7 @@ interface PatientLayoutProps {
 
 function PatientLayout({ onConnectionFailed }: PatientLayoutProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
+  useKrispNoiseFilter();
   const room = useRoomContext();
   const [disconnected, setDisconnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);

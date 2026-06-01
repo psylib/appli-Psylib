@@ -11,6 +11,7 @@ import { useVideoCall } from '@/hooks/use-video-call';
 import { VideoControls } from './video-controls';
 import { VideoGrid } from './video-grid';
 import { videoRoomOptions } from '@/lib/video/livekit-options';
+import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 import { useState, useEffect } from 'react';
 
 interface VideoRoomProps {
@@ -23,6 +24,7 @@ interface VideoRoomProps {
 
 function VideoLayout({ plannedDurationMin, notesPanel, onCallEnd }: Omit<VideoRoomProps, 'token' | 'wsUrl'>) {
   const [showNotes, setShowNotes] = useState(true);
+  useKrispNoiseFilter();
   const { elapsedSeconds, handleConnected, handleDisconnected, isReconnecting } = useVideoCall({
     onDisconnected: () => {},
   });
