@@ -74,7 +74,7 @@ const jsonLd = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              "Oui, dans les mêmes conditions que les séances en présentiel. Le dispositif Mon Soutien Psy s'applique également aux séances en visio sur prescription médicale. Certaines mutuelles remboursent les séances en ligne avec les mêmes modalités que le présentiel.",
+              "Oui, dans les mêmes conditions que les séances en présentiel. Le dispositif Mon Soutien Psy s'applique également aux séances en visio, en accès direct sans prescription médicale. Certaines mutuelles remboursent les séances en ligne avec les mêmes modalités que le présentiel.",
           },
         },
       ],
@@ -288,7 +288,7 @@ export default function PagePsychoEnLigne() {
               },
               {
                 q: "Les séances en ligne sont-elles remboursées ?",
-                a: "Oui, dans les mêmes conditions que le présentiel. Mon Soutien Psy s'applique aussi aux séances visio sur prescription. Certaines mutuelles remboursent les séances en ligne.",
+                a: "Oui, dans les mêmes conditions que le présentiel. Mon Soutien Psy s'applique aussi aux séances visio, en accès direct sans prescription. Certaines mutuelles remboursent les séances en ligne.",
               },
               {
                 q: "Quelles situations contre-indiquent la thérapie en ligne ?",

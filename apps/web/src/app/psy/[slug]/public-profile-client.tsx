@@ -540,7 +540,7 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
               <div className="flex items-start gap-2 text-xs text-emerald-700 bg-emerald-50 rounded-xl p-3">
                 <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <p>
-                  <strong>Dispositif Mon Soutien Psy</strong> — 12 séances remboursées par la Sécurité sociale, sur prescription de votre médecin généraliste. Accessible dès 3 ans, sans avance de frais.
+                  <strong>Dispositif Mon Soutien Psy</strong> — 12 séances par an remboursées par la Sécurité sociale (50&nbsp;€/séance), en accès direct, sans prescription médicale. Accessible dès 3 ans. Vous avancez les frais puis êtes remboursé.
                 </p>
               </div>
             </div>

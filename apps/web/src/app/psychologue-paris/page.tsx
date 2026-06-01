@@ -12,7 +12,7 @@ const city: CityConfig = {
   faq: [
     {
       q: 'Quel est le tarif moyen d\'une séance de psychologue à Paris ?',
-      a: 'À Paris, les tarifs des psychologues libéraux sont plus élevés qu\'en province. Une séance individuelle de 50 minutes coûte en moyenne 90 à 130 euros dans la capitale, avec des tarifs pouvant dépasser 150 euros chez les praticiens très expérimentés ou très spécialisés. Les séances en visio peuvent être légèrement moins chères. Le dispositif Mon Soutien Psy permet d\'accéder à 8 séances à 50 euros (sur prescription médicale).',
+      a: 'À Paris, les tarifs des psychologues libéraux sont plus élevés qu\'en province. Une séance individuelle de 50 minutes coûte en moyenne 90 à 130 euros dans la capitale, avec des tarifs pouvant dépasser 150 euros chez les praticiens très expérimentés ou très spécialisés. Les séances en visio peuvent être légèrement moins chères. Le dispositif Mon Soutien Psy permet d\'accéder à 12 séances par an à 50 euros, en accès direct sans prescription médicale (remboursées à 60 % par l\'Assurance Maladie).',
     },
     {
       q: 'Comment trouver un psychologue disponible rapidement à Paris ?',

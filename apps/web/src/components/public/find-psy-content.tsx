@@ -512,7 +512,7 @@ export function FindPsyContent() {
                     <span className="text-xs font-normal bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">Remboursé SS</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Uniquement les psys conventionnés au dispositif Mon soutien psy (8 séances remboursées par la Sécurité sociale sur prescription médicale)
+                    Uniquement les psys conventionnés au dispositif Mon soutien psy (12 séances par an remboursées par la Sécurité sociale, en accès direct sans prescription médicale)
                   </p>
                 </div>
               </label>
@@ -674,10 +674,10 @@ export function FindPsyContent() {
                       Dispositif Mon soutien psy
                     </p>
                     <p className="text-xs text-green-700 leading-relaxed">
-                      Ce dispositif permet de bénéficier de <strong>8 séances remboursées par an</strong> chez
-                      un psychologue conventionné, sur prescription de votre médecin traitant. Le ticket modérateur
-                      reste à votre charge (ou pris en charge par votre mutuelle). Votre médecin doit vous
-                      adresser un <strong>courrier d&apos;orientation</strong> avant la première séance.
+                      Ce dispositif permet de bénéficier de <strong>12 séances remboursées par an</strong> (50&nbsp;€/séance) chez
+                      un psychologue conventionné, <strong>en accès direct, sans prescription médicale</strong>. Vous avancez
+                      les frais puis êtes remboursé par l&apos;Assurance Maladie ; le ticket modérateur reste à votre charge
+                      (ou pris en charge par votre mutuelle).
                     </p>
                   </div>
                 </div>

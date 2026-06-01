@@ -36,7 +36,7 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'Qu\'est-ce que le dispositif Mon Soutien Psy ?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Mon Soutien Psy (anciennement Mon Psy) est un dispositif permettant à des patients souffrant de troubles psychiques légers à modérés d\'accéder à 8 séances chez un psychologue libéral remboursées par l\'Assurance Maladie, sur prescription du médecin traitant. Le tarif conventionné est de 50 euros par séance, dont 40 euros remboursés par l\'AM et 10 euros à la charge du patient (ou de sa mutuelle).' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Mon Soutien Psy (anciennement Mon Psy) est un dispositif permettant à des patients souffrant de troubles psychiques légers à modérés d\'accéder à 12 séances par an chez un psychologue libéral remboursées par l\'Assurance Maladie, en accès direct, sans prescription médicale préalable (depuis 2024). Le tarif conventionné est de 50 euros par séance, dont 60 % (30 euros) remboursés par l\'Assurance Maladie et 40 % (20 euros) à la charge du patient ou de sa mutuelle.' },
         },
         {
           '@type': 'Question',
@@ -88,7 +88,7 @@ export default function PageConventionnement() {
           <p className="leading-relaxed">
             Depuis le lancement de Mon Psy en 2022 (devenu Mon Soutien Psy en 2024), le paysage
             du remboursement des soins psychologiques en France a profondément évolué. Bien que
-            le dispositif reste limité (8 séances/an à un tarif inférieur aux honoraires habituels),
+            le dispositif reste encadré (12 séances/an à un tarif conventionné inférieur aux honoraires habituels),
             il constitue une opportunité de développement pour de nombreux praticiens libéraux.
             Ce guide détaille les modalités pratiques et financières de l&apos;adhésion.
           </p>
@@ -98,10 +98,10 @@ export default function PageConventionnement() {
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">Fonctionnement du dispositif</h2>
           <div className="space-y-3">
             {[
-              { step: '1', text: 'Le médecin traitant prescrit jusqu\'à 8 séances de psychologie pour un patient présentant des troubles légers à modérés (score PHQ-9 ou GAD-7 entre 5 et 19).' },
+              { step: '1', text: 'Le patient prend rendez-vous directement, sans prescription médicale préalable, pour un trouble psychique d\'intensité légère à modérée (accessible dès 3 ans).' },
               { step: '2', text: 'Le patient choisit un psychologue adhérent au dispositif dans l\'annuaire Mon Soutien Psy.' },
-              { step: '3', text: 'Les séances sont facturées 50 euros. Le praticien télétransmet la feuille de soins à l\'Assurance Maladie qui rembourse 40 euros directement au patient (ou au praticien si tiers-payant).' },
-              { step: '4', text: 'Le praticien adresse un compte-rendu au médecin prescripteur à l\'issue du suivi.' },
+              { step: '3', text: 'Le parcours comprend jusqu\'à 12 séances par an (1 entretien d\'évaluation puis jusqu\'à 11 séances de suivi), facturées 50 euros. Le praticien télétransmet la feuille de soins à l\'Assurance Maladie qui rembourse 60 % (30 euros), le reste étant à la charge du patient ou de sa mutuelle.' },
+              { step: '4', text: 'Le psychologue peut, avec l\'accord du patient, échanger avec le médecin traitant pour assurer la coordination du parcours de soins.' },
             ].map((item) => (
               <div key={item.step} className="flex gap-4 rounded-xl border border-gray-200 p-4">
                 <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#3D52A0] text-sm font-bold text-white">{item.step}</span>
@@ -133,8 +133,8 @@ export default function PageConventionnement() {
           <h2 className="mb-6 font-playfair text-2xl font-bold text-[#1E1B4B]">Questions fréquentes</h2>
           <div className="space-y-4">
             {[
-              { q: "Peut-on pratiquer le tiers-payant dans le cadre de Mon Soutien Psy ?", a: "Oui. Dans le cadre de Mon Soutien Psy, le praticien peut pratiquer le tiers-payant partiel (l'AM rembourse 40 euros directement au praticien, le patient ne paie que 10 euros) ou le tiers-payant intégral si la mutuelle du patient couvre les 10 euros restants. Les modalités sont choisies lors de l'adhésion au dispositif." },
-              { q: "Y a-t-il une limite au nombre de patients MSP qu'on peut suivre ?", a: "Non, il n'y a pas de quota de patients MSP. Cependant, chaque patient ne peut bénéficier que de 8 séances par an dans ce cadre. Si le suivi doit se poursuivre au-delà, il passe au tarif libre ou fait l'objet d'une nouvelle prescription annuelle." },
+              { q: "Peut-on pratiquer le tiers-payant dans le cadre de Mon Soutien Psy ?", a: "Oui. Dans le cadre de Mon Soutien Psy, le praticien peut pratiquer le tiers-payant partiel (l'Assurance Maladie rembourse 30 euros directement au praticien, le patient ne paie que 20 euros) ou le tiers-payant intégral si la mutuelle du patient couvre les 20 euros restants. À défaut, le patient avance les 50 euros et se fait rembourser. Les modalités sont choisies lors de l'adhésion au dispositif." },
+              { q: "Y a-t-il une limite au nombre de patients MSP qu'on peut suivre ?", a: "Non, il n'y a pas de quota de patients MSP. Cependant, chaque patient ne peut bénéficier que de 12 séances par an dans ce cadre. Si le suivi doit se poursuivre au-delà, il passe au tarif libre ou est renouvelé l'année suivante." },
               { q: "Comment sont transmises les feuilles de soins pour Mon Soutien Psy ?", a: "La transmission se fait via la carte Vitale du patient et le système de télétransmission SESAM-Vitale. Les psychologues adhérents au dispositif reçoivent un lecteur de carte Vitale et accèdent au logiciel de facturation dédié. PsyLib s'interface avec ce système pour automatiser la facturation MSP." },
             ].map((item) => (
               <details key={item.q} className="rounded-xl border border-gray-200 p-5">

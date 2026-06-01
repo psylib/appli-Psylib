@@ -63,7 +63,7 @@ const jsonLd = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              'Les séances chez un psychologue libéral hors dispositif Mon Psy ne sont pas remboursées par la Sécurité sociale. Seul le dispositif Mon Soutien Psy (ex-Mon Psy) permet un remboursement partiel de 8 séances par an, sur prescription médicale, pour des troubles légers à modérés. En dehors de ce dispositif, seules certaines mutuelles remboursent tout ou partie des honoraires.',
+              'Les séances chez un psychologue libéral hors dispositif Mon Psy ne sont pas remboursées par la Sécurité sociale. Seul le dispositif Mon Soutien Psy (ex-Mon Psy) permet un remboursement partiel de 12 séances par an, en accès direct sans prescription médicale, pour des troubles légers à modérés. En dehors de ce dispositif, seules certaines mutuelles remboursent tout ou partie des honoraires.',
           },
         },
         {
@@ -337,11 +337,11 @@ export default function PageTarifPsychologue() {
             Tarifs et dispositif Mon Soutien Psy
           </h2>
           <p className="mb-4 leading-relaxed">
-            Le dispositif Mon Soutien Psy (anciennement Mon Psy, réformé en 2024) permet à des
-            patients adressés par leur médecin traitant de bénéficier de séances remboursées par
-            l&apos;Assurance Maladie. Le tarif conventionnel est fixé par convention à 50 euros
-            par séance (dont 40 euros remboursés par l&apos;Assurance Maladie, et 10 euros
-            à la charge du patient ou de sa mutuelle).
+            Le dispositif Mon Soutien Psy (anciennement Mon Psy, réformé en 2024) permet à tout
+            patient, en accès direct et sans prescription médicale, de bénéficier de jusqu&apos;à
+            12 séances par an remboursées par l&apos;Assurance Maladie. Le tarif conventionnel est
+            fixé par convention à 50 euros par séance (dont 30 euros, soit 60 %, remboursés par
+            l&apos;Assurance Maladie, et 20 euros à la charge du patient ou de sa mutuelle).
           </p>
           <p className="mb-4 leading-relaxed">
             L&apos;adhésion à ce dispositif est volontaire. Les praticiens qui y adhèrent
@@ -409,7 +409,7 @@ export default function PageTarifPsychologue() {
               },
               {
                 q: "Les séances sont-elles remboursées par la Sécurité sociale ?",
-                a: "Hors dispositif Mon Soutien Psy, les séances chez un psychologue libéral ne sont pas remboursées par la Sécurité sociale. Le dispositif Mon Soutien Psy permet de bénéficier de 8 séances remboursées sur prescription médicale. Certaines mutuelles proposent des remboursements partiels ou forfaitaires.",
+                a: "Hors dispositif Mon Soutien Psy, les séances chez un psychologue libéral ne sont pas remboursées par la Sécurité sociale. Le dispositif Mon Soutien Psy permet de bénéficier de 12 séances remboursées par an, en accès direct sans prescription médicale. Certaines mutuelles proposent des remboursements partiels ou forfaitaires.",
               },
               {
                 q: "Comment fixer son tarif quand on s'installe en libéral ?",

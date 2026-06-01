@@ -47,7 +47,7 @@ const jsonLd = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              'Hors dispositif Mon Soutien Psy, les séances chez un psychologue libéral ne sont pas remboursées par la Sécurité sociale. Seul Mon Soutien Psy permet un remboursement de 40 euros par séance (sur 8 séances maximum par an) sur prescription du médecin traitant, pour des troubles légers à modérés.',
+              'Hors dispositif Mon Soutien Psy, les séances chez un psychologue libéral ne sont pas remboursées par la Sécurité sociale. Seul Mon Soutien Psy permet un remboursement de 30 euros par séance (60 % du tarif de 50 euros, sur 12 séances maximum par an), en accès direct sans prescription médicale, pour des troubles légers à modérés.',
           },
         },
         {
@@ -74,7 +74,7 @@ const jsonLd = {
           acceptedAnswer: {
             '@type': 'Answer',
             text:
-              'Mon Soutien Psy est un dispositif de remboursement conditionné à une prescription médicale et limité à 8 séances par an pour des troubles légers à modérés. Le tarif est conventionné à 50 euros. En consultation libérale classique, le praticien fixe librement ses honoraires, sans prescription requise, sans limite de séances ni de pathologie ciblée.',
+              'Mon Soutien Psy est un dispositif de remboursement accessible en accès direct (sans prescription médicale) et limité à 12 séances par an pour des troubles légers à modérés. Le tarif est conventionné à 50 euros, remboursé à 60 % par l\'Assurance Maladie. En consultation libérale classique, le praticien fixe librement ses honoraires, sans limite de séances ni de pathologie ciblée.',
           },
         },
       ],
@@ -157,10 +157,10 @@ export default function PageRemboursementMutuelle() {
             Le dispositif Mon Soutien Psy
           </h3>
           <p className="mb-4 leading-relaxed">
-            Mon Soutien Psy permet à tout assuré social de bénéficier de 8 séances de
-            psychologie remboursées par an, sur prescription d&apos;un médecin traitant. Le
-            tarif est fixé à 50 euros par séance, dont 40 euros remboursés par l&apos;Assurance
-            Maladie. Le reste à charge de 10 euros peut être couvert par la mutuelle selon le
+            Mon Soutien Psy permet à tout assuré social, dès 3 ans, de bénéficier de 12 séances de
+            psychologie remboursées par an, en accès direct, sans prescription médicale préalable. Le
+            tarif est fixé à 50 euros par séance, dont 30 euros (60 %) remboursés par l&apos;Assurance
+            Maladie. Le reste à charge de 20 euros peut être couvert par la mutuelle selon le
             contrat.
           </p>
           <p className="mb-4 leading-relaxed">
@@ -174,11 +174,11 @@ export default function PageRemboursementMutuelle() {
           <div className="mb-4 rounded-xl border border-gray-200 p-4">
             <p className="font-semibold text-[#1E1B4B]">Résumé Mon Soutien Psy</p>
             <ul className="mt-2 space-y-1 text-sm text-gray-700">
-              <li>• Prescription médicale obligatoire</li>
-              <li>• Maximum 8 séances remboursées par an</li>
-              <li>• Tarif : 50 € dont 40 € remboursés par l&apos;Assurance Maladie</li>
-              <li>• Reste à charge patient : 10 € (souvent couvert par mutuelle)</li>
-              <li>• Profil ciblé : troubles légers à modérés</li>
+              <li>• Accès direct, sans prescription médicale</li>
+              <li>• Maximum 12 séances remboursées par an</li>
+              <li>• Tarif : 50 € dont 30 € (60 %) remboursés par l&apos;Assurance Maladie</li>
+              <li>• Reste à charge patient : 20 € (souvent couvert par mutuelle)</li>
+              <li>• Profil ciblé : troubles légers à modérés, dès 3 ans</li>
             </ul>
           </div>
         </section>
@@ -279,7 +279,7 @@ export default function PageRemboursementMutuelle() {
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="px-4 py-3 font-medium">Prescription requise</td>
-                  <td className="px-4 py-3">Oui (médecin traitant)</td>
+                  <td className="px-4 py-3">Non (accès direct)</td>
                   <td className="px-4 py-3">Non</td>
                 </tr>
                 <tr className="bg-gray-50">
@@ -289,12 +289,12 @@ export default function PageRemboursementMutuelle() {
                 </tr>
                 <tr>
                   <td className="px-4 py-3 font-medium">Remboursement Sécu</td>
-                  <td className="px-4 py-3">40 €/séance</td>
+                  <td className="px-4 py-3">30 €/séance (60 %)</td>
                   <td className="px-4 py-3">0 €</td>
                 </tr>
                 <tr className="bg-gray-50">
                   <td className="px-4 py-3 font-medium">Nombre de séances</td>
-                  <td className="px-4 py-3">8 max/an</td>
+                  <td className="px-4 py-3">12 max/an</td>
                   <td className="px-4 py-3">Illimité</td>
                 </tr>
                 <tr>
@@ -336,7 +336,7 @@ export default function PageRemboursementMutuelle() {
             {[
               {
                 q: "La Sécurité sociale rembourse-t-elle les séances chez un psychologue libéral ?",
-                a: "Hors dispositif Mon Soutien Psy, non. Mon Soutien Psy permet un remboursement de 40 euros par séance (sur 8 séances max/an) sur prescription médicale pour des troubles légers à modérés.",
+                a: "Hors dispositif Mon Soutien Psy, non. Mon Soutien Psy permet un remboursement de 30 euros par séance (60 % du tarif de 50 euros, sur 12 séances max/an), en accès direct sans prescription médicale, pour des troubles légers à modérés.",
               },
               {
                 q: "Ma mutuelle peut-elle rembourser les séances de psychologue ?",
@@ -344,7 +344,7 @@ export default function PageRemboursementMutuelle() {
               },
               {
                 q: "Quelle différence entre Mon Soutien Psy et une consultation libérale classique ?",
-                a: "Mon Soutien Psy est conditionné à une prescription médicale, limité à 8 séances par an avec un tarif conventionné de 50 euros. La consultation libérale classique est libre de toute prescription, sans limite de séances, avec des honoraires fixés librement.",
+                a: "Mon Soutien Psy est accessible en accès direct (sans prescription médicale), limité à 12 séances par an avec un tarif conventionné de 50 euros remboursé à 60 % par l'Assurance Maladie. La consultation libérale classique est sans limite de séances, avec des honoraires fixés librement.",
               },
               {
                 q: "Qu'est-ce qu'une attestation de séance pour la mutuelle ?",

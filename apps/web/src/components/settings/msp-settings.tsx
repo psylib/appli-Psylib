@@ -152,8 +152,8 @@ export function MspSettings({ token: tokenProp }: { token?: string }) {
         <div className="text-xs text-muted-foreground space-y-1">
           <p>
             <strong className="text-foreground">Mon Soutien Psy</strong> permet aux patients
-            orientes par un medecin d&apos;acceder a 12 seances par an, remboursees par l&apos;Assurance Maladie
-            a hauteur de 50 EUR par seance.
+            d&apos;acceder a 12 seances par an, en acces direct sans prescription medicale, remboursees par
+            l&apos;Assurance Maladie a hauteur de 50 EUR par seance. Le patient avance les frais puis est rembourse.
           </p>
           <p>
             En activant cette option, deux motifs de consultation Mon Soutien Psy
