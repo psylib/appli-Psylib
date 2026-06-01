@@ -5,6 +5,7 @@ import { KeycloakGuard } from './guards/keycloak.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { RppsVerificationService } from './rpps-verification.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
@@ -13,7 +14,13 @@ import { NotificationsModule } from '../notifications/notifications.module';
     NotificationsModule,
   ],
   controllers: [AuthController],
-  providers: [KeycloakJwtStrategy, KeycloakGuard, RolesGuard, AuthService],
+  providers: [
+    KeycloakJwtStrategy,
+    KeycloakGuard,
+    RolesGuard,
+    AuthService,
+    RppsVerificationService,
+  ],
   exports: [KeycloakGuard, RolesGuard, PassportModule],
 })
 export class AuthModule {}

@@ -375,6 +375,7 @@ model Psychologist {
   calendarConnection       CalendarConnection?
   externalCalendarEvents   ExternalCalendarEvent[]
   bookingConfirmationMessage String?                @map("booking_confirmation_message")
+  rppsVerifiedAt           DateTime?                @map("rpps_verified_at")
 
   @@map("psychologists")
 }

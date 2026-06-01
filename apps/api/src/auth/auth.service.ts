@@ -1,6 +1,7 @@
 import {
   Injectable,
   Logger,
+  BadRequestException,
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
+import { RppsVerificationService } from './rpps-verification.service';
+import type { RppsVerificationResult } from './rpps-verification.service';
 import { SubscriptionPlan, SubscriptionStatus } from '@psyscale/shared-types';
 
 @Injectable()
@@ -24,6 +27,7 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
+    private readonly rppsVerification: RppsVerificationService,
   ) {
     this.keycloakUrl = config.getOrThrow<string>('KEYCLOAK_URL');
     this.realm = config.getOrThrow<string>('KEYCLOAK_REALM');
@@ -53,6 +57,18 @@ export class AuthService {
       );
     }
 
+    // Vérification du numéro ADELI/RPPS contre l'annuaire officiel des
+    // professionnels de santé. Bloque les faux numéros / non-psychologues.
+    const rppsResult = await this.rppsVerification.verify(adeliOrRpps);
+    if (rppsResult.blocking) {
+      this.logger.warn(
+        `Inscription refusée (${rppsResult.status}) pour ${email}`,
+      );
+      throw new BadRequestException(
+        rppsResult.message ?? 'Numéro ADELI/RPPS invalide.',
+      );
+    }
+
     const adminToken = await this.getAdminToken();
     if (!adminToken) {
       throw new InternalServerErrorException(
@@ -72,14 +88,24 @@ export class AuthService {
     await this.assignKeycloakRole(adminToken, userId, 'psychologist');
 
     // 3. Create user + psychologist in DB
-    await this.createDbRecords(userId, email, firstName, lastName, adeliOrRpps);
+    await this.createDbRecords(
+      userId,
+      email,
+      firstName,
+      lastName,
+      adeliOrRpps,
+      rppsResult.status === 'verified',
+    );
 
     // 4. Send password setup email via Keycloak SMTP
     await this.sendPasswordSetupEmail(adminToken, userId);
 
     // 5. Notify admin
-    this.notifyAdmin(firstName, lastName, email, adeliOrRpps).catch((err) =>
-      this.logger.warn(`Admin notification failed: ${(err as Error).message}`),
+    this.notifyAdmin(firstName, lastName, email, adeliOrRpps, rppsResult).catch(
+      (err) =>
+        this.logger.warn(
+          `Admin notification failed: ${(err as Error).message}`,
+        ),
     );
 
     this.logger.log(`Nouveau psychologue inscrit: ${email}`);
@@ -208,6 +234,7 @@ export class AuthService {
     firstName: string,
     lastName: string,
     adeliOrRpps: string,
+    rppsVerified: boolean,
   ): Promise<void> {
     const fullName = `${firstName} ${lastName}`;
     const slug =
@@ -234,6 +261,7 @@ export class AuthService {
             slug,
             adeliNumber: adeliOrRpps.replace(/\s/g, ''),
             isOnboarded: false,
+            rppsVerifiedAt: rppsVerified ? new Date() : null,
           },
         });
 
@@ -264,12 +292,18 @@ export class AuthService {
     lastName: string,
     email: string,
     adeliOrRpps: string,
+    rppsResult: RppsVerificationResult,
   ): Promise<void> {
     const date = new Date().toLocaleString('fr-FR', {
       timeZone: 'Europe/Paris',
     });
 
     const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    const rppsBadge =
+      rppsResult.status === 'verified'
+        ? `<span style="color:#0D9488;font-weight:600;">✅ Vérifié à l'annuaire${rppsResult.matchedName ? ` (${esc(rppsResult.matchedName)})` : ''}</span>`
+        : `<span style="color:#B45309;font-weight:600;">⚠️ Non vérifié (annuaire indisponible) — à contrôler manuellement</span>`;
 
     await this.emailService.sendRawEmail(
       this.adminEmail,
@@ -280,6 +314,7 @@ export class AuthService {
           <tr><td style="padding:8px 0;color:#6B7280;">Nom</td><td style="padding:8px 0;font-weight:600;">${esc(firstName)} ${esc(lastName)}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Email</td><td style="padding:8px 0;">${esc(email)}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">ADELI/RPPS</td><td style="padding:8px 0;font-family:monospace;">${esc(adeliOrRpps)}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Annuaire</td><td style="padding:8px 0;">${rppsBadge}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Date</td><td style="padding:8px 0;">${date}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Plan activé</td><td style="padding:8px 0;"><strong style="color:#0D9488;">Pro — 6 mois offerts (trial auto)</strong></td></tr>
         </table>

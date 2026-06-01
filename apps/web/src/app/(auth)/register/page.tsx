@@ -17,7 +17,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !firstName.trim() || !lastName.trim() || !adeliOrRpps.trim()) return;
-    if (!/^\d{9,11}$/.test(adeliOrRpps.trim())) {
+    const cleanNumber = adeliOrRpps.replace(/\D/g, '');
+    if (!/^(\d{9}|\d{11})$/.test(cleanNumber)) {
       setError('Le numéro ADELI (9 chiffres) ou RPPS (11 chiffres) est invalide.');
       return;
     }
@@ -164,7 +165,8 @@ export default function RegisterPage() {
                     className="w-full rounded-lg border border-border bg-white px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 min-h-touch"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Obligatoire pour vérifier votre statut de professionnel
+                    Vérifié auprès de l&apos;annuaire officiel des professionnels
+                    de santé. Réservé aux psychologues.
                   </p>
                 </div>
 
