@@ -11,7 +11,7 @@ import {
 } from '@livekit/components-react';
 import { Track, RoomEvent } from 'livekit-client';
 import { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, VideoIcon, VideoOff, User } from 'lucide-react';
+import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff } from 'lucide-react';
 
 interface PatientLayoutProps {
   onConnectionFailed: () => void;
@@ -57,6 +57,13 @@ function PatientLayout({ onConnectionFailed }: PatientLayoutProps) {
   const remoteTracks = tracks.filter(t => !t.participant.isLocal);
   const localTrack = tracks.find(t => t.participant.isLocal);
   const psyVideoTrack = remoteTracks.find(t => t.publication != null);
+
+  // Quitter doit toujours aboutir : on affiche l'écran de fin tout de suite,
+  // puis on déconnecte la room (best-effort).
+  const handleLeave = () => {
+    setDisconnected(true);
+    void room.disconnect();
+  };
 
   if (reconnecting) {
     return (
@@ -130,6 +137,14 @@ function PatientLayout({ onConnectionFailed }: PatientLayoutProps) {
           className={`rounded-full p-3 ${isCamOn ? 'bg-gray-700 text-white' : 'bg-red-600 text-white'}`}
         >
           {isCamOn ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+        </button>
+        <button
+          onClick={handleLeave}
+          className="ml-2 inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-medium text-white hover:bg-red-700 transition-colors"
+          title="Quitter la consultation"
+        >
+          <PhoneOff className="h-5 w-5" />
+          Quitter
         </button>
       </div>
 
