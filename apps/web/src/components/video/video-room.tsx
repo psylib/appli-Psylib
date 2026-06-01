@@ -10,6 +10,7 @@ import { Track, RoomEvent } from 'livekit-client';
 import { useVideoCall } from '@/hooks/use-video-call';
 import { VideoControls } from './video-controls';
 import { VideoGrid } from './video-grid';
+import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useState, useEffect } from 'react';
 
 interface VideoRoomProps {
@@ -94,10 +95,7 @@ export function PsyVideoRoom({ token, wsUrl, plannedDurationMin, notesPanel, onC
       connect={true}
       video={true}
       audio={true}
-      options={{
-        adaptiveStream: true,
-        dynacast: true,
-      }}
+      options={videoRoomOptions}
     >
       <VideoLayout
         plannedDurationMin={plannedDurationMin}

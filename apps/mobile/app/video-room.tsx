@@ -17,8 +17,24 @@ import {
   useTracks,
   isTrackReference,
 } from '@livekit/react-native';
-import { Track } from 'livekit-client';
+import { Track, VideoPresets, type RoomOptions } from 'livekit-client';
 import { Colors } from '@/constants/colors';
+
+// Options visio mobile : on adapte le débit au réseau (adaptiveStream/dynacast)
+// et on nettoie l'audio (echo/bruit/gain). Le codec reste par défaut (VP8) pour
+// préserver le CPU/la batterie/la chauffe du téléphone — pas de VP9 ici.
+const mobileRoomOptions: RoomOptions = {
+  adaptiveStream: true,
+  dynacast: true,
+  videoCaptureDefaults: {
+    resolution: VideoPresets.h720.resolution,
+  },
+  audioCaptureDefaults: {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+  },
+};
 
 export default function VideoRoomScreen() {
   const router = useRouter();
@@ -37,6 +53,7 @@ export default function VideoRoomScreen() {
       connect={true}
       audio={true}
       video={true}
+      options={mobileRoomOptions}
       onDisconnected={() => router.back()}
     >
       <StatusBar barStyle="light-content" backgroundColor="#000" />

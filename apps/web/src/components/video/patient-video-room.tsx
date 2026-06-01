@@ -12,6 +12,7 @@ import {
 import { Track, RoomEvent } from 'livekit-client';
 import { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff } from 'lucide-react';
+import { videoRoomOptions } from '@/lib/video/livekit-options';
 
 interface PatientLayoutProps {
   onConnectionFailed: () => void;
@@ -161,7 +162,7 @@ interface PatientVideoRoomProps {
 
 export function PatientVideoRoom({ token, wsUrl, onConnectionFailed }: PatientVideoRoomProps) {
   return (
-    <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true}>
+    <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={videoRoomOptions}>
       <PatientLayout onConnectionFailed={onConnectionFailed} />
     </LiveKitRoom>
   );
