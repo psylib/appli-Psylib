@@ -87,6 +87,8 @@ export class BillingController {
   }
 
   @Post('connect/onboard')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   @ApiOperation({ summary: 'Démarrer onboarding Stripe Connect Express' })
   async startConnectOnboarding(@CurrentUser() user: KeycloakUser): Promise<{ url: string }> {
     return this.subscriptionService.startConnectOnboarding(user.sub);

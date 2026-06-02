@@ -140,24 +140,36 @@ export class SubscriptionService {
 
     let stripeAccountId = psy.stripeAccountId;
 
-    // Create Connect account if it doesn't exist yet
-    if (!stripeAccountId) {
-      const account = await this.stripe.createConnectedAccount(user.email, psy.name);
-      stripeAccountId = account.id;
-      await this.prisma.psychologist.update({
-        where: { id: psy.id },
-        data: { stripeAccountId: account.id },
-      });
+    try {
+      // Create Connect account if it doesn't exist yet
+      if (!stripeAccountId) {
+        const account = await this.stripe.createConnectedAccount(user.email, psy.name);
+        stripeAccountId = account.id;
+        await this.prisma.psychologist.update({
+          where: { id: psy.id },
+          data: { stripeAccountId: account.id },
+        });
+      }
+
+      const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+      const url = await this.stripe.createAccountLink(
+        stripeAccountId,
+        `${frontendUrl}/dashboard/settings/billing?connect=return`,
+        `${frontendUrl}/dashboard/settings/billing?connect=refresh`,
+      );
+
+      return { url };
+    } catch (err) {
+      // L'erreur brute Stripe (ex. plateforme Connect non activée, profil plateforme
+      // incomplet) ne doit jamais s'afficher telle quelle au psy. On loggue le détail
+      // technique et on renvoie un message clair en français.
+      this.logger.error(
+        `Stripe Connect onboarding failed for psy ${psy.id}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      throw new BadRequestException(
+        "Les paiements en ligne ne sont pas encore disponibles. Notre équipe a été notifiée — réessayez plus tard ou contactez le support à tony@psylib.eu.",
+      );
     }
-
-    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
-    const url = await this.stripe.createAccountLink(
-      stripeAccountId,
-      `${frontendUrl}/dashboard/settings/billing?connect=return`,
-      `${frontendUrl}/dashboard/settings/billing?connect=refresh`,
-    );
-
-    return { url };
   }
 
   async getConnectStatus(userId: string) {

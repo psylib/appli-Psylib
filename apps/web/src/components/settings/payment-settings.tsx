@@ -2,15 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
 import { apiClient } from '@/lib/api/client';
 import { psychologistApi } from '@/lib/api/psychologist';
+import { useSubscriptionPlan } from '@/hooks/use-subscription';
 import {
   Loader2,
   CreditCard,
   ExternalLink,
   CheckCircle2,
   AlertCircle,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 interface ConnectStatus {
@@ -25,6 +29,7 @@ interface ConnectStatus {
 export function PaymentSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status: sessionStatus } = useSession();
   const { success, error: toastError } = useToast();
+  const { isPro, isLoading: planLoading } = useSubscriptionPlan();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<ConnectStatus | null>(null);
   const [allowPayment, setAllowPayment] = useState(false);
@@ -36,6 +41,10 @@ export function PaymentSettings({ token: tokenProp }: { token?: string }) {
   useEffect(() => {
     if (sessionStatus === 'loading') return;
     if (!token) { setLoading(false); return; }
+    // Le paiement en ligne est réservé aux plans Pro+. Inutile d'appeler l'API
+    // (l'onboarding est gaté côté backend) — on affiche l'upsell directement.
+    if (!planLoading && !isPro) { setLoading(false); return; }
+    if (planLoading) return;
     apiClient
       .get<ConnectStatus>('/billing/connect/status', token)
       .then((data) => {
@@ -48,7 +57,7 @@ export function PaymentSettings({ token: tokenProp }: { token?: string }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [token, sessionStatus, toastError]);
+  }, [token, sessionStatus, toastError, planLoading, isPro]);
 
   const handleConnect = async () => {
     if (!token) return;
@@ -88,11 +97,45 @@ export function PaymentSettings({ token: tokenProp }: { token?: string }) {
     }
   };
 
-  if (loading) {
+  if (loading || planLoading) {
     return (
       <div className="rounded-xl border border-border bg-white p-6">
         <div className="flex justify-center py-4">
           <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  // Plan Free/Solo : paiement en ligne indisponible → upsell, pas de bouton qui plante
+  if (!isPro) {
+    return (
+      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-medium text-foreground flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-primary" />
+            Paiement en ligne
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Acceptez les paiements de vos patients via Stripe.
+          </p>
+        </div>
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
+          <Sparkles className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <p className="text-sm text-foreground font-medium">Fonctionnalité Pro</p>
+            <p className="text-sm text-muted-foreground">
+              Le paiement en ligne est disponible à partir du plan Pro. Encaissez vos séances
+              automatiquement et simplifiez votre gestion.
+            </p>
+            <Link
+              href="/dashboard/settings/billing"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition"
+            >
+              Passer au plan Pro
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     );
