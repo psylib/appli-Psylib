@@ -26,6 +26,8 @@ COPY apps/api/src/ ./apps/api/src/
 COPY apps/api/prisma/ ./apps/api/prisma/
 
 RUN cd apps/api && pnpm prisma generate
+# Heap élargi : la compilation TS dépasse le cap V8 par défaut (~2GB) → OOM sinon
+ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN cd apps/api && pnpm build
 
 # ─── Stage 2: Runner ──────────────────────────────────────────────────────────
