@@ -1,7 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Check, Zap } from 'lucide-react';
-import { SubscriptionPlan, PLAN_PRICES, PLAN_LIMITS } from '@psyscale/shared-types';
+import { SubscriptionPlan, PLAN_PRICES, PLAN_PRICES_ANNUAL } from '@psyscale/shared-types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useCreateCheckout } from '@/hooks/use-billing';
@@ -54,15 +55,45 @@ export function PlanSelector({ subscription }: PlanSelectorProps) {
   const { mutate: checkout, isPending } = useCreateCheckout();
   const { track } = useAnalytics();
   const currentPlan = subscription?.plan ?? SubscriptionPlan.FREE;
+  const [annual, setAnnual] = useState(false);
 
   const plans = [SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <>
+      <div className="mb-6 flex items-center justify-center">
+        <div className="inline-flex items-center rounded-full bg-surface p-1">
+          <button
+            type="button"
+            onClick={() => setAnnual(false)}
+            className={cn(
+              'rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
+              !annual ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Mensuel
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnnual(true)}
+            className={cn(
+              'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors',
+              annual ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Annuel
+            <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold', annual ? 'bg-white/20 text-white' : 'bg-accent/10 text-accent')}>
+              -2 mois
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {plans.map((plan) => {
         const isCurrentPlan = plan === currentPlan;
         const isRecommended = plan === SubscriptionPlan.PRO;
-        const price = PLAN_PRICES[plan];
+        const price = annual ? PLAN_PRICES_ANNUAL[plan] : PLAN_PRICES[plan];
         const features = PLAN_FEATURES[plan] ?? [];
 
         return (
@@ -91,7 +122,9 @@ export function PlanSelector({ subscription }: PlanSelectorProps) {
                   <span className="text-3xl font-bold text-foreground">{price}€</span>
                   <span className="text-sm text-muted-foreground">/mois</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Sans engagement</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {annual ? `Soit ${price * 12}€ facturés annuellement` : 'Sans engagement'}
+                </p>
               </div>
 
               <ul className="space-y-2">
@@ -113,8 +146,8 @@ export function PlanSelector({ subscription }: PlanSelectorProps) {
                 disabled={isCurrentPlan || isPending}
                 loading={isPending}
                 onClick={() => {
-                  track('upgrade_clicked', { plan, from_plan: currentPlan, source: 'billing_page' });
-                  checkout(plan);
+                  track('upgrade_clicked', { plan, from_plan: currentPlan, source: 'billing_page', interval: annual ? 'year' : 'month' });
+                  checkout({ plan, interval: annual ? 'year' : 'month' });
                 }}
               >
                 {isCurrentPlan ? 'Plan actuel' : `Choisir ${PLAN_LABELS[plan]}`}
@@ -123,6 +156,7 @@ export function PlanSelector({ subscription }: PlanSelectorProps) {
           </div>
         );
       })}
-    </div>
+      </div>
+    </>
   );
 }

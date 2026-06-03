@@ -59,7 +59,7 @@ export class BillingController {
     @Body() dto: CreateCheckoutDto,
     @CurrentUser() user: KeycloakUser,
   ): Promise<{ url: string }> {
-    return this.subscriptionService.createCheckoutSession(user.sub, dto.plan, dto.referralCode);
+    return this.subscriptionService.createCheckoutSession(user.sub, dto.plan, dto.interval ?? 'month', dto.referralCode);
   }
 
   @Post('portal')

@@ -507,6 +507,16 @@ export const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   [SubscriptionPlan.CLINIC]: 79,
 };
 
+// Prix mensuel équivalent en cas de facturation annuelle (mois économisés)
+export const PLAN_PRICES_ANNUAL: Record<SubscriptionPlan, number> = {
+  [SubscriptionPlan.FREE]: 0,
+  [SubscriptionPlan.SOLO]: 22,
+  [SubscriptionPlan.PRO]: 36,
+  [SubscriptionPlan.CLINIC]: 69,
+};
+
+export type BillingInterval = 'month' | 'year';
+
 // Display names for plans (enum values stay same for DB/Stripe compat)
 export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
   [SubscriptionPlan.FREE]: 'Free',

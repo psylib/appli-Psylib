@@ -30,8 +30,8 @@ export function useCreateCheckout() {
   const { data: session } = useSession();
   const { error: showError } = useToast();
   return useMutation({
-    mutationFn: (plan: SubscriptionPlan) =>
-      billingApi.createCheckout(plan, session?.accessToken ?? ''),
+    mutationFn: ({ plan, interval = 'month' }: { plan: SubscriptionPlan; interval?: 'month' | 'year' }) =>
+      billingApi.createCheckout(plan, interval, session?.accessToken ?? ''),
     onSuccess: ({ url }) => {
       window.location.href = url;
     },

@@ -52,8 +52,8 @@ export interface UsageData {
 }
 
 export const billingApi = {
-  createCheckout: (plan: SubscriptionPlan, token: string) =>
-    apiClient.post<{ url: string }>('/billing/checkout', { plan }, token),
+  createCheckout: (plan: SubscriptionPlan, interval: 'month' | 'year', token: string) =>
+    apiClient.post<{ url: string }>('/billing/checkout', { plan, interval }, token),
 
   createPortal: (token: string) =>
     apiClient.post<{ url: string }>('/billing/portal', {}, token),

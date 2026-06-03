@@ -51,7 +51,7 @@ export function UpgradeBanner({ reason, currentPlan }: UpgradeBannerProps) {
         variant="default"
         onClick={() => {
           track('upgrade_clicked', { plan: targetPlan, from_plan: currentPlan ?? 'free', source: reason });
-          checkout(targetPlan);
+          checkout({ plan: targetPlan, interval: 'month' });
         }}
         loading={isPending}
         className="flex-shrink-0"

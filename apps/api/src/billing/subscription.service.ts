@@ -7,7 +7,7 @@ import { PrismaService } from '../common/prisma.service';
 import { StripeService } from './stripe.service';
 import { EmailService } from '../notifications/email.service';
 import { AuditService } from '../common/audit.service';
-import { SubscriptionPlan, SubscriptionStatus, PLAN_LIMITS } from '@psyscale/shared-types';
+import { SubscriptionPlan, SubscriptionStatus, PLAN_LIMITS, type BillingInterval } from '@psyscale/shared-types';
 import { ReferralService } from '../referral/referral.service';
 import { PaymentCompletedEvent } from '../accounting/events/payment-completed.event';
 import type { ConnectSettingsDto } from './dto/connect-settings.dto';
@@ -31,14 +31,15 @@ export class SubscriptionService {
     private readonly invoiceQueue: Queue<GenerateInvoiceJobData>,
   ) {}
 
-  private getPriceIdForPlan(plan: SubscriptionPlan): string {
+  private getPriceIdForPlan(plan: SubscriptionPlan, interval: BillingInterval = 'month'): string {
+    const suffix = interval === 'year' ? '_ANNUAL' : '';
     const map: Record<string, string | undefined> = {
-      [SubscriptionPlan.SOLO]: this.config.get('STRIPE_PRICE_ID_SOLO'),
-      [SubscriptionPlan.PRO]: this.config.get('STRIPE_PRICE_ID_PRO'),
-      [SubscriptionPlan.CLINIC]: this.config.get('STRIPE_PRICE_ID_CLINIC'),
+      [SubscriptionPlan.SOLO]: this.config.get(`STRIPE_PRICE_ID_SOLO${suffix}`),
+      [SubscriptionPlan.PRO]: this.config.get(`STRIPE_PRICE_ID_PRO${suffix}`),
+      [SubscriptionPlan.CLINIC]: this.config.get(`STRIPE_PRICE_ID_CLINIC${suffix}`),
     };
     const priceId = map[plan];
-    if (!priceId) throw new ForbiddenException(`Plan ${plan} non disponible ou non configuré`);
+    if (!priceId) throw new ForbiddenException(`Plan ${plan} (${interval}) non disponible ou non configuré`);
     return priceId;
   }
 
@@ -48,7 +49,7 @@ export class SubscriptionService {
     return psy;
   }
 
-  async createCheckoutSession(userId: string, plan: SubscriptionPlan, referralCode?: string): Promise<{ url: string }> {
+  async createCheckoutSession(userId: string, plan: SubscriptionPlan, interval: BillingInterval = 'month', referralCode?: string): Promise<{ url: string }> {
     if (plan === SubscriptionPlan.FREE) throw new ForbiddenException('Plan FREE non disponible via Stripe');
 
     const psy = await this.getPsychologist(userId);
@@ -72,7 +73,7 @@ export class SubscriptionService {
     const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'http://localhost:3000';
     const session = await this.stripe.createCheckoutSession({
       customerId: customer.id,
-      priceId: this.getPriceIdForPlan(plan),
+      priceId: this.getPriceIdForPlan(plan, interval),
       successUrl: `${frontendUrl}/dashboard/settings/billing?success=true`,
       cancelUrl: `${frontendUrl}/dashboard/settings/billing?canceled=true`,
       psychologistId: psy.id,
@@ -1184,9 +1185,11 @@ export class SubscriptionService {
 
   private stripePlanFromSubscription(subscription: Stripe.Subscription): SubscriptionPlan {
     const priceId = subscription.items.data[0]?.price.id ?? '';
-    if (priceId === this.config.get('STRIPE_PRICE_ID_SOLO')) return SubscriptionPlan.SOLO;
-    if (priceId === this.config.get('STRIPE_PRICE_ID_PRO')) return SubscriptionPlan.PRO;
-    if (priceId === this.config.get('STRIPE_PRICE_ID_CLINIC')) return SubscriptionPlan.CLINIC;
+    const matches = (plan: SubscriptionPlan, base: string): boolean =>
+      priceId === this.config.get(base) || priceId === this.config.get(`${base}_ANNUAL`);
+    if (matches(SubscriptionPlan.SOLO, 'STRIPE_PRICE_ID_SOLO')) return SubscriptionPlan.SOLO;
+    if (matches(SubscriptionPlan.PRO, 'STRIPE_PRICE_ID_PRO')) return SubscriptionPlan.PRO;
+    if (matches(SubscriptionPlan.CLINIC, 'STRIPE_PRICE_ID_CLINIC')) return SubscriptionPlan.CLINIC;
     return SubscriptionPlan.FREE;
   }
 

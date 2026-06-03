@@ -430,8 +430,11 @@ export declare const PLAN_LIMITS: Record<SubscriptionPlan, {
     expenses: number | null;
     documentsBytesMonthly: number | null;
     calendarSync: boolean;
+    accounting: boolean;
 }>;
 export declare const PLAN_PRICES: Record<SubscriptionPlan, number>;
+export declare const PLAN_PRICES_ANNUAL: Record<SubscriptionPlan, number>;
+export type BillingInterval = 'month' | 'year';
 export declare const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string>;
 export declare enum ConsultationCategory {
     STANDARD = "standard",
