@@ -59,6 +59,11 @@ const middleware = auth((req: NextRequest & { auth?: { user?: { role: UserRole }
     return nextWithPathname(req);
   }
 
+  // Video invité — rejoint via lien d'invitation public (no login required)
+  if (pathname.startsWith('/video/guest/')) {
+    return nextWithPathname(req);
+  }
+
   // Routes protégées — redirect vers /login si non authentifié
   if (
     pathname.startsWith('/dashboard') ||

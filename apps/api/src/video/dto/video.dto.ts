@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional } from 'class-validator';
+import { IsUUID, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateVideoRoomDto {
   @IsUUID()
@@ -9,6 +9,13 @@ export class CreateInstantVideoDto {
   @IsOptional()
   @IsUUID()
   patientId?: string;
+}
+
+export class GuestJoinRequestDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(60)
+  displayName!: string;
 }
 
 export interface VideoTokenResponse {

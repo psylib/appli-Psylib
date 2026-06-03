@@ -4,9 +4,10 @@ import { PrismaService } from './prisma.service';
 
 export type AuditAction = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE' | 'DECRYPT' | 'AI_SUMMARY_SAVE'
   | 'VIDEO_ROOM_CREATED' | 'VIDEO_INSTANT_CREATED' | 'VIDEO_PSY_JOIN' | 'VIDEO_PATIENT_JOIN' | 'VIDEO_CALL_END' | 'VIDEO_ROOM_CLEANUP'
+  | 'VIDEO_GUEST_INVITE' | 'VIDEO_GUEST_REQUEST' | 'VIDEO_GUEST_ADMIT' | 'VIDEO_GUEST_DENY'
   | 'INVOICE_AUTO_GENERATED' | 'INVOICE_AUTO_EMAILED'
   | 'CALENDAR_CONNECT' | 'CALENDAR_DISCONNECT';
-export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin' | 'guardian';
+export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin' | 'guardian' | 'guest';
 
 export interface AuditLogParams {
   actorId: string;

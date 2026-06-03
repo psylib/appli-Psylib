@@ -77,4 +77,66 @@ export const videoApi = {
   /** Patient records video consent (no auth required) */
   recordConsent: (joinToken: string) =>
     apiClient.post<{ ok: boolean }>(`/video/consent/${joinToken}`, {}),
+
+  // ── Guest invite / waiting room (psy) ──
+  /** Generate (or fetch) a guest invite link for the current room */
+  createGuestInvite: (appointmentId: string, token: string) =>
+    apiClient.post<GuestInviteResponse>(`/video/rooms/${appointmentId}/invite`, {}, token),
+
+  /** Revoke the guest invite link */
+  revokeGuestInvite: (appointmentId: string, token: string) =>
+    apiClient.post<{ ok: boolean }>(`/video/rooms/${appointmentId}/invite/revoke`, {}, token),
+
+  /** List pending / admitted guests */
+  listGuests: (appointmentId: string, token: string) =>
+    apiClient.get<GuestInfo[]>(`/video/rooms/${appointmentId}/guests`, token),
+
+  /** Admit a guest into the room */
+  admitGuest: (guestId: string, token: string) =>
+    apiClient.post<{ ok: boolean }>(`/video/guests/${guestId}/admit`, {}, token),
+
+  /** Deny a waiting guest */
+  denyGuest: (guestId: string, token: string) =>
+    apiClient.post<{ ok: boolean }>(`/video/guests/${guestId}/deny`, {}, token),
+
+  // ── Guest public flow (no auth) ──
+  /** Validate a guest invite link */
+  resolveGuestInvite: (inviteToken: string) =>
+    apiClient.get<ResolveInviteResponse>(`/video/guest/${inviteToken}`),
+
+  /** Request to join as a guest (creates a pending entry) */
+  requestGuestJoin: (inviteToken: string, displayName: string) =>
+    apiClient.post<GuestRequestResponse>(`/video/guest/${inviteToken}/request`, { displayName }),
+
+  /** Poll guest admission status (returns a LiveKit token once admitted) */
+  getGuestStatus: (sessionToken: string) =>
+    apiClient.get<GuestStatusResponse>(`/video/guest/session/${sessionToken}/status`),
 };
+
+export interface GuestInviteResponse {
+  inviteUrl: string;
+}
+
+export interface GuestInfo {
+  id: string;
+  displayName: string;
+  status: 'pending' | 'admitted';
+  createdAt: string;
+  admittedAt: string | null;
+}
+
+export interface ResolveInviteResponse {
+  valid: boolean;
+  psychologistName: string;
+}
+
+export interface GuestRequestResponse {
+  sessionToken: string;
+}
+
+export interface GuestStatusResponse {
+  status: 'pending' | 'admitted' | 'denied' | 'ended';
+  token?: string;
+  wsUrl?: string;
+  roomName?: string;
+}

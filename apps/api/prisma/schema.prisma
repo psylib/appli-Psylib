@@ -793,10 +793,32 @@ model VideoRoom {
   psyJoinedAt     DateTime?       @map("psy_joined_at")
   patientJoinedAt DateTime?       @map("patient_joined_at")
   endedAt         DateTime?       @map("ended_at")
+  guestInviteToken String?        @unique @map("guest_invite_token")
   createdAt       DateTime        @default(now()) @map("created_at")
+
+  guests          VideoGuest[]
 
   @@index([psychologistId, status])
   @@map("video_rooms")
+}
+
+/// Invités ad-hoc rejoignant une visio en cours via un lien partagé par le psy.
+/// Modèle "salle d'attente" : l'invité reste `pending` (sans token LiveKit)
+/// jusqu'à ce que le psy l'admette explicitement.
+model VideoGuest {
+  id           String    @id @default(cuid())
+  videoRoomId  String    @map("video_room_id")
+  videoRoom    VideoRoom @relation(fields: [videoRoomId], references: [id], onDelete: Cascade)
+  displayName  String    @map("display_name")
+  sessionToken String    @unique @map("session_token")
+  status       String    @default("pending") // pending | admitted | denied
+  consentAt    DateTime? @map("consent_at")
+  admittedAt   DateTime? @map("admitted_at")
+  ipAddress    String?   @map("ip_address")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([videoRoomId, status])
+  @@map("video_guests")
 }
 
 model AppointmentParticipant {

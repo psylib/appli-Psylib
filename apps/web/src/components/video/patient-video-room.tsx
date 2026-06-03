@@ -17,9 +17,11 @@ import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 
 interface PatientLayoutProps {
   onConnectionFailed: () => void;
+  exitHref?: string;
+  exitLabel?: string;
 }
 
-function PatientLayout({ onConnectionFailed }: PatientLayoutProps) {
+function PatientLayout({ onConnectionFailed, exitHref = '/patient-portal', exitLabel = 'Retour a mon espace' }: PatientLayoutProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
   useKrispNoiseFilter();
   const room = useRoomContext();
@@ -87,10 +89,10 @@ function PatientLayout({ onConnectionFailed }: PatientLayoutProps) {
           <h1 className="text-xl font-bold text-foreground mb-2">La consultation est terminee</h1>
           <p className="text-muted-foreground mb-4">Merci. Prenez soin de vous.</p>
           <a
-            href="/patient-portal"
+            href={exitHref}
             className="inline-block rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
           >
-            Retour a mon espace
+            {exitLabel}
           </a>
         </div>
       </div>
@@ -160,12 +162,14 @@ interface PatientVideoRoomProps {
   token: string;
   wsUrl: string;
   onConnectionFailed: () => void;
+  exitHref?: string;
+  exitLabel?: string;
 }
 
-export function PatientVideoRoom({ token, wsUrl, onConnectionFailed }: PatientVideoRoomProps) {
+export function PatientVideoRoom({ token, wsUrl, onConnectionFailed, exitHref, exitLabel }: PatientVideoRoomProps) {
   return (
     <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={videoRoomOptions}>
-      <PatientLayout onConnectionFailed={onConnectionFailed} />
+      <PatientLayout onConnectionFailed={onConnectionFailed} exitHref={exitHref} exitLabel={exitLabel} />
     </LiveKitRoom>
   );
 }

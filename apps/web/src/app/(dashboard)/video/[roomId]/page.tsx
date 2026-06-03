@@ -126,6 +126,7 @@ export default function ConsultationRoomPage() {
       <PsyVideoRoom
         token={tokenData.token}
         wsUrl={tokenData.wsUrl}
+        appointmentId={roomId}
         plannedDurationMin={duration}
         notesPanel={
           <textarea

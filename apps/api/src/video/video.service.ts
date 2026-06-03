@@ -611,6 +611,241 @@ export class VideoService {
     return room;
   }
 
+  // ─── Guest Invite / Salle d'attente ────────────────────────────────────────────
+
+  /**
+   * Génère (ou retourne) le lien d'invitation invité pour une room en cours.
+   * Le psy partage ce lien à qui il veut (collègue, proche, superviseur).
+   */
+  async createGuestInvite(userId: string, appointmentId: string) {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+    if (room.status === 'ended') throw new BadRequestException('Cette consultation est terminée');
+
+    let inviteToken = room.guestInviteToken;
+    if (!inviteToken) {
+      inviteToken = crypto.randomUUID();
+      await this.prisma.videoRoom.update({
+        where: { id: room.id },
+        data: { guestInviteToken: inviteToken },
+      });
+    }
+
+    await this.audit.log({
+      actorId: psy.userId,
+      actorType: 'psychologist',
+      action: 'VIDEO_GUEST_INVITE',
+      entityType: 'video_room',
+      entityId: room.id,
+    });
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    return { inviteUrl: `${frontendUrl}/video/guest/${inviteToken}` };
+  }
+
+  /**
+   * Révoque le lien d'invitation : invalide le token et refuse les invités en attente.
+   */
+  async revokeGuestInvite(userId: string, appointmentId: string) {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+
+    await this.prisma.videoGuest.updateMany({
+      where: { videoRoomId: room.id, status: 'pending' },
+      data: { status: 'denied' },
+    });
+    await this.prisma.videoRoom.update({
+      where: { id: room.id },
+      data: { guestInviteToken: null },
+    });
+    return { ok: true };
+  }
+
+  /**
+   * Liste des invités en attente / admis (polled côté psy pour la bannière d'admission).
+   */
+  async listGuests(userId: string, appointmentId: string) {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+      select: { id: true },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+
+    return this.prisma.videoGuest.findMany({
+      where: { videoRoomId: room.id, status: { in: ['pending', 'admitted'] } },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, displayName: true, status: true, createdAt: true, admittedAt: true },
+    });
+  }
+
+  /** Admet un invité : il pourra alors récupérer son token LiveKit. */
+  async admitGuest(userId: string, guestId: string) {
+    const psy = await this.getPsychologist(userId);
+    const guest = await this.prisma.videoGuest.findUnique({
+      where: { id: guestId },
+      include: { videoRoom: { select: { id: true, psychologistId: true, status: true } } },
+    });
+    if (!guest || guest.videoRoom.psychologistId !== psy.id) {
+      throw new NotFoundException('Invité introuvable');
+    }
+    if (guest.videoRoom.status === 'ended') {
+      throw new BadRequestException('Cette consultation est terminée');
+    }
+    if (guest.status === 'denied') throw new BadRequestException('Cet invité a été refusé');
+
+    await this.prisma.videoGuest.update({
+      where: { id: guestId },
+      data: { status: 'admitted', admittedAt: new Date() },
+    });
+    await this.audit.log({
+      actorId: psy.userId,
+      actorType: 'psychologist',
+      action: 'VIDEO_GUEST_ADMIT',
+      entityType: 'video_room',
+      entityId: guest.videoRoom.id,
+      metadata: { guestId, displayName: guest.displayName },
+    });
+    return { ok: true };
+  }
+
+  /** Refuse un invité en attente. */
+  async denyGuest(userId: string, guestId: string) {
+    const psy = await this.getPsychologist(userId);
+    const guest = await this.prisma.videoGuest.findUnique({
+      where: { id: guestId },
+      include: { videoRoom: { select: { id: true, psychologistId: true } } },
+    });
+    if (!guest || guest.videoRoom.psychologistId !== psy.id) {
+      throw new NotFoundException('Invité introuvable');
+    }
+
+    await this.prisma.videoGuest.update({
+      where: { id: guestId },
+      data: { status: 'denied' },
+    });
+    await this.audit.log({
+      actorId: psy.userId,
+      actorType: 'psychologist',
+      action: 'VIDEO_GUEST_DENY',
+      entityType: 'video_room',
+      entityId: guest.videoRoom.id,
+      metadata: { guestId },
+    });
+    return { ok: true };
+  }
+
+  // ─── Guest Public Flow ──────────────────────────────────────────────────────────
+
+  /** (Public) Valide un lien d'invitation et renvoie le contexte d'affichage. */
+  async resolveGuestInvite(inviteToken: string) {
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { guestInviteToken: inviteToken },
+      include: { psychologist: { select: { name: true } } },
+    });
+    if (!room) throw new UnauthorizedException('Lien invalide ou expiré');
+    if (room.status === 'ended') throw new BadRequestException('Cette consultation est terminée');
+    return { valid: true, psychologistName: room.psychologist.name };
+  }
+
+  /**
+   * (Public) Un invité demande à rejoindre : crée une entrée `pending`,
+   * enregistre son consentement, et notifie le psy en temps réel.
+   */
+  async requestGuestJoin(inviteToken: string, displayName: string, ipAddress?: string) {
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { guestInviteToken: inviteToken },
+    });
+    if (!room) throw new UnauthorizedException('Lien invalide ou expiré');
+    if (room.status === 'ended') throw new BadRequestException('Cette consultation est terminée');
+
+    const cleanName = (displayName || '').trim().slice(0, 60) || 'Invité';
+    const sessionToken = crypto.randomUUID();
+
+    const guest = await this.prisma.videoGuest.create({
+      data: {
+        videoRoomId: room.id,
+        displayName: cleanName,
+        sessionToken,
+        status: 'pending',
+        consentAt: new Date(),
+        ipAddress,
+      },
+    });
+
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { id: room.psychologistId },
+      select: { userId: true },
+    });
+    if (psy) {
+      this.notificationGateway.sendToUser(psy.userId, {
+        type: 'video_guest_waiting',
+        title: `${cleanName} souhaite rejoindre la visio`,
+        data: { roomId: room.id, guestId: guest.id },
+      });
+    }
+
+    await this.audit.log({
+      actorId: guest.id,
+      actorType: 'guest',
+      action: 'VIDEO_GUEST_REQUEST',
+      entityType: 'video_room',
+      entityId: room.id,
+      metadata: { displayName: cleanName },
+    });
+
+    return { sessionToken };
+  }
+
+  /**
+   * (Public) L'invité poll son statut. Une fois admis, reçoit son token LiveKit.
+   */
+  async getGuestStatus(sessionToken: string): Promise<{
+    status: 'pending' | 'admitted' | 'denied' | 'ended';
+    token?: string;
+    wsUrl?: string;
+    roomName?: string;
+  }> {
+    const guest = await this.prisma.videoGuest.findUnique({
+      where: { sessionToken },
+      include: { videoRoom: { select: { status: true, roomName: true } } },
+    });
+    if (!guest) throw new UnauthorizedException('Session invalide');
+
+    if (guest.videoRoom.status === 'ended') return { status: 'ended' };
+    if (guest.status === 'denied') return { status: 'denied' };
+    if (guest.status !== 'admitted') return { status: 'pending' };
+
+    if (!this.livekitApiKey || !this.livekitApiSecret) {
+      throw new ForbiddenException('Visio non configurée — clés LiveKit manquantes');
+    }
+
+    const token = new AccessToken(this.livekitApiKey, this.livekitApiSecret, {
+      identity: `guest-${guest.id}`,
+      name: guest.displayName,
+      ttl: 180 * 60,
+    });
+    token.addGrant({
+      room: guest.videoRoom.roomName,
+      roomJoin: true,
+      canPublish: true,
+      canSubscribe: true,
+    });
+
+    return {
+      status: 'admitted',
+      token: await token.toJwt(),
+      wsUrl: this.livekitWsUrl,
+      roomName: guest.videoRoom.roomName,
+    };
+  }
+
   // ─── Cleanup ──────────────────────────────────────────────────────────────────
 
   /**
