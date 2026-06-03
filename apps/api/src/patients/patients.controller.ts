@@ -25,6 +25,7 @@ import {
 import { Request } from 'express';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto, UpdatePatientDto, PatientQueryDto, CreateExerciseDto } from './dto/create-patient.dto';
+import { ImportPatientsDto } from './dto/import-patients.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -58,6 +59,17 @@ export class PatientsController {
     @Req() req: Request,
   ) {
     return this.patientsService.create(user.sub, dto, user.sub, req);
+  }
+
+  @Post('import')
+  @ApiOperation({ summary: 'Importer des patients en masse (migration depuis un autre logiciel)' })
+  @ApiResponse({ status: 201, description: 'Rapport d\'import (importés, doublons, erreurs)' })
+  async import(
+    @Body() dto: ImportPatientsDto,
+    @CurrentUser() user: KeycloakUser,
+    @Req() req: Request,
+  ) {
+    return this.patientsService.importPatients(user.sub, dto.patients, user.sub, req);
   }
 
   @Get()

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Users, Search, Plus, Mail, CheckCircle2, Clock, MoreVertical, Send, Trash2 } from 'lucide-react';
+import { Users, Search, Plus, Mail, CheckCircle2, Clock, MoreVertical, Send, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { PatientRowSkeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { CreatePatientDialog } from './create-patient-dialog';
+import { ImportPatientsDialog } from './import-patients-dialog';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ExportButton } from '@/components/shared/export-button';
 import { usePatients } from '@/hooks/use-dashboard';
@@ -50,6 +51,7 @@ export function PatientsPageContent() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<PatientStatus | ''>('');
   const [showCreate, setShowCreate] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [page, setPage] = useState(1);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [inviting, setInviting] = useState<string | null>(null);
@@ -102,6 +104,10 @@ export function PatientsPageContent() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setShowImport(true)}>
+            <Upload size={16} />
+            Importer
+          </Button>
           <ExportButton
             path="/patients/export"
             filename={`patients-${new Date().toISOString().split('T')[0]}.csv`}
@@ -273,6 +279,13 @@ export function PatientsPageContent() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onCreated={() => { setShowCreate(false); void refetch(); }}
+      />
+
+      {/* Modal import / migration */}
+      <ImportPatientsDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={() => { void refetch(); }}
       />
 
       {/* Confirmation archivage */}

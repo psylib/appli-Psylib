@@ -5,6 +5,23 @@ export interface PatientListItem extends Omit<Patient, 'notes'> {
   portalStatus: 'none' | 'pending' | 'active';
 }
 
+export interface ImportPatientRow {
+  name: string;
+  email?: string;
+  phone?: string;
+  birthDate?: string;
+  notes?: string;
+  source?: string;
+}
+
+export interface ImportPatientsReport {
+  total: number;
+  imported: number;
+  skippedDuplicates: { row: number; name: string; reason: string }[];
+  invalid: { row: number; reason: string }[];
+  warnings: { row: number; name: string; reason: string }[];
+}
+
 export const patientsApi = {
   list: (params: { page?: number; limit?: number; search?: string; status?: string }, token: string) => {
     const qs = new URLSearchParams();
@@ -20,6 +37,9 @@ export const patientsApi = {
 
   create: (data: { name: string; email?: string; phone?: string; notes?: string }, token: string) =>
     apiClient.post<Patient>('/patients', data, token),
+
+  import: (rows: ImportPatientRow[], token: string) =>
+    apiClient.post<ImportPatientsReport>('/patients/import', { patients: rows }, token),
 
   update: (id: string, data: Partial<Patient>, token: string) =>
     apiClient.put<Patient>(`/patients/${id}`, data, token),
