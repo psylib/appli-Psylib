@@ -225,6 +225,7 @@ export interface Session {
   type: SessionType;
   notes: string | null; // chiffré en DB
   summaryAi: string | null;
+  scribeTranscript?: string | null; // présent uniquement si scribe IA a généré la note
   tags: string[];
   rate: number | null;
   paymentStatus: SessionPaymentStatus;

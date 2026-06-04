@@ -187,6 +187,7 @@ export interface Session {
     type: SessionType;
     notes: string | null;
     summaryAi: string | null;
+    scribeTranscript?: string | null;
     tags: string[];
     rate: number | null;
     paymentStatus: SessionPaymentStatus;
