@@ -52,6 +52,7 @@ export class ConsultationTypesService {
         instructions: true,
         allowedPaymentModes: true,
         cancellationDelay: true,
+        requireImprint: true,
       },
     });
   }
@@ -98,6 +99,7 @@ export class ConsultationTypesService {
         instructions: dto.instructions ?? null,
         allowedPaymentModes: dto.allowedPaymentModes ?? null,
         cancellationDelay: dto.cancellationDelay ?? null,
+        requireImprint: dto.requireImprint ?? false,
       },
     });
   }
@@ -141,6 +143,7 @@ export class ConsultationTypesService {
         ...(dto.instructions !== undefined && { instructions: dto.instructions }),
         ...(dto.allowedPaymentModes !== undefined && { allowedPaymentModes: dto.allowedPaymentModes }),
         ...(dto.cancellationDelay !== undefined && { cancellationDelay: dto.cancellationDelay }),
+        ...(dto.requireImprint !== undefined && { requireImprint: dto.requireImprint }),
       },
     });
   }

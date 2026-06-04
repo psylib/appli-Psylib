@@ -17,6 +17,8 @@ import {
   Video,
   Home,
   Globe,
+  CreditCard,
+  Lock,
 } from 'lucide-react';
 import {
   consultationTypesApi,
@@ -24,6 +26,7 @@ import {
   type CreateConsultationTypeData,
   type ConsultationModalityValue,
 } from '@/lib/api/consultation-types';
+import { useSubscriptionPlan } from '@/hooks/use-subscription';
 
 const PRESET_COLORS = [
   '#3D52A0',
@@ -64,6 +67,7 @@ interface FormState {
   instructions: string;
   allowedPaymentModes: string;
   cancellationDelay: string;
+  requireImprint: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -78,11 +82,13 @@ const EMPTY_FORM: FormState = {
   instructions: '',
   allowedPaymentModes: '',
   cancellationDelay: '',
+  requireImprint: false,
 };
 
 export function ConsultationTypesSettings({ token: tokenProp }: { token?: string }) {
   const { data: session, status } = useSession();
   const { success, error: toastError } = useToast();
+  const { isPro } = useSubscriptionPlan();
   const [types, setTypes] = useState<ConsultationType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -131,6 +137,7 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
       instructions: ct.instructions || '',
       allowedPaymentModes: ct.allowedPaymentModes || '',
       cancellationDelay: ct.cancellationDelay != null ? String(ct.cancellationDelay) : '',
+      requireImprint: ct.requireImprint ?? false,
     });
     setEditingId(ct.id);
     setShowForm(true);
@@ -153,6 +160,7 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
       instructions: form.instructions || undefined,
       allowedPaymentModes: form.allowedPaymentModes || undefined,
       cancellationDelay: form.cancellationDelay ? parseInt(form.cancellationDelay) : undefined,
+      requireImprint: form.requireImprint,
     };
     try {
       if (editingId) {
@@ -462,6 +470,44 @@ export function ConsultationTypesSettings({ token: tokenProp }: { token?: string
                       <option value="72">72 heures</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Card imprint toggle — Pro/Clinic only */}
+                <div className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${isPro ? 'border-border bg-white' : 'border-border/60 bg-surface/60'}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="text-sm font-medium text-foreground">
+                        Demander une empreinte bancaire
+                      </span>
+                      {!isPro && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          <Lock className="w-3 h-3" />
+                          Pro
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isPro
+                        ? 'Le patient enregistre sa carte a la reservation. Vous encaissez le montant de votre choix a la fin de la seance, ou en cas d\'absence.'
+                        : 'Disponible avec le plan Pro. Le patient enregistre sa carte a la reservation.'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={!isPro}
+                    onClick={() => isPro && setForm((prev) => ({ ...prev, requireImprint: !prev.requireImprint }))}
+                    className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 mt-0.5 ${
+                      form.requireImprint && isPro ? 'bg-primary' : 'bg-gray-200'
+                    } ${!isPro ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    aria-label={form.requireImprint ? 'Desactiver l\'empreinte bancaire' : 'Activer l\'empreinte bancaire'}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                        form.requireImprint && isPro ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
                 </div>
               </div>
 

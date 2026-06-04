@@ -88,4 +88,9 @@ export class UpdateConsultationTypeDto {
   @IsOptional()
   @Min(1)
   cancellationDelay?: number;
+
+  @ApiPropertyOptional({ default: false, description: 'Demander une empreinte bancaire à la réservation' })
+  @IsBoolean()
+  @IsOptional()
+  requireImprint?: boolean;
 }

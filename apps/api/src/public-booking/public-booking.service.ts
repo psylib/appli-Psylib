@@ -82,6 +82,7 @@ export class PublicBookingService {
             instructions: true,
             allowedPaymentModes: true,
             cancellationDelay: true,
+            requireImprint: true,
           },
           orderBy: { sortOrder: 'asc' },
         },
@@ -126,6 +127,7 @@ export class PublicBookingService {
         instructions: ct.instructions,
         allowedPaymentModes: ct.allowedPaymentModes,
         cancellationDelay: ct.cancellationDelay,
+        requireImprint: ct.requireImprint,
       })),
     };
 
@@ -209,6 +211,7 @@ export class PublicBookingService {
         instructions: true,
         allowedPaymentModes: true,
         cancellationDelay: true,
+        requireImprint: true,
       },
     });
 
@@ -224,6 +227,7 @@ export class PublicBookingService {
       instructions: t.instructions,
       allowedPaymentModes: t.allowedPaymentModes,
       cancellationDelay: t.cancellationDelay,
+      requireImprint: t.requireImprint,
     }));
 
     void this.cache.set(cacheKey, result, TTL_PROFILE);

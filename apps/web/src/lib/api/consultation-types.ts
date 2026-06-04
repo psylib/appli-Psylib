@@ -17,6 +17,7 @@ export interface ConsultationType {
   instructions: string | null;
   allowedPaymentModes: string | null;
   cancellationDelay: number | null;
+  requireImprint: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,6 +34,7 @@ export interface CreateConsultationTypeData {
   instructions?: string;
   allowedPaymentModes?: string;
   cancellationDelay?: number | null;
+  requireImprint?: boolean;
 }
 
 export interface UpdateConsultationTypeData {
@@ -49,6 +51,7 @@ export interface UpdateConsultationTypeData {
   instructions?: string;
   allowedPaymentModes?: string | null;
   cancellationDelay?: number | null;
+  requireImprint?: boolean;
 }
 
 export const consultationTypesApi = {
