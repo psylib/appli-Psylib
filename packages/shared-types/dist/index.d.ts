@@ -44,7 +44,14 @@ export declare enum AppointmentPaymentMode {
     POST_SESSION = "post_session",
     IMPRINT = "imprint"
 }
-export type CardHoldStatus = 'none' | 'pending' | 'secured' | 'captured' | 'released' | 'failed';
+export declare enum CardHoldStatus {
+    NONE = "none",
+    PENDING = "pending",
+    SECURED = "secured",
+    CAPTURED = "captured",
+    RELEASED = "released",
+    FAILED = "failed"
+}
 export declare enum ExerciseStatus {
     ASSIGNED = "assigned",
     IN_PROGRESS = "in_progress",

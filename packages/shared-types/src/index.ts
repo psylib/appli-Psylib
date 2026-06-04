@@ -61,13 +61,14 @@ export enum AppointmentPaymentMode {
   IMPRINT = 'imprint',
 }
 
-export type CardHoldStatus =
-  | 'none'
-  | 'pending'
-  | 'secured'
-  | 'captured'
-  | 'released'
-  | 'failed';
+export enum CardHoldStatus {
+  NONE = 'none',
+  PENDING = 'pending',
+  SECURED = 'secured',
+  CAPTURED = 'captured',
+  RELEASED = 'released',
+  FAILED = 'failed',
+}
 
 export enum ExerciseStatus {
   ASSIGNED = 'assigned',

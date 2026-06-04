@@ -4,6 +4,9 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- New value on AppointmentPaymentMode (Postgres type name = "AppointmentPaymentMode", no @@map)
+-- Requires PostgreSQL >= 12 to run ADD VALUE inside Prisma's migration transaction.
+-- Confirmed safe: prior migration 20260420_audit_fixes already shipped ADD VALUE on this
+-- infra (OVH Postgres >= 12), and the new value is not consumed later in this same transaction.
 ALTER TYPE "AppointmentPaymentMode" ADD VALUE IF NOT EXISTS 'imprint';
 
 -- ConsultationType.require_imprint

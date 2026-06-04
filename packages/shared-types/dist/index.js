@@ -4,7 +4,7 @@
 // Partagés entre apps/web et apps/api
 // =============================================================================
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.CancelledBy = exports.CONSULTATION_MODALITY_LABELS = exports.ConsultationModality = exports.OFFLINE_PAYMENT_METHOD_LABELS = exports.OfflinePaymentMethod = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES_ANNUAL = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.CalendarProvider = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
+exports.DEFAULT_GUARDIAN_PERMISSIONS = exports.GuardianRelationship = exports.AccountingEntryType = exports.RECURRING_FREQUENCY_LABELS = exports.RecurringFrequency = exports.EXPENSE_PAYMENT_METHOD_LABELS = exports.ExpensePaymentMethod = exports.EXPENSE_CATEGORY_LABELS = exports.ExpenseCategory = exports.MON_SOUTIEN_PSY_MAX_SESSIONS = exports.MON_SOUTIEN_PSY_RATE = exports.WaitlistStatus = exports.WaitlistUrgency = exports.CancelledBy = exports.CONSULTATION_MODALITY_LABELS = exports.ConsultationModality = exports.OFFLINE_PAYMENT_METHOD_LABELS = exports.OfflinePaymentMethod = exports.PaymentMode = exports.BookingPaymentStatus = exports.ConsultationCategory = exports.PLAN_DISPLAY_NAMES = exports.PLAN_PRICES_ANNUAL = exports.PLAN_PRICES = exports.PLAN_LIMITS = exports.CalendarProvider = exports.AiFeature = exports.NotificationType = exports.VideoRoomStatus = exports.GdprConsentType = exports.AuditAction = exports.InvoiceStatus = exports.PaymentStatus = exports.PaymentType = exports.InvitationStatus = exports.DocumentCategory = exports.ExerciseStatus = exports.CardHoldStatus = exports.AppointmentPaymentMode = exports.AppointmentStatus = exports.PatientStatus = exports.SessionPaymentStatus = exports.SessionType = exports.SubscriptionStatus = exports.SubscriptionPlan = exports.UserRole = void 0;
 // -----------------------------------------------------------------------------
 // Enums
 // -----------------------------------------------------------------------------
@@ -62,6 +62,15 @@ var AppointmentPaymentMode;
     AppointmentPaymentMode["POST_SESSION"] = "post_session";
     AppointmentPaymentMode["IMPRINT"] = "imprint";
 })(AppointmentPaymentMode || (exports.AppointmentPaymentMode = AppointmentPaymentMode = {}));
+var CardHoldStatus;
+(function (CardHoldStatus) {
+    CardHoldStatus["NONE"] = "none";
+    CardHoldStatus["PENDING"] = "pending";
+    CardHoldStatus["SECURED"] = "secured";
+    CardHoldStatus["CAPTURED"] = "captured";
+    CardHoldStatus["RELEASED"] = "released";
+    CardHoldStatus["FAILED"] = "failed";
+})(CardHoldStatus || (exports.CardHoldStatus = CardHoldStatus = {}));
 var ExerciseStatus;
 (function (ExerciseStatus) {
     ExerciseStatus["ASSIGNED"] = "assigned";
