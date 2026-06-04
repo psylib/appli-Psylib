@@ -431,6 +431,12 @@ export class SubscriptionService {
   }
 
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    // Card imprint setup (mode: 'setup')
+    if (session.metadata?.['type'] === 'card_imprint_setup') {
+      await this.handleImprintSetupCompleted(session);
+      return;
+    }
+
     // Booking payment (one-time, via Connect)
     if (session.metadata?.['type'] === 'booking_payment') {
       await this.handleBookingPaymentCompleted(session);
@@ -662,6 +668,55 @@ export class SubscriptionService {
         this.logger.log(`Enqueued auto-invoice for booking payment ${appointment.id}`);
       }
     }
+  }
+
+  async handleImprintSetupCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    const appointmentId = session.metadata?.['appointmentId'];
+    if (!appointmentId) {
+      this.logger.warn('card_imprint_setup: missing appointmentId');
+      return;
+    }
+    const setupIntentId = session.setup_intent as string | null;
+    if (!setupIntentId) {
+      this.logger.warn(`card_imprint_setup: missing setup_intent for ${appointmentId}`);
+      return;
+    }
+
+    const setupIntent = await this.stripe.retrieveSetupIntent(setupIntentId);
+    const paymentMethodId = setupIntent.payment_method as string | null;
+    if (!paymentMethodId) {
+      this.logger.warn(`card_imprint_setup: no payment_method for ${appointmentId}`);
+      return;
+    }
+
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        stripeCustomerId: session.customer as string,
+        stripePaymentMethodId: paymentMethodId,
+        cardHoldStatus: 'secured',
+        paymentMode: 'imprint',
+      },
+    });
+
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        psychologist: { select: { name: true, user: { select: { email: true } } } },
+        patient: { select: { name: true } },
+      },
+    });
+
+    if (appointment?.psychologist.user.email) {
+      void this.email
+        .sendImprintSecuredToPsy(appointment.psychologist.user.email, {
+          psychologistName: appointment.psychologist.name,
+          patientName: appointment.patient?.name ?? 'Patient',
+        })
+        .catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
+    }
+
+    this.logger.log(`Card imprint secured for appointment ${appointmentId}`);
   }
 
   private async handlePaymentLinkCompleted(session: Stripe.Checkout.Session): Promise<void> {

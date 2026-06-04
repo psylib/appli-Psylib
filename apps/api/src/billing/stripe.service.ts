@@ -295,6 +295,10 @@ export class StripeService implements OnModuleInit {
     }
   }
 
+  async retrieveSetupIntent(id: string): Promise<Stripe.SetupIntent> {
+    return this.stripe.setupIntents.retrieve(id);
+  }
+
   async createBookingCheckoutSession(params: {
     psyStripeAccountId: string;
     amount: number; // in cents

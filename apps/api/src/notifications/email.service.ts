@@ -1606,6 +1606,29 @@ export class EmailService {
     await this.send(to, `Paiement reçu — ${data.patientName}`, html, 'sendPaymentReceivedToPsy');
   }
 
+  // ─── IMPRINT SECURED — NOTIFICATION PSY ──────────────────────────────────────
+
+  async sendImprintSecuredToPsy(
+    to: string,
+    data: {
+      psychologistName: string;
+      patientName: string;
+    },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Empreinte bancaire enregistrée',
+      `<h1>Bonjour ${data.psychologistName},</h1>
+      <div class="badge badge-success">Empreinte bancaire enregistrée</div>
+      <p><strong>${data.patientName}</strong> a enregistré sa carte bancaire avec succès.</p>
+      <div class="info-box">
+        <p style="margin:0;"><strong>Patient :</strong> ${data.patientName}</p>
+        <p style="margin:0;">Vous pouvez désormais débiter sa carte en fin de séance ou en cas d'annulation tardive, directement depuis le dossier du rendez-vous.</p>
+      </div>`,
+    );
+
+    await this.send(to, `Empreinte bancaire enregistrée — ${data.patientName}`, html, 'sendImprintSecuredToPsy');
+  }
+
   // ─── REFUND CONFIRMATION — NOTIFICATION PATIENT ───────────────────────────────
 
   async sendRefundConfirmation(

@@ -31,6 +31,10 @@ const mockPrisma = {
   aiUsage: {
     count: vi.fn(),
   },
+  appointment: {
+    update: vi.fn(),
+    findUnique: vi.fn(),
+  },
 };
 
 const mockStripeService = {
@@ -39,12 +43,14 @@ const mockStripeService = {
   createPortalSession: vi.fn(),
   retrieveSubscription: vi.fn(),
   listInvoices: vi.fn(),
+  retrieveSetupIntent: vi.fn(),
 };
 
 const mockEmailService = {
   sendSubscriptionActivated: vi.fn().mockResolvedValue(undefined),
   sendPaymentFailed: vi.fn().mockResolvedValue(undefined),
   sendSubscriptionCanceled: vi.fn().mockResolvedValue(undefined),
+  sendImprintSecuredToPsy: vi.fn().mockResolvedValue(undefined),
 };
 
 const mockConfig = {
@@ -465,6 +471,42 @@ describe('SubscriptionService', () => {
           }),
         }),
       );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // handleImprintSetupCompleted()
+  // -------------------------------------------------------------------------
+
+  describe('handleImprintSetupCompleted', () => {
+    it('enregistre customer + payment method et passe à secured', async () => {
+      const session: any = {
+        id: 'cs_setup1',
+        mode: 'setup',
+        customer: 'cus_imp1',
+        setup_intent: 'seti_1',
+        metadata: { type: 'card_imprint_setup', appointmentId: 'apt1' },
+      };
+      mockStripeService.retrieveSetupIntent.mockResolvedValue({ id: 'seti_1', payment_method: 'pm_1' });
+      mockPrisma.appointment.update.mockResolvedValue({ id: 'apt1' });
+      mockPrisma.appointment.findUnique.mockResolvedValue({
+        id: 'apt1',
+        psychologistId: 'psy1',
+        psychologist: { name: 'Dr X', user: { email: 'psy@test.fr' } },
+        patient: { name: 'Patient' },
+      });
+
+      await service.handleImprintSetupCompleted(session);
+
+      expect(mockPrisma.appointment.update).toHaveBeenCalledWith({
+        where: { id: 'apt1' },
+        data: {
+          stripeCustomerId: 'cus_imp1',
+          stripePaymentMethodId: 'pm_1',
+          cardHoldStatus: 'secured',
+          paymentMode: 'imprint',
+        },
+      });
     });
   });
 });
