@@ -1659,6 +1659,37 @@ export class EmailService {
     await this.send(to, `Reçu de paiement — ${data.psychologistName}`, html, 'sendImprintReceiptToPatient');
   }
 
+  // ─── IMPRINT REQUEST — LIEN D'ENREGISTREMENT CARTE PATIENT ──────────────────
+
+  async sendImprintRequestToPatient(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      setupUrl: string;
+    },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Sécurisez votre rendez-vous',
+      `<h1>Bonjour ${data.patientName},</h1>
+      <p><strong>${data.psychologistName}</strong> vous demande d'enregistrer votre carte bancaire pour garantir votre rendez-vous.</p>
+      <div class="info-box">
+        <p style="margin:0;"><strong>Aucun débit immédiat</strong> — votre carte ne sera débitée qu'en cas de no-show ou d'annulation tardive, conformément à la politique d'annulation de votre praticien.</p>
+      </div>
+      <div style="text-align:center;">
+        <a href="${data.setupUrl}" class="btn">Enregistrer ma carte</a>
+      </div>
+      <p style="font-size: 14px; color: #6B7280;">Ce lien est valable 24 heures. L'enregistrement est sécurisé via Stripe — PsyLib ne stocke jamais vos données bancaires.</p>`,
+    );
+
+    await this.send(
+      to,
+      `Sécurisez votre rendez-vous — ${data.psychologistName}`,
+      html,
+      'sendImprintRequestToPatient',
+    );
+  }
+
   // ─── REFUND CONFIRMATION — NOTIFICATION PATIENT ───────────────────────────────
 
   async sendRefundConfirmation(

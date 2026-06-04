@@ -1274,6 +1274,60 @@ export class SubscriptionService {
     return { success: true };
   }
 
+  // --- Imprint Setup Link (Flux B : lien envoyé par le psy) ---
+
+  async createImprintSetupLink(
+    userId: string,
+    appointmentId: string,
+  ): Promise<{ url: string | null }> {
+    const psy = await this.getPsychologist(userId);
+    if (!psy.stripeAccountId || !psy.stripeOnboardingComplete) {
+      throw new ForbiddenException('Stripe Connect non configuré.');
+    }
+
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+      include: { patient: true },
+    });
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+    if (!appointment.patient?.email) {
+      throw new BadRequestException('Le patient doit avoir un email pour enregistrer sa carte.');
+    }
+
+    const customer = await this.stripe.createImprintCustomer({
+      email: appointment.patient.email,
+      name: appointment.patient.name,
+      psychologistId: psy.id,
+      patientId: appointment.patientId!,
+      appointmentId: appointment.id,
+    });
+
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    const session = await this.stripe.createSetupCheckoutSession({
+      customerId: customer.id,
+      appointmentId: appointment.id,
+      successUrl: `${frontendUrl}/payment/imprint-success?appointmentId=${appointment.id}`,
+      cancelUrl: `${frontendUrl}/payment/cancel?appointmentId=${appointment.id}`,
+      expiresInSeconds: 86400,
+    });
+
+    await this.prisma.appointment.update({
+      where: { id: appointment.id },
+      data: { cardHoldStatus: 'pending', paymentMode: 'imprint', stripeCustomerId: customer.id },
+    });
+
+    void this.email
+      .sendImprintRequestToPatient(appointment.patient.email, {
+        patientName: appointment.patient.name,
+        psychologistName: psy.name,
+        setupUrl: session.url ?? '',
+      })
+      .catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
+
+    this.logger.log(`Imprint setup link created for appointment ${appointment.id}`);
+    return { url: session.url };
+  }
+
   // --- Payments List ---
 
   async getPayments(userId: string, query: {

@@ -50,6 +50,8 @@ const mockStripeService = {
   listInvoices: vi.fn(),
   retrieveSetupIntent: vi.fn(),
   captureImprint: vi.fn(),
+  createImprintCustomer: vi.fn(),
+  createSetupCheckoutSession: vi.fn(),
 };
 
 const mockEmailService = {
@@ -58,6 +60,7 @@ const mockEmailService = {
   sendSubscriptionCanceled: vi.fn().mockResolvedValue(undefined),
   sendImprintSecuredToPsy: vi.fn().mockResolvedValue(undefined),
   sendImprintReceiptToPatient: vi.fn().mockResolvedValue(undefined),
+  sendImprintRequestToPatient: vi.fn().mockResolvedValue(undefined),
 };
 
 const mockConfig = {
@@ -609,6 +612,46 @@ describe('SubscriptionService', () => {
       const result = await service.releaseImprint('user1', 'apt1');
       expect(mockPrisma.appointment.update).toHaveBeenCalledWith({ where: { id: 'apt1' }, data: { cardHoldStatus: 'released' } });
       expect(result.success).toBe(true);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // createImprintSetupLink()
+  // -------------------------------------------------------------------------
+
+  describe('createImprintSetupLink', () => {
+    it('crée un customer + session setup et passe à pending', async () => {
+      vi.spyOn(service as any, 'getPsychologist').mockResolvedValue({
+        id: 'psy1', name: 'Dr X', stripeAccountId: 'acct_1', stripeOnboardingComplete: true,
+      });
+      mockPrisma.appointment.findFirst.mockResolvedValue({
+        id: 'apt1', psychologistId: 'psy1', patientId: 'pat1',
+        patient: { id: 'pat1', name: 'Patient', email: 'p@test.fr' },
+      });
+      mockStripeService.createImprintCustomer.mockResolvedValue({ id: 'cus_1' });
+      mockStripeService.createSetupCheckoutSession.mockResolvedValue({ id: 'cs_1', url: 'https://stripe/setup' });
+      mockPrisma.appointment.update.mockResolvedValue({ id: 'apt1' });
+
+      const result = await service.createImprintSetupLink('user1', 'apt1');
+
+      expect(mockStripeService.createSetupCheckoutSession).toHaveBeenCalledWith(
+        expect.objectContaining({ customerId: 'cus_1', appointmentId: 'apt1', expiresInSeconds: 86400 }),
+      );
+      expect(mockPrisma.appointment.update).toHaveBeenCalledWith({
+        where: { id: 'apt1' },
+        data: { cardHoldStatus: 'pending', paymentMode: 'imprint', stripeCustomerId: 'cus_1' },
+      });
+      expect(result.url).toBe('https://stripe/setup');
+    });
+
+    it("lève BadRequestException si le patient n'a pas d'email", async () => {
+      vi.spyOn(service as any, 'getPsychologist').mockResolvedValue({
+        id: 'psy1', name: 'Dr X', stripeAccountId: 'acct_1', stripeOnboardingComplete: true,
+      });
+      mockPrisma.appointment.findFirst.mockResolvedValue({
+        id: 'apt1', psychologistId: 'psy1', patientId: 'pat1', patient: { id: 'pat1', name: 'Patient', email: null },
+      });
+      await expect(service.createImprintSetupLink('user1', 'apt1')).rejects.toThrow();
     });
   });
 });

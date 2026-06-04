@@ -170,6 +170,17 @@ export class BillingController {
     return this.subscriptionService.releaseImprint(user.sub, appointmentId);
   }
 
+  @Post('imprint/setup/:appointmentId')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @ApiOperation({ summary: "Envoyer un lien d'empreinte au patient (RDV créé par le psy)" })
+  async createImprintSetupLink(
+    @CurrentUser() user: KeycloakUser,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+  ) {
+    return this.subscriptionService.createImprintSetupLink(user.sub, appointmentId);
+  }
+
   @Get('payments')
   @UseGuards(SubscriptionGuard)
   @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
