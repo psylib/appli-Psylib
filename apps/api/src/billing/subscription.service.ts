@@ -670,7 +670,7 @@ export class SubscriptionService {
     }
   }
 
-  async handleImprintSetupCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  private async handleImprintSetupCompleted(session: Stripe.Checkout.Session): Promise<void> {
     const appointmentId = session.metadata?.['appointmentId'];
     if (!appointmentId) {
       this.logger.warn('card_imprint_setup: missing appointmentId');
@@ -689,7 +689,7 @@ export class SubscriptionService {
       return;
     }
 
-    await this.prisma.appointment.update({
+    const appointment = await this.prisma.appointment.update({
       where: { id: appointmentId },
       data: {
         stripeCustomerId: session.customer as string,
@@ -697,10 +697,6 @@ export class SubscriptionService {
         cardHoldStatus: 'secured',
         paymentMode: 'imprint',
       },
-    });
-
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
       include: {
         psychologist: { select: { name: true, user: { select: { email: true } } } },
         patient: { select: { name: true } },

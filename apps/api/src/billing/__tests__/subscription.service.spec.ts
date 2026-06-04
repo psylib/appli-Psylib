@@ -478,9 +478,9 @@ describe('SubscriptionService', () => {
   // handleImprintSetupCompleted()
   // -------------------------------------------------------------------------
 
-  describe('handleImprintSetupCompleted', () => {
-    it('enregistre customer + payment method et passe à secured', async () => {
-      const session: any = {
+  describe('handleImprintSetupCompleted (via handleWebhookEvent)', () => {
+    it('enregistre customer + payment method, passe à secured et notifie le psy', async () => {
+      const session = {
         id: 'cs_setup1',
         mode: 'setup',
         customer: 'cus_imp1',
@@ -488,24 +488,32 @@ describe('SubscriptionService', () => {
         metadata: { type: 'card_imprint_setup', appointmentId: 'apt1' },
       };
       mockStripeService.retrieveSetupIntent.mockResolvedValue({ id: 'seti_1', payment_method: 'pm_1' });
-      mockPrisma.appointment.update.mockResolvedValue({ id: 'apt1' });
-      mockPrisma.appointment.findUnique.mockResolvedValue({
+      mockPrisma.appointment.update.mockResolvedValue({
         id: 'apt1',
         psychologistId: 'psy1',
         psychologist: { name: 'Dr X', user: { email: 'psy@test.fr' } },
         patient: { name: 'Patient' },
       });
 
-      await service.handleImprintSetupCompleted(session);
+      await service.handleWebhookEvent({
+        type: 'checkout.session.completed',
+        data: { object: session },
+      } as any);
 
-      expect(mockPrisma.appointment.update).toHaveBeenCalledWith({
-        where: { id: 'apt1' },
-        data: {
-          stripeCustomerId: 'cus_imp1',
-          stripePaymentMethodId: 'pm_1',
-          cardHoldStatus: 'secured',
-          paymentMode: 'imprint',
-        },
+      expect(mockPrisma.appointment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'apt1' },
+          data: {
+            stripeCustomerId: 'cus_imp1',
+            stripePaymentMethodId: 'pm_1',
+            cardHoldStatus: 'secured',
+            paymentMode: 'imprint',
+          },
+        }),
+      );
+      expect(mockEmailService.sendImprintSecuredToPsy).toHaveBeenCalledWith('psy@test.fr', {
+        psychologistName: 'Dr X',
+        patientName: 'Patient',
       });
     });
   });
