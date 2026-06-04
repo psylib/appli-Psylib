@@ -105,6 +105,11 @@ function createStripeMock() {
       url: 'https://checkout.stripe.com/pay/cs_test_001',
       payment_intent: 'pi_test_001',
     }),
+    createImprintCustomer: vi.fn().mockResolvedValue({ id: 'cus_test_001' }),
+    createSetupCheckoutSession: vi.fn().mockResolvedValue({
+      id: 'cs_setup_001',
+      url: 'https://checkout.stripe.com/setup/cs_setup_001',
+    }),
   };
 }
 
@@ -333,6 +338,92 @@ describe('PublicBookingService — Payment Flow', () => {
           }),
         }),
       );
+    });
+  });
+
+  // ─── bookAppointment avec empreinte bancaire (requireImprint) ───────────
+
+  describe("bookAppointment avec empreinte bancaire (requireImprint)", () => {
+    it("demande une empreinte quand le type de consultation l'exige", async () => {
+      const { service, prisma, stripe } = createService();
+      prisma.psychologist.findUnique.mockResolvedValue(mockPsyWithPayment);
+      prisma.consultationType.findFirst.mockResolvedValue({
+        id: 'ct-imprint-001',
+        duration: 50,
+        rate: 80,
+        requireImprint: true,
+      });
+      prisma.appointment.create.mockResolvedValue({ id: 'apt-imprint-001', patientId: 'pat-1' });
+
+      const result = await service.bookAppointment('dr-martin', {
+        ...validBookingDto,
+        consultationTypeId: 'ct-imprint-001',
+        payOnline: false,
+      } as any);
+
+      expect(stripe.createImprintCustomer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: validBookingDto.patientEmail,
+          name: validBookingDto.patientName,
+          psychologistId: mockPsyWithPayment.id,
+          appointmentId: 'apt-imprint-001',
+        }),
+      );
+      expect(stripe.createSetupCheckoutSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          customerId: 'cus_test_001',
+          appointmentId: 'apt-imprint-001',
+        }),
+      );
+      expect(result).toMatchObject({
+        success: true,
+        appointmentId: 'apt-imprint-001',
+        checkoutUrl: 'https://checkout.stripe.com/setup/cs_setup_001',
+        requiresImprint: true,
+      });
+    });
+
+    it("prend priorité sur le paiement en ligne classique quand requireImprint est vrai", async () => {
+      const { service, prisma, stripe } = createService();
+      prisma.psychologist.findUnique.mockResolvedValue(mockPsyWithPayment);
+      prisma.consultationType.findFirst.mockResolvedValue({
+        id: 'ct-imprint-002',
+        duration: 50,
+        rate: 80,
+        requireImprint: true,
+      });
+      prisma.appointment.create.mockResolvedValue({ id: 'apt-imprint-002', patientId: 'pat-2' });
+
+      await service.bookAppointment('dr-martin', {
+        ...validBookingDto,
+        consultationTypeId: 'ct-imprint-002',
+        payOnline: true,
+      } as any);
+
+      expect(stripe.createSetupCheckoutSession).toHaveBeenCalled();
+      // Le checkout classique ne doit PAS être appelé
+      expect(stripe.createBookingCheckoutSession).not.toHaveBeenCalled();
+    });
+
+    it("retombe sur le flux normal si le psy n'est pas onboardé Connect", async () => {
+      const { service, prisma, stripe } = createService();
+      prisma.psychologist.findUnique.mockResolvedValue(mockPsyNoPayment);
+      prisma.consultationType.findFirst.mockResolvedValue({
+        id: 'ct-imprint-003',
+        duration: 50,
+        rate: 80,
+        requireImprint: true,
+      });
+      prisma.appointment.create.mockResolvedValue({ id: 'apt-imprint-003', patientId: 'pat-3' });
+
+      const result = await service.bookAppointment('dr-martin', {
+        ...validBookingDto,
+        consultationTypeId: 'ct-imprint-003',
+      } as any);
+
+      expect(stripe.createSetupCheckoutSession).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ success: true, appointmentId: 'apt-imprint-003' });
+      expect((result as any).requiresImprint).toBeUndefined();
     });
   });
 

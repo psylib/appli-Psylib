@@ -354,6 +354,7 @@ export class PublicBookingService {
     // Determine duration and rate from consultation type if provided
     let duration = psy.defaultSessionDuration;
     let rate = psy.defaultSessionRate ? Number(psy.defaultSessionRate) : null;
+    let requireImprint = false;
 
     if (dto.consultationTypeId) {
       const consultationType = await this.prisma.consultationType.findFirst({
@@ -366,6 +367,7 @@ export class PublicBookingService {
       if (consultationType) {
         duration = consultationType.duration;
         rate = Number(consultationType.rate);
+        requireImprint = consultationType.requireImprint;
       }
     }
 
@@ -440,6 +442,61 @@ export class PublicBookingService {
 
     // Invalide le cache des créneaux du psy (le slot vient d'être pris)
     void this.cache.delByPattern(`slots:${slug}:*`);
+
+    // --- Card imprint flow (prioritaire sur le paiement en ligne classique) ---
+    const psyCanCharge =
+      psy.allowOnlinePayment && psy.stripeOnboardingComplete && !!psy.stripeAccountId;
+    if (requireImprint && psyCanCharge) {
+      try {
+        const patientId = appointment.patientId!;
+        const customer = await this.stripeService.createImprintCustomer({
+          email: dto.patientEmail,
+          name: dto.patientName,
+          psychologistId: psy.id,
+          patientId,
+          appointmentId: appointment.id,
+        });
+        const setupSession = await this.stripeService.createSetupCheckoutSession({
+          customerId: customer.id,
+          appointmentId: appointment.id,
+          successUrl: `${this.frontendUrl}/psy/${slug}/booking/success?appointment=${appointment.id}`,
+          cancelUrl: `${this.frontendUrl}/psy/${slug}/booking/cancel?appointment=${appointment.id}`,
+          expiresInSeconds: 86400,
+        });
+
+        await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: {
+            cardHoldStatus: 'pending',
+            paymentMode: 'imprint',
+            stripeCustomerId: customer.id,
+          },
+        });
+
+        void this.email.sendBookingRequestToPsy(psy.user.email, {
+          patientName: dto.patientName,
+          patientEmail: dto.patientEmail,
+          patientPhone: dto.patientPhone,
+          psychologistName: psy.name,
+          scheduledAt,
+          duration,
+          reason: dto.reason,
+          dashboardUrl: `${this.frontendUrl}/dashboard/calendar`,
+        });
+
+        return {
+          success: true,
+          appointmentId: appointment.id,
+          checkoutUrl: setupSession.url,
+          requiresImprint: true,
+        };
+      } catch (err) {
+        this.logger.warn(
+          `Failed to create imprint setup for appointment ${appointment.id}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+        // Fallback : RDV normal sans empreinte
+      }
+    }
 
     // --- Online payment flow ---
     if (wantsOnlinePayment && rate && rate > 0) {
