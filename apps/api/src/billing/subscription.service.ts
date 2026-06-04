@@ -1316,6 +1316,15 @@ export class SubscriptionService {
       data: { cardHoldStatus: 'pending', paymentMode: 'imprint', stripeCustomerId: customer.id },
     });
 
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'CREATE',
+      entityType: 'card_imprint_setup',
+      entityId: appointment.id,
+      metadata: { appointmentId: appointment.id },
+    });
+
     void this.email
       .sendImprintRequestToPatient(appointment.patient.email, {
         patientName: appointment.patient.name,
