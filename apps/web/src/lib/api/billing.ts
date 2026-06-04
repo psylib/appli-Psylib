@@ -99,4 +99,16 @@ export const billingApi = {
     const qs = params.toString();
     return apiClient.get<PaymentsResponse>(`/billing/payments${qs ? `?${qs}` : ''}`, token);
   },
+
+  // --- Empreinte bancaire (card imprint) ---
+
+  captureImprint: (appointmentId: string, amount: number, token: string) =>
+    apiClient.post<{ captured: boolean; fallbackLink?: string }>(
+      `/billing/imprint/capture/${appointmentId}`, { amount }, token),
+
+  releaseImprint: (appointmentId: string, token: string) =>
+    apiClient.post<{ success: boolean }>(`/billing/imprint/release/${appointmentId}`, {}, token),
+
+  createImprintSetupLink: (appointmentId: string, token: string) =>
+    apiClient.post<{ url: string | null }>(`/billing/imprint/setup/${appointmentId}`, {}, token),
 };

@@ -3,13 +3,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Video, MapPin, CreditCard, Calendar, ArrowLeft, AlertCircle, RotateCcw } from 'lucide-react';
+import { Search, Video, MapPin, CreditCard, Calendar, ArrowLeft, AlertCircle, RotateCcw, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import { appointmentsApi } from '@/lib/api/appointments';
+import { billingApi } from '@/lib/api/billing';
 import { patientsApi } from '@/lib/api/patients';
 import { psychologistApi } from '@/lib/api/psychologist';
 import { availabilityApi } from '@/lib/api/availability';
@@ -118,6 +119,7 @@ export function SmartSlotPickerDialog() {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [reason, setReason] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [requestImprint, setRequestImprint] = useState(false);
 
   // ── Fetch date window: current month + next month ──
   const fromDate = useMemo(() => {
@@ -272,7 +274,7 @@ export function SmartSlotPickerDialog() {
         session?.accessToken ?? '',
       );
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ['appointments'] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       if (variables.participantIds && variables.participantIds.length > 0) {
@@ -284,6 +286,12 @@ export function SmartSlotPickerDialog() {
         success(`RDV planifié${selectedPatient ? ` avec ${selectedPatient.name}` : ''} — vous enverrez le lien après la séance`);
       } else {
         success(`RDV planifié${selectedPatient ? ` avec ${selectedPatient.name}` : ''}`);
+      }
+      // Fire imprint setup link if requested
+      if (requestImprint && data.id && session?.accessToken) {
+        void billingApi.createImprintSetupLink(data.id, session.accessToken)
+          .then(() => success('Lien d\'empreinte envoyé au patient.'))
+          .catch(() => { /* silent — main RDV already created */ });
       }
       handleClose();
     },
@@ -308,6 +316,7 @@ export function SmartSlotPickerDialog() {
     setPaymentAmount('');
     setReason('');
     setFormError(null);
+    setRequestImprint(false);
     closeSmartSlotPicker();
   };
 
@@ -401,6 +410,8 @@ export function SmartSlotPickerDialog() {
             canRequestPayment={canRequestPayment}
             reason={reason}
             setReason={setReason}
+            requestImprint={requestImprint}
+            setRequestImprint={setRequestImprint}
             formError={formError}
             isSubmitting={createMutation.isPending}
             onBack={() => setStep(1)}
@@ -635,6 +646,8 @@ interface Step2Props {
   canRequestPayment: boolean;
   reason: string;
   setReason: (v: string) => void;
+  requestImprint: boolean;
+  setRequestImprint: (v: boolean) => void;
   formError: string | null;
   isSubmitting: boolean;
   onBack: () => void;
@@ -658,6 +671,8 @@ function Step2({
   canRequestPayment,
   reason,
   setReason,
+  requestImprint,
+  setRequestImprint,
   formError,
   isSubmitting,
   onBack,
@@ -838,6 +853,20 @@ function Step2({
           </p>
         )}
       </div>
+
+      {/* Empreinte bancaire */}
+      <label className="flex items-center gap-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={requestImprint}
+          onChange={(e) => setRequestImprint(e.target.checked)}
+          className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+        />
+        <span className="flex items-center gap-1.5 text-sm text-foreground">
+          <Lock size={13} className="text-muted-foreground" aria-hidden />
+          Demander une empreinte bancaire
+        </span>
+      </label>
 
       {formError && (
         <p className="text-sm text-destructive" role="alert">{formError}</p>

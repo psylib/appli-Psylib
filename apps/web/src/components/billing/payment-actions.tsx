@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Banknote, RotateCcw, Coins, CreditCard, Building2, ArrowRightLeft, MoreHorizontal } from 'lucide-react';
+import { Send, Banknote, RotateCcw, Coins, CreditCard, Building2, ArrowRightLeft, MoreHorizontal, Lock, Unlock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { PaymentBadge } from '@/components/billing/payment-badge';
 import { useToast } from '@/components/ui/toast';
 import { billingApi } from '@/lib/api/billing';
+import { Dialog } from '@/components/ui/dialog';
 
 const OFFLINE_METHODS = [
   { value: 'cash', label: 'Especes', icon: Coins },
@@ -24,6 +25,7 @@ interface PaymentActionsAppointment {
   paidOnline?: boolean;
   paymentIntentId?: string;
   paymentAmount?: number | null;
+  cardHoldStatus?: 'none' | 'pending' | 'secured' | 'captured' | 'released' | 'failed' | string;
 }
 
 interface PaymentActionsProps {
@@ -37,6 +39,9 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
   const queryClient = useQueryClient();
   const [showRefundConfirm, setShowRefundConfirm] = useState(false);
   const [showPaymentMethodPicker, setShowPaymentMethodPicker] = useState(false);
+  const [showCaptureDialog, setShowCaptureDialog] = useState(false);
+  const [captureAmount, setCaptureAmount] = useState<number>(appointment.paymentAmount ?? 0);
+  const [showReleaseConfirm, setShowReleaseConfirm] = useState(false);
 
   const paymentLinkMutation = useMutation({
     mutationFn: () =>
@@ -86,6 +91,38 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
     },
   });
 
+  const captureImprintMutation = useMutation({
+    mutationFn: (amount: number) =>
+      billingApi.captureImprint(appointment.id, amount, session!.accessToken),
+    onSuccess: (data) => {
+      setShowCaptureDialog(false);
+      if (data.fallbackLink) {
+        success('La carte nécessite une validation : un lien de paiement a été envoyé au patient.');
+      } else {
+        success('Paiement encaissé.');
+      }
+      void queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      void queryClient.invalidateQueries({ queryKey: ['payments'] });
+    },
+    onError: () => {
+      showError('Erreur lors de l\'encaissement.');
+    },
+  });
+
+  const releaseImprintMutation = useMutation({
+    mutationFn: () =>
+      billingApi.releaseImprint(appointment.id, session!.accessToken),
+    onSuccess: () => {
+      success('Empreinte libérée.');
+      setShowReleaseConfirm(false);
+      void queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      void queryClient.invalidateQueries({ queryKey: ['payments'] });
+    },
+    onError: () => {
+      showError('Erreur lors de la libération de l\'empreinte.');
+    },
+  });
+
   const status = appointment.bookingPaymentStatus;
   const isPaid = status === 'paid';
   const isPending = status === 'pending_payment';
@@ -99,6 +136,10 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
       : status === 'payment_failed'
         ? 'failed'
         : '';
+
+  const cardHold = appointment.cardHoldStatus;
+  const isImprintSecured = cardHold === 'secured';
+  const isImprintPending = cardHold === 'pending';
 
   const buttonSize = compact ? 'sm' as const : 'default' as const;
 
@@ -185,6 +226,50 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
         </div>
       )}
 
+      {/* Imprint status labels */}
+      {isImprintPending && (
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+          <Lock size={11} aria-hidden />
+          Empreinte en attente
+        </span>
+      )}
+      {isImprintSecured && (
+        <span className="inline-flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700">
+          <Lock size={11} aria-hidden />
+          Empreinte enregistrée
+        </span>
+      )}
+
+      {/* Imprint actions — only when secured */}
+      {isImprintSecured && (
+        <>
+          <Button
+            variant="outline"
+            size={buttonSize}
+            onClick={() => {
+              setCaptureAmount(appointment.paymentAmount ?? 0);
+              setShowCaptureDialog(true);
+            }}
+            disabled={!session?.accessToken}
+          >
+            <CreditCard size={14} aria-hidden />
+            {!compact && 'Encaisser'}
+            {compact && 'Encaisser'}
+          </Button>
+          <Button
+            variant="outline"
+            size={buttonSize}
+            onClick={() => setShowReleaseConfirm(true)}
+            disabled={!session?.accessToken}
+            className="text-muted-foreground"
+          >
+            <Unlock size={14} aria-hidden />
+            {!compact && 'Libérer l\'empreinte'}
+            {compact && 'Libérer'}
+          </Button>
+        </>
+      )}
+
       {/* Refund confirmation dialog */}
       <ConfirmDialog
         open={showRefundConfirm}
@@ -196,6 +281,62 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
         variant="destructive"
         loading={refundMutation.isPending}
       />
+
+      {/* Release imprint confirmation dialog */}
+      <ConfirmDialog
+        open={showReleaseConfirm}
+        onClose={() => setShowReleaseConfirm(false)}
+        onConfirm={() => releaseImprintMutation.mutate()}
+        title="Libérer l'empreinte ?"
+        description="Aucun montant ne sera débité. L'empreinte bancaire sera annulée."
+        confirmLabel="Libérer"
+        variant="destructive"
+        loading={releaseImprintMutation.isPending}
+      />
+
+      {/* Capture amount dialog */}
+      <Dialog
+        open={showCaptureDialog}
+        onClose={() => setShowCaptureDialog(false)}
+        title="Encaisser l'empreinte"
+        className="max-w-sm"
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="capture-amount" className="text-sm font-medium text-foreground">
+              Montant à encaisser (€)
+            </label>
+            <input
+              id="capture-amount"
+              type="number"
+              min={0.01}
+              step="0.01"
+              value={captureAmount}
+              onChange={(e) => setCaptureAmount(Number(e.target.value))}
+              className="w-full rounded-lg border border-input bg-white px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCaptureDialog(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!captureAmount || captureAmount <= 0}
+              loading={captureImprintMutation.isPending}
+              onClick={() => captureImprintMutation.mutate(captureAmount)}
+            >
+              Encaisser {captureAmount > 0 ? `${captureAmount}€` : ''}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }
