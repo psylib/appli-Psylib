@@ -380,10 +380,26 @@ export class AuthService {
   async deleteAccount(keycloakUserId: string): Promise<void> {
     const psy = await this.prisma.psychologist.findUnique({
       where: { userId: keycloakUserId },
-      include: { subscription: { select: { stripeSubscriptionId: true } } },
+      include: {
+        subscription: {
+          select: { stripeSubscriptionId: true, plan: true, status: true },
+        },
+        user: { select: { email: true, createdAt: true } },
+        _count: { select: { patients: true } },
+      },
     });
 
     if (!psy) throw new NotFoundException('Compte introuvable');
+
+    // Snapshot for the admin notification (sent after the cascade deletes it all).
+    const deletedSnapshot = {
+      name: psy.name,
+      email: psy.user?.email ?? '—',
+      plan: psy.subscription?.plan ?? '—',
+      status: psy.subscription?.status ?? '—',
+      patientCount: psy._count.patients,
+      memberSince: psy.user?.createdAt ?? null,
+    };
 
     // 1. Cancel Stripe subscription immediately (non-blocking on failure)
     const stripeSubId = psy.subscription?.stripeSubscriptionId;
@@ -417,6 +433,51 @@ export class AuthService {
     await this.deleteKeycloakUser(keycloakUserId);
 
     this.logger.log(`Account deleted: psychologistId=${psy.id}`);
+
+    // 5. Notify admin (non-blocking — deletion already succeeded)
+    try {
+      await this.notifyAccountDeletion(deletedSnapshot);
+    } catch (err) {
+      this.logger.warn(
+        `Account-deletion admin email failed: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  private async notifyAccountDeletion(snapshot: {
+    name: string;
+    email: string;
+    plan: string;
+    status: string;
+    patientCount: number;
+    memberSince: Date | null;
+  }): Promise<void> {
+    const fmt = (d: Date) =>
+      d.toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
+    const date = fmt(new Date());
+    const esc = (s: string) =>
+      s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
+    await this.emailService.sendRawEmail(
+      this.adminEmail,
+      `Suppression de compte PsyLib — ${snapshot.name}`,
+      `<div style="font-family:Inter,Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;">
+        <h2 style="color:#B91C1C;margin:0 0 16px;">Compte supprimé</h2>
+        <p style="font-size:15px;color:#374151;margin:0 0 16px;">Un psychologue vient de supprimer son compte.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:15px;">
+          <tr><td style="padding:8px 0;color:#6B7280;">Nom</td><td style="padding:8px 0;font-weight:600;">${esc(snapshot.name)}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Email</td><td style="padding:8px 0;">${esc(snapshot.email)}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Plan</td><td style="padding:8px 0;">${esc(snapshot.plan)} (${esc(snapshot.status)})</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Patients</td><td style="padding:8px 0;">${snapshot.patientCount}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Inscrit le</td><td style="padding:8px 0;">${snapshot.memberSince ? esc(fmt(snapshot.memberSince)) : '—'}</td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Supprimé le</td><td style="padding:8px 0;">${date}</td></tr>
+        </table>
+      </div>`,
+    );
   }
 
   private async deleteKeycloakUser(keycloakUserId: string): Promise<void> {
