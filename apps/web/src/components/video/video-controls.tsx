@@ -19,6 +19,7 @@ interface VideoControlsProps {
   blurPending: boolean;
   onToggleBlur: () => void;
   inviteSlot?: React.ReactNode;
+  scribeSlot?: React.ReactNode;
   onEndCall: () => void;
 }
 
@@ -38,6 +39,7 @@ export function VideoControls({
   blurPending,
   onToggleBlur,
   inviteSlot,
+  scribeSlot,
   onEndCall,
 }: VideoControlsProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
@@ -69,6 +71,7 @@ export function VideoControls({
       </button>
 
       {inviteSlot}
+      {scribeSlot}
 
       <DeviceSettingsMenu blurEnabled={blurEnabled} blurPending={blurPending} onToggleBlur={onToggleBlur} />
 
