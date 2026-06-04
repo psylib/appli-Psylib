@@ -206,6 +206,58 @@ export class StripeService implements OnModuleInit {
     });
   }
 
+  // ---------------------------------------------------------------------------
+  // Empreinte bancaire (card imprint / SetupIntent)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Crée un Customer Stripe côté plateforme pour l'empreinte d'un patient.
+   * Les metadata rattachent le customer au psy, au patient et au RDV.
+   */
+  async createImprintCustomer(params: {
+    email: string;
+    name: string;
+    psychologistId: string;
+    patientId: string;
+    appointmentId: string;
+  }): Promise<Stripe.Customer> {
+    return this.stripe.customers.create({
+      email: params.email,
+      name: params.name,
+      metadata: {
+        psychologist_id: params.psychologistId,
+        patient_id: params.patientId,
+        appointment_id: params.appointmentId,
+      },
+    });
+  }
+
+  /**
+   * Checkout en mode 'setup' : enregistre la carte du patient (SCA) sans débit.
+   * Carte réutilisable plus tard par le psy (off-session).
+   */
+  async createSetupCheckoutSession(params: {
+    customerId: string;
+    appointmentId: string;
+    successUrl: string;
+    cancelUrl: string;
+    expiresInSeconds?: number;
+  }): Promise<Stripe.Checkout.Session> {
+    const create: Stripe.Checkout.SessionCreateParams = {
+      mode: 'setup',
+      customer: params.customerId,
+      payment_method_types: ['card'],
+      setup_intent_data: { metadata: { appointmentId: params.appointmentId } },
+      metadata: { type: 'card_imprint_setup', appointmentId: params.appointmentId },
+      success_url: params.successUrl,
+      cancel_url: params.cancelUrl,
+    };
+    if (params.expiresInSeconds) {
+      create.expires_at = Math.floor(Date.now() / 1000) + params.expiresInSeconds;
+    }
+    return this.stripe.checkout.sessions.create(create);
+  }
+
   async createBookingCheckoutSession(params: {
     psyStripeAccountId: string;
     amount: number; // in cents

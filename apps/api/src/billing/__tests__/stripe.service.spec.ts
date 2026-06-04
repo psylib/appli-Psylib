@@ -224,6 +224,65 @@ describe('StripeService', () => {
   });
 
   // -------------------------------------------------------------------------
+  // createImprintCustomer()
+  // -------------------------------------------------------------------------
+
+  describe('createImprintCustomer', () => {
+    it('crée un customer plateforme avec metadata patient + appointment', async () => {
+      const created = { id: 'cus_imp1' };
+      mockStripe.customers.create.mockResolvedValue(created);
+
+      const service = createService();
+      const result = await service.createImprintCustomer({
+        email: 'p@test.fr',
+        name: 'Patient Test',
+        psychologistId: 'psy1',
+        patientId: 'pat1',
+        appointmentId: 'apt1',
+      });
+
+      expect(mockStripe.customers.create).toHaveBeenCalledWith({
+        email: 'p@test.fr',
+        name: 'Patient Test',
+        metadata: { psychologist_id: 'psy1', patient_id: 'pat1', appointment_id: 'apt1' },
+      });
+      expect(result.id).toBe('cus_imp1');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // createSetupCheckoutSession()
+  // -------------------------------------------------------------------------
+
+  describe('createSetupCheckoutSession', () => {
+    it('crée une session Checkout mode setup avec metadata card_imprint_setup', async () => {
+      const session = { id: 'cs_setup1', url: 'https://stripe/setup' };
+      mockStripe.checkout.sessions.create.mockResolvedValue(session);
+
+      const service = createService();
+      const result = await service.createSetupCheckoutSession({
+        customerId: 'cus_imp1',
+        appointmentId: 'apt1',
+        successUrl: 'https://app/success',
+        cancelUrl: 'https://app/cancel',
+      });
+
+      expect(mockStripe.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mode: 'setup',
+          customer: 'cus_imp1',
+          payment_method_types: ['card'],
+          metadata: { type: 'card_imprint_setup', appointmentId: 'apt1' },
+          setup_intent_data: { metadata: { appointmentId: 'apt1' } },
+          success_url: 'https://app/success',
+          cancel_url: 'https://app/cancel',
+        }),
+      );
+      expect(result.url).toBe('https://stripe/setup');
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // constructWebhookEvent()
   // -------------------------------------------------------------------------
 
