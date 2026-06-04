@@ -14,6 +14,7 @@ export interface ConsultationType {
   instructions?: string | null;
   allowedPaymentModes?: string | null;
   cancellationDelay?: number | null;
+  requireImprint?: boolean;
 }
 
 export interface PublicPsyProfile {

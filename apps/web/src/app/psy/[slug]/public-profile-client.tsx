@@ -198,6 +198,10 @@ function BookingModal({
   const rate = consultationType?.rate ?? 0;
   const showPaymentChoice = acceptsOnlinePayment && rate > 0;
 
+  // Empreinte bancaire : si le type l'exige et que le psy accepte les paiements en ligne
+  const requiresImprint = !!consultationType?.requireImprint && !!acceptsOnlinePayment;
+  const [imprintConsent, setImprintConsent] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -372,13 +376,36 @@ function BookingModal({
             </div>
           ) : null}
 
-          {/* Payment choice */}
-          {showPaymentChoice && (
+          {/* Payment choice (masqué si empreinte requise) */}
+          {showPaymentChoice && !requiresImprint && (
             <PaymentChoice
               payOnline={payOnline}
               onToggle={setPayOnline}
               rate={rate}
             />
+          )}
+
+          {/* Consentement empreinte bancaire */}
+          {requiresImprint && (
+            <div className="rounded-xl border border-border bg-surface p-4 text-sm">
+              <p className="font-medium text-foreground">Empreinte bancaire requise</p>
+              <p className="mt-1 text-muted-foreground">
+                Pour garantir ce rendez-vous, le praticien demande l&apos;enregistrement de votre
+                carte. Aucun montant n&apos;est débité maintenant. Vous ne serez débité qu&apos;en cas
+                d&apos;absence ou selon la politique d&apos;annulation du praticien.
+              </p>
+              <label className="mt-3 flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={imprintConsent}
+                  onChange={(e) => setImprintConsent(e.target.checked)}
+                  className="mt-1"
+                />
+                <span className="text-foreground">
+                  J&apos;accepte l&apos;enregistrement de ma carte et la politique d&apos;annulation.
+                </span>
+              </label>
+            </div>
           )}
 
           {error && (
@@ -387,13 +414,15 @@ function BookingModal({
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || (requiresImprint && !imprintConsent)}
             className="w-full bg-primary text-white py-2.5 rounded-lg font-medium text-sm hover:bg-primary/90 disabled:opacity-50 transition flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {showPaymentChoice && payOnline
-              ? `Payer ${rate}€ et réserver`
-              : 'Réserver'}
+            {requiresImprint
+              ? 'Enregistrer ma carte et réserver'
+              : showPaymentChoice && payOnline
+                ? `Payer ${rate}€ et réserver`
+                : 'Réserver'}
           </button>
 
           <p className="text-xs text-muted-foreground text-center">
