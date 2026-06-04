@@ -444,9 +444,7 @@ export class PublicBookingService {
     void this.cache.delByPattern(`slots:${slug}:*`);
 
     // --- Card imprint flow (prioritaire sur le paiement en ligne classique) ---
-    const psyCanCharge =
-      psy.allowOnlinePayment && psy.stripeOnboardingComplete && !!psy.stripeAccountId;
-    if (requireImprint && psyCanCharge) {
+    if (requireImprint && psyAcceptsPayment) {
       try {
         const patientId = appointment.patientId!;
         const customer = await this.stripeService.createImprintCustomer({
@@ -470,6 +468,9 @@ export class PublicBookingService {
             cardHoldStatus: 'pending',
             paymentMode: 'imprint',
             stripeCustomerId: customer.id,
+            // Si payOnline était demandé, le RDV a été créé en 'pending_payment' ;
+            // l'empreinte remplace le paiement en ligne → éviter que le cleanup l'annule.
+            bookingPaymentStatus: 'none',
           },
         });
 

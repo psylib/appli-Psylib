@@ -403,6 +403,12 @@ describe('PublicBookingService — Payment Flow', () => {
       expect(stripe.createSetupCheckoutSession).toHaveBeenCalled();
       // Le checkout classique ne doit PAS être appelé
       expect(stripe.createBookingCheckoutSession).not.toHaveBeenCalled();
+      // bookingPaymentStatus remis à 'none' pour éviter l'annulation par le cleanup
+      expect(prisma.appointment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ cardHoldStatus: 'pending', bookingPaymentStatus: 'none' }),
+        }),
+      );
     });
 
     it("retombe sur le flux normal si le psy n'est pas onboardé Connect", async () => {
