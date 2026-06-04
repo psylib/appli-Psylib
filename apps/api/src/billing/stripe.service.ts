@@ -252,7 +252,7 @@ export class StripeService implements OnModuleInit {
       success_url: params.successUrl,
       cancel_url: params.cancelUrl,
     };
-    if (params.expiresInSeconds) {
+    if (params.expiresInSeconds != null) {
       create.expires_at = Math.floor(Date.now() / 1000) + params.expiresInSeconds;
     }
     return this.stripe.checkout.sessions.create(create);
