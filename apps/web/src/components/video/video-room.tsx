@@ -17,6 +17,8 @@ import { GuestInvitePopover } from './guest-invite-popover';
 import { WaitingGuestsBanner } from './waiting-guests-banner';
 import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
+import { useScribeRecorder } from '@/hooks/use-scribe-recorder';
+import { ScribeToggle } from './scribe-toggle';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface VideoRoomProps {
@@ -26,9 +28,29 @@ interface VideoRoomProps {
   plannedDurationMin: number;
   notesPanel: React.ReactNode;
   onCallEnd: () => void;
+  // Scribe props
+  scribeEnabled: boolean;
+  patientScribeConsent: boolean;
+  isPro: boolean;
+  accessToken: string;
+  onScribeToggle: () => void;
+  onScribeUploadComplete: () => void;
+  onScribeError: (msg: string) => void;
 }
 
-function VideoLayout({ appointmentId, plannedDurationMin, notesPanel, onCallEnd }: Omit<VideoRoomProps, 'token' | 'wsUrl'>) {
+function VideoLayout({
+  appointmentId,
+  plannedDurationMin,
+  notesPanel,
+  onCallEnd,
+  scribeEnabled,
+  patientScribeConsent,
+  isPro,
+  accessToken,
+  onScribeToggle,
+  onScribeUploadComplete,
+  onScribeError,
+}: Omit<VideoRoomProps, 'token' | 'wsUrl'>) {
   const [showNotes, setShowNotes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
@@ -37,6 +59,13 @@ function VideoLayout({ appointmentId, plannedDurationMin, notesPanel, onCallEnd 
   const hoveringControls = useRef(false);
 
   useKrispNoiseFilter();
+  const { state: recorderState, start: startRecording, stopAndUpload, cancel: cancelRecording } =
+    useScribeRecorder({
+      appointmentId,
+      accessToken,
+      onUploadComplete: onScribeUploadComplete,
+      onError: onScribeError,
+    });
   const { blurEnabled, blurPending, toggleBlur } = useBackgroundBlur();
   const { elapsedSeconds, handleConnected, handleDisconnected, isReconnecting } = useVideoCall({
     onDisconnected: () => {},
@@ -89,6 +118,25 @@ function VideoLayout({ appointmentId, plannedDurationMin, notesPanel, onCallEnd 
   const toggleScreenShare = useCallback(() => {
     localParticipant.setScreenShareEnabled(!isScreenShareEnabled).catch(() => {});
   }, [localParticipant, isScreenShareEnabled]);
+
+  // ----- Scribe auto-start/stop -----
+  useEffect(() => {
+    if (scribeEnabled && recorderState === 'idle') {
+      startRecording();
+    }
+    if (!scribeEnabled && recorderState === 'recording') {
+      cancelRecording();
+    }
+  }, [scribeEnabled, recorderState, startRecording, cancelRecording]);
+
+  const handleEndCall = useCallback(async () => {
+    if (scribeEnabled && recorderState === 'recording') {
+      await stopAndUpload();
+    } else {
+      cancelRecording();
+    }
+    onCallEnd();
+  }, [scribeEnabled, recorderState, stopAndUpload, cancelRecording, onCallEnd]);
 
   // ----- Tracks (caméra + partage d'écran) -----
   const tracks = useTracks([
@@ -154,7 +202,16 @@ function VideoLayout({ appointmentId, plannedDurationMin, notesPanel, onCallEnd 
             blurPending={blurPending}
             onToggleBlur={toggleBlur}
             inviteSlot={<GuestInvitePopover appointmentId={appointmentId} />}
-            onEndCall={onCallEnd}
+            scribeSlot={
+              <ScribeToggle
+                isEnabled={scribeEnabled}
+                patientConsented={patientScribeConsent}
+                recorderState={recorderState}
+                isPro={isPro}
+                onToggle={onScribeToggle}
+              />
+            }
+            onEndCall={handleEndCall}
           />
         </div>
       </div>
@@ -174,7 +231,21 @@ function VideoLayout({ appointmentId, plannedDurationMin, notesPanel, onCallEnd 
   );
 }
 
-export function PsyVideoRoom({ token, wsUrl, appointmentId, plannedDurationMin, notesPanel, onCallEnd }: VideoRoomProps) {
+export function PsyVideoRoom({
+  token,
+  wsUrl,
+  appointmentId,
+  plannedDurationMin,
+  notesPanel,
+  onCallEnd,
+  scribeEnabled,
+  patientScribeConsent,
+  isPro,
+  accessToken,
+  onScribeToggle,
+  onScribeUploadComplete,
+  onScribeError,
+}: VideoRoomProps) {
   return (
     <LiveKitRoom
       serverUrl={wsUrl}
@@ -189,6 +260,13 @@ export function PsyVideoRoom({ token, wsUrl, appointmentId, plannedDurationMin, 
         plannedDurationMin={plannedDurationMin}
         notesPanel={notesPanel}
         onCallEnd={onCallEnd}
+        scribeEnabled={scribeEnabled}
+        patientScribeConsent={patientScribeConsent}
+        isPro={isPro}
+        accessToken={accessToken}
+        onScribeToggle={onScribeToggle}
+        onScribeUploadComplete={onScribeUploadComplete}
+        onScribeError={onScribeError}
       />
     </LiveKitRoom>
   );

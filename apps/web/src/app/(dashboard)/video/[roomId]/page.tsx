@@ -28,6 +28,9 @@ export default function ConsultationRoomPage() {
   const [duration, setDuration] = useState(50);
   const [notes, setNotes] = useState('');
   const [copied, setCopied] = useState(false);
+  const [scribeEnabled, setScribeEnabled] = useState(false);
+  const [patientScribeConsent, setPatientScribeConsent] = useState(false);
+  const [scribeUploadDone, setScribeUploadDone] = useState(false);
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -51,6 +54,10 @@ export default function ConsultationRoomPage() {
         const data = await videoApi.getPsyToken(roomId, session.accessToken);
         setTokenData(data);
         if (data.durationMin) setDuration(data.durationMin);
+        if (data.patientScribeConsent !== undefined) {
+          setPatientScribeConsent(data.patientScribeConsent);
+        }
+        if (data.scribeEnabled) setScribeEnabled(data.scribeEnabled);
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Impossible de demarrer la visio';
         setError(message);
@@ -78,6 +85,16 @@ export default function ConsultationRoomPage() {
     } finally {
       void queryClient.invalidateQueries({ queryKey: ['video-today'] });
       router.push('/dashboard/video');
+    }
+  };
+
+  const handleScribeToggle = async () => {
+    if (!session?.accessToken) return;
+    try {
+      const result = await videoApi.enableScribe(roomId, !scribeEnabled, session.accessToken);
+      setScribeEnabled(result.scribeEnabled);
+    } catch (err) {
+      console.error('Scribe toggle failed:', err);
     }
   };
 
@@ -128,6 +145,13 @@ export default function ConsultationRoomPage() {
         wsUrl={tokenData.wsUrl}
         appointmentId={roomId}
         plannedDurationMin={duration}
+        scribeEnabled={scribeEnabled}
+        patientScribeConsent={patientScribeConsent}
+        isPro={true}
+        accessToken={session?.accessToken ?? ''}
+        onScribeToggle={handleScribeToggle}
+        onScribeUploadComplete={() => setScribeUploadDone(true)}
+        onScribeError={(msg) => console.error('Scribe error:', msg)}
         notesPanel={
           <textarea
             className="w-full h-64 border border-border rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
