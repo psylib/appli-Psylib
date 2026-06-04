@@ -224,6 +224,30 @@ export default function ModeleConsentementPage() {
           </ul>
         </section>
 
+        {/* 2bis. Empreinte bancaire */}
+        <section className="mb-10">
+          <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">
+            2bis. Empreinte bancaire et politique d&apos;annulation
+          </h2>
+          <p className="mb-4 leading-relaxed">
+            Certains praticiens peuvent demander l&apos;enregistrement de votre carte bancaire
+            comme garantie au moment de la reservation. Dans ce cas :
+          </p>
+          <ul className="mb-4 list-inside list-disc space-y-2 text-gray-700">
+            <li><strong>Aucun montant n&apos;est preleve</strong> a la reservation.</li>
+            <li>Votre carte est enregistree de facon securisee par notre prestataire de paiement <strong>Stripe</strong> (certifie PCI-DSS). PsyLib ne stocke jamais vos donnees de carte.</li>
+            <li>Le praticien peut debiter un montant de son choix <strong>en cas d&apos;absence non signalee</strong> (lapin) ou selon sa politique d&apos;annulation, a la fin de la seance ou posterieurement.</li>
+            <li>Vous pouvez contacter le praticien ou notre support (<strong>tony@psylib.eu</strong>) pour contester tout debit.</li>
+          </ul>
+          <div className="rounded-2xl bg-[#F1F0F9] p-6">
+            <p className="font-semibold text-[#1E1B4B]">Cette demande est facultative :</p>
+            <p className="mt-1 text-gray-700">
+              Seuls les praticiens qui l&apos;activent explicitement y recourent. Votre consentement
+              vous est demande au moment de la reservation, avant tout enregistrement de carte.
+            </p>
+          </div>
+        </section>
+
         {/* 3. Finalités */}
         <section className="mb-10">
           <h2 className="mb-4 font-playfair text-2xl font-bold text-[#1E1B4B]">

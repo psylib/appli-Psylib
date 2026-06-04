@@ -54,6 +54,19 @@ Dans le cadre de votre suivi psychologique, les donnees suivantes peuvent etre c
 
 ---
 
+### 2bis. EMPREINTE BANCAIRE ET POLITIQUE D'ANNULATION
+
+Certains praticiens peuvent demander l'enregistrement de votre carte bancaire comme garantie au moment de la reservation. Dans ce cas :
+
+- **Aucun montant n'est preleve** a la reservation.
+- Votre carte est enregistree de facon securisee par notre prestataire de paiement **Stripe** (certifie PCI-DSS). PsyLib ne stocke jamais vos donnees de carte.
+- Le praticien peut debiter un montant de son choix **en cas d'absence non signalee** (lapin) ou selon sa politique d'annulation, a la fin de la seance ou posterieurement.
+- Vous pouvez contacter le praticien ou notre support (tony@psylib.eu) pour contester tout debit.
+
+Cette demande est facultative : seuls les praticiens qui l'activent explicitement y recourent. Votre consentement vous est demande au moment de la reservation, avant tout enregistrement de carte.
+
+---
+
 ### 3. FINALITES DU TRAITEMENT
 
 Vos donnees sont traitees exclusivement pour les finalites suivantes :
