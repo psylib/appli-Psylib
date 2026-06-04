@@ -26,6 +26,9 @@ export interface VideoTokenResponse {
   wsUrl: string;
   roomName: string;
   durationMin?: number;
+  patientScribeConsent?: boolean;
+  scribeEnabled?: boolean;
+  scribeStatus?: 'none' | 'processing' | 'done' | 'failed';
 }
 
 export interface PatientJoinResponse {
@@ -75,8 +78,41 @@ export const videoApi = {
     apiClient.post<PatientJoinResponse>(`/video/join/${joinToken}`, {}),
 
   /** Patient records video consent (no auth required) */
-  recordConsent: (joinToken: string) =>
-    apiClient.post<{ ok: boolean }>(`/video/consent/${joinToken}`, {}),
+  recordConsent: (joinToken: string, includeScribe = false) =>
+    apiClient.post<{ ok: boolean }>(`/video/consent/${joinToken}`, { includeScribe }),
+
+  // ── Scribe IA (Pro + Clinic) ──
+  /** Activer ou désactiver le Scribe IA pour cette séance */
+  enableScribe: (appointmentId: string, enabled: boolean, token: string) =>
+    apiClient.post<{ scribeEnabled: boolean }>(
+      `/video/rooms/${appointmentId}/scribe/enable`,
+      { enabled },
+      token,
+    ),
+
+  /** Upload audio WebM pour transcription post-séance */
+  uploadScribeAudio: async (appointmentId: string, audioBlob: Blob, token: string): Promise<{ status: string }> => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.psylib.eu';
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'session.webm');
+    const response = await fetch(`${baseUrl}/video/rooms/${appointmentId}/scribe/audio`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || `HTTP ${response.status}`);
+    }
+    return response.json() as Promise<{ status: string }>;
+  },
+
+  /** Récupère le statut du Scribe IA pour cette séance */
+  getScribeStatus: (appointmentId: string, token: string) =>
+    apiClient.get<{ status: 'none' | 'processing' | 'done' | 'failed'; scribeEnabled: boolean }>(
+      `/video/rooms/${appointmentId}/scribe/status`,
+      token,
+    ),
 
   // ── Guest invite / waiting room (psy) ──
   /** Generate (or fetch) a guest invite link for the current room */
