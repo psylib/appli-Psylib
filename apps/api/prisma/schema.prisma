@@ -615,8 +615,9 @@ model Session {
   duration       Int // minutes
   type           SessionType          @default(individual)
   notes          String? // ENCRYPTED — AES-256-GCM
-  summaryAi      String?              @map("summary_ai") // ENCRYPTED si contient données patients
-  tags           String[]
+  summaryAi        String?              @map("summary_ai") // ENCRYPTED si contient données patients
+  scribeTranscript String?              @map("scribe_transcript")
+  tags             String[]
   rate           Decimal?             @db.Decimal(10, 2)
   paymentStatus  SessionPaymentStatus @default(pending) @map("payment_status")
   participantIds String[]             @default([]) @map("participant_ids")
@@ -810,6 +811,8 @@ model VideoRoom {
   patientJoinedAt DateTime?       @map("patient_joined_at")
   endedAt         DateTime?       @map("ended_at")
   guestInviteToken String?        @unique @map("guest_invite_token")
+  scribeEnabled    Boolean         @default(false) @map("scribe_enabled")
+  scribeStatus     String          @default("none") @map("scribe_status")
   createdAt       DateTime        @default(now()) @map("created_at")
 
   guests          VideoGuest[]
