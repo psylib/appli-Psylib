@@ -18,6 +18,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { SCRIBE_QUEUE, ScribeJobData } from './scribe.processor';
 import * as fs from 'fs';
+import { promises as fsPromises } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
@@ -290,7 +291,7 @@ export class VideoService {
       durationMin: room.appointment.duration,
       patientScribeConsent,
       scribeEnabled: room.scribeEnabled,
-      scribeStatus: room.scribeStatus,
+      scribeStatus: room.scribeStatus as 'none' | 'processing' | 'done' | 'failed',
     };
   }
 
@@ -889,7 +890,7 @@ export class VideoService {
 
   // ─── Scribe IA ────────────────────────────────────────────────────────────────
 
-  async enableScribe(userId: string, appointmentId: string): Promise<{ scribeEnabled: boolean }> {
+  async enableScribe(userId: string, appointmentId: string, enabled: boolean): Promise<{ scribeEnabled: boolean }> {
     const psy = await this.getPsychologist(userId);
     const room = await this.prisma.videoRoom.findFirst({
       where: { appointmentId, psychologistId: psy.id },
@@ -897,7 +898,7 @@ export class VideoService {
     if (!room) throw new NotFoundException('Salle de visio introuvable');
     if (room.status === 'ended') throw new BadRequestException('La consultation est terminée');
 
-    const newValue = !room.scribeEnabled;
+    const newValue = enabled;
     await this.prisma.videoRoom.update({
       where: { id: room.id },
       data: { scribeEnabled: newValue },
@@ -924,23 +925,25 @@ export class VideoService {
       where: { appointmentId, psychologistId: psy.id },
     });
     if (!room) throw new NotFoundException('Salle de visio introuvable');
+    if (room.status === 'ended') throw new BadRequestException('La consultation est terminée');
     if (!room.scribeEnabled) throw new BadRequestException("Le Scribe IA n'était pas activé pour cette séance");
-    if (room.scribeStatus === 'processing' || room.scribeStatus === 'done') {
-      throw new BadRequestException('Transcription déjà en cours ou terminée');
-    }
 
     if (audioBuffer.length > 25 * 1024 * 1024) {
       throw new BadRequestException('Fichier audio trop volumineux (max 25 MB)');
     }
 
-    const fileName = `psylib-scribe-${room.id}-${Date.now()}.webm`;
-    const filePath = path.join(os.tmpdir(), fileName);
-    fs.writeFileSync(filePath, audioBuffer);
-
-    await this.prisma.videoRoom.update({
-      where: { id: room.id },
+    // Atomic check-and-set: prevents race condition on concurrent uploads
+    const updated = await this.prisma.videoRoom.updateMany({
+      where: { id: room.id, scribeStatus: 'none' },
       data: { scribeStatus: 'processing' },
     });
+    if (updated.count === 0) {
+      throw new BadRequestException('Transcription déjà en cours ou terminée');
+    }
+
+    const fileName = `psylib-scribe-${room.id}-${crypto.randomUUID()}.webm`;
+    const filePath = path.join(os.tmpdir(), fileName);
+    await fsPromises.writeFile(filePath, audioBuffer);
 
     await this.scribeQueue.add('process', {
       videoRoomId: room.id,

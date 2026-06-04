@@ -21,7 +21,7 @@ import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { RequirePlan } from '../billing/decorators/require-plan.decorator';
 import { SubscriptionPlan } from '@psyscale/shared-types';
 import { VideoService } from './video.service';
-import { CreateVideoRoomDto, CreateInstantVideoDto, GuestJoinRequestDto, RecordConsentDto, ScribeStatusResponse } from './dto/video.dto';
+import { CreateVideoRoomDto, CreateInstantVideoDto, GuestJoinRequestDto, RecordConsentDto, ScribeStatusResponse, EnableScribeDto } from './dto/video.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -172,9 +172,10 @@ export class VideoController {
   @ApiOperation({ summary: 'Activer/désactiver le Scribe IA pour cette séance' })
   async enableScribe(
     @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+    @Body() body: EnableScribeDto,
     @CurrentUser() user: KeycloakUser,
   ) {
-    return this.videoService.enableScribe(user.sub, appointmentId);
+    return this.videoService.enableScribe(user.sub, appointmentId, body.enabled);
   }
 
   @Post('rooms/:appointmentId/scribe/audio')
@@ -182,7 +183,19 @@ export class VideoController {
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
   @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
-  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 25 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FileInterceptor('audio', {
+      limits: { fileSize: 25 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav', 'audio/mpeg'];
+        if (allowed.includes(file.mimetype)) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException(`Type de fichier non supporté: ${file.mimetype}`), false);
+        }
+      },
+    }),
+  )
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Upload audio WebM pour transcription Scribe IA' })
   async uploadScribeAudio(

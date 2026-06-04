@@ -214,7 +214,7 @@ export class ScribeService {
       );
 
       await this.audit.log({
-        actorId: room.psychologistId,
+        actorId: room.psychologist.userId,
         actorType: 'system',
         action: 'AI_SCRIBE_COMPLETE',
         entityType: 'video_room',
@@ -234,7 +234,7 @@ export class ScribeService {
         { videoRoomId },
       );
       await this.audit.log({
-        actorId: room.psychologistId,
+        actorId: room.psychologist.userId,
         actorType: 'system',
         action: 'AI_SCRIBE_FAILED',
         entityType: 'video_room',

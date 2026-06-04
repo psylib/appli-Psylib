@@ -1,4 +1,4 @@
-import { IsUUID, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsUUID, IsOptional, IsString, MaxLength, MinLength, IsBoolean } from 'class-validator';
 
 export class CreateVideoRoomDto {
   @IsUUID()
@@ -25,7 +25,7 @@ export interface VideoTokenResponse {
   durationMin?: number;
   patientScribeConsent?: boolean;
   scribeEnabled?: boolean;
-  scribeStatus?: string;
+  scribeStatus?: 'none' | 'processing' | 'done' | 'failed';
 }
 
 export interface VideoRoomResponse {
@@ -55,8 +55,13 @@ export class ScribeStatusResponse {
   scribeEnabled!: boolean;
 }
 
-export class EnableScribeDto {}
+export class EnableScribeDto {
+  @IsBoolean()
+  enabled!: boolean;
+}
 
 export class RecordConsentDto {
+  @IsOptional()
+  @IsBoolean()
   includeScribe?: boolean;
 }
