@@ -39,18 +39,17 @@ export default function PatientVideoPage() {
   // Run on mount
   useEffect(() => { checkToken(); }, [checkToken]);
 
-  const handleConsent = async () => {
+  const handleConsent = async (includeScribe: boolean) => {
     setConsentLoading(true);
     try {
-      await videoApi.recordConsent(joinToken);
-      // Re-fetch token now that consent is recorded
+      await videoApi.recordConsent(joinToken, includeScribe);
       const result = await videoApi.joinAsPatient(joinToken);
       if (result.token) {
         setTokenData({ token: result.token, wsUrl: result.wsUrl });
         setPhase('waiting');
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur lors de l\'enregistrement du consentement';
+      const message = err instanceof Error ? err.message : "Erreur lors de l'enregistrement du consentement";
       setError(message);
       setPhase('error');
     } finally {
