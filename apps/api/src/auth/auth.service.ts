@@ -395,14 +395,23 @@ export class AuthService {
       }
     }
 
-    // 2. Preserve patient portal accounts — null out the userId link before cascade
+    // 2. Preserve patient portal accounts — null out the userId link.
+    // (Deleting the patient record never deletes the linked User, but we null
+    // the link explicitly so no dangling reference remains during the cascade.)
     await this.prisma.patient.updateMany({
       where: { psychologistId: psy.id },
       data: { userId: null },
     });
 
-    // 3. Delete user record — cascades to psychologist → all psy data
-    await this.prisma.user.delete({ where: { id: keycloakUserId } });
+    // 3. Delete the psychologist FIRST, then the user, in a transaction.
+    //    The prod DB FK `psychologists_user_id_fkey` lacks ON DELETE CASCADE
+    //    (schema/DB drift), so deleting the user directly is blocked by the
+    //    psychologist row. Removing the psychologist first (which cascades to
+    //    all its child data) sidesteps that constraint entirely.
+    await this.prisma.$transaction([
+      this.prisma.psychologist.delete({ where: { id: psy.id } }),
+      this.prisma.user.delete({ where: { id: keycloakUserId } }),
+    ]);
 
     // 4. Delete Keycloak user (after DB — prevents re-login attempts during deletion)
     await this.deleteKeycloakUser(keycloakUserId);
