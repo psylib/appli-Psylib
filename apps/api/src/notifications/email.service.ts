@@ -1629,6 +1629,36 @@ export class EmailService {
     await this.send(to, `Empreinte bancaire enregistrée — ${data.patientName}`, html, 'sendImprintSecuredToPsy');
   }
 
+  // ─── IMPRINT RECEIPT — NOTIFICATION PATIENT ──────────────────────────────────
+
+  async sendImprintReceiptToPatient(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      amount: number;
+    },
+  ): Promise<void> {
+    const amountFormatted = new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+    }).format(data.amount);
+
+    const html = emailLayout(
+      'Reçu de paiement',
+      `<h1>Bonjour ${data.patientName},</h1>
+      <div class="badge badge-success">Paiement confirmé</div>
+      <p>Un montant de <strong>${amountFormatted}</strong> a été débité sur la carte bancaire enregistrée pour votre rendez-vous avec <strong>${data.psychologistName}</strong>.</p>
+      <div class="info-box">
+        <p style="margin:0;"><strong>Montant débité :</strong> ${amountFormatted}</p>
+        <p style="margin:0;"><strong>Praticien :</strong> ${data.psychologistName}</p>
+      </div>
+      <p style="font-size: 14px; color: #6B7280;">Le paiement a été traité de manière sécurisée via Stripe. Aucune donnée bancaire n'est stockée par PsyLib.</p>`,
+    );
+
+    await this.send(to, `Reçu de paiement — ${data.psychologistName}`, html, 'sendImprintReceiptToPatient');
+  }
+
   // ─── REFUND CONFIRMATION — NOTIFICATION PATIENT ───────────────────────────────
 
   async sendRefundConfirmation(

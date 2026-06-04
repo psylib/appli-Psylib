@@ -14,6 +14,7 @@ import { CreateCheckoutDto } from './dto/checkout.dto';
 import { ConnectSettingsSchema, type ConnectSettingsDto } from './dto/connect-settings.dto';
 import { PaymentLinkSchema, type PaymentLinkDto } from './dto/payment-link.dto';
 import { RefundSchema, type RefundDto } from './dto/refund.dto';
+import { CaptureImprintSchema, type CaptureImprintDto } from './dto/capture-imprint.dto';
 
 class GetPaymentsQueryDto {
   @IsOptional()
@@ -143,6 +144,30 @@ export class BillingController {
     @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
   ) {
     return this.subscriptionService.markPaidOnSite(user.sub, appointmentId);
+  }
+
+  @Post('imprint/capture/:appointmentId')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @ApiOperation({ summary: 'Encaisser une empreinte bancaire (montant libre)' })
+  async captureImprint(
+    @CurrentUser() user: KeycloakUser,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+    @Body() body: CaptureImprintDto,
+  ) {
+    const parsed = CaptureImprintSchema.parse(body);
+    return this.subscriptionService.captureImprint(user.sub, appointmentId, parsed);
+  }
+
+  @Post('imprint/release/:appointmentId')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @ApiOperation({ summary: 'Libérer une empreinte bancaire sans débit' })
+  async releaseImprint(
+    @CurrentUser() user: KeycloakUser,
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+  ) {
+    return this.subscriptionService.releaseImprint(user.sub, appointmentId);
   }
 
   @Get('payments')

@@ -1138,6 +1138,134 @@ export class SubscriptionService {
     return { success: true, appointmentId };
   }
 
+  // --- Capture / Release Imprint ---
+
+  async captureImprint(
+    userId: string,
+    appointmentId: string,
+    dto: { amount: number },
+  ): Promise<{ captured: boolean; fallbackLink?: string }> {
+    const psy = await this.getPsychologist(userId);
+    if (!psy.stripeAccountId || !psy.stripeOnboardingComplete) {
+      throw new ForbiddenException('Stripe Connect non configuré.');
+    }
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+      include: { patient: true },
+    });
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+    if (appointment.cardHoldStatus !== 'secured') {
+      throw new BadRequestException('Aucune empreinte active sur ce rendez-vous.');
+    }
+    if (!appointment.stripeCustomerId || !appointment.stripePaymentMethodId) {
+      throw new BadRequestException('Carte enregistrée introuvable.');
+    }
+
+    const result = await this.stripe.captureImprint({
+      customerId: appointment.stripeCustomerId,
+      paymentMethodId: appointment.stripePaymentMethodId,
+      connectedAccountId: psy.stripeAccountId,
+      amount: dto.amount,
+      appointmentId: appointment.id,
+    });
+
+    if (result.requiresAction) {
+      const link = await this.createPaymentLink(userId, {
+        appointmentId: appointment.id,
+        amount: dto.amount,
+      } as PaymentLinkDto);
+      return { captured: false, fallbackLink: link.url ?? undefined };
+    }
+
+    const payment = await this.prisma.payment.create({
+      data: {
+        psychologistId: psy.id,
+        patientId: appointment.patientId,
+        type: 'session',
+        amount: dto.amount,
+        status: 'paid',
+        stripePaymentIntentId: result.id,
+        appointmentId: appointment.id,
+      },
+    });
+
+    await this.prisma.appointment.update({
+      where: { id: appointment.id },
+      data: {
+        cardHoldStatus: 'captured',
+        paymentAmount: dto.amount,
+        paymentIntentId: result.id,
+        bookingPaymentStatus: 'paid',
+        paidOnline: true,
+      },
+    });
+
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'CREATE',
+      entityType: 'card_imprint_capture',
+      entityId: appointment.id,
+      metadata: { amount: dto.amount, appointmentId: appointment.id },
+    });
+
+    if (appointment.patient?.email) {
+      void this.email
+        .sendImprintReceiptToPatient(appointment.patient.email, {
+          patientName: appointment.patient.name,
+          psychologistName: psy.name,
+          amount: dto.amount,
+        })
+        .catch((err) => this.logger.warn(`Email send failed: ${(err as Error).message}`));
+    }
+
+    try {
+      this.eventEmitter.emit(
+        'payment.completed',
+        new PaymentCompletedEvent(
+          psy.id,
+          payment.id,
+          null,
+          appointment.patient?.name ?? 'Patient',
+          dto.amount,
+          new Date(),
+          'stripe',
+          null,
+        ),
+      );
+    } catch (error) {
+      this.logger.error(`Failed to emit payment.completed for imprint capture: ${error}`);
+    }
+
+    this.logger.log(`Imprint captured for appointment ${appointment.id}, amount=${dto.amount}€`);
+    return { captured: true };
+  }
+
+  async releaseImprint(userId: string, appointmentId: string): Promise<{ success: boolean }> {
+    const psy = await this.getPsychologist(userId);
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, psychologistId: psy.id },
+    });
+    if (!appointment) throw new NotFoundException('Rendez-vous introuvable');
+    if (appointment.cardHoldStatus !== 'secured') {
+      throw new BadRequestException('Aucune empreinte active sur ce rendez-vous.');
+    }
+    await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { cardHoldStatus: 'released' },
+    });
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'UPDATE',
+      entityType: 'card_imprint_release',
+      entityId: appointmentId,
+      metadata: { appointmentId },
+    });
+    this.logger.log(`Imprint released for appointment ${appointmentId}`);
+    return { success: true };
+  }
+
   // --- Payments List ---
 
   async getPayments(userId: string, query: {
