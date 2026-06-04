@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Send, Banknote, RotateCcw, Coins, CreditCard, Building2, ArrowRightLeft, MoreHorizontal, Lock, Unlock } from 'lucide-react';
@@ -41,6 +41,11 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
   const [showPaymentMethodPicker, setShowPaymentMethodPicker] = useState(false);
   const [showCaptureDialog, setShowCaptureDialog] = useState(false);
   const [captureAmount, setCaptureAmount] = useState<number>(appointment.paymentAmount ?? 0);
+
+  // Resynchronise le montant par défaut quand le composant est réutilisé pour un autre RDV
+  useEffect(() => {
+    setCaptureAmount(appointment.paymentAmount ?? 0);
+  }, [appointment.id, appointment.paymentAmount]);
   const [showReleaseConfirm, setShowReleaseConfirm] = useState(false);
 
   const paymentLinkMutation = useMutation({
@@ -253,8 +258,7 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
             disabled={!session?.accessToken}
           >
             <CreditCard size={14} aria-hidden />
-            {!compact && 'Encaisser'}
-            {compact && 'Encaisser'}
+            Encaisser
           </Button>
           <Button
             variant="outline"

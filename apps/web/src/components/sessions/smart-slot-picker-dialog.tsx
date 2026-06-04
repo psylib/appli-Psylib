@@ -854,19 +854,21 @@ function Step2({
         )}
       </div>
 
-      {/* Empreinte bancaire */}
-      <label className="flex items-center gap-2 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={requestImprint}
-          onChange={(e) => setRequestImprint(e.target.checked)}
-          className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
-        />
-        <span className="flex items-center gap-1.5 text-sm text-foreground">
-          <Lock size={13} className="text-muted-foreground" aria-hidden />
-          Demander une empreinte bancaire
-        </span>
-      </label>
+      {/* Empreinte bancaire (uniquement si le psy accepte les paiements en ligne) */}
+      {canRequestPayment && (
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={requestImprint}
+            onChange={(e) => setRequestImprint(e.target.checked)}
+            className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+          />
+          <span className="flex items-center gap-1.5 text-sm text-foreground">
+            <Lock size={13} className="text-muted-foreground" aria-hidden />
+            Demander une empreinte bancaire
+          </span>
+        </label>
+      )}
 
       {formError && (
         <p className="text-sm text-destructive" role="alert">{formError}</p>
