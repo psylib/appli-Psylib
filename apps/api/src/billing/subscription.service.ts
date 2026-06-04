@@ -689,14 +689,23 @@ export class SubscriptionService {
       return;
     }
 
-    const appointment = await this.prisma.appointment.update({
-      where: { id: appointmentId },
+    const { count } = await this.prisma.appointment.updateMany({
+      where: { id: appointmentId, cardHoldStatus: 'pending' },
       data: {
         stripeCustomerId: session.customer as string,
         stripePaymentMethodId: paymentMethodId,
         cardHoldStatus: 'secured',
         paymentMode: 'imprint',
       },
+    });
+
+    if (count === 0) {
+      this.logger.warn(`card_imprint_setup: appointment ${appointmentId} not in pending state, skipping`);
+      return;
+    }
+
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
       include: {
         psychologist: { select: { name: true, user: { select: { email: true } } } },
         patient: { select: { name: true } },
@@ -1294,17 +1303,17 @@ export class SubscriptionService {
       throw new BadRequestException('Le patient doit avoir un email pour enregistrer sa carte.');
     }
 
-    const customer = await this.stripe.createImprintCustomer({
+    const customerId = appointment.stripeCustomerId ?? (await this.stripe.createImprintCustomer({
       email: appointment.patient.email,
       name: appointment.patient.name,
       psychologistId: psy.id,
       patientId: appointment.patientId!,
       appointmentId: appointment.id,
-    });
+    })).id;
 
     const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
     const session = await this.stripe.createSetupCheckoutSession({
-      customerId: customer.id,
+      customerId,
       appointmentId: appointment.id,
       successUrl: `${frontendUrl}/payment/imprint-success?appointmentId=${appointment.id}`,
       cancelUrl: `${frontendUrl}/payment/cancel?appointmentId=${appointment.id}`,
@@ -1313,7 +1322,7 @@ export class SubscriptionService {
 
     await this.prisma.appointment.update({
       where: { id: appointment.id },
-      data: { cardHoldStatus: 'pending', paymentMode: 'imprint', stripeCustomerId: customer.id },
+      data: { cardHoldStatus: 'pending', paymentMode: 'imprint', stripeCustomerId: customerId },
     });
 
     await this.audit.log({

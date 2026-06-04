@@ -35,8 +35,9 @@ interface Appointment {
   isOnline?: boolean;
   paidOnline?: boolean;
   bookingPaymentStatus?: 'none' | 'pending_payment' | 'paid' | 'payment_failed';
-  paymentMode?: 'none' | 'prepayment' | 'post_session';
+  paymentMode?: 'none' | 'prepayment' | 'post_session' | 'imprint';
   paymentAmount?: number | null;
+  cardHoldStatus?: 'none' | 'pending' | 'secured' | 'captured' | 'released' | 'failed';
   patient: {
     id: string;
     name: string;

@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../common/prisma.service';
 import { CreateConsultationTypeDto } from './dto/create-consultation-type.dto';
 import { UpdateConsultationTypeDto } from './dto/update-consultation-type.dto';
-import { ConsultationCategory, ConsultationModality } from '@psyscale/shared-types';
+import { ConsultationCategory, ConsultationModality, SubscriptionPlan } from '@psyscale/shared-types';
 
 /** Tarif réglementé Mon Soutien Psy — fixé par l'Assurance Maladie */
 const MSP_RATE = 50;
@@ -84,6 +84,8 @@ export class ConsultationTypesService {
       select: { sortOrder: true },
     });
 
+    const requireImprint = dto.requireImprint === true ? await this.imprintAllowed(psy.id) : false;
+
     return this.prisma.consultationType.create({
       data: {
         psychologistId: psy.id,
@@ -99,7 +101,7 @@ export class ConsultationTypesService {
         instructions: dto.instructions ?? null,
         allowedPaymentModes: dto.allowedPaymentModes ?? null,
         cancellationDelay: dto.cancellationDelay ?? null,
-        requireImprint: dto.requireImprint ?? false,
+        requireImprint,
       },
     });
   }
@@ -127,6 +129,11 @@ export class ConsultationTypesService {
       rate = dto.rate;
     }
 
+    let requireImprintUpdate: boolean | undefined;
+    if (dto.requireImprint !== undefined) {
+      requireImprintUpdate = dto.requireImprint === true ? await this.imprintAllowed(psy.id) : false;
+    }
+
     return this.prisma.consultationType.update({
       where: { id },
       data: {
@@ -143,7 +150,7 @@ export class ConsultationTypesService {
         ...(dto.instructions !== undefined && { instructions: dto.instructions }),
         ...(dto.allowedPaymentModes !== undefined && { allowedPaymentModes: dto.allowedPaymentModes }),
         ...(dto.cancellationDelay !== undefined && { cancellationDelay: dto.cancellationDelay }),
-        ...(dto.requireImprint !== undefined && { requireImprint: dto.requireImprint }),
+        ...(requireImprintUpdate !== undefined && { requireImprint: requireImprintUpdate }),
       },
     });
   }
@@ -231,5 +238,10 @@ export class ConsultationTypesService {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
     return psy;
+  }
+
+  private async imprintAllowed(psychologistId: string): Promise<boolean> {
+    const sub = await this.prisma.subscription.findUnique({ where: { psychologistId }, select: { plan: true } });
+    return sub?.plan === SubscriptionPlan.PRO || sub?.plan === SubscriptionPlan.CLINIC;
   }
 }

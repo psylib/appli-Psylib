@@ -33,6 +33,7 @@ const mockPrisma = {
   },
   appointment: {
     update: vi.fn(),
+    updateMany: vi.fn(),
     findUnique: vi.fn(),
     findFirst: vi.fn(),
   },
@@ -498,7 +499,8 @@ describe('SubscriptionService', () => {
         metadata: { type: 'card_imprint_setup', appointmentId: 'apt1' },
       };
       mockStripeService.retrieveSetupIntent.mockResolvedValue({ id: 'seti_1', payment_method: 'pm_1' });
-      mockPrisma.appointment.update.mockResolvedValue({
+      mockPrisma.appointment.updateMany.mockResolvedValue({ count: 1 });
+      mockPrisma.appointment.findUnique.mockResolvedValue({
         id: 'apt1',
         psychologistId: 'psy1',
         psychologist: { name: 'Dr X', user: { email: 'psy@test.fr' } },
@@ -510,9 +512,9 @@ describe('SubscriptionService', () => {
         data: { object: session },
       } as any);
 
-      expect(mockPrisma.appointment.update).toHaveBeenCalledWith(
+      expect(mockPrisma.appointment.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: 'apt1' },
+          where: { id: 'apt1', cardHoldStatus: 'pending' },
           data: {
             stripeCustomerId: 'cus_imp1',
             stripePaymentMethodId: 'pm_1',
@@ -521,10 +523,36 @@ describe('SubscriptionService', () => {
           },
         }),
       );
+      expect(mockPrisma.appointment.findUnique).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'apt1' } }),
+      );
       expect(mockEmailService.sendImprintSecuredToPsy).toHaveBeenCalledWith('psy@test.fr', {
         psychologistName: 'Dr X',
         patientName: 'Patient',
       });
+    });
+
+    it("n'envoie pas d'email si le RDV n'est plus en état pending (webhook tardif)", async () => {
+      const session = {
+        id: 'cs_setup2',
+        mode: 'setup',
+        customer: 'cus_imp2',
+        setup_intent: 'seti_2',
+        metadata: { type: 'card_imprint_setup', appointmentId: 'apt2' },
+      };
+      mockStripeService.retrieveSetupIntent.mockResolvedValue({ id: 'seti_2', payment_method: 'pm_2' });
+      mockPrisma.appointment.updateMany.mockResolvedValue({ count: 0 });
+
+      await service.handleWebhookEvent({
+        type: 'checkout.session.completed',
+        data: { object: session },
+      } as any);
+
+      expect(mockPrisma.appointment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: 'apt2', cardHoldStatus: 'pending' } }),
+      );
+      expect(mockPrisma.appointment.findUnique).not.toHaveBeenCalled();
+      expect(mockEmailService.sendImprintSecuredToPsy).not.toHaveBeenCalled();
     });
   });
 

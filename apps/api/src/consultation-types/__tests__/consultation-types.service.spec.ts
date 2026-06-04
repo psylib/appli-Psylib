@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ConsultationTypesService } from '../consultation-types.service';
+import { SubscriptionPlan } from '@psyscale/shared-types';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -17,6 +18,9 @@ const mockPrisma = {
     create: vi.fn(),
     createMany: vi.fn(),
     update: vi.fn(),
+  },
+  subscription: {
+    findUnique: vi.fn(),
   },
 };
 
@@ -171,6 +175,50 @@ describe('ConsultationTypesService', () => {
           rate: 50,
         }),
       ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('force requireImprint=false pour un psy Free/Solo même si dto.requireImprint=true', async () => {
+      const psy = makePsy();
+      const created = makeConsultationType({ requireImprint: false });
+
+      mockPrisma.psychologist.findUnique.mockResolvedValue(psy);
+      mockPrisma.consultationType.count.mockResolvedValue(0);
+      mockPrisma.consultationType.findFirst.mockResolvedValue(null);
+      mockPrisma.subscription.findUnique.mockResolvedValue({ plan: SubscriptionPlan.FREE });
+      mockPrisma.consultationType.create.mockResolvedValue(created);
+
+      await service.create('user-1', {
+        name: 'Test empreinte',
+        duration: 60,
+        rate: 70,
+        requireImprint: true,
+      });
+
+      expect(mockPrisma.consultationType.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ requireImprint: false }),
+      });
+    });
+
+    it('autorise requireImprint=true pour un psy Pro', async () => {
+      const psy = makePsy();
+      const created = makeConsultationType({ requireImprint: true });
+
+      mockPrisma.psychologist.findUnique.mockResolvedValue(psy);
+      mockPrisma.consultationType.count.mockResolvedValue(0);
+      mockPrisma.consultationType.findFirst.mockResolvedValue(null);
+      mockPrisma.subscription.findUnique.mockResolvedValue({ plan: SubscriptionPlan.PRO });
+      mockPrisma.consultationType.create.mockResolvedValue(created);
+
+      await service.create('user-1', {
+        name: 'Test empreinte Pro',
+        duration: 60,
+        rate: 70,
+        requireImprint: true,
+      });
+
+      expect(mockPrisma.consultationType.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ requireImprint: true }),
+      });
     });
   });
 

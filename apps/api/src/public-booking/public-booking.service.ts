@@ -461,7 +461,7 @@ export class PublicBookingService {
         const setupSession = await this.stripeService.createSetupCheckoutSession({
           customerId: customer.id,
           appointmentId: appointment.id,
-          successUrl: `${this.frontendUrl}/psy/${slug}/booking/success?appointment=${appointment.id}`,
+          successUrl: `${this.frontendUrl}/payment/imprint-success?appointmentId=${appointment.id}`,
           cancelUrl: `${this.frontendUrl}/psy/${slug}/booking/cancel?appointment=${appointment.id}`,
           expiresInSeconds: 86400,
         });

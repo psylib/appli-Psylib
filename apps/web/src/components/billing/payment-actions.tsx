@@ -245,8 +245,8 @@ export function PaymentActions({ appointment, compact = false }: PaymentActionsP
         </span>
       )}
 
-      {/* Imprint actions — only when secured */}
-      {isImprintSecured && (
+      {/* Imprint actions — only when secured and booking not already paid */}
+      {isImprintSecured && appointment.bookingPaymentStatus !== 'paid' && (
         <>
           <Button
             variant="outline"
