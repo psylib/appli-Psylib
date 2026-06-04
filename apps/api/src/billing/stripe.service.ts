@@ -278,6 +278,7 @@ export class StripeService implements OnModuleInit {
         payment_method: params.paymentMethodId,
         off_session: true,
         confirm: true,
+        application_fee_amount: 0, // pas de commission plateforme sur l'empreinte
         transfer_data: { destination: params.connectedAccountId },
         metadata: { type: 'card_imprint_capture', appointmentId: params.appointmentId },
       });
@@ -285,7 +286,10 @@ export class StripeService implements OnModuleInit {
     } catch (err) {
       const code = (err as { code?: string }).code;
       if (code === 'authentication_required') {
-        return { id: null, status: 'requires_action', requiresAction: true };
+        // Stripe a créé un PaymentIntent en requires_action ; on récupère son id si présent.
+        const piId =
+          (err as { payment_intent?: { id?: string } }).payment_intent?.id ?? null;
+        return { id: piId, status: 'requires_action', requiresAction: true };
       }
       throw err;
     }
