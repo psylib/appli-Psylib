@@ -23,6 +23,9 @@ export interface VideoTokenResponse {
   wsUrl: string;
   roomName: string;
   durationMin?: number;
+  patientScribeConsent?: boolean;
+  scribeEnabled?: boolean;
+  scribeStatus?: string;
 }
 
 export interface VideoRoomResponse {
@@ -45,4 +48,15 @@ export interface TodayVideoRoom {
   participantCount: number;
   participantsJoined: number;
   participantNames: string[];
+}
+
+export class ScribeStatusResponse {
+  status!: 'none' | 'processing' | 'done' | 'failed';
+  scribeEnabled!: boolean;
+}
+
+export class EnableScribeDto {}
+
+export class RecordConsentDto {
+  includeScribe?: boolean;
 }

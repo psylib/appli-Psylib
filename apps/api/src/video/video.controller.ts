@@ -8,6 +8,9 @@ import {
   Req,
   HttpCode,
   ParseUUIDPipe,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
@@ -18,7 +21,8 @@ import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { RequirePlan } from '../billing/decorators/require-plan.decorator';
 import { SubscriptionPlan } from '@psyscale/shared-types';
 import { VideoService } from './video.service';
-import { CreateVideoRoomDto, CreateInstantVideoDto, GuestJoinRequestDto } from './dto/video.dto';
+import { CreateVideoRoomDto, CreateInstantVideoDto, GuestJoinRequestDto, RecordConsentDto, ScribeStatusResponse } from './dto/video.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
@@ -158,6 +162,50 @@ export class VideoController {
     return this.videoService.denyGuest(user.sub, guestId);
   }
 
+  // --- Scribe IA (Pro + Clinic) ---
+
+  @Post('rooms/:appointmentId/scribe/enable')
+  @ApiBearerAuth()
+  @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
+  @Roles('psychologist', 'admin')
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @ApiOperation({ summary: 'Activer/désactiver le Scribe IA pour cette séance' })
+  async enableScribe(
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.videoService.enableScribe(user.sub, appointmentId);
+  }
+
+  @Post('rooms/:appointmentId/scribe/audio')
+  @ApiBearerAuth()
+  @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
+  @Roles('psychologist', 'admin')
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @UseInterceptors(FileInterceptor('audio', { limits: { fileSize: 25 * 1024 * 1024 } }))
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @ApiOperation({ summary: 'Upload audio WebM pour transcription Scribe IA' })
+  async uploadScribeAudio(
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    if (!file) throw new BadRequestException('Fichier audio manquant');
+    return this.videoService.uploadScribeAudio(user.sub, appointmentId, file.buffer);
+  }
+
+  @Get('rooms/:appointmentId/scribe/status')
+  @ApiBearerAuth()
+  @UseGuards(KeycloakGuard, RolesGuard)
+  @Roles('psychologist', 'admin')
+  @ApiOperation({ summary: 'Statut du Scribe IA pour cette séance' })
+  async getScribeStatus(
+    @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
+    @CurrentUser() user: KeycloakUser,
+  ): Promise<ScribeStatusResponse> {
+    return this.videoService.getScribeStatus(user.sub, appointmentId);
+  }
+
   // --- Public endpoints (patient, rate limited) ---
 
   @Post('join/:token')
@@ -168,9 +216,13 @@ export class VideoController {
 
   @Post('consent/:token')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
-  async recordConsent(@Param('token', ParseUUIDPipe) token: string, @Req() req: Request) {
+  async recordConsent(
+    @Param('token', ParseUUIDPipe) token: string,
+    @Req() req: Request,
+    @Body() body: RecordConsentDto,
+  ) {
     const ip = req.ip || req.headers['x-forwarded-for']?.toString();
-    await this.videoService.recordConsent(token, ip);
+    await this.videoService.recordConsent(token, ip, body?.includeScribe ?? false);
     return { ok: true };
   }
 

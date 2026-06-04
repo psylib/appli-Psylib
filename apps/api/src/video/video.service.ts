@@ -13,7 +13,13 @@ import { NotificationGateway } from '../notifications/notification.gateway';
 import { RoomServiceClient, AccessToken, VideoGrant } from 'livekit-server-sdk';
 import { Cron } from '@nestjs/schedule';
 import * as crypto from 'crypto';
-import { VideoTokenResponse, TodayVideoRoom } from './dto/video.dto';
+import { VideoTokenResponse, TodayVideoRoom, ScribeStatusResponse } from './dto/video.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { SCRIBE_QUEUE, ScribeJobData } from './scribe.processor';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 
 @Injectable()
 export class VideoService {
@@ -28,6 +34,7 @@ export class VideoService {
     private readonly roomService: RoomServiceClient,
     private readonly config: ConfigService,
     private readonly notificationGateway: NotificationGateway,
+    @InjectQueue(SCRIBE_QUEUE) private readonly scribeQueue: Queue<ScribeJobData>,
   ) {
     this.livekitApiKey = this.config.get<string>('LIVEKIT_API_KEY', '');
     this.livekitApiSecret = this.config.get<string>('LIVEKIT_API_SECRET', '');
@@ -265,11 +272,25 @@ export class VideoService {
       entityId: room.id,
     });
 
+    // Check patient scribe consent
+    const patientScribeConsent = room.appointment.patientId
+      ? !!(await this.prisma.gdprConsent.findFirst({
+          where: {
+            patientId: room.appointment.patientId,
+            type: 'ai_video_transcription',
+            withdrawnAt: null,
+          },
+        }))
+      : false;
+
     return {
       token: await token.toJwt(),
       wsUrl: this.livekitWsUrl,
       roomName: room.roomName,
       durationMin: room.appointment.duration,
+      patientScribeConsent,
+      scribeEnabled: room.scribeEnabled,
+      scribeStatus: room.scribeStatus,
     };
   }
 
@@ -419,7 +440,7 @@ export class VideoService {
    * Records GDPR consent for video consultation from a patient.
    * Supports both primary patient and secondary participants.
    */
-  async recordConsent(joinToken: string, ipAddress?: string) {
+  async recordConsent(joinToken: string, ipAddress?: string, includeScribe = false) {
     // Check primary patient token
     const appointment = await this.prisma.appointment.findFirst({
       where: { videoJoinToken: joinToken },
@@ -436,6 +457,16 @@ export class VideoService {
           ipAddress,
         },
       });
+      if (includeScribe) {
+        await this.prisma.gdprConsent.create({
+          data: {
+            patientId: appointment.patientId,
+            type: 'ai_video_transcription',
+            version: '2026-06-v1',
+            ipAddress,
+          },
+        });
+      }
       return;
     }
 
@@ -453,6 +484,16 @@ export class VideoService {
         ipAddress,
       },
     });
+    if (includeScribe) {
+      await this.prisma.gdprConsent.create({
+        data: {
+          patientId: participant.patientId,
+          type: 'ai_video_transcription',
+          version: '2026-06-v1',
+          ipAddress,
+        },
+      });
+    }
   }
 
   /**
@@ -843,6 +884,91 @@ export class VideoService {
       token: await token.toJwt(),
       wsUrl: this.livekitWsUrl,
       roomName: guest.videoRoom.roomName,
+    };
+  }
+
+  // ─── Scribe IA ────────────────────────────────────────────────────────────────
+
+  async enableScribe(userId: string, appointmentId: string): Promise<{ scribeEnabled: boolean }> {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+    if (room.status === 'ended') throw new BadRequestException('La consultation est terminée');
+
+    const newValue = !room.scribeEnabled;
+    await this.prisma.videoRoom.update({
+      where: { id: room.id },
+      data: { scribeEnabled: newValue },
+    });
+
+    await this.audit.log({
+      actorId: psy.userId,
+      actorType: 'psychologist',
+      action: newValue ? 'SCRIBE_ENABLED' : 'SCRIBE_DISABLED',
+      entityType: 'video_room',
+      entityId: room.id,
+    });
+
+    return { scribeEnabled: newValue };
+  }
+
+  async uploadScribeAudio(
+    userId: string,
+    appointmentId: string,
+    audioBuffer: Buffer,
+  ): Promise<{ status: string }> {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+    if (!room.scribeEnabled) throw new BadRequestException("Le Scribe IA n'était pas activé pour cette séance");
+    if (room.scribeStatus === 'processing' || room.scribeStatus === 'done') {
+      throw new BadRequestException('Transcription déjà en cours ou terminée');
+    }
+
+    if (audioBuffer.length > 25 * 1024 * 1024) {
+      throw new BadRequestException('Fichier audio trop volumineux (max 25 MB)');
+    }
+
+    const fileName = `psylib-scribe-${room.id}-${Date.now()}.webm`;
+    const filePath = path.join(os.tmpdir(), fileName);
+    fs.writeFileSync(filePath, audioBuffer);
+
+    await this.prisma.videoRoom.update({
+      where: { id: room.id },
+      data: { scribeStatus: 'processing' },
+    });
+
+    await this.scribeQueue.add('process', {
+      videoRoomId: room.id,
+      audioFilePath: filePath,
+    });
+
+    await this.audit.log({
+      actorId: psy.userId,
+      actorType: 'psychologist',
+      action: 'SCRIBE_AUDIO_UPLOADED',
+      entityType: 'video_room',
+      entityId: room.id,
+      metadata: { sizeBytes: audioBuffer.length },
+    });
+
+    return { status: 'processing' };
+  }
+
+  async getScribeStatus(userId: string, appointmentId: string): Promise<ScribeStatusResponse> {
+    const psy = await this.getPsychologist(userId);
+    const room = await this.prisma.videoRoom.findFirst({
+      where: { appointmentId, psychologistId: psy.id },
+      select: { scribeEnabled: true, scribeStatus: true },
+    });
+    if (!room) throw new NotFoundException('Salle de visio introuvable');
+    return {
+      scribeEnabled: room.scribeEnabled,
+      status: room.scribeStatus as 'none' | 'processing' | 'done' | 'failed',
     };
   }
 
