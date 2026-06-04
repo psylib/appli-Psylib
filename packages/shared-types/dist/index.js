@@ -60,6 +60,7 @@ var AppointmentPaymentMode;
     AppointmentPaymentMode["NONE"] = "none";
     AppointmentPaymentMode["PREPAYMENT"] = "prepayment";
     AppointmentPaymentMode["POST_SESSION"] = "post_session";
+    AppointmentPaymentMode["IMPRINT"] = "imprint";
 })(AppointmentPaymentMode || (exports.AppointmentPaymentMode = AppointmentPaymentMode = {}));
 var ExerciseStatus;
 (function (ExerciseStatus) {

@@ -58,7 +58,16 @@ export enum AppointmentPaymentMode {
   NONE = 'none',
   PREPAYMENT = 'prepayment',
   POST_SESSION = 'post_session',
+  IMPRINT = 'imprint',
 }
+
+export type CardHoldStatus =
+  | 'none'
+  | 'pending'
+  | 'secured'
+  | 'captured'
+  | 'released'
+  | 'failed';
 
 export enum ExerciseStatus {
   ASSIGNED = 'assigned',

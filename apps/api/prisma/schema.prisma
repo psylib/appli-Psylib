@@ -122,6 +122,18 @@ enum AppointmentPaymentMode {
   none
   prepayment
   post_session
+  imprint
+}
+
+enum CardHoldStatus {
+  none
+  pending
+  secured
+  captured
+  released
+  failed
+
+  @@map("card_hold_status")
 }
 
 enum BookingPaymentStatus {
@@ -412,6 +424,7 @@ model ConsultationType {
   instructions        String?
   allowedPaymentModes String?              @map("allowed_payment_modes") // JSON: "online" | "on_site" | "both" | null (inherit)
   cancellationDelay   Int?                 @map("cancellation_delay") // hours, null = inherit from psy
+  requireImprint      Boolean              @default(false) @map("require_imprint")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
@@ -756,7 +769,10 @@ model Appointment {
   paymentAmount        Decimal?               @map("payment_amount") @db.Decimal(10, 2)
   paymentMode          AppointmentPaymentMode @default(none) @map("payment_mode")
   paidOnline           Boolean                @default(false) @map("paid_online")
-  bookingPaymentStatus BookingPaymentStatus   @default(none) @map("booking_payment_status")
+  bookingPaymentStatus  BookingPaymentStatus   @default(none) @map("booking_payment_status")
+  stripeCustomerId      String?                @map("stripe_customer_id")
+  stripePaymentMethodId String?                @map("stripe_payment_method_id")
+  cardHoldStatus        CardHoldStatus         @default(none) @map("card_hold_status")
   isOnline               Boolean                @default(false) @map("is_online")
   videoJoinToken         String?                @unique @map("video_join_token")
   videoLinkSentAt        DateTime?              @map("video_link_sent_at")
