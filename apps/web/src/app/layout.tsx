@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { Playfair_Display, DM_Sans, DM_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import { Providers } from '@/components/providers';
 import { CookieConsentBanner } from '@/components/cookie-consent';
 import './globals.css';
@@ -107,6 +108,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         <Providers>{children}</Providers>
         <CookieConsentBanner />
+        <Analytics />
       </body>
     </html>
   );
