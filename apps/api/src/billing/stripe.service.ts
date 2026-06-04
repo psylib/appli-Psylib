@@ -271,17 +271,20 @@ export class StripeService implements OnModuleInit {
     appointmentId: string;
   }): Promise<{ id: string | null; status: string; requiresAction: boolean }> {
     try {
-      const pi = await this.stripe.paymentIntents.create({
-        amount: Math.round(params.amount * 100),
-        currency: 'eur',
-        customer: params.customerId,
-        payment_method: params.paymentMethodId,
-        off_session: true,
-        confirm: true,
-        application_fee_amount: 0, // pas de commission plateforme sur l'empreinte
-        transfer_data: { destination: params.connectedAccountId },
-        metadata: { type: 'card_imprint_capture', appointmentId: params.appointmentId },
-      });
+      const pi = await this.stripe.paymentIntents.create(
+        {
+          amount: Math.round(params.amount * 100),
+          currency: 'eur',
+          customer: params.customerId,
+          payment_method: params.paymentMethodId,
+          off_session: true,
+          confirm: true,
+          application_fee_amount: 0, // pas de commission plateforme sur l'empreinte
+          transfer_data: { destination: params.connectedAccountId },
+          metadata: { type: 'card_imprint_capture', appointmentId: params.appointmentId },
+        },
+        { idempotencyKey: `imprint_capture_${params.appointmentId}` },
+      );
       return { id: pi.id, status: pi.status, requiresAction: false };
     } catch (err) {
       const code = (err as { code?: string }).code;

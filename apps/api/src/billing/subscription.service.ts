@@ -1,4 +1,4 @@
-import { Injectable, Logger, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { ConfigService } from '@nestjs/config';
@@ -1177,28 +1177,36 @@ export class SubscriptionService {
       return { captured: false, fallbackLink: link.url ?? undefined };
     }
 
-    const payment = await this.prisma.payment.create({
-      data: {
-        psychologistId: psy.id,
-        patientId: appointment.patientId,
-        type: 'session',
-        amount: dto.amount,
-        status: 'paid',
-        stripePaymentIntentId: result.id,
-        appointmentId: appointment.id,
-      },
-    });
+    // L'idempotency key Stripe (imprint_capture_<appointmentId>) empêche un double-débit
+    // si le psy relance la capture après un échec partiel. Les deux écritures DB ci-dessous
+    // sont atomiques : si l'une échoue, l'autre est annulée, évitant un état incohérent.
+    if (!result.id) {
+      throw new InternalServerErrorException('PaymentIntent Stripe sans identifiant.');
+    }
 
-    await this.prisma.appointment.update({
-      where: { id: appointment.id },
-      data: {
-        cardHoldStatus: 'captured',
-        paymentAmount: dto.amount,
-        paymentIntentId: result.id,
-        bookingPaymentStatus: 'paid',
-        paidOnline: true,
-      },
-    });
+    const [payment] = await this.prisma.$transaction([
+      this.prisma.payment.create({
+        data: {
+          psychologistId: psy.id,
+          patientId: appointment.patientId,
+          type: 'session',
+          amount: dto.amount,
+          status: 'paid',
+          stripePaymentIntentId: result.id,
+          appointmentId: appointment.id,
+        },
+      }),
+      this.prisma.appointment.update({
+        where: { id: appointment.id },
+        data: {
+          cardHoldStatus: 'captured',
+          paymentAmount: dto.amount,
+          paymentIntentId: result.id,
+          bookingPaymentStatus: 'paid',
+          paidOnline: true,
+        },
+      }),
+    ]);
 
     await this.audit.log({
       actorId: userId,

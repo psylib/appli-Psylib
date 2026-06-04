@@ -312,6 +312,7 @@ describe('StripeService', () => {
           transfer_data: { destination: 'acct_1' },
           metadata: { type: 'card_imprint_capture', appointmentId: 'apt1' },
         }),
+        { idempotencyKey: 'imprint_capture_apt1' },
       );
       expect(result.status).toBe('succeeded');
       expect(result.id).toBe('pi_1');

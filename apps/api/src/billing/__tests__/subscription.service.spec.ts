@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { SubscriptionService } from '../subscription.service';
 import { SubscriptionPlan, SubscriptionStatus } from '@psyscale/shared-types';
 import type { ConfigService } from '@nestjs/config';
@@ -39,6 +39,7 @@ const mockPrisma = {
   payment: {
     create: vi.fn(),
   },
+  $transaction: vi.fn(),
 };
 
 const mockStripeService = {
@@ -540,6 +541,8 @@ describe('SubscriptionService', () => {
       mockPrisma.appointment.findFirst.mockResolvedValue(appointment);
       mockPrisma.payment.create.mockResolvedValue({ id: 'pay1' });
       mockPrisma.appointment.update.mockResolvedValue({ id: 'apt1' });
+      // $transaction resolves to [payment, appointment] in order
+      mockPrisma.$transaction.mockResolvedValue([{ id: 'pay1' }, { id: 'apt1' }]);
     });
 
     it('débite la carte et passe à captured', async () => {
@@ -548,10 +551,16 @@ describe('SubscriptionService', () => {
       expect(mockStripeService.captureImprint).toHaveBeenCalledWith(expect.objectContaining({
         customerId: 'cus_1', paymentMethodId: 'pm_1', connectedAccountId: 'acct_1', amount: 60, appointmentId: 'apt1',
       }));
+      // payment.create and appointment.update are invoked to build the $transaction args
+      expect(mockPrisma.payment.create).toHaveBeenCalled();
       expect(mockPrisma.appointment.update).toHaveBeenCalledWith(expect.objectContaining({
         where: { id: 'apt1' },
         data: expect.objectContaining({ cardHoldStatus: 'captured', paymentAmount: 60 }),
       }));
+      expect(mockPrisma.$transaction).toHaveBeenCalled();
+      expect(mockAuditService.log).toHaveBeenCalled();
+      expect(mockEmailService.sendImprintReceiptToPatient).toHaveBeenCalled();
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('payment.completed', expect.anything());
       expect(result.captured).toBe(true);
     });
 
@@ -562,6 +571,29 @@ describe('SubscriptionService', () => {
       expect(linkSpy).toHaveBeenCalled();
       expect(result.captured).toBe(false);
       expect(result.fallbackLink).toBe('https://stripe/link');
+      expect(mockPrisma.payment.create).not.toHaveBeenCalled();
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it("lève BadRequestException si l'empreinte n'est pas à l'état secured", async () => {
+      mockPrisma.appointment.findFirst.mockResolvedValue({
+        ...appointment,
+        cardHoldStatus: 'captured',
+      });
+      await expect(
+        service.captureImprint('user1', 'apt1', { amount: 60 }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('lève ForbiddenException si le psy n\'a pas de stripeAccountId', async () => {
+      vi.spyOn(service as any, 'getPsychologist').mockResolvedValue({
+        id: 'psy1',
+        stripeOnboardingComplete: false,
+        stripeAccountId: null,
+      });
+      await expect(
+        service.captureImprint('user1', 'apt1', { amount: 60 }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
