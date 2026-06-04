@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Delete,
   Req,
   Body,
   HttpCode,
@@ -11,6 +12,8 @@ import type { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { KeycloakGuard } from './guards/keycloak.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { KeycloakUser } from './keycloak-jwt.strategy';
 import { CacheService } from '../common/cache.service';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -79,6 +82,18 @@ export class AuthController {
     }
 
     return { revoked: true };
+  }
+
+  /**
+   * DELETE /auth/account
+   * Supprime définitivement le compte psy : Stripe annulé, données purgées, Keycloak supprimé.
+   */
+  @Delete('account')
+  @UseGuards(KeycloakGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Supprimer son compte (irréversible)' })
+  async deleteAccount(@CurrentUser() user: KeycloakUser): Promise<void> {
+    await this.authService.deleteAccount(user.sub);
   }
 
   /**

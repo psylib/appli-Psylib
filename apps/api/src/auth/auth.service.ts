@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -12,6 +13,7 @@ import { EmailService } from '../notifications/email.service';
 import { RppsVerificationService } from './rpps-verification.service';
 import type { RppsVerificationResult } from './rpps-verification.service';
 import { SubscriptionPlan, SubscriptionStatus } from '@psyscale/shared-types';
+import { StripeService } from '../billing/stripe.service';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +30,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly emailService: EmailService,
     private readonly rppsVerification: RppsVerificationService,
+    private readonly stripeService: StripeService,
   ) {
     this.keycloakUrl = config.getOrThrow<string>('KEYCLOAK_URL');
     this.realm = config.getOrThrow<string>('KEYCLOAK_REALM');
@@ -369,6 +372,58 @@ export class AuthService {
       this.logger.error(
         `Password reset request error: ${(err as Error).message}`,
       );
+    }
+  }
+
+  // ── Account Deletion ────────────────────────────────────────────
+
+  async deleteAccount(keycloakUserId: string): Promise<void> {
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { userId: keycloakUserId },
+      include: { subscription: { select: { stripeSubscriptionId: true } } },
+    });
+
+    if (!psy) throw new NotFoundException('Compte introuvable');
+
+    // 1. Cancel Stripe subscription immediately (non-blocking on failure)
+    const stripeSubId = psy.subscription?.stripeSubscriptionId;
+    if (stripeSubId) {
+      try {
+        await this.stripeService.cancelSubscriptionImmediately(stripeSubId);
+      } catch (err) {
+        this.logger.warn(`Stripe cancel failed for ${psy.id}: ${(err as Error).message}`);
+      }
+    }
+
+    // 2. Preserve patient portal accounts — null out the userId link before cascade
+    await this.prisma.patient.updateMany({
+      where: { psychologistId: psy.id },
+      data: { userId: null },
+    });
+
+    // 3. Delete user record — cascades to psychologist → all psy data
+    await this.prisma.user.delete({ where: { id: keycloakUserId } });
+
+    // 4. Delete Keycloak user (after DB — prevents re-login attempts during deletion)
+    await this.deleteKeycloakUser(keycloakUserId);
+
+    this.logger.log(`Account deleted: psychologistId=${psy.id}`);
+  }
+
+  private async deleteKeycloakUser(keycloakUserId: string): Promise<void> {
+    const adminToken = await this.getAdminToken();
+    if (!adminToken) {
+      this.logger.warn(`Keycloak deletion skipped — no admin token (userId=${keycloakUserId})`);
+      return;
+    }
+
+    const res = await fetch(
+      `${this.keycloakUrl}/admin/realms/${this.realm}/users/${keycloakUserId}`,
+      { method: 'DELETE', headers: { Authorization: `Bearer ${adminToken}` } },
+    );
+
+    if (!res.ok && res.status !== 404) {
+      this.logger.warn(`Keycloak user deletion failed: ${res.status} (userId=${keycloakUserId})`);
     }
   }
 

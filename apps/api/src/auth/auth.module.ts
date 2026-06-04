@@ -7,11 +7,13 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RppsVerificationService } from './rpps-verification.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'keycloak-jwt' }),
     NotificationsModule,
+    BillingModule,
   ],
   controllers: [AuthController],
   providers: [

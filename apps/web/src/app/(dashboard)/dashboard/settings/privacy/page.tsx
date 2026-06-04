@@ -1,16 +1,21 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/toast';
+import { Dialog } from '@/components/ui/dialog';
 
 const API_URL = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
+const CONFIRM_WORD = 'SUPPRIMER';
 
 export default function PrivacyPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { error: showError } = useToast();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [confirmInput, setConfirmInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -42,22 +47,22 @@ export default function PrivacyPage() {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteConfirm = async () => {
     if (!session?.accessToken) {
       showError('Session expirée. Veuillez vous reconnecter.');
       return;
     }
-    if (!confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.')) return;
-    if (!confirm('Dernière confirmation : toutes vos données seront définitivement supprimées.')) return;
+    setIsDeleting(true);
     try {
-      const res = await fetch(`${API_URL}/api/v1/account/delete`, {
+      const res = await fetch(`${API_URL}/api/v1/auth/account`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${session.accessToken}` },
       });
       if (!res.ok) throw new Error('Delete failed');
       await signOut({ callbackUrl: '/' });
     } catch {
-      showError('Erreur lors de la suppression. Contactez le support.');
+      showError('Erreur lors de la suppression. Contactez le support à tony@psylib.eu.');
+      setIsDeleting(false);
     }
   };
 
@@ -101,7 +106,6 @@ export default function PrivacyPage() {
 
       <div className="rounded-xl border border-border bg-white p-6 space-y-4">
         <h2 className="text-base font-medium text-foreground">Consentements</h2>
-        {/* TODO: Load consent state from GET /gdpr/consents API */}
         <div className="space-y-3">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -156,7 +160,7 @@ export default function PrivacyPage() {
           </button>
           <button
             type="button"
-            onClick={() => void handleDelete()}
+            onClick={() => setShowDeleteDialog(true)}
             className="px-4 py-2 rounded-lg border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
             Supprimer mon compte
@@ -166,6 +170,69 @@ export default function PrivacyPage() {
           Pour toute demande RGPD : <span className="font-medium">tony@psylib.eu</span>
         </p>
       </div>
+
+      <Dialog
+        open={showDeleteDialog}
+        onClose={() => {
+          if (!isDeleting) {
+            setShowDeleteDialog(false);
+            setConfirmInput('');
+          }
+        }}
+        title="Supprimer mon compte"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-800 space-y-1">
+            <p className="font-semibold">Cette action est irréversible.</p>
+            <p>Seront supprimés définitivement :</p>
+            <ul className="list-disc list-inside space-y-0.5 mt-1 text-red-700">
+              <li>Votre compte et votre profil</li>
+              <li>Tous vos patients et leurs dossiers</li>
+              <li>Toutes vos séances, notes et rendez-vous</li>
+              <li>Votre abonnement (annulé immédiatement)</li>
+              <li>Vos données de comptabilité</li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground" htmlFor="confirm-delete">
+              Tapez <span className="font-mono font-bold text-red-600">{CONFIRM_WORD}</span> pour confirmer
+            </label>
+            <input
+              id="confirm-delete"
+              type="text"
+              value={confirmInput}
+              onChange={(e) => setConfirmInput(e.target.value)}
+              placeholder={CONFIRM_WORD}
+              disabled={isDeleting}
+              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:opacity-50"
+              autoComplete="off"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setConfirmInput('');
+              }}
+              disabled={isDeleting}
+              className="flex-1 px-4 py-2 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleDeleteConfirm()}
+              disabled={confirmInput !== CONFIRM_WORD || isDeleting}
+              className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-sm font-medium text-white hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? 'Suppression...' : 'Supprimer définitivement'}
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

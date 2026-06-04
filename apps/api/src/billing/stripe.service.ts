@@ -91,6 +91,10 @@ export class StripeService implements OnModuleInit {
     return this.stripe.subscriptions.retrieve(subscriptionId);
   }
 
+  async cancelSubscriptionImmediately(subscriptionId: string): Promise<void> {
+    await this.stripe.subscriptions.cancel(subscriptionId);
+  }
+
   async listInvoices(customerId: string, limit = 10): Promise<Stripe.Invoice[]> {
     const result = await this.stripe.invoices.list({ customer: customerId, limit });
     return result.data;
