@@ -258,6 +258,39 @@ export class StripeService implements OnModuleInit {
     return this.stripe.checkout.sessions.create(create);
   }
 
+  /**
+   * Débite la carte enregistrée off-session vers le compte connecté du psy.
+   * Renvoie requiresAction=true si la carte exige une ré-authentification SCA
+   * (au lieu de throw), pour permettre le fallback lien de paiement.
+   */
+  async captureImprint(params: {
+    customerId: string;
+    paymentMethodId: string;
+    connectedAccountId: string;
+    amount: number; // euros
+    appointmentId: string;
+  }): Promise<{ id: string | null; status: string; requiresAction: boolean }> {
+    try {
+      const pi = await this.stripe.paymentIntents.create({
+        amount: Math.round(params.amount * 100),
+        currency: 'eur',
+        customer: params.customerId,
+        payment_method: params.paymentMethodId,
+        off_session: true,
+        confirm: true,
+        transfer_data: { destination: params.connectedAccountId },
+        metadata: { type: 'card_imprint_capture', appointmentId: params.appointmentId },
+      });
+      return { id: pi.id, status: pi.status, requiresAction: false };
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      if (code === 'authentication_required') {
+        return { id: null, status: 'requires_action', requiresAction: true };
+      }
+      throw err;
+    }
+  }
+
   async createBookingCheckoutSession(params: {
     psyStripeAccountId: string;
     amount: number; // in cents

@@ -19,6 +19,7 @@ const mockStripe = {
   subscriptions: { retrieve: vi.fn() },
   invoices: { list: vi.fn() },
   webhooks: { constructEvent: vi.fn() },
+  paymentIntents: { create: vi.fn() },
 };
 
 vi.mock('stripe', () => ({
@@ -279,6 +280,73 @@ describe('StripeService', () => {
         }),
       );
       expect(result.url).toBe('https://stripe/setup');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // captureImprint()
+  // -------------------------------------------------------------------------
+
+  describe('captureImprint', () => {
+    it('crée un PaymentIntent off-session confirmé en destination charge', async () => {
+      const pi = { id: 'pi_1', status: 'succeeded' };
+      (mockStripe.paymentIntents.create as any).mockResolvedValue(pi);
+
+      const service = createService();
+      const result = await service.captureImprint({
+        customerId: 'cus_imp1',
+        paymentMethodId: 'pm_1',
+        connectedAccountId: 'acct_1',
+        amount: 60,
+        appointmentId: 'apt1',
+      });
+
+      expect(mockStripe.paymentIntents.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: 6000,
+          currency: 'eur',
+          customer: 'cus_imp1',
+          payment_method: 'pm_1',
+          off_session: true,
+          confirm: true,
+          transfer_data: { destination: 'acct_1' },
+          metadata: { type: 'card_imprint_capture', appointmentId: 'apt1' },
+        }),
+      );
+      expect(result.status).toBe('succeeded');
+      expect(result.id).toBe('pi_1');
+      expect(result.requiresAction).toBe(false);
+    });
+
+    it('renvoie requiresAction=true quand la carte exige une authentification', async () => {
+      const err: any = new Error('authentication required');
+      err.code = 'authentication_required';
+      (mockStripe.paymentIntents.create as any).mockRejectedValue(err);
+
+      const service = createService();
+      const result = await service.captureImprint({
+        customerId: 'cus_imp1',
+        paymentMethodId: 'pm_1',
+        connectedAccountId: 'acct_1',
+        amount: 60,
+        appointmentId: 'apt1',
+      });
+
+      expect(result.requiresAction).toBe(true);
+      expect(result.status).toBe('requires_action');
+      expect(result.id).toBeNull();
+    });
+
+    it('relance les autres erreurs Stripe', async () => {
+      const err: any = new Error('card declined');
+      err.code = 'card_declined';
+      (mockStripe.paymentIntents.create as any).mockRejectedValue(err);
+
+      const service = createService();
+      await expect(service.captureImprint({
+        customerId: 'cus_imp1', paymentMethodId: 'pm_1',
+        connectedAccountId: 'acct_1', amount: 60, appointmentId: 'apt1',
+      })).rejects.toThrow();
     });
   });
 
