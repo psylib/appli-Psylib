@@ -616,7 +616,7 @@ model Session {
   type           SessionType          @default(individual)
   notes          String? // ENCRYPTED — AES-256-GCM
   summaryAi        String?              @map("summary_ai") // ENCRYPTED si contient données patients
-  scribeTranscript String?              @map("scribe_transcript")
+  scribeTranscript String?              @map("scribe_transcript") // ENCRYPTED — AES-256-GCM
   tags             String[]
   rate           Decimal?             @db.Decimal(10, 2)
   paymentStatus  SessionPaymentStatus @default(pending) @map("payment_status")

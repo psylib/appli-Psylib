@@ -65,52 +65,66 @@ export class ScribeService {
     formData.append('language', 'fr');
     formData.append('response_format', 'text');
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${this.openaiApiKey}` },
-      body: formData,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120_000);
+    try {
+      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${this.openaiApiKey}` },
+        body: formData,
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Whisper API ${response.status}: ${body.slice(0, 200)}`);
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Whisper API ${response.status}: ${body.slice(0, 200)}`);
+      }
+
+      return response.text();
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return response.text();
   }
 
   async generateNote(transcript: string): Promise<ScribeNote> {
-    const response = await fetch(`${this.openrouterBaseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.openrouterApiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://psylib.eu',
-        'X-Title': 'PsyLib AI Scribe',
-      },
-      body: JSON.stringify({
-        model: this.modelMain,
-        messages: [
-          { role: 'system', content: SCRIBE_SYSTEM_PROMPT },
-          { role: 'user', content: `Transcription de séance :\n\n${transcript}` },
-        ],
-        response_format: { type: 'json_object' },
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`OpenRouter ${response.status}: ${body.slice(0, 200)}`);
-    }
-
-    const data = await response.json() as { choices: Array<{ message: { content: string } }> };
-    const content = data.choices?.[0]?.message?.content ?? '{}';
-
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60_000);
     try {
-      return JSON.parse(content) as ScribeNote;
-    } catch {
-      throw new Error(`Note JSON invalide : ${content.slice(0, 100)}`);
+      const response = await fetch(`${this.openrouterBaseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.openrouterApiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://psylib.eu',
+          'X-Title': 'PsyLib AI Scribe',
+        },
+        body: JSON.stringify({
+          model: this.modelMain,
+          messages: [
+            { role: 'system', content: SCRIBE_SYSTEM_PROMPT },
+            { role: 'user', content: `Transcription de séance :\n\n${transcript}` },
+          ],
+          response_format: { type: 'json_object' },
+          max_tokens: 2000,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`OpenRouter ${response.status}: ${body.slice(0, 200)}`);
+      }
+
+      const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+      const content = data.choices?.[0]?.message?.content ?? '{}';
+
+      try {
+        return JSON.parse(content) as ScribeNote;
+      } catch {
+        throw new Error(`Note JSON invalide : ${content.slice(0, 100)}`);
+      }
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
@@ -122,8 +136,6 @@ export class ScribeService {
       this.logger.error(`Fichier audio introuvable : ${audioFilePath}`);
       await this.markFailed(videoRoomId);
       return;
-    } finally {
-      fs.unlink(audioFilePath, () => {});
     }
 
     const room = await this.prisma.videoRoom.findUnique({
@@ -136,6 +148,7 @@ export class ScribeService {
 
     if (!room) {
       this.logger.error(`VideoRoom ${videoRoomId} introuvable`);
+      fs.unlink(audioFilePath, () => {});
       return;
     }
 
@@ -178,23 +191,27 @@ export class ScribeService {
         data: { scribeStatus: 'done' },
       });
 
+      // Rough: audioBuffer.length bytes / 32000 bytes/sec (webm ~32kbps) / 60 sec/min * $0.006/min
+      const estimatedMinutes = audioBuffer.length / (32000 * 60);
+      const estimatedCost = Math.round(estimatedMinutes * 0.006 * 100000) / 100000;
+
       await this.prisma.aiUsage.create({
         data: {
           psychologistId: room.psychologistId,
           feature: 'session_scribe',
           tokensUsed: Math.round(transcript.length / 4),
           model: this.modelMain,
-          costUsd: 0,
+          costUsd: estimatedCost,
         },
       });
 
-      await this.notifications.createNotification({
-        userId: room.psychologist.userId,
-        type: 'ai_complete',
-        title: 'Note générée par le Scribe IA',
-        body: 'La transcription de votre séance a été traitée. La note est disponible dans la fiche de séance.',
-        data: { sessionId: sessionId ?? null, videoRoomId },
-      });
+      await this.notifications.createAndDispatch(
+        room.psychologist.userId,
+        'ai_complete',
+        'Note générée par le Scribe IA',
+        'La transcription de votre séance a été traitée. La note est disponible dans la fiche de séance.',
+        { sessionId: sessionId ?? null, videoRoomId },
+      );
 
       await this.audit.log({
         actorId: room.psychologistId,
@@ -209,13 +226,13 @@ export class ScribeService {
     } catch (err) {
       this.logger.error(`Scribe: échec pour room ${videoRoomId}: ${err}`);
       await this.markFailed(videoRoomId);
-      await this.notifications.createNotification({
-        userId: room.psychologist.userId,
-        type: 'ai_complete',
-        title: 'Scribe IA : échec de traitement',
-        body: 'La génération automatique de la note a échoué. Vous pouvez rédiger votre note manuellement.',
-        data: { videoRoomId },
-      });
+      await this.notifications.createAndDispatch(
+        room.psychologist.userId,
+        'ai_complete',
+        'Scribe IA : échec de traitement',
+        'La génération automatique de la note a échoué. Vous pouvez rédiger votre note manuellement.',
+        { videoRoomId },
+      );
       await this.audit.log({
         actorId: room.psychologistId,
         actorType: 'system',
@@ -224,6 +241,8 @@ export class ScribeService {
         entityId: videoRoomId,
         metadata: { error: String(err).slice(0, 200) },
       });
+    } finally {
+      fs.unlink(audioFilePath, () => {});
     }
   }
 
