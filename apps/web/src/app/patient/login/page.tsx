@@ -34,8 +34,7 @@ function PatientLoginForm() {
     register,
     handleSubmit,
     formState: { errors },
-  // @ts-expect-error zod version mismatch with @hookform/resolvers
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({ resolver: zodResolver(schema as any) });
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
