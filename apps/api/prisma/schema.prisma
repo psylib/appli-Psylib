@@ -269,6 +269,12 @@ enum GuardianInvitationStatus {
   @@map("guardian_invitation_status")
 }
 
+enum AssistantInvitationStatus {
+  pending
+  accepted
+  expired
+}
+
 enum GuardianConsentRequestStatus {
   pending
   approved
@@ -310,6 +316,7 @@ model User {
   courseEnrollments CourseEnrollment[]
   sentMessages      Message[]          @relation("MessageSender")
   guardianRecords   LegalGuardian[]
+  assistantAccounts Assistant[]
 
   @@index([role])
   @@map("users")
@@ -388,6 +395,8 @@ model Psychologist {
   externalCalendarEvents   ExternalCalendarEvent[]
   bookingConfirmationMessage String?                @map("booking_confirmation_message")
   rppsVerifiedAt           DateTime?                @map("rpps_verified_at")
+  assistants               Assistant[]
+  assistantInvitations     AssistantInvitation[]
 
   @@map("psychologists")
 }
@@ -1539,4 +1548,47 @@ model ExternalCalendarEvent {
   @@unique([calendarConnectionId, externalId])
   @@index([psychologistId, startAt, endAt], name: "idx_external_events_psy_dates")
   @@map("external_calendar_events")
+}
+
+// =============================================================================
+// Assistant / Secretary
+// =============================================================================
+
+model Assistant {
+  id             String   @id @default(uuid())
+  userId         String?  @map("user_id")
+  psychologistId String   @map("psychologist_id")
+  name           String
+  email          String
+  status         String   @default("pending") // pending | active | revoked
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user         User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  psychologist Psychologist          @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  invitations  AssistantInvitation[]
+
+  @@unique([psychologistId, email])
+  @@index([userId], name: "idx_assistants_user")
+  @@index([psychologistId], name: "idx_assistants_psy")
+  @@map("assistants")
+}
+
+model AssistantInvitation {
+  id             String                    @id @default(uuid())
+  psychologistId String                    @map("psychologist_id")
+  assistantId    String                    @map("assistant_id")
+  email          String
+  token          String                    @unique
+  status         AssistantInvitationStatus @default(pending)
+  expiresAt      DateTime                  @map("expires_at")
+  createdAt      DateTime                  @default(now()) @map("created_at")
+
+  psychologist Psychologist @relation(fields: [psychologistId], references: [id], onDelete: Cascade)
+  assistant    Assistant    @relation(fields: [assistantId], references: [id], onDelete: Cascade)
+
+  @@index([token], name: "idx_assistant_invitations_token")
+  @@index([assistantId], name: "idx_assistant_invitations_assistant")
+  @@index([psychologistId], name: "idx_assistant_invitations_psy")
+  @@map("assistant_invitations")
 }
