@@ -222,4 +222,42 @@ describe('AiService', () => {
       ).rejects.toThrow(ForbiddenException);
     });
   });
+
+  // ─── HDS: audit DECRYPT lors de la collecte d'historique pour le résumé IA ──
+  describe('collectPatientHistory — audit DECRYPT (HDS)', () => {
+    function buildWithAudit() {
+      const prismaLocal = {
+        session: {
+          findFirst: vi.fn().mockResolvedValue({
+            patientId: 'pat1', orientation: null, date: new Date('2026-06-01'), duration: 50,
+          }),
+          findMany: vi.fn().mockResolvedValue([
+            { id: 's2', date: new Date('2026-05-01'), duration: 50, orientation: null, tags: [], notes: 'cipherNotes', summaryAi: null },
+          ]),
+        },
+      };
+      const encryption = { decrypt: vi.fn().mockReturnValue('notes déchiffrées') };
+      const audit = { log: vi.fn().mockResolvedValue(undefined), logDecrypt: vi.fn().mockResolvedValue(undefined) };
+      const s = new AiService(
+        prismaLocal as any,
+        createConfigMock('key') as any,
+        encryption as any,
+        {} as any,        // notifications
+        audit as any,     // audit
+      );
+      return { s, audit, encryption };
+    }
+
+    it('émet un audit DECRYPT quand des séances chiffrées sont déchiffrées pour le LLM', async () => {
+      const { s, audit } = buildWithAudit();
+
+      await (s as any).collectPatientHistory('s1', 'psy1', 'user1');
+
+      const decryptCalls = [
+        ...audit.log.mock.calls.filter((c: any[]) => c[0]?.action === 'DECRYPT'),
+        ...audit.logDecrypt.mock.calls,
+      ];
+      expect(decryptCalls.length).toBeGreaterThan(0);
+    });
+  });
 });

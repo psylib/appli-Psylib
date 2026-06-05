@@ -350,11 +350,23 @@ export class PatientsService {
     const since = new Date();
     since.setDate(since.getDate() - 30);
 
-    return this.prisma.moodTracking.findMany({
+    const rows = await this.prisma.moodTracking.findMany({
       where: { patientId, createdAt: { gte: since } },
       orderBy: { createdAt: 'asc' },
       select: { id: true, mood: true, note: true, createdAt: true },
     });
+
+    const decrypted = rows.map((r) => ({
+      ...r,
+      note: r.note ? this.decryptSafe(r.note) : null,
+    }));
+
+    // HDS : tracer le déchiffrement des notes d'humeur (champ chiffré AES-256-GCM)
+    if (rows.some((r) => r.note)) {
+      await this.audit.logDecrypt(psychologistId, 'psychologist', 'mood_tracking', patientId, 'note');
+    }
+
+    return decrypted;
   }
 
   async getPatientPortalExercises(
@@ -591,6 +603,16 @@ export class PatientsService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // HDS : tracer l'export de masse de la patientèle (accès volumineux)
+    await this.audit.log({
+      actorId: psychologistId,
+      actorType: 'psychologist',
+      action: 'READ',
+      entityType: 'patient_export_bulk',
+      entityId: psy.id,
+      metadata: { count: patients.length },
+    });
+
     const csvCell = (v: string | null | undefined): string => {
       if (!v) return '""';
       let safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
@@ -632,10 +654,22 @@ export class PatientsService {
     });
     if (!patient) throw new NotFoundException('Patient introuvable');
 
-    const decryptSafe = (v: string | null) => {
-      if (!v) return null;
-      try { return this.encryption.decrypt(v); } catch { return '[chiffré]'; }
-    };
+    const decryptSafe = (v: string | null) => this.decryptSafe(v);
+
+    // HDS : l'export complet du dossier déchiffre notes, séances, humeurs et
+    // assessments — c'est l'accès le plus sensible et doit être tracé (DECRYPT).
+    await this.audit.log({
+      actorId: psychologistId,
+      actorType: 'psychologist',
+      action: 'DECRYPT',
+      entityType: 'patient_export',
+      entityId: patientId,
+      metadata: {
+        sessionsCount: patient.sessions.length,
+        moodCount: patient.moodTrackings.length,
+        assessmentsCount: patient.assessments.length,
+      },
+    });
 
     return {
       exportedAt: new Date().toISOString(),
@@ -671,7 +705,7 @@ export class PatientsService {
       })),
       moodTracking: patient.moodTrackings.map((m) => ({
         mood: m.mood,
-        note: m.note,
+        note: decryptSafe(m.note),
         date: m.createdAt,
       })),
       exercises: patient.exercises.map((e) => ({
@@ -696,5 +730,11 @@ export class PatientsService {
     const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
     if (!psy) throw new ForbiddenException('Profil psychologue introuvable');
     return psy;
+  }
+
+  /** Déchiffre un champ AES-256-GCM, tolérant aux valeurs déjà en clair / corrompues */
+  private decryptSafe(v: string | null): string | null {
+    if (!v) return null;
+    try { return this.encryption.decrypt(v); } catch { return '[chiffré]'; }
   }
 }
