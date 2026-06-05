@@ -13,7 +13,15 @@ import { InvoicesModule } from '../invoices/invoices.module';
 
 @Module({
   imports: [
-    BullModule.registerQueue({ name: BILLING_QUEUE }),
+    BullModule.registerQueue({
+      name: BILLING_QUEUE,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 2000 },
+        removeOnComplete: { count: 100 },
+        removeOnFail: { count: 500 },
+      },
+    }),
     NotificationsModule,
     ReferralModule,
     InvoicesModule,

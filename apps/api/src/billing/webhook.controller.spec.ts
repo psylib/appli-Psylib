@@ -166,6 +166,15 @@ describe('WebhookController', () => {
       );
     });
 
+    it('marks the event as received (processedAt null) — not processed yet', async () => {
+      await controller.handleStripeWebhook(buildRawRequest() as any, 'valid-sig');
+
+      const createArg = prisma.stripeEvent.create.mock.calls[0]?.[0] as { data: { processedAt?: unknown } };
+      // processedAt must NOT be a timestamp at receipt time — it is set only after
+      // the worker successfully processes the event (avoids losing events on job failure).
+      expect(createArg.data.processedAt ?? null).toBeNull();
+    });
+
     it('enqueues job with event payload and 3 retry attempts', async () => {
       await controller.handleStripeWebhook(buildRawRequest() as any, 'valid-sig');
 
