@@ -45,6 +45,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { GuardiansModule } from './guardians/guardians.module';
 import { GuardianPortalModule } from './guardian-portal/guardian-portal.module';
 import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
+import { AssistantsModule } from './assistants/assistants.module';
 
 @Module({
   imports: [
@@ -152,6 +153,7 @@ import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
     GuardiansModule,
     GuardianPortalModule,
     CalendarSyncModule,
+    AssistantsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

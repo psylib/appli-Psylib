@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { guardianInvitationEmail } from './emails/guardian-invitation';
+import { assistantInvitationEmail } from './emails/assistant-invitation';
 import { guardianConsentRequestEmail } from './emails/guardian-consent-request';
 import { guardianConsentConfirmedEmail } from './emails/guardian-consent-confirmed';
 import { guardianInvoiceEmail } from './emails/guardian-invoice';
@@ -1891,6 +1892,17 @@ export class EmailService {
     } catch (error) {
       this.logger.error(`sendNotificationEmail failed: ${(error as Error).message}`);
     }
+  }
+
+  // ─── Assistant emails ────────────────────────────────────────────────────────
+
+  async sendAssistantInvitation(to: string, params: {
+    assistantName: string;
+    psychologistName: string;
+    activationUrl: string;
+  }) {
+    const { subject, html } = assistantInvitationEmail(params);
+    return this.send(to, subject, emailLayout(subject, html), 'sendAssistantInvitation');
   }
 
   // ─── Guardian emails ─────────────────────────────────────────────────────────

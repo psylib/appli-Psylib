@@ -497,6 +497,128 @@ export class AuthService {
     }
   }
 
+  // ── Assistant provisioning (used by AssistantsService) ──────────
+
+  /**
+   * Provisionne un compte Keycloak pour un assistant·e :
+   * crée l'utilisateur (activé), définit le mot de passe fourni (non temporaire,
+   * l'assistant l'a choisi lui-même), puis assigne le rôle realm `assistant`.
+   * Retourne l'identifiant Keycloak (= id du User en base).
+   */
+  async provisionAssistantAccount(
+    email: string,
+    password: string,
+  ): Promise<string> {
+    const adminToken = await this.getAdminToken();
+    if (!adminToken) {
+      throw new InternalServerErrorException(
+        "Service d'authentification indisponible",
+      );
+    }
+
+    // 1. Créer l'utilisateur Keycloak (activé, sans action requise)
+    const res = await fetch(
+      `${this.keycloakUrl}/admin/realms/${this.realm}/users`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: email.toLowerCase(),
+          email: email.toLowerCase(),
+          enabled: true,
+          emailVerified: true,
+        }),
+      },
+    );
+
+    if (res.status === 409) {
+      throw new ConflictException(
+        'Un compte avec cette adresse email existe déjà',
+      );
+    }
+    if (!res.ok) {
+      this.logger.error(`Keycloak assistant creation failed: ${res.status}`);
+      throw new InternalServerErrorException(
+        'Erreur lors de la création du compte assistant',
+      );
+    }
+
+    const location = res.headers.get('location');
+    if (!location) {
+      throw new InternalServerErrorException(
+        "Impossible de récupérer l'identifiant utilisateur",
+      );
+    }
+    const userId = location.split('/').pop()!;
+
+    // 2. Définir le mot de passe (non temporaire — choisi par l'assistant)
+    const pwRes = await fetch(
+      `${this.keycloakUrl}/admin/realms/${this.realm}/users/${userId}/reset-password`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'password',
+          value: password,
+          temporary: false,
+        }),
+      },
+    );
+    if (!pwRes.ok) {
+      this.logger.error(`Keycloak assistant password set failed: ${pwRes.status}`);
+      throw new InternalServerErrorException(
+        'Erreur lors de la définition du mot de passe',
+      );
+    }
+
+    // 3. Assigner le rôle realm `assistant`
+    await this.assignKeycloakRole(adminToken, userId, 'assistant');
+
+    this.logger.log(`Keycloak assistant provisioned: ${userId}`);
+    return userId;
+  }
+
+  /**
+   * Active ou désactive un utilisateur Keycloak (utilisé pour révoquer un
+   * assistant·e — un compte désactivé ne peut plus se connecter).
+   */
+  async setKeycloakUserEnabled(
+    keycloakUserId: string,
+    enabled: boolean,
+  ): Promise<void> {
+    const adminToken = await this.getAdminToken();
+    if (!adminToken) {
+      this.logger.warn(
+        `Keycloak enable/disable skipped — no admin token (userId=${keycloakUserId})`,
+      );
+      return;
+    }
+
+    const res = await fetch(
+      `${this.keycloakUrl}/admin/realms/${this.realm}/users/${keycloakUserId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled }),
+      },
+    );
+
+    if (!res.ok && res.status !== 404) {
+      this.logger.warn(
+        `Keycloak user enable/disable failed: ${res.status} (userId=${keycloakUserId})`,
+      );
+    }
+  }
+
   // ── Admin Token ─────────────────────────────────────────────────
 
   private async getAdminToken(): Promise<string | null> {

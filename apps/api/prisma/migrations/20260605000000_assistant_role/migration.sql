@@ -1,3 +1,10 @@
+-- AlterEnum: add 'assistant' to UserRole (idempotent)
+-- ADD VALUE cannot run inside a transaction block on PG < 12; guarded for safety.
+DO $$ BEGIN
+  ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'assistant';
+EXCEPTION WHEN others THEN NULL;
+END $$;
+
 -- CreateEnum: AssistantInvitationStatus
 DO $$ BEGIN
   CREATE TYPE "AssistantInvitationStatus" AS ENUM ('pending', 'accepted', 'expired');
