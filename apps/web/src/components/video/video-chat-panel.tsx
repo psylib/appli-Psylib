@@ -29,7 +29,7 @@ export function VideoChatPanel({ messages, localSender, onSend }: VideoChatPanel
       <div className="flex-1 overflow-y-auto space-y-3 p-3">
         {messages.length === 0 && (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Aucun message. Écrivez ici si l'audio est difficile.
+            Aucun message. Écrivez ici si l&apos;audio est difficile.
           </p>
         )}
         {messages.map((msg) => {
