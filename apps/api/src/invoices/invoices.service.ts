@@ -39,6 +39,31 @@ export class InvoicesService {
   ) {}
 
   /**
+   * Calcule le prochain numéro de facture PSY-YYYY-NNN pour un psy/année donnés.
+   * H (audit 2026-06-05) : la séquence est déterminée NUMÉRIQUEMENT (et non par un
+   * tri lexicographique sur la chaîne, qui cassait dès 1000 : "PSY-2026-1000" < "PSY-2026-999").
+   * `attempt` décale la séquence lors d'un retry après collision P2002.
+   */
+  private async nextInvoiceNumber(
+    tx: Prisma.TransactionClient,
+    psychologistId: string,
+    year: number,
+    attempt: number,
+  ): Promise<string> {
+    const existing = await tx.invoice.findMany({
+      where: { psychologistId, invoiceNumber: { startsWith: `PSY-${year}-` } },
+      select: { invoiceNumber: true },
+    });
+    let maxSeq = 0;
+    for (const inv of existing) {
+      const seq = parseInt(inv.invoiceNumber.split('-')[2] ?? '0', 10);
+      if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
+    }
+    const sequence = maxSeq + 1 + attempt;
+    return `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+  }
+
+  /**
    * Resolve Keycloak user ID (sub) → Psychologist.id
    */
   private async resolvePsychologistId(userId: string): Promise<string> {
@@ -98,25 +123,7 @@ export class InvoicesService {
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
         return await this.prisma.$transaction(async (tx) => {
-          const lastInvoice = await tx.invoice.findFirst({
-            where: {
-              psychologistId,
-              invoiceNumber: { startsWith: `PSY-${year}-` },
-            },
-            orderBy: { invoiceNumber: 'desc' },
-          });
-
-          let sequence = 1;
-          if (lastInvoice) {
-            const parts = lastInvoice.invoiceNumber.split('-');
-            const lastSeq = parseInt(parts[2] ?? '0', 10);
-            if (!isNaN(lastSeq)) {
-              sequence = lastSeq + 1;
-            }
-          }
-          sequence += attempt;
-
-          const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+          const invoiceNumber = await this.nextInvoiceNumber(tx, psychologistId, year, attempt);
 
           return tx.invoice.create({
             data: {
@@ -352,22 +359,8 @@ export class InvoicesService {
             }
           }
 
-          // Generate invoice number
-          const lastInvoice = await tx.invoice.findFirst({
-            where: {
-              psychologistId: data.psychologistId,
-              invoiceNumber: { startsWith: `PSY-${year}-` },
-            },
-            orderBy: { invoiceNumber: 'desc' },
-          });
-          let sequence = 1;
-          if (lastInvoice) {
-            const parts = lastInvoice.invoiceNumber.split('-');
-            const lastSeq = parseInt(parts[2] ?? '0', 10);
-            if (!isNaN(lastSeq)) sequence = lastSeq + 1;
-          }
-          sequence += retries;
-          const invoiceNumber = `PSY-${year}-${String(sequence).padStart(3, '0')}`;
+          // Generate invoice number (numeric sequence — voir nextInvoiceNumber)
+          const invoiceNumber = await this.nextInvoiceNumber(tx, data.psychologistId, year, retries);
 
           return tx.invoice.create({
             data: {
