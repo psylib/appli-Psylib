@@ -14,27 +14,31 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const session = await auth();
 
   if (!session?.user) redirect('/login');
-  if (session.user.role === UserRole.PATIENT) redirect('/patient-portal');
+  if (session.user.role === UserRole.PATIENT || session.user.role === UserRole.GUARDIAN) {
+    redirect('/patient-portal');
+  }
 
-  // Vérifier si le psy a complété l'onboarding
-  try {
-    const res = await fetch(`${API_BASE}/api/v1/onboarding/profile`, {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
-      cache: 'no-store',
-    });
-    if (res.ok) {
-      const profile = (await res.json()) as { isOnboarded?: boolean };
-      if (!profile.isOnboarded) {
-        redirect('/onboarding');
+  // L'onboarding ne concerne que les psychologues (les assistant·es n'ont pas de flow d'onboarding)
+  if (session.user.role === UserRole.PSYCHOLOGIST) {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/onboarding/profile`, {
+        headers: { Authorization: `Bearer ${session.accessToken}` },
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const profile = (await res.json()) as { isOnboarded?: boolean };
+        if (!profile.isOnboarded) {
+          redirect('/onboarding');
+        }
       }
+    } catch {
+      // Si l'API est indisponible, on laisse passer pour ne pas bloquer
     }
-  } catch {
-    // Si l'API est indisponible, on laisse passer pour ne pas bloquer
   }
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
-      <Sidebar userEmail={session.user.email ?? ''} userName={session.user.name ?? ''} />
+      <Sidebar userEmail={session.user.email ?? ''} userName={session.user.name ?? ''} role={session.user.role} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar userEmail={session.user.email ?? ''} userName={session.user.name ?? ''} />
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">{children}</main>

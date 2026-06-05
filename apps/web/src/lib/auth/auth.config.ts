@@ -237,6 +237,7 @@ export const authConfig: NextAuthConfig = {
 function extractRole(roles: string[]): UserRole {
   if (roles.includes('admin')) return UserRole.ADMIN;
   if (roles.includes('psychologist')) return UserRole.PSYCHOLOGIST;
+  if (roles.includes('assistant')) return UserRole.ASSISTANT;
   if (roles.includes('guardian')) return UserRole.GUARDIAN;
   return UserRole.PATIENT;
 }

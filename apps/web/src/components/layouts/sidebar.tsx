@@ -28,6 +28,7 @@ import {
   Megaphone,
   Calculator,
 } from 'lucide-react';
+import { UserRole } from '@psyscale/shared-types';
 import { cn, getInitials } from '@/lib/utils';
 
 interface NavItem {
@@ -89,13 +90,31 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+// Items autorisés pour le rôle assistant·e : agenda + patients uniquement.
+// Tout ce qui est clinique (notes, IA) ou financier (paiements, compta) est masqué.
+const ASSISTANT_ALLOWED_HREFS = new Set<string>([
+  '/dashboard',
+  '/dashboard/patients',
+  '/dashboard/calendar',
+  '/dashboard/waitlist',
+]);
+
 interface SidebarProps {
   userEmail: string;
   userName: string;
+  role?: UserRole;
 }
 
-export function Sidebar({ userEmail, userName }: SidebarProps) {
+export function Sidebar({ userEmail, userName, role }: SidebarProps) {
   const pathname = usePathname();
+  const isAssistant = role === UserRole.ASSISTANT;
+
+  const navGroups = isAssistant
+    ? NAV_GROUPS.map((group) => ({
+        ...group,
+        items: group.items.filter((item) => ASSISTANT_ALLOWED_HREFS.has(item.href)),
+      })).filter((group) => group.items.length > 0)
+    : NAV_GROUPS;
 
   const isActive = (href: string, exact = false) => {
     if (exact) return pathname === href;
@@ -116,7 +135,7 @@ export function Sidebar({ userEmail, userName }: SidebarProps) {
 
       {/* Navigation groupée */}
       <nav className="flex-1 px-3 py-2 overflow-y-auto" aria-label="Navigation principale">
-        {NAV_GROUPS.map((group, gi) => (
+        {navGroups.map((group, gi) => (
           <div key={gi} className={gi > 0 ? 'mt-4' : ''}>
             {group.label && (
               <p className="px-3 mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
@@ -167,18 +186,20 @@ export function Sidebar({ userEmail, userName }: SidebarProps) {
           <UserCircle size={17} aria-hidden />
           Mon profil
         </Link>
-        <Link
-          href="/dashboard/settings"
-          className={cn(
-            'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px]',
-            isActive('/dashboard/settings') && !isActive('/dashboard/settings/profile') && !isActive('/dashboard/settings/billing')
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-surface hover:text-foreground',
-          )}
-        >
-          <Settings size={17} aria-hidden />
-          Réglages
-        </Link>
+        {!isAssistant && (
+          <Link
+            href="/dashboard/settings"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px]',
+              isActive('/dashboard/settings') && !isActive('/dashboard/settings/profile') && !isActive('/dashboard/settings/billing')
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-surface hover:text-foreground',
+            )}
+          >
+            <Settings size={17} aria-hidden />
+            Réglages
+          </Link>
+        )}
 
         {/* User */}
         <div className="flex items-center gap-3 px-3 py-2">
@@ -189,8 +210,12 @@ export function Sidebar({ userEmail, userName }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{userName || userEmail}</p>
-            {userName && (
-              <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+            {isAssistant ? (
+              <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-accent/10 text-accent">
+                Assistant·e
+              </span>
+            ) : (
+              userName && <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
             )}
           </div>
           <button
