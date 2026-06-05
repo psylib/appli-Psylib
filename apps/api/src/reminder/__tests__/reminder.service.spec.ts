@@ -12,6 +12,7 @@ const mockPrisma = {
   appointment: {
     findMany: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
   },
 };
 
@@ -82,6 +83,8 @@ describe('ReminderService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Par défaut, le claim atomique réussit (count=1) — une seule instance gagne
+    mockPrisma.appointment.updateMany.mockResolvedValue({ count: 1 });
     service = createService();
   });
 
@@ -150,17 +153,26 @@ describe('ReminderService', () => {
       expect(mockSms.sendSms).not.toHaveBeenCalled();
     });
 
-    it('marks reminderSentAt after sending', async () => {
+    it('claim atomique : marque reminderSentAt AVANT l\'envoi (where reminderSentAt:null)', async () => {
       mockPrisma.psychologist.findMany.mockResolvedValue([basePsy]);
       mockPrisma.appointment.findMany.mockResolvedValue([baseAppointment]);
-      mockPrisma.appointment.update.mockResolvedValue({});
 
       await service.processReminders();
 
-      expect(mockPrisma.appointment.update).toHaveBeenCalledWith({
-        where: { id: 'appt-001' },
+      expect(mockPrisma.appointment.updateMany).toHaveBeenCalledWith({
+        where: { id: 'appt-001', reminderSentAt: null },
         data: { reminderSentAt: expect.any(Date) },
       });
+    });
+
+    it('N\'envoie PAS si le claim a déjà été pris par une autre instance (count=0)', async () => {
+      mockPrisma.psychologist.findMany.mockResolvedValue([basePsy]);
+      mockPrisma.appointment.findMany.mockResolvedValue([baseAppointment]);
+      mockPrisma.appointment.updateMany.mockResolvedValue({ count: 0 });
+
+      await service.processReminders();
+
+      expect(mockEmail.sendAppointmentReminder).not.toHaveBeenCalled();
     });
 
     it('skips appointments already reminded (reminderSentAt not null)', async () => {
@@ -190,8 +202,11 @@ describe('ReminderService', () => {
       // Should not throw
       await expect(service.processReminders()).resolves.not.toThrow();
 
-      // Should not update reminderSentAt on failure
-      expect(mockPrisma.appointment.update).not.toHaveBeenCalled();
+      // En cas d'échec d'envoi, le claim est LIBÉRÉ (reminderSentAt remis à null) pour réessai
+      expect(mockPrisma.appointment.updateMany).toHaveBeenCalledWith({
+        where: { id: 'appt-001' },
+        data: { reminderSentAt: null },
+      });
     });
 
     it('does nothing when no psychologists have reminders enabled', async () => {
@@ -236,8 +251,8 @@ describe('ReminderService', () => {
       await service.processReminders();
 
       expect(mockEmail.sendAppointmentReminder).not.toHaveBeenCalled();
-      // Should still mark as sent (no channel available is not an error)
-      expect(mockPrisma.appointment.update).toHaveBeenCalled();
+      // Le claim a tout de même été pris (pas de canal dispo n'est pas une erreur)
+      expect(mockPrisma.appointment.updateMany).toHaveBeenCalled();
     });
 
     it('uses custom template for email when reminderTemplate is set', async () => {
