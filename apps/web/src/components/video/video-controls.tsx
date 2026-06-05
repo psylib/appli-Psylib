@@ -20,6 +20,7 @@ interface VideoControlsProps {
   onToggleBlur: () => void;
   inviteSlot?: React.ReactNode;
   scribeSlot?: React.ReactNode;
+  chatSlot?: React.ReactNode;
   onEndCall: () => void;
 }
 
@@ -40,6 +41,7 @@ export function VideoControls({
   onToggleBlur,
   inviteSlot,
   scribeSlot,
+  chatSlot,
   onEndCall,
 }: VideoControlsProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
@@ -65,13 +67,14 @@ export function VideoControls({
       <button
         onClick={onToggleScreenShare}
         className={isScreenSharing ? activeBtn : neutralBtn}
-        title={isScreenSharing ? 'Arrêter le partage d\'écran' : 'Partager mon écran'}
+        title={isScreenSharing ? "Arrêter le partage d'écran" : 'Partager mon écran'}
       >
         {isScreenSharing ? <MonitorX className="h-5 w-5" /> : <MonitorUp className="h-5 w-5" />}
       </button>
 
       {inviteSlot}
       {scribeSlot}
+      {chatSlot}
 
       <DeviceSettingsMenu blurEnabled={blurEnabled} blurPending={blurPending} onToggleBlur={onToggleBlur} />
 
