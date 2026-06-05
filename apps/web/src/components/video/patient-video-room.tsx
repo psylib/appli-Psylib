@@ -16,6 +16,8 @@ import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 import { useVideoChat } from '@/hooks/use-video-chat';
 import { useAdaptiveQuality } from '@/hooks/use-adaptive-quality';
+import { useDocPresentation } from '@/hooks/use-doc-presentation';
+import { DocPresentationPanel } from './doc-presentation-panel';
 import { VideoChatPanel } from './video-chat-panel';
 import { ConnectionBanner } from './connection-banner';
 
@@ -53,6 +55,7 @@ function PatientLayout({
     senderName: patientName,
   });
   const adaptive = useAdaptiveQuality();
+  const docPresentation = useDocPresentation();
 
   useEffect(() => {
     const onConnected = () => { hasConnected.current = true; };
@@ -155,6 +158,12 @@ function PatientLayout({
             <VideoTrack trackRef={localTrack} className="h-full w-full object-cover" />
           </div>
         )}
+
+        <DocPresentationPanel
+          presented={docPresentation.presented}
+          progress={docPresentation.progress}
+          canClose={false}
+        />
       </div>
 
       <div className="flex items-center justify-center gap-3 bg-gray-900 px-4 py-4">
