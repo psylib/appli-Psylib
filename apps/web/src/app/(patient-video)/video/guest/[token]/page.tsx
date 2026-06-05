@@ -78,6 +78,7 @@ export default function GuestVideoPage() {
     try {
       const res = await videoApi.requestGuestJoin(inviteToken, name);
       setGuestDevices(precall.selected);
+      precall.stop();
       sessionTokenRef.current = res.sessionToken;
       setPhase('waiting');
     } catch (err: unknown) {

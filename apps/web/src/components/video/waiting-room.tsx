@@ -27,6 +27,7 @@ export function WaitingRoom({ psychologistName, onReady, onDevicesSelected }: Wa
 
   const handleJoin = () => {
     onDevicesSelected?.(check.selected);
+    check.stop();
     onReady();
   };
 

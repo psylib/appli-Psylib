@@ -25,6 +25,7 @@ export interface UsePrecallCheckReturn {
   selected: PrecallSelected;
   setDevice: (kind: DeviceKind, id: string) => void;
   testSpeaker: () => void;
+  stop: () => void;
   error: string | null;
 }
 
@@ -50,6 +51,7 @@ export function usePrecallCheck(): UsePrecallCheckReturn {
   // (Re)acquire the media stream for the current selection.
   const acquire = useCallback(async (sel: PrecallSelected) => {
     try {
+      if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
       stopStream();
       const constraints: MediaStreamConstraints = {
         audio: sel.micId ? { deviceId: { exact: sel.micId } } : true,
@@ -117,6 +119,14 @@ export function usePrecallCheck(): UsePrecallCheckReturn {
     });
   }, [acquire]);
 
+  const stop = useCallback(() => {
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
+    stopStream();
+    setStream(null);
+  }, [stopStream]);
+
   const testSpeaker = useCallback(() => {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new AudioCtx();
@@ -129,5 +139,5 @@ export function usePrecallCheck(): UsePrecallCheckReturn {
     setTimeout(() => { osc.stop(); ctx.close().catch(() => {}); }, 600);
   }, []);
 
-  return { stream, audioLevel, bandwidth, devices, selected, setDevice, testSpeaker, error };
+  return { stream, audioLevel, bandwidth, devices, selected, setDevice, testSpeaker, stop, error };
 }
