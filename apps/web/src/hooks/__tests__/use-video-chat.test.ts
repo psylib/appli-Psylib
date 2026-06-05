@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { RoomEvent } from 'livekit-client';
 
 // Mock useRoomContext
-const mockPublishData = vi.fn();
+const mockPublishData = vi.fn().mockResolvedValue(undefined);
 const mockRoom = {
   localParticipant: { publishData: mockPublishData },
   on: vi.fn(),
@@ -18,6 +18,7 @@ import { useVideoChat } from '../use-video-chat';
 describe('useVideoChat', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPublishData.mockResolvedValue(undefined);
   });
 
   it('starts with empty messages and zero unread', () => {

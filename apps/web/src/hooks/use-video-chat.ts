@@ -23,7 +23,7 @@ interface UseVideoChatReturn {
   messages: ChatMessage[];
   unreadCount: number;
   sendMessage: (text: string) => void;
-  clearUnread: () => void;
+  clearUnread: (open?: boolean) => void;
 }
 
 const encoder = new TextEncoder();
@@ -36,10 +36,17 @@ export function useVideoChat({ sender, senderName }: UseVideoChatOptions): UseVi
   const panelOpenRef = useRef(false);
 
   useEffect(() => {
+    const VALID_SENDERS: ChatSender[] = ['psy', 'patient', 'guest'];
     const handleData = (payload: Uint8Array) => {
       try {
         const msg = JSON.parse(decoder.decode(payload)) as ChatMessage;
-        if (!msg.id || !msg.text || !msg.sender) return;
+        if (
+          typeof msg.id !== 'string' || !msg.id ||
+          typeof msg.text !== 'string' || !msg.text ||
+          typeof msg.senderName !== 'string' ||
+          typeof msg.timestamp !== 'number' ||
+          !VALID_SENDERS.includes(msg.sender)
+        ) return;
         setMessages((prev) => [...prev, msg]);
         if (!panelOpenRef.current) setUnreadCount((c) => c + 1);
       } catch {
@@ -60,13 +67,15 @@ export function useVideoChat({ sender, senderName }: UseVideoChatOptions): UseVi
       text: trimmed,
       timestamp: Date.now(),
     };
-    room.localParticipant.publishData(encoder.encode(JSON.stringify(msg)), { reliable: true });
+    room.localParticipant
+      .publishData(encoder.encode(JSON.stringify(msg)), { reliable: true })
+      .catch((err: unknown) => console.error('[video-chat] publishData failed', err));
     setMessages((prev) => [...prev, msg]);
   }, [room, sender, senderName]);
 
-  const clearUnread = useCallback(() => {
+  const clearUnread = useCallback((open = true) => {
     setUnreadCount(0);
-    panelOpenRef.current = true;
+    panelOpenRef.current = open;
   }, []);
 
   return { messages, unreadCount, sendMessage, clearUnread };
