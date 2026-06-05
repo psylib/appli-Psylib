@@ -308,6 +308,52 @@ describe('PatientsService', () => {
     });
   });
 
+  // ── findOneAdmin() — SECURITY: no clinical notes for assistants ───────────────
+  describe('findOneAdmin()', () => {
+    it('ne devrait JAMAIS retourner les notes (garantie sécurité assistant)', async () => {
+      // Prisma select excludes notes — the returned object has no notes key
+      const adminPatient = makePatient();
+      delete (adminPatient as Record<string, unknown>).notes;
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
+      mockPrisma.patient.findFirst.mockResolvedValueOnce(adminPatient);
+      mockAudit.logRead.mockResolvedValueOnce(undefined);
+
+      const result = await service.findOneAdmin(PSY_USER_ID, PATIENT_ID, ACTOR_ID);
+
+      expect(result).not.toHaveProperty('notes');
+      // jamais de déchiffrement
+      expect(mockEncryption.decrypt).not.toHaveBeenCalled();
+      expect(mockAudit.logDecrypt).not.toHaveBeenCalled();
+    });
+
+    it('le select Prisma ne demande PAS le champ notes', async () => {
+      const adminPatient = makePatient();
+      delete (adminPatient as Record<string, unknown>).notes;
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
+      mockPrisma.patient.findFirst.mockResolvedValueOnce(adminPatient);
+      mockAudit.logRead.mockResolvedValueOnce(undefined);
+
+      await service.findOneAdmin(PSY_USER_ID, PATIENT_ID, ACTOR_ID);
+
+      const arg = mockPrisma.patient.findFirst.mock.calls[0]?.[0] as {
+        select: Record<string, boolean>;
+        where: { psychologistId: string };
+      };
+      expect(arg.select.notes).toBeUndefined();
+      // isolation tenant toujours appliquée
+      expect(arg.where.psychologistId).toBe(PSY_ID);
+    });
+
+    it('devrait lever NotFoundException si le patient n\'existe pas', async () => {
+      mockPrisma.psychologist.findUnique.mockResolvedValueOnce(mockPsychologist);
+      mockPrisma.patient.findFirst.mockResolvedValueOnce(null);
+
+      await expect(
+        service.findOneAdmin(PSY_USER_ID, 'nonexistent', ACTOR_ID),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
   // ── update() ─────────────────────────────────────────────────────────────────
   describe('update()', () => {
     it('devrait mettre à jour les champs fournis', async () => {

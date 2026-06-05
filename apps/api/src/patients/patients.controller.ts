@@ -14,6 +14,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
@@ -30,6 +31,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { TenantPsychologistUserId } from '../auth/decorators/tenant-psychologist.decorator';
 import { AuditInterceptor } from '../common/audit.interceptor';
 import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { RequireFeature } from '../billing/decorators/require-plan.decorator';
@@ -50,15 +52,20 @@ export class PatientsController {
 
   @Post()
   @UseGuards(SubscriptionGuard)
+  @Roles('psychologist', 'admin', 'assistant')
   @RequireFeature('patients')
   @ApiOperation({ summary: 'Créer un patient' })
   @ApiResponse({ status: 201, description: 'Patient créé' })
   async create(
     @Body() dto: CreatePatientDto,
+    @TenantPsychologistUserId() psyUserId: string,
     @CurrentUser() user: KeycloakUser,
     @Req() req: Request,
   ) {
-    return this.patientsService.create(user.sub, dto, user.sub, req);
+    if (user.role === 'assistant' && dto.notes !== undefined) {
+      throw new ForbiddenException('Un assistant ne peut pas modifier les notes cliniques');
+    }
+    return this.patientsService.create(psyUserId, dto, user.sub, req);
   }
 
   @Post('import')
@@ -73,19 +80,22 @@ export class PatientsController {
   }
 
   @Get()
+  @Roles('psychologist', 'admin', 'assistant')
   @ApiOperation({ summary: 'Liste paginée des patients' })
   async findAll(
     @Query() query: PatientQueryDto,
+    @TenantPsychologistUserId() psyUserId: string,
     @CurrentUser() user: KeycloakUser,
     @Req() req: Request,
   ) {
-    return this.patientsService.findAll(user.sub, query, user.sub, req);
+    return this.patientsService.findAll(psyUserId, query, user.sub, req);
   }
 
   @Get('stats')
+  @Roles('psychologist', 'admin', 'assistant')
   @ApiOperation({ summary: 'Statistiques patients' })
-  async getStats(@CurrentUser() user: KeycloakUser) {
-    return this.patientsService.getStats(user.sub);
+  async getStats(@TenantPsychologistUserId() psyUserId: string) {
+    return this.patientsService.getStats(psyUserId);
   }
 
   @Get('export')
@@ -115,6 +125,18 @@ export class PatientsController {
     res.json(data);
   }
 
+  @Get(':id/admin')
+  @Roles('psychologist', 'admin', 'assistant')
+  @ApiOperation({ summary: 'Fiche patient administrative (sans notes cliniques)' })
+  async findOneAdmin(
+    @Param('id', ParseUUIDPipe) id: string,
+    @TenantPsychologistUserId() psyUserId: string,
+    @CurrentUser() user: KeycloakUser,
+    @Req() req: Request,
+  ) {
+    return this.patientsService.findOneAdmin(psyUserId, id, user.sub, req);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Fiche patient détaillée (notes déchiffrées)' })
   async findOne(
@@ -126,14 +148,19 @@ export class PatientsController {
   }
 
   @Put(':id')
+  @Roles('psychologist', 'admin', 'assistant')
   @ApiOperation({ summary: 'Modifier un patient' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePatientDto,
+    @TenantPsychologistUserId() psyUserId: string,
     @CurrentUser() user: KeycloakUser,
     @Req() req: Request,
   ) {
-    return this.patientsService.update(user.sub, id, dto, user.sub, req);
+    if (user.role === 'assistant' && dto.notes !== undefined) {
+      throw new ForbiddenException('Un assistant ne peut pas modifier les notes cliniques');
+    }
+    return this.patientsService.update(psyUserId, id, dto, user.sub, req);
   }
 
   @Delete(':id')
