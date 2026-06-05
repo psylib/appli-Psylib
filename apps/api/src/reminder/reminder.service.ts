@@ -62,6 +62,14 @@ export class ReminderService {
       for (const appt of appointments) {
         if (!appt.patient) continue;
 
+        // Claim atomique : marque le rappel comme envoyé AVANT l'envoi. En multi-instance,
+        // une seule exécution gagne le claim (count=1) ; les autres voient count=0 et passent.
+        const claimed = await this.prisma.appointment.updateMany({
+          where: { id: appt.id, reminderSentAt: null },
+          data: { reminderSentAt: new Date() },
+        });
+        if (claimed.count === 0) continue;
+
         try {
           const templateVars = {
             patient_name: appt.patient.name,
@@ -101,13 +109,13 @@ export class ReminderService {
             await this.sms.sendSms(appt.patient.phone, smsMessage);
           }
 
-          // Mark reminder as sent
-          await this.prisma.appointment.update({
-            where: { id: appt.id },
-            data: { reminderSentAt: new Date() },
-          });
           sentCount++;
         } catch (err) {
+          // Libère le claim pour réessayer au prochain passage (l'envoi a échoué)
+          await this.prisma.appointment.updateMany({
+            where: { id: appt.id },
+            data: { reminderSentAt: null },
+          }).catch(() => {});
           this.logger.error(
             `Failed to send reminder for appointment ${appt.id}: ${(err as Error).message}`,
           );
