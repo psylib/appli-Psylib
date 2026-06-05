@@ -1,9 +1,8 @@
--- AlterEnum: add 'assistant' to UserRole (idempotent)
--- ADD VALUE cannot run inside a transaction block on PG < 12; guarded for safety.
-DO $$ BEGIN
-  ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'assistant';
-EXCEPTION WHEN others THEN NULL;
-END $$;
+-- AlterEnum: add 'assistant' to UserRole.
+-- `ADD VALUE IF NOT EXISTS` is natively idempotent (PG 12+). It must NOT be wrapped
+-- in a DO/EXCEPTION block: the exception handler opens a subtransaction, and
+-- `ALTER TYPE ... ADD VALUE` is forbidden inside a subtransaction. Bare statement only.
+ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'assistant';
 
 -- CreateEnum: AssistantInvitationStatus
 DO $$ BEGIN

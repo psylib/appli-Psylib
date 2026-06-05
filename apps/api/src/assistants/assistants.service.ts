@@ -270,23 +270,37 @@ export class AssistantsService {
       password,
     );
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.user.create({
-        data: {
-          id: keycloakUserId,
-          email: invitation.email,
-          role: 'assistant',
-        },
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.user.create({
+          data: {
+            id: keycloakUserId,
+            email: invitation.email,
+            role: 'assistant',
+          },
+        });
+        await tx.assistant.update({
+          where: { id: assistant.id },
+          data: { userId: keycloakUserId, status: 'active' },
+        });
+        await tx.assistantInvitation.update({
+          where: { id: invitation.id },
+          data: { status: 'accepted' },
+        });
       });
-      await tx.assistant.update({
-        where: { id: assistant.id },
-        data: { userId: keycloakUserId, status: 'active' },
-      });
-      await tx.assistantInvitation.update({
-        where: { id: invitation.id },
-        data: { status: 'accepted' },
-      });
-    });
+    } catch (err) {
+      // DB write failed after the Keycloak account was provisioned. Disable the
+      // orphaned KC account so it can't linger as an enabled 'assistant' with no
+      // active link (the JWT strategy would reject it anyway, but keep KC clean).
+      try {
+        await this.auth.setKeycloakUserEnabled(keycloakUserId, false);
+      } catch (cleanupErr) {
+        this.logger.error(
+          `Failed to disable orphaned KC user ${keycloakUserId}: ${(cleanupErr as Error).message}`,
+        );
+      }
+      throw err;
+    }
 
     await this.audit.log({
       actorId: keycloakUserId,
