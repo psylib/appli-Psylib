@@ -1,93 +1,69 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, VideoIcon, VideoOff, CheckCircle, XCircle } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { usePrecallCheck, type PrecallSelected } from '@/hooks/use-precall-check';
+import { PrecallChecklist } from './precall-checklist';
 
 interface WaitingRoomProps {
   psychologistName: string;
   onReady: () => void;
+  /** Appelé avec les périphériques choisis juste avant d'entrer. */
+  onDevicesSelected?: (selected: PrecallSelected) => void;
 }
 
-export function WaitingRoom({ psychologistName, onReady }: WaitingRoomProps) {
+export function WaitingRoom({ psychologistName, onReady, onDevicesSelected }: WaitingRoomProps) {
+  const check = usePrecallCheck();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [hasMic, setHasMic] = useState(false);
-  const [hasCam, setHasCam] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let mediaStream: MediaStream | null = null;
-    const initMedia = async () => {
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        setStream(mediaStream);
-        setHasMic(mediaStream.getAudioTracks().length > 0);
-        setHasCam(mediaStream.getVideoTracks().length > 0);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
-      } catch {
-        setError("Impossible d'acceder a votre camera ou micro. Verifiez les permissions de votre navigateur.");
-      }
-    };
-    initMedia();
-    return () => {
-      mediaStream?.getTracks().forEach(t => t.stop());
-    };
-  }, []);
+    if (videoRef.current && check.stream) {
+      videoRef.current.srcObject = check.stream;
+    }
+  }, [check.stream]);
 
-  // Keep psychologistName in scope for future use (e.g. display)
   void psychologistName;
+
+  const canJoin = !!check.stream;
+
+  const handleJoin = () => {
+    onDevicesSelected?.(check.selected);
+    check.stop();
+    onReady();
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md text-center">
-        <h1 className="text-xl font-bold text-foreground mb-1">PsyLib</h1>
-        <p className="text-sm text-muted-foreground mb-6">Consultation video</p>
+        <h1 className="mb-1 text-xl font-bold text-foreground">PsyLib</h1>
+        <p className="mb-6 text-sm text-muted-foreground">Consultation video</p>
 
-        {/* Video preview */}
-        <div className="relative w-64 h-48 mx-auto rounded-xl overflow-hidden bg-gray-900 mb-4">
-          {error ? (
-            <div className="flex items-center justify-center h-full text-red-400 text-sm p-4">{error}</div>
+        <div className="relative mx-auto mb-4 h-48 w-64 overflow-hidden rounded-xl bg-gray-900">
+          {check.error ? (
+            <div className="flex h-full items-center justify-center p-4 text-sm text-red-400">{check.error}</div>
           ) : (
-            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+            <video ref={videoRef} autoPlay muted playsInline className="h-full w-full object-cover" />
           )}
         </div>
 
-        {/* Media checks */}
-        <div className="flex items-center justify-center gap-6 mb-6">
-          <div className="flex items-center gap-1.5 text-sm">
-            {hasMic ? (
-              <><CheckCircle className="h-4 w-4 text-green-500" /><Mic className="h-4 w-4" /> Micro OK</>
-            ) : (
-              <><XCircle className="h-4 w-4 text-red-500" /><MicOff className="h-4 w-4" /> Micro</>
-            )}
-          </div>
-          <div className="flex items-center gap-1.5 text-sm">
-            {hasCam ? (
-              <><CheckCircle className="h-4 w-4 text-green-500" /><VideoIcon className="h-4 w-4" /> Camera OK</>
-            ) : (
-              <><XCircle className="h-4 w-4 text-red-500" /><VideoOff className="h-4 w-4" /> Camera</>
-            )}
-          </div>
+        <div className="mx-auto mb-6 max-w-xs">
+          <PrecallChecklist check={check} />
         </div>
 
-        <p className="text-foreground font-medium mb-2">
+        <p className="mb-2 font-medium text-foreground">
           Votre psychologue va vous recevoir dans quelques instants...
         </p>
         <div className="flex items-center justify-center gap-2 text-accent">
-          <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+          <div className="h-2 w-2 animate-pulse rounded-full bg-accent" />
           <span className="text-sm">En attente</span>
         </div>
 
-        {(hasMic || hasCam) && (
-          <button
-            onClick={() => { stream?.getTracks().forEach(t => t.stop()); onReady(); }}
-            className="mt-6 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
-          >
-            Rejoindre la consultation
-          </button>
-        )}
+        <button
+          onClick={handleJoin}
+          disabled={!canJoin}
+          className="mt-6 rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:opacity-50"
+        >
+          Rejoindre la consultation
+        </button>
       </div>
     </div>
   );

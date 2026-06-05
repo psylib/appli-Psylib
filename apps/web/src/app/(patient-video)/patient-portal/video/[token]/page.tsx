@@ -17,6 +17,7 @@ export default function PatientVideoPage() {
   const [patientName, setPatientName] = useState('Patient');
   const [error, setError] = useState('');
   const [consentLoading, setConsentLoading] = useState(false);
+  const [devices, setDevices] = useState<{ micId?: string; camId?: string; speakerId?: string }>({});
 
   // Initial check — fetch token or discover consent is needed
   const checkToken = useCallback(async () => {
@@ -102,7 +103,13 @@ export default function PatientVideoPage() {
   }
 
   if (phase === 'waiting') {
-    return <WaitingRoom psychologistName={psychologistName} onReady={handleReady} />;
+    return (
+      <WaitingRoom
+        psychologistName={psychologistName}
+        onReady={handleReady}
+        onDevicesSelected={setDevices}
+      />
+    );
   }
 
   if (phase === 'call' && tokenData) {
@@ -112,6 +119,9 @@ export default function PatientVideoPage() {
         wsUrl={tokenData.wsUrl}
         onConnectionFailed={handleConnectionFailed}
         patientName={patientName}
+        micId={devices.micId}
+        camId={devices.camId}
+        speakerId={devices.speakerId}
       />
     );
   }

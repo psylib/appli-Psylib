@@ -5,6 +5,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Video, Loader2, ShieldCheck, UserPlus } from 'lucide-react';
 import { videoApi } from '@/lib/api/video';
 import { PatientVideoRoom } from '@/components/video/patient-video-room';
+import { usePrecallCheck } from '@/hooks/use-precall-check';
+import { PrecallChecklist } from '@/components/video/precall-checklist';
 
 type Phase = 'loading' | 'form' | 'waiting' | 'call' | 'denied' | 'ended' | 'error';
 
@@ -17,6 +19,8 @@ export default function GuestVideoPage() {
   const [submitting, setSubmitting] = useState(false);
   const sessionTokenRef = useRef<string | null>(null);
   const [tokenData, setTokenData] = useState<{ token: string; wsUrl: string } | null>(null);
+  const [guestDevices, setGuestDevices] = useState<{ micId?: string; camId?: string; speakerId?: string }>({});
+  const precall = usePrecallCheck();
 
   // Étape 1 : valider le lien
   useEffect(() => {
@@ -73,6 +77,8 @@ export default function GuestVideoPage() {
     setError('');
     try {
       const res = await videoApi.requestGuestJoin(inviteToken, name);
+      setGuestDevices(precall.selected);
+      precall.stop();
       sessionTokenRef.current = res.sessionToken;
       setPhase('waiting');
     } catch (err: unknown) {
@@ -147,6 +153,10 @@ export default function GuestVideoPage() {
             Indiquez votre nom pour que le praticien puisse vous identifier.
           </p>
 
+          <div className="mt-4">
+            <PrecallChecklist check={precall} />
+          </div>
+
           <label className="mt-5 block text-sm font-medium text-foreground" htmlFor="guest-name">
             Votre nom
           </label>
@@ -209,6 +219,9 @@ export default function GuestVideoPage() {
         onConnectionFailed={handleConnectionFailed}
         exitHref="/"
         exitLabel="Fermer"
+        micId={guestDevices.micId}
+        camId={guestDevices.camId}
+        speakerId={guestDevices.speakerId}
       />
     );
   }

@@ -11,17 +11,20 @@ import {
 } from '@livekit/components-react';
 import { Track, RoomEvent } from 'livekit-client';
 import { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff, MessageSquare, X } from 'lucide-react';
+import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff, MessageSquare, X, WifiOff } from 'lucide-react';
 import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 import { useVideoChat } from '@/hooks/use-video-chat';
+import { useAdaptiveQuality } from '@/hooks/use-adaptive-quality';
 import { VideoChatPanel } from './video-chat-panel';
+import { ConnectionBanner } from './connection-banner';
 
 interface PatientLayoutProps {
   onConnectionFailed: () => void;
   exitHref?: string;
   exitLabel?: string;
   patientName?: string;
+  speakerId?: string;
 }
 
 function PatientLayout({
@@ -29,10 +32,17 @@ function PatientLayout({
   exitHref = '/patient-portal',
   exitLabel = 'Retour a mon espace',
   patientName = 'Patient',
+  speakerId,
 }: PatientLayoutProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
   useKrispNoiseFilter();
   const room = useRoomContext();
+
+  useEffect(() => {
+    if (speakerId) {
+      room.switchActiveDevice('audiooutput', speakerId).catch(() => {});
+    }
+  }, [room, speakerId]);
   const [disconnected, setDisconnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -42,6 +52,7 @@ function PatientLayout({
     sender: 'patient',
     senderName: patientName,
   });
+  const adaptive = useAdaptiveQuality();
 
   useEffect(() => {
     const onConnected = () => { hasConnected.current = true; };
@@ -116,6 +127,7 @@ function PatientLayout({
 
   return (
     <div className="relative flex h-screen flex-col bg-gray-900">
+      <ConnectionBanner quality={adaptive} />
       <div className="relative flex-1">
         {psyIsPresent ? (
           psyVideoTrack ? (
@@ -157,6 +169,14 @@ function PatientLayout({
           className={`rounded-full p-3 ${isCamOn ? 'bg-gray-700 text-white' : 'bg-red-600 text-white'}`}
         >
           {isCamOn ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+        </button>
+
+        <button
+          onClick={adaptive.degraded ? adaptive.restoreVideo : adaptive.forceAudioOnly}
+          className={`relative rounded-full p-3 text-white ${adaptive.degraded ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-700 hover:bg-gray-600'}`}
+          title={adaptive.degraded ? 'Réactiver la vidéo' : 'Passer en audio seul'}
+        >
+          <WifiOff className="h-5 w-5" />
         </button>
 
         <button
@@ -216,6 +236,9 @@ interface PatientVideoRoomProps {
   exitHref?: string;
   exitLabel?: string;
   patientName?: string;
+  micId?: string;
+  camId?: string;
+  speakerId?: string;
 }
 
 export function PatientVideoRoom({
@@ -225,14 +248,29 @@ export function PatientVideoRoom({
   exitHref,
   exitLabel,
   patientName,
+  micId,
+  camId,
+  speakerId,
 }: PatientVideoRoomProps) {
+  const options = {
+    ...videoRoomOptions,
+    audioCaptureDefaults: {
+      ...videoRoomOptions.audioCaptureDefaults,
+      ...(micId ? { deviceId: micId } : {}),
+    },
+    videoCaptureDefaults: {
+      ...videoRoomOptions.videoCaptureDefaults,
+      ...(camId ? { deviceId: camId } : {}),
+    },
+  };
   return (
-    <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={videoRoomOptions}>
+    <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={options}>
       <PatientLayout
         onConnectionFailed={onConnectionFailed}
         exitHref={exitHref}
         exitLabel={exitLabel}
         patientName={patientName}
+        speakerId={speakerId}
       />
     </LiveKitRoom>
   );
