@@ -14,6 +14,13 @@ export interface KeycloakUser {
   role: string;
   roles: string[];
   name?: string;
+  /**
+   * Keycloak user id of the *tenant* psychologist:
+   * - psychologist/admin: their own `sub`
+   * - assistant: the userId of the psychologist they are attached to
+   * Use for tenant-scoping queries. Keep `sub` as the audit actorId.
+   */
+  psychologistUserId: string;
 }
 
 /**
@@ -72,8 +79,23 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
     const role = this.extractPrimaryRole(realmRoles);
 
     // Auto-provisioning : crée User + Psychologist si absent (premier login Keycloak)
+    // Jamais pour un assistant — un assistant n'est pas un psychologue.
     if (role === 'psychologist' || role === 'admin') {
       await this.provisionUser(payload.sub, payload.email, role);
+    }
+
+    // Résolution du tenant : pour un assistant, le tenant est le psychologue rattaché.
+    // Sinon, l'utilisateur est son propre tenant.
+    let psychologistUserId = payload.sub;
+    if (role === 'assistant') {
+      const link = await this.prisma.assistant.findFirst({
+        where: { userId: payload.sub, status: 'active' },
+        include: { psychologist: { select: { userId: true } } },
+      });
+      if (!link) {
+        throw new UnauthorizedException('Compte assistant non rattaché ou révoqué');
+      }
+      psychologistUserId = link.psychologist.userId;
     }
 
     return {
@@ -82,6 +104,7 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
       role,
       roles: realmRoles,
       name: (payload as JwtPayload & { name?: string }).name,
+      psychologistUserId,
     };
   }
 
@@ -112,9 +135,10 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
   }
 
   private extractPrimaryRole(roles: string[]): string {
-    // Priorité : admin > psychologist > patient
+    // Priorité : admin > psychologist > assistant > patient
     if (roles.includes('admin')) return 'admin';
     if (roles.includes('psychologist')) return 'psychologist';
+    if (roles.includes('assistant')) return 'assistant';
     if (roles.includes('patient')) return 'patient';
     return 'patient';
   }
