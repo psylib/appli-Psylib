@@ -933,6 +933,33 @@ export class VideoService {
       throw new BadRequestException('Fichier audio trop volumineux (max 25 MB)');
     }
 
+    // HDS / RGPD règle absolue #3 : la transcription d'une séance ne part vers
+    // les LLM (Whisper + OpenRouter) QUE si le patient a explicitement consenti.
+    // Le flag scribeEnabled (réglage psy) ne suffit pas — on exige le consentement
+    // ai_video_transcription côté serveur, jamais seulement côté UI.
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      select: { patientId: true },
+    });
+    if (!appointment?.patientId) {
+      throw new ForbiddenException(
+        "Le Scribe IA nécessite un patient identifié et son consentement — indisponible pour une visio instantanée sans patient.",
+      );
+    }
+    const scribeConsent = await this.prisma.gdprConsent.findFirst({
+      where: {
+        patientId: appointment.patientId,
+        type: 'ai_video_transcription',
+        withdrawnAt: null,
+      },
+    });
+    if (!scribeConsent) {
+      throw new ForbiddenException(
+        "Le patient n'a pas consenti à la transcription IA de la séance. "
+        + "La transcription automatique est désactivée tant que ce consentement n'est pas recueilli.",
+      );
+    }
+
     // Atomic check-and-set: prevents race condition on concurrent uploads
     const updated = await this.prisma.videoRoom.updateMany({
       where: { id: room.id, scribeStatus: 'none' },
