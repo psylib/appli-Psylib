@@ -21,7 +21,9 @@ import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 import { useScribeRecorder } from '@/hooks/use-scribe-recorder';
 import { ScribeToggle } from './scribe-toggle';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, WifiOff } from 'lucide-react';
+import { useAdaptiveQuality } from '@/hooks/use-adaptive-quality';
+import { ConnectionBanner } from './connection-banner';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface VideoRoomProps {
@@ -84,6 +86,7 @@ function VideoLayout({
     sender: 'psy',
     senderName: psyName,
   });
+  const adaptive = useAdaptiveQuality();
 
   const room = useRoomContext();
   const { localParticipant, isScreenShareEnabled } = useLocalParticipant();
@@ -168,6 +171,7 @@ function VideoLayout({
         onMouseMove={showControls}
         className={`relative bg-gray-900 ${showNotes ? 'w-[65%]' : 'w-full'} transition-all`}
       >
+        <ConnectionBanner quality={adaptive} />
         {isReconnecting && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50">
             <div className="text-center text-white">
@@ -209,7 +213,18 @@ function VideoLayout({
             blurEnabled={blurEnabled}
             blurPending={blurPending}
             onToggleBlur={toggleBlur}
-            inviteSlot={<GuestInvitePopover appointmentId={appointmentId} />}
+            inviteSlot={
+              <>
+                <GuestInvitePopover appointmentId={appointmentId} />
+                <button
+                  onClick={adaptive.degraded ? adaptive.restoreVideo : adaptive.forceAudioOnly}
+                  className={`rounded-full p-3 text-white transition-colors ${adaptive.degraded ? 'bg-amber-600 hover:bg-amber-700' : 'bg-white/10 hover:bg-white/20'}`}
+                  title={adaptive.degraded ? 'Réactiver la vidéo' : 'Passer en audio seul'}
+                >
+                  <WifiOff className="h-5 w-5" />
+                </button>
+              </>
+            }
             scribeSlot={
               <ScribeToggle
                 isEnabled={scribeEnabled}
