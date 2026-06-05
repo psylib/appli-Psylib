@@ -29,6 +29,7 @@ export interface VideoTokenResponse {
   patientScribeConsent?: boolean;
   scribeEnabled?: boolean;
   scribeStatus?: 'none' | 'processing' | 'done' | 'failed';
+  patientId?: string | null;
 }
 
 export interface PatientJoinResponse {
