@@ -31,6 +31,7 @@ export default function ConsultationRoomPage() {
   const [scribeEnabled, setScribeEnabled] = useState(false);
   const [patientScribeConsent, setPatientScribeConsent] = useState(false);
   const [scribeUploadDone, setScribeUploadDone] = useState(false);
+  const [patientId, setPatientId] = useState<string | null>(null);
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function ConsultationRoomPage() {
         // Get psy token (includes duration)
         const data = await videoApi.getPsyToken(roomId, session.accessToken);
         setTokenData(data);
+        if (data.patientId) setPatientId(data.patientId);
         if (data.durationMin) setDuration(data.durationMin);
         if (data.patientScribeConsent !== undefined) {
           setPatientScribeConsent(data.patientScribeConsent);
@@ -150,6 +152,7 @@ export default function ConsultationRoomPage() {
         isPro={true}
         accessToken={session?.accessToken ?? ''}
         psyName={session?.user?.name ?? 'Psychologue'}
+        patientId={patientId}
         onScribeToggle={handleScribeToggle}
         onScribeUploadComplete={() => setScribeUploadDone(true)}
         onScribeError={(msg) => console.error('Scribe error:', msg)}
