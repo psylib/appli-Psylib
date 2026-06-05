@@ -24,6 +24,9 @@ import { ScribeToggle } from './scribe-toggle';
 import { MessageSquare, WifiOff } from 'lucide-react';
 import { useAdaptiveQuality } from '@/hooks/use-adaptive-quality';
 import { ConnectionBanner } from './connection-banner';
+import { useDocPresentation } from '@/hooks/use-doc-presentation';
+import { DocPresentationPanel } from './doc-presentation-panel';
+import { PresentDocumentPicker } from './present-document-picker';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface VideoRoomProps {
@@ -41,6 +44,7 @@ interface VideoRoomProps {
   onScribeUploadComplete: () => void;
   onScribeError: (msg: string) => void;
   psyName: string;
+  patientId?: string | null;
 }
 
 type RightTab = 'notes' | 'chat';
@@ -58,6 +62,7 @@ function VideoLayout({
   onScribeUploadComplete,
   onScribeError,
   psyName,
+  patientId,
 }: Omit<VideoRoomProps, 'token' | 'wsUrl'>) {
   const [showNotes, setShowNotes] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>('notes');
@@ -87,6 +92,7 @@ function VideoLayout({
     senderName: psyName,
   });
   const adaptive = useAdaptiveQuality();
+  const docPresentation = useDocPresentation();
 
   const room = useRoomContext();
   const { localParticipant, isScreenShareEnabled } = useLocalParticipant();
@@ -183,6 +189,13 @@ function VideoLayout({
 
         <VideoGrid remoteTracks={remoteTracks} localTrack={localTrack} screenShareTracks={screenShareTracks} />
 
+        <DocPresentationPanel
+          presented={docPresentation.presented}
+          progress={docPresentation.progress}
+          canClose
+          onClose={docPresentation.closeDocument}
+        />
+
         <div className="absolute left-4 top-4 z-20 rounded-full bg-white/90 px-3 py-1.5 shadow-md backdrop-blur">
           <SessionTimer elapsedSeconds={elapsedSeconds} plannedDurationMin={plannedDurationMin} />
         </div>
@@ -223,6 +236,13 @@ function VideoLayout({
                 >
                   <WifiOff className="h-5 w-5" />
                 </button>
+                {patientId && (
+                  <PresentDocumentPicker
+                    patientId={patientId}
+                    accessToken={accessToken}
+                    onPresent={docPresentation.presentDocument}
+                  />
+                )}
               </>
             }
             scribeSlot={
@@ -321,6 +341,7 @@ export function PsyVideoRoom({
   onScribeUploadComplete,
   onScribeError,
   psyName,
+  patientId,
 }: VideoRoomProps) {
   return (
     <LiveKitRoom
@@ -344,6 +365,7 @@ export function PsyVideoRoom({
         onScribeUploadComplete={onScribeUploadComplete}
         onScribeError={onScribeError}
         psyName={psyName}
+        patientId={patientId}
       />
     </LiveKitRoom>
   );
