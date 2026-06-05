@@ -22,6 +22,7 @@ interface PatientLayoutProps {
   exitHref?: string;
   exitLabel?: string;
   patientName?: string;
+  speakerId?: string;
 }
 
 function PatientLayout({
@@ -29,10 +30,17 @@ function PatientLayout({
   exitHref = '/patient-portal',
   exitLabel = 'Retour a mon espace',
   patientName = 'Patient',
+  speakerId,
 }: PatientLayoutProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
   useKrispNoiseFilter();
   const room = useRoomContext();
+
+  useEffect(() => {
+    if (speakerId) {
+      room.switchActiveDevice('audiooutput', speakerId).catch(() => {});
+    }
+  }, [room, speakerId]);
   const [disconnected, setDisconnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -216,6 +224,9 @@ interface PatientVideoRoomProps {
   exitHref?: string;
   exitLabel?: string;
   patientName?: string;
+  micId?: string;
+  camId?: string;
+  speakerId?: string;
 }
 
 export function PatientVideoRoom({
@@ -225,14 +236,29 @@ export function PatientVideoRoom({
   exitHref,
   exitLabel,
   patientName,
+  micId,
+  camId,
+  speakerId,
 }: PatientVideoRoomProps) {
+  const options = {
+    ...videoRoomOptions,
+    audioCaptureDefaults: {
+      ...videoRoomOptions.audioCaptureDefaults,
+      ...(micId ? { deviceId: micId } : {}),
+    },
+    videoCaptureDefaults: {
+      ...videoRoomOptions.videoCaptureDefaults,
+      ...(camId ? { deviceId: camId } : {}),
+    },
+  };
   return (
-    <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={videoRoomOptions}>
+    <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={options}>
       <PatientLayout
         onConnectionFailed={onConnectionFailed}
         exitHref={exitHref}
         exitLabel={exitLabel}
         patientName={patientName}
+        speakerId={speakerId}
       />
     </LiveKitRoom>
   );
