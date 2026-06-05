@@ -1,0 +1,30 @@
+# Empêche les secrets et artefacts locaux d'être bakés dans les images Docker
+# (le Dockerfile web fait `COPY . .`). NE PAS exclure node_modules/.next ici
+# pour ne pas modifier le comportement de build existant.
+
+# Secrets / config locale
+**/.env
+**/.env.*
+!**/.env.example
+.vercel
+.npmrc
+
+# VCS & historique
+.git
+.gitignore
+.github
+
+# Artefacts lourds / temporaires
+tmp
+*.log
+coverage
+playwright-report
+test-results
+.playwright-mcp
+
+# Outils & contenu hors-build
+.claude
+.superpowers
+banners
+BOOKING
+docs
