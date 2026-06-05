@@ -45,6 +45,9 @@ interface VideoRoomProps {
   onScribeError: (msg: string) => void;
   psyName: string;
   patientId?: string | null;
+  micId?: string;
+  camId?: string;
+  speakerId?: string;
 }
 
 type RightTab = 'notes' | 'chat';
@@ -63,6 +66,7 @@ function VideoLayout({
   onScribeError,
   psyName,
   patientId,
+  speakerId,
 }: Omit<VideoRoomProps, 'token' | 'wsUrl'>) {
   const [showNotes, setShowNotes] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>('notes');
@@ -96,6 +100,12 @@ function VideoLayout({
 
   const room = useRoomContext();
   const { localParticipant, isScreenShareEnabled } = useLocalParticipant();
+
+  useEffect(() => {
+    if (speakerId) {
+      room.switchActiveDevice('audiooutput', speakerId).catch(() => {});
+    }
+  }, [room, speakerId]);
 
   useEffect(() => {
     room.on(RoomEvent.Connected, handleConnected);
@@ -342,7 +352,21 @@ export function PsyVideoRoom({
   onScribeError,
   psyName,
   patientId,
+  micId,
+  camId,
+  speakerId,
 }: VideoRoomProps) {
+  const options = {
+    ...videoRoomOptions,
+    audioCaptureDefaults: {
+      ...videoRoomOptions.audioCaptureDefaults,
+      ...(micId ? { deviceId: micId } : {}),
+    },
+    videoCaptureDefaults: {
+      ...videoRoomOptions.videoCaptureDefaults,
+      ...(camId ? { deviceId: camId } : {}),
+    },
+  };
   return (
     <LiveKitRoom
       serverUrl={wsUrl}
@@ -350,7 +374,7 @@ export function PsyVideoRoom({
       connect={true}
       video={true}
       audio={true}
-      options={videoRoomOptions}
+      options={options}
     >
       <VideoLayout
         appointmentId={appointmentId}
@@ -366,6 +390,7 @@ export function PsyVideoRoom({
         onScribeError={onScribeError}
         psyName={psyName}
         patientId={patientId}
+        speakerId={speakerId}
       />
     </LiveKitRoom>
   );

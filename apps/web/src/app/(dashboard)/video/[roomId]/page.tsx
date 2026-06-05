@@ -7,6 +7,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Copy, Check } from 'lucide-react';
 import { videoApi } from '@/lib/api/video';
 import { PsyVideoRoom } from '@/components/video/video-room';
+import { PsyPreflight } from '@/components/video/psy-preflight';
+import type { PrecallSelected } from '@/hooks/use-precall-check';
 
 export default function ConsultationRoomPage() {
   const { roomId } = useParams<{ roomId: string }>(); // roomId = appointmentId
@@ -32,6 +34,8 @@ export default function ConsultationRoomPage() {
   const [patientScribeConsent, setPatientScribeConsent] = useState(false);
   const [scribeUploadDone, setScribeUploadDone] = useState(false);
   const [patientId, setPatientId] = useState<string | null>(null);
+  const [entered, setEntered] = useState(false);
+  const [devices, setDevices] = useState<PrecallSelected>({});
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -123,6 +127,17 @@ export default function ConsultationRoomPage() {
     );
   }
 
+  if (!entered) {
+    return (
+      <PsyPreflight
+        onEnter={(sel) => {
+          setDevices(sel);
+          setEntered(true);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-background">
       {patientLink && (
@@ -153,6 +168,9 @@ export default function ConsultationRoomPage() {
         accessToken={session?.accessToken ?? ''}
         psyName={session?.user?.name ?? 'Psychologue'}
         patientId={patientId}
+        micId={devices.micId}
+        camId={devices.camId}
+        speakerId={devices.speakerId}
         onScribeToggle={handleScribeToggle}
         onScribeUploadComplete={() => setScribeUploadDone(true)}
         onScribeError={(msg) => console.error('Scribe error:', msg)}
