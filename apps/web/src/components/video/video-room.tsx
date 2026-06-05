@@ -10,15 +10,18 @@ import {
 import { Track, RoomEvent } from 'livekit-client';
 import { useVideoCall } from '@/hooks/use-video-call';
 import { useBackgroundBlur } from '@/hooks/use-background-blur';
+import { useVideoChat } from '@/hooks/use-video-chat';
 import { VideoControls } from './video-controls';
 import { VideoGrid } from './video-grid';
 import { SessionTimer } from './session-timer';
 import { GuestInvitePopover } from './guest-invite-popover';
 import { WaitingGuestsBanner } from './waiting-guests-banner';
+import { VideoChatPanel } from './video-chat-panel';
 import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 import { useScribeRecorder } from '@/hooks/use-scribe-recorder';
 import { ScribeToggle } from './scribe-toggle';
+import { MessageSquare } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface VideoRoomProps {
@@ -28,7 +31,6 @@ interface VideoRoomProps {
   plannedDurationMin: number;
   notesPanel: React.ReactNode;
   onCallEnd: () => void;
-  // Scribe props
   scribeEnabled: boolean;
   patientScribeConsent: boolean;
   isPro: boolean;
@@ -36,7 +38,10 @@ interface VideoRoomProps {
   onScribeToggle: () => void;
   onScribeUploadComplete: () => void;
   onScribeError: (msg: string) => void;
+  psyName: string;
 }
+
+type RightTab = 'notes' | 'chat';
 
 function VideoLayout({
   appointmentId,
@@ -50,8 +55,10 @@ function VideoLayout({
   onScribeToggle,
   onScribeUploadComplete,
   onScribeError,
+  psyName,
 }: Omit<VideoRoomProps, 'token' | 'wsUrl'>) {
   const [showNotes, setShowNotes] = useState(true);
+  const [rightTab, setRightTab] = useState<RightTab>('notes');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const videoPanelRef = useRef<HTMLDivElement>(null);
@@ -59,6 +66,7 @@ function VideoLayout({
   const hoveringControls = useRef(false);
 
   useKrispNoiseFilter();
+
   const { state: recorderState, start: startRecording, stopAndUpload, cancel: cancelRecording } =
     useScribeRecorder({
       appointmentId,
@@ -66,9 +74,15 @@ function VideoLayout({
       onUploadComplete: onScribeUploadComplete,
       onError: onScribeError,
     });
+
   const { blurEnabled, blurPending, toggleBlur } = useBackgroundBlur();
   const { elapsedSeconds, handleConnected, handleDisconnected, isReconnecting } = useVideoCall({
     onDisconnected: () => {},
+  });
+
+  const { messages: chatMessages, unreadCount, sendMessage, clearUnread } = useVideoChat({
+    sender: 'psy',
+    senderName: psyName,
   });
 
   const room = useRoomContext();
@@ -83,7 +97,6 @@ function VideoLayout({
     };
   }, [room, handleConnected, handleDisconnected]);
 
-  // ----- Plein écran -----
   useEffect(() => {
     const handleChange = () => setIsFullscreen(document.fullscreenElement === videoPanelRef.current);
     document.addEventListener('fullscreenchange', handleChange);
@@ -98,7 +111,6 @@ function VideoLayout({
     }
   }, []);
 
-  // ----- Contrôles flottants auto-masqués (style Zoom) -----
   const showControls = useCallback(() => {
     setControlsVisible(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -109,49 +121,48 @@ function VideoLayout({
 
   useEffect(() => {
     showControls();
-    return () => {
-      if (hideTimer.current) clearTimeout(hideTimer.current);
-    };
+    return () => { if (hideTimer.current) clearTimeout(hideTimer.current); };
   }, [showControls]);
 
-  // ----- Partage d'écran -----
   const toggleScreenShare = useCallback(() => {
     localParticipant.setScreenShareEnabled(!isScreenShareEnabled).catch(() => {});
   }, [localParticipant, isScreenShareEnabled]);
 
-  // ----- Scribe auto-start/stop -----
   useEffect(() => {
-    if (scribeEnabled && recorderState === 'idle') {
-      startRecording();
-    }
-    if (!scribeEnabled && recorderState === 'recording') {
-      cancelRecording();
-    }
+    if (scribeEnabled && recorderState === 'idle') startRecording();
+    if (!scribeEnabled && recorderState === 'recording') cancelRecording();
   }, [scribeEnabled, recorderState, startRecording, cancelRecording]);
 
   const handleEndCall = useCallback(async () => {
-    if (scribeEnabled && recorderState === 'recording') {
-      await stopAndUpload();
-    } else {
-      cancelRecording();
-    }
+    if (scribeEnabled && recorderState === 'recording') await stopAndUpload();
+    else cancelRecording();
     onCallEnd();
   }, [scribeEnabled, recorderState, stopAndUpload, cancelRecording, onCallEnd]);
 
-  // ----- Tracks (caméra + partage d'écran) -----
+  const handleOpenChat = useCallback(() => {
+    setShowNotes(true);
+    setRightTab('chat');
+    clearUnread(true);
+  }, [clearUnread]);
+
+  useEffect(() => {
+    if (rightTab === 'chat') clearUnread(true);
+    else clearUnread(false);
+  }, [rightTab, clearUnread]);
+
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
     { source: Track.Source.ScreenShare, withPlaceholder: false },
   ]);
-
   const cameraTracks = tracks.filter((t) => t.source === Track.Source.Camera);
   const screenShareTracks = tracks.filter((t) => t.source === Track.Source.ScreenShare && t.publication);
   const remoteTracks = cameraTracks.filter((t) => !t.participant.isLocal);
   const localTrack = cameraTracks.find((t) => t.participant.isLocal);
 
+  const chatBadge = unreadCount > 0 && rightTab !== 'chat';
+
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden">
-      {/* Panneau vidéo */}
       <div
         ref={videoPanelRef}
         onMouseMove={showControls}
@@ -168,15 +179,12 @@ function VideoLayout({
 
         <VideoGrid remoteTracks={remoteTracks} localTrack={localTrack} screenShareTracks={screenShareTracks} />
 
-        {/* Minuteur (toujours visible) */}
         <div className="absolute left-4 top-4 z-20 rounded-full bg-white/90 px-3 py-1.5 shadow-md backdrop-blur">
           <SessionTimer elapsedSeconds={elapsedSeconds} plannedDurationMin={plannedDurationMin} />
         </div>
 
-        {/* Salle d'attente : invités en attente d'admission */}
         <WaitingGuestsBanner appointmentId={appointmentId} />
 
-        {/* Contrôles flottants */}
         <div
           onMouseEnter={() => {
             hoveringControls.current = true;
@@ -211,18 +219,70 @@ function VideoLayout({
                 onToggle={onScribeToggle}
               />
             }
+            chatSlot={
+              <button
+                onClick={handleOpenChat}
+                className={`relative rounded-full p-3 transition-colors text-white ${
+                  rightTab === 'chat' && showNotes
+                    ? 'bg-[#0D9488] hover:bg-[#0b7d72]'
+                    : 'bg-white/10 hover:bg-white/20'
+                }`}
+                title="Chat texte"
+              >
+                <MessageSquare className="h-5 w-5" />
+                {chatBadge && (
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            }
             onEndCall={handleEndCall}
           />
         </div>
       </div>
 
-      {/* Panneau notes */}
       {showNotes && (
-        <div className="w-[35%] overflow-y-auto border-l border-border bg-white">
-          <div className="border-b border-border p-4">
-            <h2 className="font-semibold text-foreground">Notes de seance</h2>
+        <div className="flex w-[35%] flex-col overflow-hidden border-l border-border bg-white">
+          <div className="flex border-b border-border">
+            <button
+              onClick={() => setRightTab('notes')}
+              className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                rightTab === 'notes'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Notes
+            </button>
+            <button
+              onClick={() => { setRightTab('chat'); clearUnread(true); }}
+              className={`relative flex-1 py-3 text-sm font-medium transition-colors ${
+                rightTab === 'chat'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Chat
+              {chatBadge && (
+                <span className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
           </div>
-          <div className="p-4">{notesPanel}</div>
+
+          <div className="flex-1 overflow-hidden">
+            {rightTab === 'notes' ? (
+              <div className="h-full overflow-y-auto p-4">{notesPanel}</div>
+            ) : (
+              <VideoChatPanel
+                messages={chatMessages}
+                localSender="psy"
+                onSend={sendMessage}
+              />
+            )}
+          </div>
         </div>
       )}
 
@@ -245,6 +305,7 @@ export function PsyVideoRoom({
   onScribeToggle,
   onScribeUploadComplete,
   onScribeError,
+  psyName,
 }: VideoRoomProps) {
   return (
     <LiveKitRoom
@@ -267,6 +328,7 @@ export function PsyVideoRoom({
         onScribeToggle={onScribeToggle}
         onScribeUploadComplete={onScribeUploadComplete}
         onScribeError={onScribeError}
+        psyName={psyName}
       />
     </LiveKitRoom>
   );

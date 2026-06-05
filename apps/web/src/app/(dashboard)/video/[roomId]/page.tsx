@@ -149,6 +149,7 @@ export default function ConsultationRoomPage() {
         patientScribeConsent={patientScribeConsent}
         isPro={true}
         accessToken={session?.accessToken ?? ''}
+        psyName={session?.user?.name ?? 'Psychologue'}
         onScribeToggle={handleScribeToggle}
         onScribeUploadComplete={() => setScribeUploadDone(true)}
         onScribeError={(msg) => console.error('Scribe error:', msg)}
