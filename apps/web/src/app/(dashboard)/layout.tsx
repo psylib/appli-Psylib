@@ -43,7 +43,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <Topbar userEmail={session.user.email ?? ''} userName={session.user.name ?? ''} />
         <main className="flex-1 overflow-y-auto pb-16 md:pb-0">{children}</main>
       </div>
-      <MobileNav />
+      <MobileNav role={session.user.role} />
       <CrispWidget />
       <DashboardDialogs />
     </div>

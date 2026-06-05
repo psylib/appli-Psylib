@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, CalendarCheck, Sparkles, Plus } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarCheck, Calendar, Sparkles, Plus } from 'lucide-react';
+import { UserRole } from '@psyscale/shared-types';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/ui.store';
 
@@ -13,9 +14,18 @@ const BOTTOM_NAV_ITEMS = [
   { label: 'IA', href: '/dashboard/ai-assistant', icon: Sparkles, exact: false },
 ] as const;
 
-export function MobileNav() {
+// Pour l'assistant·e : agenda + patients uniquement (même allow-list que la sidebar).
+const ASSISTANT_NAV_ITEMS = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, exact: true },
+  { label: 'Patients', href: '/dashboard/patients', icon: Users, exact: false },
+  { label: 'Agenda', href: '/dashboard/calendar', icon: Calendar, exact: false },
+] as const;
+
+export function MobileNav({ role }: { role?: UserRole }) {
   const pathname = usePathname();
   const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
+  const isAssistant = role === UserRole.ASSISTANT;
+  const navItems = isAssistant ? ASSISTANT_NAV_ITEMS : BOTTOM_NAV_ITEMS;
 
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
@@ -43,7 +53,7 @@ export function MobileNav() {
         aria-label="Navigation principale"
       >
         <div className="flex items-stretch h-16">
-          {BOTTOM_NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item.href, item.exact);
             return (
               <Link

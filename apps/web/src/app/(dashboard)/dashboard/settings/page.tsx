@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { User, CreditCard, Building2, Shield, Bell, Lock, Scale, Banknote, FileText } from 'lucide-react';
+import { User, CreditCard, Building2, Shield, Bell, Lock, Scale, Banknote, FileText, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -32,6 +32,12 @@ const settingsLinks = [
     label: 'Cabinet',
     description: 'Adresse, horaires, tarifs',
     icon: Building2,
+  },
+  {
+    href: '/dashboard/settings/team',
+    label: 'Mon équipe',
+    description: 'Inviter et gérer vos assistant·es',
+    icon: Users,
   },
   {
     href: '/dashboard/settings/privacy',
