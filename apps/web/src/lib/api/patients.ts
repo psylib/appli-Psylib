@@ -35,6 +35,10 @@ export const patientsApi = {
   get: (id: string, token: string) =>
     apiClient.get<Patient>(`/patients/${id}`, token),
 
+  // Fiche administrative (sans notes cliniques) — accessible aux assistant·es
+  getAdmin: (id: string, token: string) =>
+    apiClient.get<Omit<Patient, 'notes'>>(`/patients/${id}/admin`, token),
+
   create: (data: { name: string; email?: string; phone?: string; notes?: string }, token: string) =>
     apiClient.post<Patient>('/patients', data, token),
 

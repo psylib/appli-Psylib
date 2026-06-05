@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { UserRole, type Patient } from '@psyscale/shared-types';
 import { ArrowLeft, Phone, Mail, Calendar, Plus, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +11,7 @@ import { PatientAvatar } from '@/components/shared/patient-avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ExportButton } from '@/components/shared/export-button';
 import { EditPatientDialog } from './edit-patient-dialog';
-import { usePatient, useSessions } from '@/hooks/use-dashboard';
+import { usePatient, usePatientAdmin, useSessions } from '@/hooks/use-dashboard';
 import { formatDate } from '@/lib/utils';
 import { PatientPortalSection } from './patient-portal-section';
 import { MspTracker } from './msp-tracker';
@@ -23,8 +25,17 @@ interface PatientDetailContentProps {
 
 export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
   const router = useRouter();
-  const { data: patient, isLoading } = usePatient(patientId);
-  const { data: sessions } = useSessions({ patientId });
+  const { data: sessionData } = useSession();
+  const isAssistant = sessionData?.user?.role === UserRole.ASSISTANT;
+
+  // Les assistant·es n'ont pas accès aux données cliniques :
+  // on utilise la fiche administrative (/patients/:id/admin, sans notes).
+  const clinical = usePatient(isAssistant ? '' : patientId);
+  const admin = usePatientAdmin(isAssistant ? patientId : '');
+  const patient = (isAssistant ? admin.data : clinical.data) as Patient | undefined;
+  const isLoading = isAssistant ? admin.isLoading : clinical.isLoading;
+
+  const { data: sessions } = useSessions(isAssistant ? {} : { patientId });
   const [editOpen, setEditOpen] = useState(false);
   const openSlotPicker = useUIStore((s) => s.openSmartSlotPicker);
 
@@ -65,11 +76,13 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
             <Pencil size={14} />
             Modifier
           </Button>
-          <ExportButton
-            path={`/patients/${patientId}/export`}
-            filename={`patient-rgpd-${patientId.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.json`}
-            label="Export RGPD"
-          />
+          {!isAssistant && (
+            <ExportButton
+              path={`/patients/${patientId}/export`}
+              filename={`patient-rgpd-${patientId.slice(0, 8)}-${new Date().toISOString().split('T')[0]}.json`}
+              label="Export RGPD"
+            />
+          )}
         </div>
       </div>
 
@@ -114,7 +127,7 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
         </div>
 
         {/* Notes cliniques */}
-        {patient.notes && (
+        {!isAssistant && patient.notes && (
           <div className="p-6 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground mb-2">Notes cliniques</h3>
             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
@@ -127,21 +140,27 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
         )}
       </div>
 
-      {/* MSP Tracker (only shown if patient has MSP tracking) */}
-      <MspTracker patientId={patientId} />
+      {/* Sections cliniques — masquées pour les assistant·es */}
+      {!isAssistant && (
+        <>
+          {/* MSP Tracker (only shown if patient has MSP tracking) */}
+          <MspTracker patientId={patientId} />
 
-      {/* Portal patient */}
-      <PatientPortalSection patientId={patientId} patientEmail={patient.email} onEditPatient={() => setEditOpen(true)} />
+          {/* Portal patient */}
+          <PatientPortalSection patientId={patientId} patientEmail={patient.email} onEditPatient={() => setEditOpen(true)} />
 
-      {/* Tuteurs (only shown for minor patients) */}
-      {patient.isMinor && (
-        <GuardianTab patientId={patientId} />
+          {/* Tuteurs (only shown for minor patients) */}
+          {patient.isMinor && (
+            <GuardianTab patientId={patientId} />
+          )}
+
+          {/* Documents partagés */}
+          <PatientDocumentsTab patientId={patientId} patientName={patient.name} />
+        </>
       )}
 
-      {/* Documents partagés */}
-      <PatientDocumentsTab patientId={patientId} patientName={patient.name} />
-
       {/* Séances récentes */}
+      {!isAssistant && (
       <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-foreground">
@@ -192,12 +211,14 @@ export function PatientDetailContent({ patientId }: PatientDetailContentProps) {
           </ul>
         )}
       </section>
+      )}
 
       {patient && (
         <EditPatientDialog
           open={editOpen}
           onClose={() => setEditOpen(false)}
           patient={patient}
+          hideClinical={isAssistant}
         />
       )}
     </div>

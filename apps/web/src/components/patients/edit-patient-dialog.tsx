@@ -14,9 +14,11 @@ interface EditPatientDialogProps {
   open: boolean;
   onClose: () => void;
   patient: Patient;
+  /** Masque les champs cliniques (notes) pour le rôle assistant·e */
+  hideClinical?: boolean;
 }
 
-export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogProps) {
+export function EditPatientDialog({ open, onClose, patient, hideClinical = false }: EditPatientDialogProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
@@ -68,10 +70,10 @@ export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogP
           email: form.email || null,
           phone: form.phone || null,
           birthDate: form.birthDate ? new Date(form.birthDate) : null,
-          notes: form.notes || null,
           status: form.status as Patient['status'],
           source: form.source || null,
           isMinor: form.isMinor,
+          ...(hideClinical ? {} : { notes: form.notes || null }),
         },
         session?.accessToken ?? '',
       );
@@ -168,14 +170,16 @@ export function EditPatientDialog({ open, onClose, patient }: EditPatientDialogP
             </select>
           </div>
         </div>
-        <Textarea
-          label="Notes cliniques"
-          placeholder="Motif de consultation, contexte..."
-          hint="Chiffrées et sécurisées (HDS)"
-          className="min-h-[80px]"
-          value={form.notes}
-          onChange={(e) => setForm({ ...form, notes: e.target.value })}
-        />
+        {!hideClinical && (
+          <Textarea
+            label="Notes cliniques"
+            placeholder="Motif de consultation, contexte..."
+            hint="Chiffrées et sécurisées (HDS)"
+            className="min-h-[80px]"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          />
+        )}
 
         {error && (
           <p className="text-sm text-destructive" role="alert">{error}</p>

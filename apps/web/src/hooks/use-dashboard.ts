@@ -78,6 +78,17 @@ export function usePatient(id: string) {
   });
 }
 
+export function usePatientAdmin(id: string) {
+  const { data: session } = useSession();
+  const token = session?.accessToken;
+
+  return useQuery({
+    queryKey: ['patients', id, 'admin'],
+    queryFn: () => patientsApi.getAdmin(id, token as string),
+    enabled: !!token && !!id,
+  });
+}
+
 export function useSessions(params: { patientId?: string; page?: number } = {}) {
   const { data: session } = useSession();
   const token = session?.accessToken;
