@@ -5,7 +5,8 @@ import { RoomEvent } from 'livekit-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { bytesToChunks, chunksToBlob } from '@/lib/video/chunk';
 
-const CHUNK_SIZE = 12_000; // octets bruts par paquet (sous la limite ~15KiB du DataChannel)
+const CHUNK_SIZE = 9_000; // octets bruts → ~12KB base64 + enveloppe, sous la limite ~15KiB du DataChannel
+const ALLOWED_MIME = ['application/pdf', 'image/png', 'image/jpeg'];
 
 export interface PresentedDoc {
   fileName: string;
@@ -38,9 +39,14 @@ export function useDocPresentation(): UseDocPresentationReturn {
   const [progress, setProgress] = useState<{ received: number; total: number } | null>(null);
   const incomingRef = useRef<Incoming | null>(null);
   const urlRef = useRef<string | null>(null);
+  const recvTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const revokeUrl = useCallback(() => {
     if (urlRef.current) { URL.revokeObjectURL(urlRef.current); urlRef.current = null; }
+  }, []);
+
+  const clearRecvTimer = useCallback(() => {
+    if (recvTimer.current) { clearTimeout(recvTimer.current); recvTimer.current = null; }
   }, []);
 
   useEffect(() => {
@@ -59,6 +65,7 @@ export function useDocPresentation(): UseDocPresentationReturn {
           typeof msg['mimeType'] !== 'string' ||
           typeof msg['totalChunks'] !== 'number'
         ) return;
+        if (!ALLOWED_MIME.includes(msg['mimeType'])) return;
         incomingRef.current = {
           docId: msg['docId'],
           fileName: msg['fileName'],
@@ -68,6 +75,15 @@ export function useDocPresentation(): UseDocPresentationReturn {
           received: 0,
         };
         setProgress({ received: 0, total: msg['totalChunks'] });
+        clearRecvTimer();
+        recvTimer.current = setTimeout(() => {
+          recvTimer.current = null;
+          // Réception incomplète (chunk perdu / late joiner) : on abandonne proprement.
+          if (incomingRef.current) {
+            incomingRef.current = null;
+            setProgress(null);
+          }
+        }, 45_000);
       } else if (kind === 'doc-chunk') {
         const inc = incomingRef.current;
         if (!inc || msg['docId'] !== inc.docId) return;
@@ -83,9 +99,11 @@ export function useDocPresentation(): UseDocPresentationReturn {
           setPresented({ fileName: inc.fileName, mimeType: inc.mimeType, url });
           setProgress(null);
           incomingRef.current = null;
+          clearRecvTimer();
         }
       } else if (kind === 'doc-close') {
         incomingRef.current = null;
+        clearRecvTimer();
         revokeUrl();
         setPresented(null);
         setProgress(null);
@@ -95,8 +113,9 @@ export function useDocPresentation(): UseDocPresentationReturn {
     return () => {
       room.off(RoomEvent.DataReceived, handleData);
       revokeUrl();
+      clearRecvTimer();
     };
-  }, [room, revokeUrl]);
+  }, [room, revokeUrl, clearRecvTimer]);
 
   const publish = useCallback((obj: unknown) => {
     room.localParticipant
