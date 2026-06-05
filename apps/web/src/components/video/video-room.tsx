@@ -21,12 +21,14 @@ import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
 import { useScribeRecorder } from '@/hooks/use-scribe-recorder';
 import { ScribeToggle } from './scribe-toggle';
-import { MessageSquare, WifiOff } from 'lucide-react';
+import { MessageSquare, WifiOff, Keyboard } from 'lucide-react';
 import { useAdaptiveQuality } from '@/hooks/use-adaptive-quality';
 import { ConnectionBanner } from './connection-banner';
 import { useDocPresentation } from '@/hooks/use-doc-presentation';
 import { DocPresentationPanel } from './doc-presentation-panel';
 import { PresentDocumentPicker } from './present-document-picker';
+import { useVideoShortcuts } from '@/hooks/use-video-shortcuts';
+import { ShortcutsHelpOverlay } from './shortcuts-help-overlay';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface VideoRoomProps {
@@ -72,6 +74,7 @@ function VideoLayout({
   const [rightTab, setRightTab] = useState<RightTab>('notes');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const videoPanelRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoveringControls = useRef(false);
@@ -99,7 +102,12 @@ function VideoLayout({
   const docPresentation = useDocPresentation();
 
   const room = useRoomContext();
-  const { localParticipant, isScreenShareEnabled } = useLocalParticipant();
+  const {
+    localParticipant,
+    isScreenShareEnabled,
+    isMicrophoneEnabled: isMicOn,
+    isCameraEnabled: isCamOn,
+  } = useLocalParticipant();
 
   useEffect(() => {
     if (speakerId) {
@@ -169,6 +177,23 @@ function VideoLayout({
     else clearUnread(false);
   }, [rightTab, clearUnread]);
 
+  // ----- Raccourcis clavier -----
+  const toggleMic = useCallback(() => {
+    localParticipant.setMicrophoneEnabled(!isMicOn).catch(() => {});
+  }, [localParticipant, isMicOn]);
+
+  const toggleCamera = useCallback(() => {
+    localParticipant.setCameraEnabled(!isCamOn).catch(() => {});
+  }, [localParticipant, isCamOn]);
+
+  useVideoShortcuts({
+    onToggleMic: toggleMic,
+    onToggleCamera: toggleCamera,
+    onToggleFullscreen: toggleFullscreen,
+    onToggleChat: handleOpenChat,
+    onToggleHelp: () => setShowShortcuts((v) => !v),
+  });
+
   const tracks = useTracks([
     { source: Track.Source.Camera, withPlaceholder: true },
     { source: Track.Source.ScreenShare, withPlaceholder: false },
@@ -198,6 +223,8 @@ function VideoLayout({
         )}
 
         <VideoGrid remoteTracks={remoteTracks} localTrack={localTrack} screenShareTracks={screenShareTracks} />
+
+        {showShortcuts && <ShortcutsHelpOverlay onClose={() => setShowShortcuts(false)} />}
 
         <DocPresentationPanel
           presented={docPresentation.presented}
@@ -245,6 +272,13 @@ function VideoLayout({
                   title={adaptive.degraded ? 'Réactiver la vidéo' : 'Passer en audio seul'}
                 >
                   <WifiOff className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setShowShortcuts((v) => !v)}
+                  className="rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+                  title="Raccourcis clavier (?)"
+                >
+                  <Keyboard className="h-5 w-5" />
                 </button>
                 {patientId && (
                   <PresentDocumentPicker
