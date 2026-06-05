@@ -305,6 +305,29 @@ export class DocumentsService {
     this.logger.log(`[RGPD] Purged ${docs.length} documents for patient ${patientId}`);
   }
 
+  async downloadForPsy(userId: string, docId: string, req?: Request) {
+    const psy = await this.prisma.psychologist.findUnique({ where: { userId } });
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
+
+    const doc = await this.prisma.sharedDocument.findFirst({
+      where: { id: docId, psychologistId: psy.id, deletedAt: null },
+    });
+    if (!doc) throw new NotFoundException('Document introuvable');
+
+    const buffer = await this.storage.download(doc.filePath);
+
+    await this.audit.log({
+      actorId: userId,
+      actorType: 'psychologist',
+      action: 'READ',
+      entityType: 'document',
+      entityId: docId,
+      req,
+    });
+
+    return { buffer, fileName: doc.fileName, mimeType: doc.mimeType };
+  }
+
   private safeDecrypt(value: string | null): string | null {
     if (!value) return null;
     try {

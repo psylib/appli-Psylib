@@ -13,7 +13,11 @@ import {
   ParseUUIDPipe,
   DefaultValuePipe,
   ParseIntPipe,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import { Response } from 'express';
+import { Readable } from 'stream';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -81,6 +85,27 @@ export class DocumentsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.documentsService.findOne(user.sub, id);
+  }
+
+  @Get(':id/download')
+  @ApiOperation({ summary: 'Télécharger les octets d’un document (psy)' })
+  async download(
+    @CurrentUser() user: KeycloakUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+  ) {
+    const { buffer, fileName, mimeType } = await this.documentsService.downloadForPsy(
+      user.sub,
+      id,
+      req,
+    );
+    const safeFileName = fileName.replace(/[\r\n\x00-\x1F"\\]/g, '').slice(0, 255);
+    res.set({
+      'Content-Type': mimeType,
+      'Content-Disposition': `inline; filename="${encodeURIComponent(safeFileName)}"`,
+    });
+    return new StreamableFile(Readable.from(buffer));
   }
 
   @Delete(':id')
