@@ -292,6 +292,7 @@ export class VideoService {
       patientScribeConsent,
       scribeEnabled: room.scribeEnabled,
       scribeStatus: room.scribeStatus as 'none' | 'processing' | 'done' | 'failed',
+      patientId: room.appointment.patientId,
     };
   }
 
