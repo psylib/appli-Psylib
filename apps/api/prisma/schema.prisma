@@ -1070,10 +1070,11 @@ model Invoice {
 }
 
 model StripeEvent {
-  id            String   @id @default(uuid())
-  stripeEventId String   @unique @map("stripe_event_id")
+  id            String    @id @default(uuid())
+  stripeEventId String    @unique @map("stripe_event_id")
   type          String
-  processedAt   DateTime @default(now()) @map("processed_at")
+  // null = reçu mais pas encore traité avec succès ; daté = traité.
+  processedAt   DateTime? @map("processed_at")
 
   @@map("stripe_events")
 }

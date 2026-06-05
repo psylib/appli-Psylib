@@ -387,25 +387,29 @@ export class PublicBookingService {
     // Wrap conflict check + patient upsert + appointment create in a serializable
     // transaction to prevent double-booking under concurrent requests.
     const appointment = await this.prisma.$transaction(async (tx) => {
-      // Vérifie que le créneau est toujours libre (détection de chevauchement complet)
+      // Vérifie que le créneau est toujours libre (détection de chevauchement complet).
+      // H6 (audit 2026-06-05) : on doit tester TOUS les RDV candidats, pas seulement
+      // le premier retourné. Un findFirst sans orderBy pouvait renvoyer un RDV ancien
+      // non conflictuel et laisser passer un autre RDV qui chevauche réellement.
       const newEnd = new Date(scheduledAt.getTime() + duration * 60000);
-      const conflict = await tx.appointment.findFirst({
+      // Borne basse de sécurité : aucune séance ne dure plus de 24h.
+      const windowStart = new Date(scheduledAt.getTime() - 24 * 60 * 60000);
+      const candidates = await tx.appointment.findMany({
         where: {
           psychologistId: psy.id,
           status: { not: 'cancelled' },
           bookingPaymentStatus: { not: 'payment_failed' },
-          // Overlap : existing_start < new_end AND existing_end > new_start
-          scheduledAt: { lt: newEnd },
+          scheduledAt: { gte: windowStart, lt: newEnd }, // commence avant la fin du nouveau créneau
         },
+        select: { scheduledAt: true, duration: true },
       });
-      // Double-check overlap: appointment end must be after new start
-      if (conflict) {
-        const conflictEnd = new Date(
-          new Date(conflict.scheduledAt).getTime() + conflict.duration * 60000,
-        );
-        if (conflictEnd > scheduledAt) {
-          throw new ConflictException('Ce créneau est déjà pris');
-        }
+      // Overlap réel : un candidat (qui commence avant newEnd) se termine après le début.
+      const hasOverlap = candidates.some((c) => {
+        const cEnd = new Date(new Date(c.scheduledAt).getTime() + c.duration * 60000);
+        return cEnd > scheduledAt;
+      });
+      if (hasOverlap) {
+        throw new ConflictException('Ce créneau est déjà pris');
       }
 
       // Trouve ou crée le patient

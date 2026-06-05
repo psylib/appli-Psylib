@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { PublicProfileClient } from './public-profile-client';
 import type { PublicPsyProfile } from '@/lib/api/public-booking';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 const API_BASE = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
 
@@ -77,7 +78,7 @@ export default async function PsyProfilePage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <PublicProfileClient profile={profile} />
     </>

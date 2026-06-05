@@ -70,7 +70,10 @@ export class WebhookController {
         data: {
           stripeEventId: event.id,
           type: event.type,
-          processedAt: new Date(),
+          // Marqueur de RÉCEPTION (dédup contre les livraisons dupliquées).
+          // processedAt reste null jusqu'au traitement RÉUSSI par le worker —
+          // évite de perdre définitivement un event si le job échoue.
+          processedAt: null,
         },
       });
     } catch (err) {

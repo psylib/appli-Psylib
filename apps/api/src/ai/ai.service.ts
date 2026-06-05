@@ -127,6 +127,7 @@ export class AiService implements OnModuleInit {
   private async collectPatientHistory(
     sessionId: string,
     psychologistId: string,
+    psychologistUserId: string,
   ): Promise<{ dossier: string; orientation: import('@prisma/client').TherapyOrientation | null; date: Date | null; duration: number | null }> {
     const currentSession = await this.prisma.session.findFirst({
       where: { id: sessionId, psychologistId },
@@ -146,6 +147,7 @@ export class AiService implements OnModuleInit {
       orderBy: { date: 'desc' },
       take: 15,
       select: {
+        id: true,
         date: true,
         duration: true,
         orientation: true,
@@ -164,6 +166,7 @@ export class AiService implements OnModuleInit {
       };
     }
 
+    const decryptedSessionIds: string[] = [];
     const entries = pastSessions.map((s) => {
       const dateStr = s.date.toISOString().split('T')[0];
       const orientationStr = s.orientation ?? 'Non spécifiée';
@@ -173,11 +176,13 @@ export class AiService implements OnModuleInit {
       try {
         if (s.summaryAi) {
           summaryText = this.encryption.decrypt(s.summaryAi);
+          decryptedSessionIds.push(s.id);
           if (summaryText.length > 800) {
             summaryText = summaryText.slice(0, 800) + '...';
           }
         } else if (s.notes) {
           const decryptedNotes = this.encryption.decrypt(s.notes);
+          decryptedSessionIds.push(s.id);
           summaryText = decryptedNotes.slice(0, 500) + (decryptedNotes.length > 500 ? '...' : '');
         }
       } catch {
@@ -191,6 +196,21 @@ export class AiService implements OnModuleInit {
         '',
       ].filter(Boolean).join('\n');
     });
+
+    // HDS règle #7 : tracer le déchiffrement des notes/résumés envoyés au LLM
+    if (decryptedSessionIds.length > 0) {
+      await this.audit.log({
+        actorId: psychologistUserId,
+        actorType: 'psychologist',
+        action: 'DECRYPT',
+        entityType: 'session',
+        entityId: sessionId,
+        metadata: {
+          context: 'ai_session_summary_history',
+          decryptedSessions: decryptedSessionIds,
+        },
+      });
+    }
 
     return {
       dossier: `=== Historique patient (${pastSessions.length} dernières séances) ===\n\n${entries.join('\n')}`,
@@ -285,6 +305,7 @@ export class AiService implements OnModuleInit {
     const { dossier, orientation, date, duration } = await this.collectPatientHistory(
       dto.sessionId,
       psy.id,
+      psychologistUserId,
     );
 
     const orientationLabel = orientation ?? 'Non spécifiée';

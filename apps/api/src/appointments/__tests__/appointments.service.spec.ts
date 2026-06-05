@@ -27,6 +27,7 @@ const mockAudit = {
 const mockEmail = {
   sendAppointmentConfirmation: vi.fn().mockResolvedValue(undefined),
   sendBookingDeclined: vi.fn().mockResolvedValue(undefined),
+  sendBookingCancelledToPatient: vi.fn().mockResolvedValue(undefined),
   sendRefundConfirmation: vi.fn().mockResolvedValue(undefined),
   sendCancellationNotification: vi.fn().mockResolvedValue(undefined),
 };
@@ -337,7 +338,7 @@ describe('AppointmentsService', () => {
       const result = await service.declineAppointment(PSY_USER_ID, APPOINTMENT_ID);
 
       expect(result.status).toBe('cancelled');
-      expect(mockEmail.sendBookingDeclined).toHaveBeenCalledWith(
+      expect(mockEmail.sendBookingCancelledToPatient).toHaveBeenCalledWith(
         'marie@test.com',
         expect.objectContaining({ patientName: 'Marie', psychologistName: 'Dr. Test' }),
       );
@@ -355,7 +356,7 @@ describe('AppointmentsService', () => {
 
       await service.declineAppointment(PSY_USER_ID, APPOINTMENT_ID);
 
-      expect(mockEmail.sendBookingDeclined).not.toHaveBeenCalled();
+      expect(mockEmail.sendBookingCancelledToPatient).not.toHaveBeenCalled();
     });
   });
 

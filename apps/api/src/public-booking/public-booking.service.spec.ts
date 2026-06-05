@@ -41,6 +41,7 @@ function createPrismaMock() {
     },
     appointment: {
       findFirst: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
       create: vi.fn().mockResolvedValue({ id: 'appt-id' }),
     },
     patient: {
@@ -286,12 +287,31 @@ describe('PublicBookingService', () => {
     it('throws ConflictException on slot conflict', async () => {
       // Mock a conflicting appointment that overlaps with the booking time
       const bookingTime = new Date(validBookingDto.scheduledAt);
-      prisma.appointment.findFirst.mockResolvedValue({
-        id: 'existing-appt',
-        scheduledAt: bookingTime,
-        duration: 50,
-      });
+      prisma.appointment.findMany.mockResolvedValue([
+        { scheduledAt: bookingTime, duration: 50 },
+      ]);
       await expect(service.bookAppointment('dr-martin', validBookingDto)).rejects.toThrow(ConflictException);
+    });
+
+    it('détecte un chevauchement même si un RDV NON conflictuel est listé en premier (H6)', async () => {
+      const bookingTime = new Date(validBookingDto.scheduledAt);
+      // 1er RDV : terminé bien avant le créneau (non conflictuel)
+      const older = { scheduledAt: new Date(bookingTime.getTime() - 5 * 60 * 60000), duration: 50 };
+      // 2e RDV : commence en plein milieu du créneau demandé (conflictuel)
+      const overlapping = { scheduledAt: new Date(bookingTime.getTime() + 10 * 60000), duration: 50 };
+      prisma.appointment.findMany.mockResolvedValue([older, overlapping]);
+
+      await expect(service.bookAppointment('dr-martin', validBookingDto)).rejects.toThrow(ConflictException);
+    });
+
+    it('autorise la réservation si aucun RDV ne chevauche réellement le créneau', async () => {
+      const bookingTime = new Date(validBookingDto.scheduledAt);
+      // RDV qui se termine exactement au début du nouveau créneau → pas de chevauchement
+      const before = { scheduledAt: new Date(bookingTime.getTime() - 50 * 60000), duration: 50 };
+      prisma.appointment.findMany.mockResolvedValue([before]);
+
+      const result = await service.bookAppointment('dr-martin', validBookingDto);
+      expect(result.success).toBe(true);
     });
 
     it('creates a new patient when email not already registered', async () => {
@@ -325,7 +345,7 @@ describe('PublicBookingService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             psychologistId: mockPsy.id,
-            status: 'scheduled',
+            status: 'confirmed',
             source: 'public',
             duration: mockPsy.defaultSessionDuration,
             bookingPaymentStatus: 'none',
