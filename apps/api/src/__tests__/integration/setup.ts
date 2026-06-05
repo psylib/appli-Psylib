@@ -18,6 +18,7 @@ export const PSY_A: KeycloakUser = {
   role: 'psychologist',
   roles: ['psychologist'],
   name: 'Dr. Alice',
+  psychologistUserId: 'user-psy-a-uuid',
 };
 
 export const PSY_B: KeycloakUser = {
@@ -26,6 +27,7 @@ export const PSY_B: KeycloakUser = {
   role: 'psychologist',
   roles: ['psychologist'],
   name: 'Dr. Bob',
+  psychologistUserId: 'user-psy-b-uuid',
 };
 
 export const PATIENT_USER: KeycloakUser = {
@@ -34,6 +36,7 @@ export const PATIENT_USER: KeycloakUser = {
   role: 'patient',
   roles: ['patient'],
   name: 'Patient Test',
+  psychologistUserId: 'user-patient-uuid',
 };
 
 // ─── Fake auth guard ─────────────────────────────────────────────────────────

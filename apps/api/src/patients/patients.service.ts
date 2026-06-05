@@ -164,6 +164,49 @@ export class PatientsService {
     return { ...patient, notes: decryptedNotes };
   }
 
+  /**
+   * Variante ADMIN de findOne() — destinée au rôle `assistant`.
+   * NE déchiffre JAMAIS les notes cliniques et ne les retourne pas du tout.
+   * Renvoie uniquement les champs administratifs + infos portail/invitations/exercices
+   * (métadonnées non cliniques). Aucune donnée de session/notes/clinique n'est exposée.
+   */
+  async findOneAdmin(
+    psychologistId: string,
+    patientId: string,
+    actorId: string,
+    req?: Request,
+  ): Promise<Omit<Patient, 'notes'> & { guardians: unknown[] }> {
+    const psy = await this.getPsychologist(psychologistId);
+
+    const patient = await this.prisma.patient.findFirst({
+      where: {
+        id: patientId,
+        psychologistId: psy.id, // isolation tenant
+      },
+      select: {
+        id: true,
+        psychologistId: true,
+        userId: true,
+        name: true,
+        email: true,
+        phone: true,
+        birthDate: true,
+        isMinor: true,
+        status: true,
+        source: true,
+        createdAt: true,
+        // notes: VOLONTAIREMENT EXCLU (donnée clinique chiffrée)
+        guardians: true,
+      },
+    });
+
+    if (!patient) throw new NotFoundException('Patient introuvable');
+
+    await this.audit.logRead(actorId, 'assistant', 'patient', patientId, req);
+
+    return patient as unknown as Omit<Patient, 'notes'> & { guardians: unknown[] };
+  }
+
   async update(
     psychologistId: string,
     patientId: string,

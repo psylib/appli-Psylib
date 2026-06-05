@@ -2,7 +2,8 @@ export declare enum UserRole {
     PSYCHOLOGIST = "psychologist",
     PATIENT = "patient",
     ADMIN = "admin",
-    GUARDIAN = "guardian"
+    GUARDIAN = "guardian",
+    ASSISTANT = "assistant"
 }
 export declare enum SubscriptionPlan {
     FREE = "free",
@@ -431,6 +432,13 @@ export interface HealthCheckResponse {
     redis: 'ok' | 'error';
     timestamp: string;
 }
+export interface AssistantSummary {
+    id: string;
+    name: string;
+    email: string;
+    status: 'pending' | 'active' | 'revoked';
+    createdAt: string;
+}
 export declare const PLAN_LIMITS: Record<SubscriptionPlan, {
     patients: number | null;
     sessions: number | null;
@@ -441,6 +449,7 @@ export declare const PLAN_LIMITS: Record<SubscriptionPlan, {
     documentsBytesMonthly: number | null;
     calendarSync: boolean;
     accounting: boolean;
+    assistants: number;
 }>;
 export declare const PLAN_PRICES: Record<SubscriptionPlan, number>;
 export declare const PLAN_PRICES_ANNUAL: Record<SubscriptionPlan, number>;

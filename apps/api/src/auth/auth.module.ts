@@ -23,6 +23,6 @@ import { BillingModule } from '../billing/billing.module';
     AuthService,
     RppsVerificationService,
   ],
-  exports: [KeycloakGuard, RolesGuard, PassportModule],
+  exports: [KeycloakGuard, RolesGuard, PassportModule, AuthService],
 })
 export class AuthModule {}

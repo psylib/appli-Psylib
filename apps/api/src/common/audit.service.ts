@@ -9,7 +9,7 @@ export type AuditAction = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE' | 'DECRYPT' | 
   | 'CALENDAR_CONNECT' | 'CALENDAR_DISCONNECT'
   | 'AI_SCRIBE_COMPLETE' | 'AI_SCRIBE_FAILED'
   | 'SCRIBE_ENABLED' | 'SCRIBE_DISABLED' | 'SCRIBE_AUDIO_UPLOADED';
-export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin' | 'guardian' | 'guest';
+export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin' | 'guardian' | 'guest' | 'assistant';
 
 export interface AuditLogParams {
   actorId: string;
