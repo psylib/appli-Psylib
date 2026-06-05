@@ -20,6 +20,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
   // L'onboarding ne concerne que les psychologues (les assistant·es n'ont pas de flow d'onboarding)
   if (session.user.role === UserRole.PSYCHOLOGIST) {
+    let needsOnboarding = false;
     try {
       const res = await fetch(`${API_BASE}/api/v1/onboarding/profile`, {
         headers: { Authorization: `Bearer ${session.accessToken}` },
@@ -27,13 +28,14 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       });
       if (res.ok) {
         const profile = (await res.json()) as { isOnboarded?: boolean };
-        if (!profile.isOnboarded) {
-          redirect('/onboarding');
-        }
+        if (!profile.isOnboarded) needsOnboarding = true;
       }
     } catch {
       // Si l'API est indisponible, on laisse passer pour ne pas bloquer
     }
+    // redirect() DOIT être hors du try/catch : il lève NEXT_REDIRECT, qui serait
+    // sinon avalé par le catch et la redirection ne se ferait jamais.
+    if (needsOnboarding) redirect('/onboarding');
   }
 
   return (

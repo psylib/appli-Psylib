@@ -21,6 +21,7 @@ export default async function OnboardingLayout({ children }: { children: ReactNo
   const isSuccessPage = pathname.endsWith('/success');
 
   if (!isSuccessPage) {
+    let alreadyOnboarded = false;
     try {
       const res = await fetch(`${API_BASE}/api/v1/onboarding/profile`, {
         headers: { Authorization: `Bearer ${session.accessToken}` },
@@ -28,13 +29,13 @@ export default async function OnboardingLayout({ children }: { children: ReactNo
       });
       if (res.ok) {
         const profile = (await res.json()) as { isOnboarded?: boolean };
-        if (profile.isOnboarded) {
-          redirect('/dashboard');
-        }
+        if (profile.isOnboarded) alreadyOnboarded = true;
       }
     } catch {
       // Si l'API est indisponible, on laisse continuer l'onboarding
     }
+    // redirect() DOIT être hors du try/catch (NEXT_REDIRECT serait sinon avalé)
+    if (alreadyOnboarded) redirect('/dashboard');
   }
 
   return (
