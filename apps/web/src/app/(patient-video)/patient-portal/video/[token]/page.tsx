@@ -14,6 +14,7 @@ export default function PatientVideoPage() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [tokenData, setTokenData] = useState<{ token: string; wsUrl: string } | null>(null);
   const [psychologistName, setPsychologistName] = useState('');
+  const [patientName, setPatientName] = useState('Patient');
   const [error, setError] = useState('');
   const [consentLoading, setConsentLoading] = useState(false);
 
@@ -21,6 +22,7 @@ export default function PatientVideoPage() {
   const checkToken = useCallback(async () => {
     try {
       const result = await videoApi.joinAsPatient(joinToken);
+      if (result.patientName) setPatientName(result.patientName);
       if (result.needsConsent) {
         setPsychologistName(result.psychologistName || '');
         setPhase('consent');
@@ -44,6 +46,7 @@ export default function PatientVideoPage() {
     try {
       await videoApi.recordConsent(joinToken, includeScribe);
       const result = await videoApi.joinAsPatient(joinToken);
+      if (result.patientName) setPatientName(result.patientName);
       if (result.token) {
         setTokenData({ token: result.token, wsUrl: result.wsUrl });
         setPhase('waiting');
@@ -108,6 +111,7 @@ export default function PatientVideoPage() {
         token={tokenData.token}
         wsUrl={tokenData.wsUrl}
         onConnectionFailed={handleConnectionFailed}
+        patientName={patientName}
       />
     );
   }

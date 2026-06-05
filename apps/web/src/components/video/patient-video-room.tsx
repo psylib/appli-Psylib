@@ -11,35 +11,43 @@ import {
 } from '@livekit/components-react';
 import { Track, RoomEvent } from 'livekit-client';
 import { useEffect, useRef, useState } from 'react';
-import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff } from 'lucide-react';
+import { Mic, MicOff, VideoIcon, VideoOff, User, PhoneOff, MessageSquare, X } from 'lucide-react';
 import { videoRoomOptions } from '@/lib/video/livekit-options';
 import { useKrispNoiseFilter } from '@/hooks/use-krisp-noise-filter';
+import { useVideoChat } from '@/hooks/use-video-chat';
+import { VideoChatPanel } from './video-chat-panel';
 
 interface PatientLayoutProps {
   onConnectionFailed: () => void;
   exitHref?: string;
   exitLabel?: string;
+  patientName?: string;
 }
 
-function PatientLayout({ onConnectionFailed, exitHref = '/patient-portal', exitLabel = 'Retour a mon espace' }: PatientLayoutProps) {
+function PatientLayout({
+  onConnectionFailed,
+  exitHref = '/patient-portal',
+  exitLabel = 'Retour a mon espace',
+  patientName = 'Patient',
+}: PatientLayoutProps) {
   const { localParticipant, isMicrophoneEnabled: isMicOn, isCameraEnabled: isCamOn } = useLocalParticipant();
   useKrispNoiseFilter();
   const room = useRoomContext();
   const [disconnected, setDisconnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
-  // Track whether we ever successfully connected — prevents treating a failed
-  // initial connection as "consultation terminée"
+  const [chatOpen, setChatOpen] = useState(false);
   const hasConnected = useRef(false);
+
+  const { messages: chatMessages, unreadCount, sendMessage, clearUnread } = useVideoChat({
+    sender: 'patient',
+    senderName: patientName,
+  });
 
   useEffect(() => {
     const onConnected = () => { hasConnected.current = true; };
     const onDisconnected = () => {
-      if (hasConnected.current) {
-        setDisconnected(true);
-      } else {
-        // Never connected — token expired or room gone, retry from the top
-        onConnectionFailed();
-      }
+      if (hasConnected.current) setDisconnected(true);
+      else onConnectionFailed();
     };
     const onReconnecting = () => setReconnecting(true);
     const onReconnected = () => setReconnecting(false);
@@ -57,25 +65,32 @@ function PatientLayout({ onConnectionFailed, exitHref = '/patient-portal', exitL
 
   const remoteParticipants = useRemoteParticipants();
   const psyIsPresent = remoteParticipants.length > 0;
-
   const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }]);
-  const remoteTracks = tracks.filter(t => !t.participant.isLocal);
-  const localTrack = tracks.find(t => t.participant.isLocal);
-  const psyVideoTrack = remoteTracks.find(t => t.publication != null);
+  const remoteTracks = tracks.filter((t) => !t.participant.isLocal);
+  const localTrack = tracks.find((t) => t.participant.isLocal);
+  const psyVideoTrack = remoteTracks.find((t) => t.publication != null);
 
-  // Quitter doit toujours aboutir : on affiche l'écran de fin tout de suite,
-  // puis on déconnecte la room (best-effort).
   const handleLeave = () => {
     setDisconnected(true);
     void room.disconnect();
   };
 
+  const handleOpenChat = () => {
+    setChatOpen(true);
+    clearUnread(true);
+  };
+
+  const handleCloseChat = () => {
+    setChatOpen(false);
+    clearUnread(false);
+  };
+
   if (reconnecting) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center p-8">
-          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-foreground mb-2">Reconnexion en cours...</h1>
+        <div className="p-8 text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <h1 className="mb-2 text-xl font-bold text-foreground">Reconnexion en cours...</h1>
           <p className="text-muted-foreground">Veuillez patienter, la connexion sera retablie automatiquement.</p>
         </div>
       </div>
@@ -85,12 +100,12 @@ function PatientLayout({ onConnectionFailed, exitHref = '/patient-portal', exitL
   if (disconnected) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center p-8">
-          <h1 className="text-xl font-bold text-foreground mb-2">La consultation est terminee</h1>
-          <p className="text-muted-foreground mb-4">Merci. Prenez soin de vous.</p>
+        <div className="p-8 text-center">
+          <h1 className="mb-2 text-xl font-bold text-foreground">La consultation est terminee</h1>
+          <p className="mb-4 text-muted-foreground">Merci. Prenez soin de vous.</p>
           <a
             href={exitHref}
-            className="inline-block rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
+            className="inline-block rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90"
           >
             {exitLabel}
           </a>
@@ -100,32 +115,32 @@ function PatientLayout({ onConnectionFailed, exitHref = '/patient-portal', exitL
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
-      <div className="flex-1 relative">
+    <div className="relative flex h-screen flex-col bg-gray-900">
+      <div className="relative flex-1">
         {psyIsPresent ? (
           psyVideoTrack ? (
-            <VideoTrack trackRef={psyVideoTrack} className="w-full h-full object-cover" />
+            <VideoTrack trackRef={psyVideoTrack} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center text-white/60">
-                <User className="h-20 w-20 mx-auto mb-4 opacity-40" />
+                <User className="mx-auto mb-4 h-20 w-20 opacity-40" />
                 <p>Psychologue connecté</p>
-                <p className="text-sm mt-1 opacity-60">Caméra désactivée</p>
+                <p className="mt-1 text-sm opacity-60">Caméra désactivée</p>
               </div>
             </div>
           )
         ) : (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex h-full items-center justify-center">
             <div className="text-center text-white/60">
-              <User className="h-20 w-20 mx-auto mb-4 opacity-40" />
+              <User className="mx-auto mb-4 h-20 w-20 opacity-40" />
               <p>En attente de votre psychologue...</p>
             </div>
           </div>
         )}
 
         {localTrack?.publication && (
-          <div className="absolute bottom-4 right-4 w-40 h-32 rounded-lg overflow-hidden border-2 border-white/20">
-            <VideoTrack trackRef={localTrack} className="w-full h-full object-cover" />
+          <div className="absolute bottom-4 right-4 h-32 w-40 overflow-hidden rounded-lg border-2 border-white/20">
+            <VideoTrack trackRef={localTrack} className="h-full w-full object-cover" />
           </div>
         )}
       </div>
@@ -143,15 +158,51 @@ function PatientLayout({ onConnectionFailed, exitHref = '/patient-portal', exitL
         >
           {isCamOn ? <VideoIcon className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
         </button>
+
+        <button
+          onClick={handleOpenChat}
+          className={`relative rounded-full p-3 text-white ${
+            chatOpen ? 'bg-[#0D9488]' : 'bg-gray-700 hover:bg-gray-600'
+          }`}
+          title="Chat texte"
+        >
+          <MessageSquare className="h-5 w-5" />
+          {unreadCount > 0 && !chatOpen && (
+            <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+
         <button
           onClick={handleLeave}
-          className="ml-2 inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-medium text-white hover:bg-red-700 transition-colors"
-          title="Quitter la consultation"
+          className="ml-2 inline-flex items-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-red-700"
         >
           <PhoneOff className="h-5 w-5" />
           Quitter
         </button>
       </div>
+
+      {chatOpen && (
+        <div className="absolute inset-x-0 bottom-[72px] z-40 flex h-[45%] flex-col rounded-t-2xl border-t border-white/10 bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <h3 className="text-sm font-semibold text-foreground">Chat</h3>
+            <button
+              onClick={handleCloseChat}
+              className="rounded-full p-1 text-muted-foreground hover:bg-muted"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <VideoChatPanel
+              messages={chatMessages}
+              localSender="patient"
+              onSend={sendMessage}
+            />
+          </div>
+        </div>
+      )}
 
       <RoomAudioRenderer />
     </div>
@@ -164,12 +215,25 @@ interface PatientVideoRoomProps {
   onConnectionFailed: () => void;
   exitHref?: string;
   exitLabel?: string;
+  patientName?: string;
 }
 
-export function PatientVideoRoom({ token, wsUrl, onConnectionFailed, exitHref, exitLabel }: PatientVideoRoomProps) {
+export function PatientVideoRoom({
+  token,
+  wsUrl,
+  onConnectionFailed,
+  exitHref,
+  exitLabel,
+  patientName,
+}: PatientVideoRoomProps) {
   return (
     <LiveKitRoom serverUrl={wsUrl} token={token} connect={true} video={true} audio={true} options={videoRoomOptions}>
-      <PatientLayout onConnectionFailed={onConnectionFailed} exitHref={exitHref} exitLabel={exitLabel} />
+      <PatientLayout
+        onConnectionFailed={onConnectionFailed}
+        exitHref={exitHref}
+        exitLabel={exitLabel}
+        patientName={patientName}
+      />
     </LiveKitRoom>
   );
 }
