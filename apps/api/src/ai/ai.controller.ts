@@ -18,7 +18,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { IsString, IsEnum, IsOptional, IsUUID, MaxLength, MinLength } from 'class-validator';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import {
   AiService,

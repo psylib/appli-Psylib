@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Response } from 'express';
+import type { Response } from 'express';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';

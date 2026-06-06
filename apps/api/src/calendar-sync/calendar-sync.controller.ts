@@ -12,7 +12,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { CalendarSyncService } from './calendar-sync.service';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';

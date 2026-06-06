@@ -25,7 +25,7 @@ import { CreateVideoRoomDto, CreateInstantVideoDto, GuestJoinRequestDto, RecordC
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { Request } from 'express';
+import type { Request } from 'express';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 @ApiTags('Video')

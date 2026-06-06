@@ -22,7 +22,7 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { SessionsService } from './sessions.service';
 import {

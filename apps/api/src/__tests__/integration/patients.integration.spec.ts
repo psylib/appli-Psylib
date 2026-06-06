@@ -1,144 +1,114 @@
 /**
- * Integration tests for Patients API
+ * Tests d'intégration RÉELS de l'API Patients.
  *
- * Tests:
- * 1. Multi-tenant isolation: Psy A cannot read Psy B's patient
- * 2. Auth guard reject: No token → 403
- * 3. RGPD purge: DELETE /patients/:id/purge deletes the patient
- * 4. PrismaExceptionFilter: P2002 → 409
+ * Avant : ces tests instanciaient un faux TenantPatientsService + MockAuthGuard
+ * + un TestPatientsController — donc une régression d'isolation tenant ou de RBAC
+ * ne faisait échouer AUCUN test (audit 2026-06-05, finding H4).
+ *
+ * Maintenant : on boote le VRAI PatientsController avec les VRAIS
+ * RolesGuard + SubscriptionGuard + AuditInterceptor + PrismaExceptionFilter.
+ * Seuls le KeycloakGuard (signature JWT) et les services feuilles (Prisma,
+ * PatientsService, SubscriptionService...) sont mockés. La logique d'isolation
+ * tenant du service est, elle, couverte par patients/__tests__/patients.service.spec.ts.
+ *
+ * Couvre :
+ * 1. RBAC réel : un patient est bloqué des routes psy → 403
+ * 2. Subscription gating réel : limite de plan atteinte → 403
+ * 3. Propagation 404 (patient d'un autre tenant) via le vrai controller
+ * 4. PrismaExceptionFilter : P2002 → 409
+ * 5. Auth : requête non authentifiée → 403
  */
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import { Test } from '@nestjs/testing';
 import {
   INestApplication,
   ValidationPipe,
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Body,
-  Param,
-  Req,
-  UseGuards,
-  Injectable,
-  Inject,
-  HttpCode,
-  HttpStatus,
   NotFoundException,
-  CanActivate,
-  ExecutionContext,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import request from 'supertest';
+
+import { PatientsController } from '../../patients/patients.controller';
+import { PatientsService } from '../../patients/patients.service';
+import { PatientInvitationService } from '../../patient-portal/patient-invitation.service';
+import { SubscriptionService } from '../../billing/subscription.service';
+import { PrismaService } from '../../common/prisma.service';
+import { AuditService } from '../../common/audit.service';
+import { KeycloakGuard } from '../../auth/guards/keycloak.guard';
 import { PrismaExceptionFilter } from '../../common/prisma-exception.filter';
-import { PSY_A, PSY_B, setCurrentUser } from './setup';
-import type { KeycloakUser } from '../../auth/keycloak-jwt.strategy';
+import { PSY_A, PSY_B, PATIENT_USER, setCurrentUser, FakeKeycloakGuard } from './setup';
 
-// ─── Auth guard ──────────────────────────────────────────────────────────────
+const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
 
-let _currentUser: KeycloakUser | null = PSY_A;
+// ─── Mocks des services feuilles (la logique réelle est testée unitairement) ──
+const patientsService = {
+  findAll: vi.fn(),
+  create: vi.fn(),
+  findOne: vi.fn(),
+  findOneAdmin: vi.fn(),
+  getStats: vi.fn(),
+  update: vi.fn(),
+  archive: vi.fn(),
+  purge: vi.fn(),
+  exportAllCsv: vi.fn(),
+  exportPatientRgpd: vi.fn(),
+  importPatients: vi.fn(),
+  getPatientPortalMood: vi.fn(),
+  getPatientPortalExercises: vi.fn(),
+  createExercise: vi.fn(),
+};
 
-@Injectable()
-class MockAuthGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
-    if (!_currentUser) return false;
-    const req = context.switchToHttp().getRequest();
-    req.user = _currentUser;
-    return true;
-  }
-}
+const invitationService = {
+  invitePatient: vi.fn(),
+  getInvitationStatus: vi.fn(),
+};
 
-function setUser(user: KeycloakUser | null) {
-  _currentUser = user;
-  setCurrentUser(user);
-}
+const subscriptionService = {
+  checkPatientLimit: vi.fn(),
+  checkSessionLimit: vi.fn(),
+  checkAiUsage: vi.fn(),
+  checkCourseLimit: vi.fn(),
+  checkExpenseLimit: vi.fn(),
+  checkDocumentQuota: vi.fn(),
+};
 
-// ─── In-memory patients service ──────────────────────────────────────────────
+const prisma = {
+  psychologist: { findUnique: vi.fn() },
+};
 
-@Injectable()
-class TenantPatientsService {
-  private psyMap: Record<string, string> = {
-    [PSY_A.sub]: 'psy-a-id',
-    [PSY_B.sub]: 'psy-b-id',
+const auditService = { log: vi.fn(), logRead: vi.fn(), logDecrypt: vi.fn() };
+
+// Psy actif (plan Free) renvoyé par le SubscriptionGuard
+function activePsy(userId: string) {
+  return {
+    id: `${userId}-psyid`,
+    userId,
+    subscription: { plan: 'free', status: 'active' },
   };
-  private patients = new Map<string, { id: string; psychologistId: string; name: string; email: string }>();
-
-  createPatient(userId: string, name: string, email: string) {
-    const psyId = this.psyMap[userId];
-    if (!psyId) throw new NotFoundException('Profil psychologue introuvable');
-    const id = crypto.randomUUID();
-    const patient = { id, psychologistId: psyId, name, email };
-    this.patients.set(id, patient);
-    return patient;
-  }
-
-  findOne(userId: string, patientId: string) {
-    const psyId = this.psyMap[userId];
-    const patient = this.patients.get(patientId);
-    if (!patient || patient.psychologistId !== psyId) {
-      throw new NotFoundException('Patient introuvable');
-    }
-    return patient;
-  }
-
-  purge(userId: string, patientId: string) {
-    const psyId = this.psyMap[userId];
-    const patient = this.patients.get(patientId);
-    if (!patient || patient.psychologistId !== psyId) {
-      throw new NotFoundException('Patient introuvable');
-    }
-    this.patients.delete(patientId);
-  }
-
-  throwDuplicate() {
-    throw new Prisma.PrismaClientKnownRequestError(
-      'Unique constraint failed on the fields: (`email`)',
-      { code: 'P2002', clientVersion: '5.0.0', meta: { target: ['email'] } },
-    );
-  }
 }
 
-// ─── Controller ──────────────────────────────────────────────────────────────
-
-@UseGuards(MockAuthGuard)
-@Controller('test-patients')
-class TestPatientsController {
-  constructor(@Inject(TenantPatientsService) private readonly svc: TenantPatientsService) {}
-
-  @Post()
-  create(@Body() body: { name: string; email: string }, @Req() req: { user: KeycloakUser }) {
-    return this.svc.createPatient(req.user.sub, body.name, body.email);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string, @Req() req: { user: KeycloakUser }) {
-    return this.svc.findOne(req.user.sub, id);
-  }
-
-  @Delete(':id/purge')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  purge(@Param('id') id: string, @Req() req: { user: KeycloakUser }) {
-    this.svc.purge(req.user.sub, id);
-  }
-
-  @Post('duplicate')
-  duplicate() {
-    this.svc.throwDuplicate();
-  }
-}
-
-// ─── Test suite ──────────────────────────────────────────────────────────────
-
-describe('Patients Integration Tests', () => {
+describe('Patients API — Integration (réel)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
-      controllers: [TestPatientsController],
-      providers: [TenantPatientsService, MockAuthGuard],
-    }).compile();
+    const builder = Test.createTestingModule({
+      controllers: [PatientsController],
+      providers: [
+        { provide: PatientsService, useValue: patientsService },
+        { provide: PatientInvitationService, useValue: invitationService },
+        { provide: SubscriptionService, useValue: subscriptionService },
+        { provide: PrismaService, useValue: prisma },
+        { provide: AuditService, useValue: auditService },
+      ],
+    });
+    // Seul le KeycloakGuard (vérif signature JWT) est neutralisé ;
+    // RolesGuard, SubscriptionGuard, AuditInterceptor et PrismaExceptionFilter
+    // sont les vrais.
+    builder.overrideGuard(KeycloakGuard).useClass(FakeKeycloakGuard);
 
-    app = module.createNestApplication();
+    const moduleRef = await builder.compile();
+    app = moduleRef.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
     );
@@ -150,87 +120,109 @@ describe('Patients Integration Tests', () => {
     await app?.close();
   });
 
-  describe('Multi-tenant isolation', () => {
-    it('Psy A creates a patient and can read it', async () => {
-      setUser(PSY_A);
-      const createRes = await request(app.getHttpServer())
-        .post('/test-patients')
-        .send({ name: 'Patient Alice', email: 'alice@test.com' })
-        .expect(201);
+  beforeEach(() => {
+    vi.clearAllMocks();
+    setCurrentUser(PSY_A);
+    // Par défaut : psy actif trouvé, limites OK
+    prisma.psychologist.findUnique.mockImplementation(({ where }: { where: { userId: string } }) =>
+      Promise.resolve(activePsy(where.userId)),
+    );
+    subscriptionService.checkPatientLimit.mockResolvedValue(undefined);
+  });
 
-      expect(createRes.body.name).toBe('Patient Alice');
-      expect(createRes.body.psychologistId).toBe('psy-a-id');
-
-      const getRes = await request(app.getHttpServer())
-        .get(`/test-patients/${createRes.body.id}`)
-        .expect(200);
-
-      expect(getRes.body.id).toBe(createRes.body.id);
+  // ── 1. RBAC réel ─────────────────────────────────────────────────────────────
+  describe('RBAC (RolesGuard réel)', () => {
+    it('un patient est bloqué de GET /patients → 403', async () => {
+      setCurrentUser(PATIENT_USER);
+      await request(app.getHttpServer()).get('/patients').expect(403);
+      expect(patientsService.findAll).not.toHaveBeenCalled();
     });
 
-    it('Psy B CANNOT read Psy A patient → 404', async () => {
-      setUser(PSY_A);
-      const createRes = await request(app.getHttpServer())
-        .post('/test-patients')
-        .send({ name: 'Secret Patient', email: 'secret@test.com' })
-        .expect(201);
-
-      setUser(PSY_B);
-      await request(app.getHttpServer())
-        .get(`/test-patients/${createRes.body.id}`)
-        .expect(404);
+    it('un psychologue accède à GET /patients → 200', async () => {
+      patientsService.findAll.mockResolvedValueOnce({ data: [], total: 0, page: 1, totalPages: 0 });
+      const res = await request(app.getHttpServer()).get('/patients').expect(200);
+      expect(res.body.total).toBe(0);
+      expect(patientsService.findAll).toHaveBeenCalledOnce();
     });
   });
 
-  describe('Auth guard', () => {
-    it('rejects unauthenticated request → 403', async () => {
-      setUser(null);
+  // ── 2. Auth ──────────────────────────────────────────────────────────────────
+  describe('Authentification (KeycloakGuard)', () => {
+    it('requête non authentifiée → 403', async () => {
+      setCurrentUser(null);
+      await request(app.getHttpServer()).get('/patients').expect(403);
+    });
+  });
+
+  // ── 3. Subscription gating réel ──────────────────────────────────────────────
+  describe('SubscriptionGuard réel sur POST /patients', () => {
+    it('limite de patients atteinte → 403 (checkPatientLimit refuse)', async () => {
+      subscriptionService.checkPatientLimit.mockRejectedValueOnce(
+        new ForbiddenException('Limite de patients atteinte (plan Free : 15)'),
+      );
       await request(app.getHttpServer())
-        .get('/test-patients/some-id')
+        .post('/patients')
+        .send({ name: 'Patient Test' })
         .expect(403);
-      setUser(PSY_A);
-    });
-  });
-
-  describe('RGPD purge', () => {
-    it('DELETE purge removes the patient → 204', async () => {
-      setUser(PSY_A);
-      const createRes = await request(app.getHttpServer())
-        .post('/test-patients')
-        .send({ name: 'To Purge', email: 'purge@test.com' })
-        .expect(201);
-
-      await request(app.getHttpServer())
-        .delete(`/test-patients/${createRes.body.id}/purge`)
-        .expect(204);
-
-      await request(app.getHttpServer())
-        .get(`/test-patients/${createRes.body.id}`)
-        .expect(404);
+      // Le guard a bloqué avant d'atteindre le service
+      expect(patientsService.create).not.toHaveBeenCalled();
     });
 
-    it('Psy B cannot purge Psy A patient → 404', async () => {
-      setUser(PSY_A);
-      const createRes = await request(app.getHttpServer())
-        .post('/test-patients')
-        .send({ name: 'Protected', email: 'protected@test.com' })
-        .expect(201);
-
-      setUser(PSY_B);
-      await request(app.getHttpServer())
-        .delete(`/test-patients/${createRes.body.id}/purge`)
-        .expect(404);
-    });
-  });
-
-  describe('PrismaExceptionFilter', () => {
-    it('P2002 (unique constraint) → 409 Conflict', async () => {
-      setUser(PSY_A);
+    it('limite OK → le patient est créé → 201', async () => {
+      patientsService.create.mockResolvedValueOnce({ id: VALID_UUID, name: 'Patient Test' });
       const res = await request(app.getHttpServer())
-        .post('/test-patients/duplicate')
-        .send({})
-        .expect(409);
+        .post('/patients')
+        .send({ name: 'Patient Test' })
+        .expect(201);
+      expect(res.body.name).toBe('Patient Test');
+      expect(subscriptionService.checkPatientLimit).toHaveBeenCalledOnce();
+    });
+  });
 
+  // ── 4. Validation ────────────────────────────────────────────────────────────
+  describe('ValidationPipe', () => {
+    it('nom trop court → 400', async () => {
+      await request(app.getHttpServer()).post('/patients').send({ name: 'a' }).expect(400);
+    });
+
+    it('champ inconnu (forbidNonWhitelisted) → 400', async () => {
+      await request(app.getHttpServer())
+        .post('/patients')
+        .send({ name: 'Patient Test', hacked: true })
+        .expect(400);
+    });
+
+    it('UUID invalide sur GET /patients/:id → 400 (ParseUUIDPipe)', async () => {
+      await request(app.getHttpServer()).get('/patients/not-a-uuid').expect(400);
+    });
+  });
+
+  // ── 5. Propagation 404 (isolation tenant côté service) ───────────────────────
+  describe('Isolation tenant (propagation depuis le service)', () => {
+    it('patient introuvable / appartenant à un autre psy → 404', async () => {
+      // PSY_B tente d'accéder à un patient de PSY_A : le service réel filtre par
+      // tenant et lève NotFound (cf. patients.service.spec.ts) ; ici on vérifie
+      // que le controller propage bien le 404.
+      setCurrentUser(PSY_B);
+      patientsService.findOne.mockRejectedValueOnce(new NotFoundException('Patient introuvable'));
+      await request(app.getHttpServer()).get(`/patients/${VALID_UUID}`).expect(404);
+      expect(patientsService.findOne).toHaveBeenCalledWith(PSY_B.sub, VALID_UUID, PSY_B.sub, expect.anything());
+    });
+  });
+
+  // ── 6. PrismaExceptionFilter ─────────────────────────────────────────────────
+  describe('PrismaExceptionFilter', () => {
+    it('P2002 (contrainte unique) levé par le service → 409', async () => {
+      patientsService.create.mockRejectedValueOnce(
+        new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`email`)',
+          { code: 'P2002', clientVersion: '5.0.0', meta: { target: ['email'] } },
+        ),
+      );
+      const res = await request(app.getHttpServer())
+        .post('/patients')
+        .send({ name: 'Patient Test' })
+        .expect(409);
       expect(res.body.code).toBe('PRISMA_P2002');
       expect(res.body.statusCode).toBe(409);
     });

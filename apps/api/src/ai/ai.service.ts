@@ -14,7 +14,7 @@ import {
   getSessionSummaryPrompt,
   EXTRACTION_PROMPT,
 } from './prompts/session-summary.prompts';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { NotificationsService } from '../notifications/notifications.service';
 
 export interface SessionSummaryDto {

@@ -5,7 +5,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { AuditService } from './audit.service';
 
 export interface AuditableRequest extends Request {
