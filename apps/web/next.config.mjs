@@ -9,6 +9,20 @@ const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:4000';
 const keycloakUrl = process.env.KEYCLOAK_URL || 'http://localhost:8080';
 const livekitWsUrl = process.env.NEXT_PUBLIC_LIVEKIT_WS_URL || '';
 
+const isProd = process.env.NODE_ENV === 'production';
+
+// script-src :
+// - dev  : 'unsafe-eval' requis par le HMR/React Refresh de Next.js
+// - prod : 'wasm-unsafe-eval' uniquement → autorise la compilation WebAssembly
+//   (LiveKit krisp noise filter + background blur en dépendent) tout en bloquant
+//   eval()/new Function() JS. Durcissement HDS (audit 2026-06-05, finding CSP medium).
+// 'unsafe-inline' conservé : la suppression nécessite une migration vers des nonces
+//   (next/script Crisp inject dynamiquement → exigerait 'strict-dynamic') à valider
+//   en navigateur sur Crisp/PostHog/Sentry avant cutover.
+const scriptSrc = isProd
+  ? "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://client.crisp.chat"
+  : "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://client.crisp.chat";
+
 const nextConfig = {
   // Output standalone pour Docker — désactivé sur Vercel (Vercel gère nativement)
   output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
@@ -47,7 +61,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://client.crisp.chat", // unsafe-eval requis Next.js
+              scriptSrc,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://client.crisp.chat",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
@@ -73,11 +87,8 @@ const nextConfig = {
               'usb=()',
             ].join(', '),
           },
-          // XSS Protection (legacy browsers)
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
+          // NB : header X-XSS-Protection retiré — déprécié et potentiellement
+          // dangereux (XS-Leaks sur anciens navigateurs). La CSP couvre le XSS.
         ],
       },
     ];

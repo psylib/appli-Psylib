@@ -54,7 +54,7 @@
       "description": "Client OIDC principal pour l'application Next.js",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "change-me-in-production",
+      "secret": "${KC_CLIENT_SECRET_APP}",
       "redirectUris": [
         "http://localhost:3000/*",
         "https://psylib.eu/*",
@@ -87,7 +87,7 @@
       "description": "Client service account pour les opérations admin NestJS",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
-      "secret": "change-me-admin-in-production",
+      "secret": "${KC_CLIENT_SECRET_ADMIN}",
       "protocol": "openid-connect",
       "publicClient": false,
       "standardFlowEnabled": false,
@@ -145,7 +145,7 @@
     "starttls": "false",
     "auth": "true",
     "user": "resend",
-    "password": "CHANGE_ME_RESEND_API_KEY"
+    "password": "${KC_SMTP_PASSWORD}"
   },
   "eventsEnabled": true,
   "eventsExpiration": 2592000,

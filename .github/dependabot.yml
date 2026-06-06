@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Dépendances npm/pnpm (monorepo — lockfile pnpm à la racine)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'Europe/Paris'
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    labels:
+      - 'dependencies'
+    # Regroupe les mises à jour mineures/patch pour limiter le bruit de PR ;
+    # les majeures restent en PR individuelles (review manuelle).
+    groups:
+      minor-and-patch:
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  # GitHub Actions (versions des actions dans les workflows)
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '06:00'
+      timezone: 'Europe/Paris'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    groups:
+      actions:
+        update-types:
+          - 'minor'
+          - 'patch'

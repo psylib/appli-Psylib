@@ -38,6 +38,13 @@ services:
       KEYCLOAK_ADMIN: ${KC_ADMIN_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
 
+      # Secrets injectés dans le realm à l'import (placeholders ${...} du realm JSON)
+      # NB : --import-realm n'importe QUE si le realm n'existe pas encore →
+      # ces valeurs ne s'appliquent qu'au bootstrap initial.
+      KC_CLIENT_SECRET_APP: ${KC_CLIENT_SECRET_APP}
+      KC_CLIENT_SECRET_ADMIN: ${KC_CLIENT_SECRET_ADMIN}
+      KC_SMTP_PASSWORD: ${KC_SMTP_PASSWORD}
+
       # Hostname
       KC_HOSTNAME: auth.psylib.eu
       KC_HOSTNAME_STRICT: 'true'
