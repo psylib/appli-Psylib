@@ -17,7 +17,9 @@ set -euo pipefail
 # Retention: 90 jours cote OVH (vs 30 local)
 
 BACKUP_DIR="${BACKUP_DIR:-/opt/psyscale-backups}"
-RCLONE_REMOTE="ovh-psyscale"
+# Nom du remote rclone — SANS tiret : la config par env vars (RCLONE_CONFIG_OVH_PSYSCALE_*)
+# exige un nom mappable en variable d'environnement (les tirets y sont invalides).
+RCLONE_REMOTE="ovh_psyscale"
 OVH_BUCKET="${OVH_S3_BUCKET:-psyscale-backups-prod}"
 RETENTION_DAYS=90
 LOG_FILE="/var/log/psyscale-backup.log"

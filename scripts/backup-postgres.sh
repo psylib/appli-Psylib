@@ -20,6 +20,10 @@ BACKUP_FILE="${BACKUP_DIR}/psyscale-${DATE}.sql.gz"
 # ── Heartbeat helper ─────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Charge la config OVH offsite (cross-cloud HDS) — le cron a un env minimal,
+# donc on source ovh-backup.env (OVH_S3_*) pour activer la sync vers OVH Object Storage.
+if [ -f "${SCRIPT_DIR}/ovh-backup.env" ]; then set -a; . "${SCRIPT_DIR}/ovh-backup.env"; set +a; fi
+
 ping_heartbeat() {
   local endpoint="${1:-}"  # "" = success, "/fail" = fail
   if [ -n "${HEALTHCHECKS_BACKUP_URL:-}" ]; then

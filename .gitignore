@@ -99,3 +99,6 @@ apps/mobile/*.png
 
 # Firecrawl research data
 .firecrawl/
+
+# Secrets sync backup OVH (jamais commiter)
+scripts/ovh-backup.env
