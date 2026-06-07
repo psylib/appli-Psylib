@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { RebookService } from './rebook.service';
 
 describe('RebookService', () => {
@@ -21,6 +21,7 @@ describe('RebookService', () => {
     };
     const tx = {
       appointment: {
+        findUnique: vi.fn().mockResolvedValue({ status: 'confirmed' }),
         findMany: vi.fn().mockResolvedValue([]),
         update: vi.fn().mockResolvedValue({ ...appt, scheduledAt: earlier }),
       },
@@ -37,7 +38,8 @@ describe('RebookService', () => {
     const email = { sendBookingReceivedToPatient: vi.fn().mockResolvedValue(undefined) } as any;
     const config = { get: vi.fn().mockReturnValue('https://psylib.eu') } as any;
     const emitter = { emit: vi.fn() } as any;
-    const svc = new RebookService(prisma, availability, email, config, emitter);
+    const audit = { log: vi.fn().mockResolvedValue(undefined) } as any;
+    const svc = new RebookService(prisma, availability, email, config, emitter, audit);
     return { svc, prisma, availability, emitter, tx };
   }
 
@@ -76,5 +78,11 @@ describe('RebookService', () => {
       expect.objectContaining({ data: { notifyEarlierSlot: false } }),
     );
     expect(res).toEqual({ success: true });
+  });
+
+  it('moveToSlot throws ConflictException when the slot is already taken', async () => {
+    const { svc, tx } = build({ slots: [earlier] });
+    tx.appointment.findMany.mockResolvedValueOnce([{ scheduledAt: earlier, duration: 50 }]);
+    await expect(svc.moveToSlot('tok-1', earlier.toISOString())).rejects.toBeInstanceOf(ConflictException);
   });
 });

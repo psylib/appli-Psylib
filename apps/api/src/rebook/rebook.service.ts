@@ -5,10 +5,12 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 import { AvailabilityService } from '../availability/availability.service';
 import { EmailService } from '../notifications/email.service';
+import { AuditService } from '../common/audit.service';
 
 @Injectable()
 export class RebookService {
   private readonly logger = new Logger(RebookService.name);
+  private readonly frontendUrl: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -16,7 +18,10 @@ export class RebookService {
     private readonly email: EmailService,
     private readonly config: ConfigService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+    private readonly audit: AuditService,
+  ) {
+    this.frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+  }
 
   private async loadByToken(token: string) {
     const appt = await this.prisma.appointment.findFirst({
@@ -71,6 +76,15 @@ export class RebookService {
 
     await this.prisma.$transaction(
       async (tx) => {
+        // FIX I-2: Re-read status inside the transaction to guard against a concurrent cancellation
+        const fresh = await tx.appointment.findUnique({
+          where: { id: appt.id },
+          select: { status: true },
+        });
+        if (!fresh || (fresh.status !== 'scheduled' && fresh.status !== 'confirmed')) {
+          throw new ConflictException('Ce rendez-vous a été annulé entre-temps');
+        }
+
         const newEnd = new Date(newSlot.getTime() + duration * 60000);
         const windowStart = new Date(newSlot.getTime() - 24 * 60 * 60000);
         const candidates = await tx.appointment.findMany({
@@ -78,6 +92,7 @@ export class RebookService {
             psychologistId: appt.psychologistId,
             id: { not: appt.id },
             status: { not: 'cancelled' },
+            bookingPaymentStatus: { not: 'payment_failed' },
             scheduledAt: { gte: windowStart, lt: newEnd },
           },
           select: { scheduledAt: true, duration: true },
@@ -96,6 +111,8 @@ export class RebookService {
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
 
+    // Émis APRÈS commit de la transaction : si la tx échoue (sérialisation/conflit),
+    // l'await ci-dessus rejette et on n'atteint jamais cette ligne.
     // L'ancienne heure se libère → cascade vers d'autres patients en attente.
     this.eventEmitter.emit('slot.freed', { psychologistId: appt.psychologistId, freedAt: oldDate });
 
@@ -104,7 +121,6 @@ export class RebookService {
         where: { id: appt.patientId },
         select: { name: true, email: true },
       });
-      const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
       if (patient?.email) {
         void this.email
           .sendBookingReceivedToPatient(patient.email, {
@@ -113,12 +129,26 @@ export class RebookService {
             scheduledAt: newSlot,
             duration,
             cancelUrl: appt.cancelToken
-              ? `${frontendUrl}/appointments/cancel/${appt.cancelToken}`
-              : `${frontendUrl}/psy/${appt.psychologist.slug}`,
+              ? `${this.frontendUrl}/appointments/cancel/${appt.cancelToken}`
+              : `${this.frontendUrl}/psy/${appt.psychologist.slug}`,
           })
           .catch((err) => this.logger.warn(`rebook confirmation email failed: ${(err as Error).message}`));
       }
     }
+
+    // Audit log — HDS compliance, mirroring cancelByToken audit shape
+    await this.audit.log({
+      actorId: appt.patientId ?? appt.psychologistId,
+      actorType: 'patient',
+      action: 'UPDATE',
+      entityType: 'appointment',
+      entityId: appt.id,
+      metadata: {
+        action: 'earlier_slot_move',
+        from: oldDate.toISOString(),
+        to: newSlot.toISOString(),
+      },
+    });
 
     return { success: true, scheduledAt: newSlot.toISOString() };
   }
