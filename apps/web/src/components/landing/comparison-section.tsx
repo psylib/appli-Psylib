@@ -24,6 +24,7 @@ const rows: { feature: string; psylib: CellValue; generic: CellValue; files: Cel
   { feature: 'Comptabilité intégrée (recettes, dépenses, FEC, 2035)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Synchronisation Google Calendar', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Partage de documents sécurisé psy→patient', psylib: 'yes', generic: 'no', files: 'no' },
+  { feature: 'Compte assistant·e / secrétaire (accès séparé du clinique)', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Gestion patients mineurs & tuteurs légaux', psylib: 'yes', generic: 'no', files: 'no' },
 ];
 

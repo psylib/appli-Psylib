@@ -10,6 +10,7 @@ import {
   CalendarCheck,
   CalendarClock,
   FolderLock,
+  UserCog,
   Baby,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
@@ -42,6 +43,14 @@ const features: {
     description: 'Réseau psy-to-psy sécurisé. Adressage de patients, groupes d\'intervision, supervision en ligne.',
     color: 'text-sage bg-sage-50',
     border: 'border-sage-200',
+  },
+  {
+    icon: UserCog,
+    title: 'Compte assistant·e / secrétaire',
+    description: 'Donnez à votre secrétaire un accès dédié à votre agenda et aux fiches administratives — jamais aux notes cliniques. Compte nominatif, révocable en un clic.',
+    color: 'text-sage bg-sage-50',
+    border: 'border-sage-200',
+    badge: 'Inclus dès Solo',
   },
   {
     icon: Sparkles,
