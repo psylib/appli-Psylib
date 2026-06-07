@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useToast } from '@/components/ui/toast';
 import { Button } from '@/components/ui/button';
 import { psychologistApi } from '@/lib/api/psychologist';
-import { MapPin, Euro, Phone, Save, Clock, MessageSquareText } from 'lucide-react';
+import { MapPin, Euro, Phone, Save, Clock, MessageSquareText, Bell } from 'lucide-react';
 
 interface PracticeInfoSettingsProps {
   token?: string;
@@ -26,6 +26,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
   const [sessionDuration, setSessionDuration] = useState('');
   const [minBreakMinutes, setMinBreakMinutes] = useState('0');
   const [bookingConfirmationMessage, setBookingConfirmationMessage] = useState('');
+  const [earlierSlotEnabled, setEarlierSlotEnabled] = useState(true);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -39,6 +40,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         setSessionDuration(profile.defaultSessionDuration != null ? String(profile.defaultSessionDuration) : '');
         setMinBreakMinutes(profile.minBreakMinutes != null ? String(profile.minBreakMinutes) : '0');
         setBookingConfirmationMessage(profile.bookingConfirmationMessage ?? '');
+        setEarlierSlotEnabled(profile.earlierSlotEnabled ?? true);
       })
       .catch(() => {
         toastError('Impossible de charger les informations du cabinet.');
@@ -62,6 +64,7 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         defaultSessionDuration: sessionDuration ? Number(sessionDuration) : undefined,
         minBreakMinutes: Number(minBreakMinutes) || 0,
         bookingConfirmationMessage: bookingConfirmationMessage || undefined,
+        earlierSlotEnabled,
       }, token);
       success('Informations du cabinet enregistrées');
       setDirty(false);
@@ -210,6 +213,39 @@ export function PracticeInfoSettings({ token: tokenProp }: PracticeInfoSettingsP
         <p className="text-xs text-muted-foreground">
           Si vide, un message par défaut sera affiché. Vous pouvez aussi définir des consignes spécifiques par type de consultation.
         </p>
+      </div>
+
+      {/* Alertes place plus tôt */}
+      <div className="rounded-xl border border-border bg-white p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Bell size={18} className="text-primary" />
+          <h2 className="text-base font-medium text-foreground">Alertes « place plus tôt »</h2>
+        </div>
+        <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              Alertes « place plus tôt »
+            </span>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Proposer aux patients d&apos;être prévenus si un créneau se libère avant leur rendez-vous.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => { setEarlierSlotEnabled((v) => !v); setDirty(true); }}
+            className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${
+              earlierSlotEnabled ? 'bg-primary' : 'bg-gray-200'
+            }`}
+            aria-pressed={earlierSlotEnabled}
+            aria-label="Activer les alertes place plus tôt"
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                earlierSlotEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Bouton enregistrer */}

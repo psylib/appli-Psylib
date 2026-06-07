@@ -383,6 +383,7 @@ export class PublicBookingService {
     const wantsOnlinePayment = dto.payOnline === true && psyAcceptsPayment;
 
     const cancelToken = randomUUID();
+    const earlierSlotToken = dto.notifyEarlierSlot ? randomUUID() : null;
 
     // Wrap conflict check + patient upsert + appointment create in a serializable
     // transaction to prevent double-booking under concurrent requests.
@@ -440,6 +441,8 @@ export class PublicBookingService {
           source: 'public',
           reason: dto.reason,
           cancelToken,
+          notifyEarlierSlot: dto.notifyEarlierSlot === true,
+          earlierSlotToken,
           consultationTypeId: dto.consultationTypeId ?? null,
           bookingPaymentStatus: wantsOnlinePayment ? 'pending_payment' : 'none',
           isOnline: dto.isOnline === true,

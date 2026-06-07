@@ -398,6 +398,7 @@ model Psychologist {
   rppsVerifiedAt           DateTime?                @map("rpps_verified_at")
   assistants               Assistant[]
   assistantInvitations     AssistantInvitation[]
+  earlierSlotEnabled       Boolean                @default(true) @map("earlier_slot_enabled")
 
   @@map("psychologists")
 }
@@ -792,6 +793,9 @@ model Appointment {
   cancellationReason     String?                @map("cancellation_reason")
   cancelledBy            CancelledBy?           @map("cancelled_by")
   googleEventId          String?                @map("google_event_id")
+  notifyEarlierSlot      Boolean                @default(false) @map("notify_earlier_slot")
+  earlierSlotToken       String?                @unique @map("earlier_slot_token")
+  earlierSlotNotifiedAt  DateTime?              @map("earlier_slot_notified_at")
   createdAt              DateTime               @default(now()) @map("created_at")
 
   psychologist     Psychologist             @relation(fields: [psychologistId], references: [id], onDelete: Cascade)

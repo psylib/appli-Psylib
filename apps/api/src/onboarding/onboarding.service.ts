@@ -137,6 +137,13 @@ export class UpdatePsychologistProfileDto {
   @IsString()
   @IsOptional()
   bookingConfirmationMessage?: string;
+
+  // Earlier slot alerts
+  @ApiPropertyOptional({ description: 'Notify patients when an earlier slot becomes available' })
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  earlierSlotEnabled?: boolean;
 }
 
 export type OnboardingStep =
@@ -225,6 +232,7 @@ export class OnboardingService {
         ...(dto.noShowBillingEnabled !== undefined && { noShowBillingEnabled: dto.noShowBillingEnabled }),
         ...(dto.noShowFee !== undefined && { noShowFee: dto.noShowFee }),
         ...(dto.bookingConfirmationMessage !== undefined && { bookingConfirmationMessage: dto.bookingConfirmationMessage }),
+        ...(dto.earlierSlotEnabled !== undefined && { earlierSlotEnabled: dto.earlierSlotEnabled }),
       },
     });
 

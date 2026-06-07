@@ -1549,6 +1549,45 @@ export class EmailService {
     await this.send(to, `Créneau disponible — ${data.psychologistName}`, html, 'sendWaitlistProposal');
   }
 
+  // ─── EARLIER SLOT — UNE PLACE PLUS TÔT S'EST LIBÉRÉE ──────────────────────
+
+  async sendEarlierSlotAvailable(
+    to: string,
+    data: {
+      patientName: string;
+      psychologistName: string;
+      currentDate: Date;
+      claimUrl: string;
+      unsubscribeUrl: string;
+    },
+  ): Promise<void> {
+    const fmt = (d: Date) =>
+      d.toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+    const html = emailLayout(
+      'Une place plus tôt est disponible',
+      `<h1>Une place s'est libérée plus tôt&nbsp;!</h1>
+      <p>Bonjour ${data.patientName},</p>
+      <p>Une place s'est libérée plus tôt que votre rendez-vous actuel du <strong>${fmt(
+        data.currentDate,
+      )}</strong> avec ${data.psychologistName}.</p>
+      <p>Si vous le souhaitez, vous pouvez avancer votre rendez-vous&nbsp;:</p>
+      <div style="text-align:center;">
+        <a href="${data.claimUrl}" class="btn">Voir les créneaux plus tôt</a>
+      </div>
+      <p style="font-size:14px;color:#6B7280">Premier arrivé, premier servi&nbsp;: la place peut être prise par un autre patient. Votre rendez-vous actuel reste réservé tant que vous ne le déplacez pas.</p>
+      <p style="font-size:13px;color:#9CA3AF">Vous ne souhaitez plus être prévenu&nbsp;? <a href="${data.unsubscribeUrl}">Se désinscrire de ces alertes</a>.</p>`,
+    );
+
+    await this.send(to, `Une place plus tôt — ${data.psychologistName}`, html, 'sendEarlierSlotAvailable');
+  }
+
   // ─── PAYMENT LINK — LIEN DE PAIEMENT PATIENT ─────────────────────────────────
 
   async sendPaymentLinkToPatient(
