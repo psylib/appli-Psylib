@@ -11,10 +11,6 @@ const livekitWsUrl = process.env.NEXT_PUBLIC_LIVEKIT_WS_URL || '';
 
 const isProd = process.env.NODE_ENV === 'production';
 
-// Flag CSP nonce (défaut OFF). ON → la CSP est servie par le middleware (nonce +
-// strict-dynamic, par requête) et omise ici pour éviter une double-CSP.
-const cspNonceEnabled = process.env.CSP_NONCE === 'true';
-
 // script-src :
 // - dev  : 'unsafe-eval' requis par le HMR/React Refresh de Next.js
 // - prod : 'wasm-unsafe-eval' uniquement → autorise la compilation WebAssembly
@@ -60,10 +56,8 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Content Security Policy (statique, avec 'unsafe-inline').
-          // Omise quand CSP_NONCE=true : le middleware sert alors une CSP par requête
-          // avec nonce + strict-dynamic (cf. src/lib/security/csp.ts). Évite la double-CSP.
-          ...(cspNonceEnabled ? [] : [{
+          // Content Security Policy
+          {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
@@ -81,7 +75,7 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
             ].join('; '),
-          }]),
+          },
           // Permissions Policy — désactive fonctionnalités non utilisées
           {
             key: 'Permissions-Policy',
