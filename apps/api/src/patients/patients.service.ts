@@ -298,6 +298,35 @@ export class PatientsService {
     // Delete shared documents files before cascade delete
     await this.documentsService.purgePatientDocuments(psy.id, patientId);
 
+    // RGPD : archiver la preuve de consentement AVANT la cascade.
+    // gdpr_consents est onDelete:Cascade → effacé par patient.delete(). Or l'art. 7.1
+    // impose de pouvoir démontrer le consentement obtenu, et l'art. 17.3.b autorise la
+    // conservation au titre d'une obligation légale. audit_logs n'a pas de FK vers Patient
+    // (entityId = string) → il survit à la purge et constitue le magasin de rétention.
+    const consents = await this.prisma.gdprConsent.findMany({
+      where: { patientId },
+      select: {
+        type: true,
+        version: true,
+        consentedAt: true,
+        withdrawnAt: true,
+        refusedAt: true,
+        consentGivenBy: true,
+        ipAddress: true,
+      },
+    });
+    if (consents.length > 0) {
+      await this.audit.log({
+        actorId,
+        actorType: 'psychologist',
+        action: 'CONSENT_ARCHIVE',
+        entityType: 'gdpr_consent',
+        entityId: patientId,
+        metadata: { reason: 'rgpd_purge', consents },
+        req,
+      });
+    }
+
     // Suppression en cascade (Prisma gère via onDelete: Cascade)
     await this.prisma.patient.delete({ where: { id: patientId } });
 

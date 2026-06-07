@@ -101,3 +101,40 @@ describe('NotificationsService.createAndDispatch', () => {
     expect(result).toEqual(mockNotification);
   });
 });
+
+describe('NotificationsService.savePreferences (validation)', () => {
+  let service: NotificationsService;
+  let prisma: any;
+
+  beforeEach(() => {
+    prisma = { user: { update: vi.fn().mockResolvedValue({}) } };
+    service = new NotificationsService(prisma, {} as any, {} as any, {} as any);
+  });
+
+  it('ne conserve que les types de notification connus et coerce les booléens', async () => {
+    await service.savePreferences('user-1', {
+      session_reminder: { email: true, push: false },
+      __proto__: { email: true, push: true } as any,
+      hacker_type: { email: true, push: true } as any,
+    } as any);
+
+    const saved = prisma.user.update.mock.calls[0][0].data.notificationPreferences;
+    expect(saved.session_reminder).toEqual({ email: true, push: false });
+    expect(saved.hacker_type).toBeUndefined();
+    expect(Object.prototype.hasOwnProperty.call(saved, '__proto__')).toBe(false);
+  });
+
+  it('coerce les valeurs non-booléennes en false', async () => {
+    await service.savePreferences('user-1', {
+      payment: { email: 'yes' as any, push: 1 as any },
+    } as any);
+
+    const saved = prisma.user.update.mock.calls[0][0].data.notificationPreferences;
+    expect(saved.payment).toEqual({ email: false, push: false });
+  });
+
+  it('rejette un body qui n\'est pas un objet', async () => {
+    await expect(service.savePreferences('user-1', null as any)).rejects.toThrow();
+    await expect(service.savePreferences('user-1', 'str' as any)).rejects.toThrow();
+  });
+});

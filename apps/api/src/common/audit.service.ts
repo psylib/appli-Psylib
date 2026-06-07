@@ -8,7 +8,8 @@ export type AuditAction = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE' | 'DECRYPT' | 
   | 'INVOICE_AUTO_GENERATED' | 'INVOICE_AUTO_EMAILED'
   | 'CALENDAR_CONNECT' | 'CALENDAR_DISCONNECT'
   | 'AI_SCRIBE_COMPLETE' | 'AI_SCRIBE_FAILED'
-  | 'SCRIBE_ENABLED' | 'SCRIBE_DISABLED' | 'SCRIBE_AUDIO_UPLOADED';
+  | 'SCRIBE_ENABLED' | 'SCRIBE_DISABLED' | 'SCRIBE_AUDIO_UPLOADED'
+  | 'CONSENT_ARCHIVE';
 export type ActorType = 'psychologist' | 'patient' | 'system' | 'admin' | 'guardian' | 'guest' | 'assistant';
 
 export interface AuditLogParams {

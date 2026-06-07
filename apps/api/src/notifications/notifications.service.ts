@@ -1,9 +1,21 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 import { NotificationGateway } from './notification.gateway';
 import { EmailService } from './email.service';
 import { PushService } from './push.service';
+
+/** Types de notification dont les préférences sont persistables (allow-list). */
+const NOTIFICATION_PREFERENCE_TYPES = [
+  'session_reminder',
+  'patient_message',
+  'mood_alert',
+  'ai_complete',
+  'payment',
+  'appointment_update',
+  'session_update',
+  'patient_update',
+] as const;
 
 @Injectable()
 export class NotificationsService {
@@ -63,11 +75,36 @@ export class NotificationsService {
   }
 
   async savePreferences(userId: string, preferences: Record<string, { email: boolean; push: boolean }>) {
+    const sanitized = this.sanitizePreferences(preferences);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { notificationPreferences: preferences },
+      data: { notificationPreferences: sanitized },
     });
     return { success: true };
+  }
+
+  /**
+   * Borne les préférences aux types connus + coerce email/push en booléens.
+   * Le body de PUT /preferences a des clés dynamiques (types de notif) que le
+   * ValidationPipe global (whitelist) ne peut pas valider via DTO sans les stripper.
+   */
+  private sanitizePreferences(
+    input: unknown,
+  ): Record<string, { email: boolean; push: boolean }> {
+    if (input === null || typeof input !== 'object' || Array.isArray(input)) {
+      throw new BadRequestException('Préférences invalides');
+    }
+    const source = input as Record<string, unknown>;
+    const result: Record<string, { email: boolean; push: boolean }> = {};
+    for (const type of NOTIFICATION_PREFERENCE_TYPES) {
+      // hasOwnProperty pour ignorer __proto__ / clés héritées
+      if (!Object.prototype.hasOwnProperty.call(source, type)) continue;
+      const value = source[type];
+      if (value === null || typeof value !== 'object') continue;
+      const v = value as Record<string, unknown>;
+      result[type] = { email: v.email === true, push: v.push === true };
+    }
+    return result;
   }
 
   private defaultPreferences() {
