@@ -18,7 +18,11 @@ export class GuardianJwtStrategy extends PassportStrategy(Strategy, 'guardian-jw
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get<string>('GUARDIAN_JWT_SECRET') ?? config.getOrThrow<string>('PATIENT_JWT_SECRET'),
+      // Secret dédié obligatoire — le service de signature (guardian-auth.service)
+      // exige déjà GUARDIAN_JWT_SECRET via getOrThrow, donc la var est garantie en prod.
+      // Le fallback vers PATIENT_JWT_SECRET partageait le secret patient↔tuteur (incohérent
+      // avec la signature) et est supprimé.
+      secretOrKey: config.getOrThrow<string>('GUARDIAN_JWT_SECRET'),
       algorithms: ['HS256'],
     });
   }
