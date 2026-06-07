@@ -8,6 +8,8 @@ import {
   Bell,
   Calculator,
   CalendarCheck,
+  CalendarClock,
+  FolderLock,
   Baby,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
@@ -57,6 +59,13 @@ const features: {
     border: 'border-sage-200',
   },
   {
+    icon: CalendarClock,
+    title: 'Alerte « place plus tôt »',
+    description: 'Vos patients sont prévenus par email dès qu\'un créneau se libère avant leur rendez-vous — et rebasculent en un clic. La liste d\'attente intelligente, façon Doctolib.',
+    color: 'text-terracotta bg-terracotta-50',
+    border: 'border-terracotta-200',
+  },
+  {
     icon: Bell,
     title: 'Notifications temps réel',
     description: 'Nouveau RDV, paiement reçu, rappels patient, alertes humeur. Tout arrive instantanément dans votre dashboard — sans rafraîchir.',
@@ -84,6 +93,13 @@ const features: {
     description: 'Gérez les patients mineurs avec portail tuteur légal dédié. Invitations sécurisées, consentements individuels, accès lecture seule pour les parents.',
     color: 'text-sage bg-sage-50',
     border: 'border-sage-200',
+  },
+  {
+    icon: FolderLock,
+    title: 'Partage de documents sécurisé',
+    description: 'Transmettez bilans, exercices et documents administratifs à vos patients. Stockage chiffré HDS, accès depuis leur espace patient — fini les pièces jointes email non sécurisées.',
+    color: 'text-terracotta bg-terracotta-50',
+    border: 'border-terracotta-200',
   },
   {
     icon: Shield,

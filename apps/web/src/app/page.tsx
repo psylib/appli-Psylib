@@ -12,6 +12,7 @@ import { FAQSection } from '@/components/landing/faq-section';
 import { BeforeAfterSection } from '@/components/landing/before-after-section';
 import { LeadNurtureCTA } from '@/components/landing/lead-nurture-cta';
 import { VisioSection } from '@/components/landing/visio-section';
+import { ScribeSection } from '@/components/landing/scribe-section';
 import { PatientPortalSection } from '@/components/landing/patient-portal-section';
 import { CTASection } from '@/components/landing/cta-section';
 import { LandingFooter } from '@/components/landing/landing-footer';
@@ -30,7 +31,7 @@ const jsonLd = {
         'Logiciel de gestion de cabinet tout-en-un pour psychologues liberaux. Dossiers patients securises, notes cliniques structurees, outcome tracking (PHQ-9/GAD-7), reseau professionnel, facturation. Conforme HDS France.',
       url: 'https://psylib.eu',
       featureList:
-        'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA en streaming, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF automatique, Comptabilite integree (recettes depenses export FEC preparation 2035), Prise de rendez-vous en ligne, Paiement Stripe a la reservation, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Teleconsultation video HD integree HDS, Espace patient avec mood tracking et journal therapeutique, Exercices therapeutiques personnalises par IA, Notifications temps reel WebSocket, Reseau professionnel entre psychologues, Supervision et intervision, Chiffrement AES-256-GCM',
+        'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA en streaming, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF automatique, Comptabilite integree (recettes depenses export FEC preparation 2035), Prise de rendez-vous en ligne, Paiement Stripe a la reservation, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Teleconsultation video HD integree HDS, Scribe IA transcription audio de consultation, Alerte place plus tot pour patients (style Doctolib), Partage de documents securise psy vers patient, Espace patient avec mood tracking et journal therapeutique, Exercices therapeutiques personnalises par IA, Notifications temps reel WebSocket, Reseau professionnel entre psychologues, Supervision et intervision, Chiffrement AES-256-GCM',
       offers: {
         '@type': 'AggregateOffer',
         lowPrice: '0',
@@ -175,6 +176,7 @@ export default function HomePage() {
         <FeaturesSection />
         <OutcomeSection />
         <VisioSection />
+        <ScribeSection />
         <PatientPortalSection />
         <NetworkSection />
         <ComparisonSection />
