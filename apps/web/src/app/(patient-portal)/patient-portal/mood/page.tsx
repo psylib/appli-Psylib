@@ -80,7 +80,9 @@ export default function MoodPage() {
           max={10}
           value={selected}
           onChange={(e) => setSelected(Number(e.target.value))}
-          className="w-full accent-[#3D52A0]"
+          aria-label="Niveau d'humeur, de 1 (très mal) à 10 (excellent)"
+          aria-valuetext={`${selected} sur 10 — ${MOOD_LABELS[selected]}`}
+          className="w-full accent-primary rounded-full focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-2"
         />
 
         <div className="flex justify-between text-xs text-slate-400 mt-1 px-0.5">
@@ -92,18 +94,19 @@ export default function MoodPage() {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Une note sur votre journée ? (facultatif)"
-          className="mt-4 w-full px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#3D52A0]/30 focus:border-[#3D52A0]"
+          aria-label="Note sur votre journée (facultatif)"
+          className="mt-4 w-full px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:border-primary"
           rows={2}
         />
 
         {error && (
-          <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 text-center">
+          <div role="alert" className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 text-center">
             {error}
           </div>
         )}
 
         {saved && (
-          <div className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700 text-center">
+          <div role="status" aria-live="polite" className="mt-3 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700 text-center">
             ✓ Humeur enregistrée
           </div>
         )}
@@ -111,7 +114,7 @@ export default function MoodPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="mt-3 w-full py-2.5 rounded-lg bg-[#3D52A0] text-white text-sm font-medium hover:bg-[#2d3f7c] transition-colors disabled:opacity-60"
+          className="mt-3 w-full py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors disabled:opacity-60"
         >
           {saving ? 'Enregistrement...' : 'Enregistrer'}
         </button>

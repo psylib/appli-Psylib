@@ -88,7 +88,7 @@ function DocumentCard({
         <button
           onClick={handleDownload}
           disabled={downloading}
-          className="shrink-0 flex items-center gap-1.5 text-xs bg-[#3D52A0] text-white rounded-lg px-3 py-1.5 hover:bg-[#2d3f7c] transition-colors disabled:opacity-60"
+          className="shrink-0 flex items-center gap-1.5 text-xs bg-primary text-white rounded-lg px-3 py-1.5 hover:bg-primary-dark transition-colors disabled:opacity-60"
         >
           <Download size={13} />
           {downloading ? '...' : 'Ouvrir'}

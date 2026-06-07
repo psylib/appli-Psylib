@@ -82,7 +82,7 @@ function ExerciseCard({
         {exercise.status === 'assigned' && (
           <button
             onClick={handleStart}
-            className="shrink-0 text-xs bg-[#3D52A0] text-white rounded-lg px-3 py-1.5 hover:bg-[#2d3f7c] transition-colors"
+            className="shrink-0 text-xs bg-primary text-white rounded-lg px-3 py-1.5 hover:bg-primary-dark transition-colors"
           >
             Commencer
           </button>
@@ -97,7 +97,8 @@ function ExerciseCard({
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="Votre retour sur cet exercice (facultatif)"
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#3D52A0]/30"
+                aria-label="Votre retour sur cet exercice (facultatif)"
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm resize-none focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:border-primary"
                 rows={2}
               />
               <div className="flex gap-2">

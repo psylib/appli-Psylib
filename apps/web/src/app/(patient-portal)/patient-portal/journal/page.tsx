@@ -153,7 +153,7 @@ export default function JournalPage() {
               setWriting(true);
               setTimeout(() => textareaRef.current?.focus(), 50);
             }}
-            className="px-4 py-2 rounded-xl bg-[#3D52A0] text-white text-sm font-medium hover:bg-[#2d3f7c] transition-colors"
+            className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors"
           >
             + Écrire
           </button>
@@ -162,14 +162,14 @@ export default function JournalPage() {
 
       {/* New entry form */}
       {writing && (
-        <div className="bg-white rounded-2xl border border-[#3D52A0]/30 p-4 space-y-3 shadow-sm">
+        <div className="bg-white rounded-2xl border border-primary/30 p-4 space-y-3 shadow-sm">
           <textarea
             ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Comment s'est passée votre journée ? Qu'avez-vous ressenti ?"
             aria-label="Contenu de l'entrée de journal"
-            className="w-full px-2 py-1 text-sm text-slate-700 resize-none rounded-lg focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[#3D52A0] focus-visible:ring-offset-1 placeholder:text-slate-300"
+            className="w-full px-2 py-1 text-sm text-slate-700 resize-none rounded-lg focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-1 placeholder:text-slate-300"
             rows={4}
           />
 
@@ -185,7 +185,7 @@ export default function JournalPage() {
                     onClick={() => setMood(mood === m ? undefined : m)}
                     aria-label={`Humeur ${m} sur 10`}
                     aria-pressed={mood === m}
-                    className={`flex items-center justify-center min-w-[44px] min-h-[44px] text-lg rounded-lg transition-transform focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#3D52A0] ${mood === m ? 'scale-125 bg-[#3D52A0]/10' : 'opacity-50 hover:opacity-100'}`}
+                    className={`flex items-center justify-center min-w-[44px] min-h-[44px] text-lg rounded-lg transition-transform focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary ${mood === m ? 'scale-125 bg-primary/10' : 'opacity-50 hover:opacity-100'}`}
                     title={`${m}/10`}
                   >
                     {MOOD_EMOJIS[m]}
@@ -202,7 +202,8 @@ export default function JournalPage() {
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="anxiété, travail, famille..."
-                className="flex-1 text-xs px-2 py-1 rounded-lg border border-slate-200 focus:outline-none focus:border-[#3D52A0]"
+                aria-label="Tags, séparés par des virgules"
+                className="flex-1 text-xs px-2 py-1 rounded-lg border border-slate-200 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:border-primary"
               />
             </div>
 
@@ -212,7 +213,7 @@ export default function JournalPage() {
                 type="checkbox"
                 checked={isPrivate}
                 onChange={(e) => setIsPrivate(e.target.checked)}
-                className="rounded accent-[#3D52A0]"
+                className="rounded accent-primary"
               />
               <span className="text-xs text-slate-500">Entrée privée (non partagée)</span>
             </label>
@@ -222,7 +223,7 @@ export default function JournalPage() {
             <button
               onClick={handleSubmit}
               disabled={saving || !content.trim()}
-              className="flex-1 py-2 rounded-xl bg-[#3D52A0] text-white text-sm font-medium hover:bg-[#2d3f7c] transition-colors disabled:opacity-60"
+              className="flex-1 py-2 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary-dark transition-colors disabled:opacity-60"
             >
               {saving ? 'Enregistrement...' : 'Enregistrer'}
             </button>
@@ -249,7 +250,7 @@ export default function JournalPage() {
           <p className="mt-3 text-sm text-slate-500">Votre journal est vide pour l&apos;instant.</p>
           <button
             onClick={() => setWriting(true)}
-            className="mt-3 text-sm text-[#3D52A0] font-medium hover:underline"
+            className="mt-3 text-sm text-primary font-medium hover:underline"
           >
             Écrire votre première entrée
           </button>

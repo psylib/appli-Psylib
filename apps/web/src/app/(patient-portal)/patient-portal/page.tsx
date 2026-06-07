@@ -73,7 +73,7 @@ export default function PatientPortalDashboard() {
       {/* Quick mood log */}
       <Link
         href="/patient-portal/mood"
-        className="block rounded-2xl bg-[#3D52A0] text-white p-4 hover:bg-[#2d3f7c] transition-colors"
+        className="block rounded-2xl bg-primary text-white p-4 hover:bg-primary-dark transition-colors"
       >
         <div className="flex items-center justify-between">
           <div>
@@ -102,7 +102,7 @@ export default function PatientPortalDashboard() {
         {/* Exercices */}
         <Link
           href="/patient-portal/exercises"
-          className="rounded-2xl bg-white border border-slate-200 p-4 hover:border-[#3D52A0] transition-colors"
+          className="rounded-2xl bg-white border border-slate-200 p-4 hover:border-primary transition-colors"
         >
           <p className="text-xs text-slate-500 mb-1">Exercices en cours</p>
           <div className="flex items-end gap-1">
@@ -125,7 +125,7 @@ export default function PatientPortalDashboard() {
           </div>
           <Link
             href="/patient-portal/mood"
-            className="mt-3 block text-xs text-[#3D52A0] font-medium hover:underline"
+            className="mt-3 block text-xs text-primary font-medium hover:underline"
           >
             Voir l&apos;historique complet →
           </Link>
@@ -137,7 +137,7 @@ export default function PatientPortalDashboard() {
         <div className="rounded-2xl bg-white border border-slate-200 p-4">
           <p className="text-xs font-medium text-slate-700 mb-2">Prochain rendez-vous</p>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#3D52A0]/10 flex items-center justify-center text-xl">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-xl">
               📅
             </div>
             <div>
