@@ -36,6 +36,13 @@ export interface KeycloakUser {
 @Injectable()
 export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jwt') {
   private readonly logger = new Logger(KeycloakJwtStrategy.name);
+  /**
+   * OIDC clients (azp / authorized party) allowed to call this API. A signed
+   * realm token alone is not enough — it must have been issued to one of our
+   * own clients. Configurable via KEYCLOAK_ALLOWED_AZP (comma-separated);
+   * set to empty to disable the check (kill-switch for incident rollback).
+   */
+  private readonly allowedAzp: Set<string>;
 
   constructor(
     private readonly configService: ConfigService,
@@ -58,12 +65,35 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
       algorithms: ['RS256'],
     });
 
+    const allowed = (
+      configService.get<string>('KEYCLOAK_ALLOWED_AZP') ?? 'psyscale-app,psylib-mobile'
+    )
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    this.allowedAzp = new Set(allowed);
+
     this.logger.log(`Keycloak JWKS endpoint: ${jwksUri}`);
+    this.logger.log(
+      this.allowedAzp.size > 0
+        ? `Keycloak azp allow-list: ${[...this.allowedAzp].join(', ')}`
+        : 'Keycloak azp check DISABLED (KEYCLOAK_ALLOWED_AZP empty)',
+    );
   }
 
   async validate(payload: JwtPayload): Promise<KeycloakUser> {
     if (!payload.sub || !payload.email) {
       throw new UnauthorizedException('Token invalide — sub ou email manquant');
+    }
+
+    // Audience check: reject tokens minted for a client other than ours. The
+    // signature/issuer guarantee the realm, but not *which* client requested the
+    // token — without this any realm client could impersonate the app.
+    if (this.allowedAzp.size > 0) {
+      const azp = payload.azp;
+      if (azp && !this.allowedAzp.has(azp)) {
+        throw new UnauthorizedException('Token émis pour un client non autorisé');
+      }
     }
 
     // Vérification blacklist : token révoqué au logout ?

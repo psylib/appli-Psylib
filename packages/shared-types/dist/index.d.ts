@@ -373,6 +373,8 @@ export interface JwtPayload {
     sub: string;
     email: string;
     jti?: string;
+    azp?: string;
+    aud?: string | string[];
     realm_access: {
         roles: string[];
     };

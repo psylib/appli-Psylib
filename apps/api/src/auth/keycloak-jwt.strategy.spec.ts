@@ -2,10 +2,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { KeycloakJwtStrategy } from './keycloak-jwt.strategy';
 import type { JwtPayload } from '@psyscale/shared-types';
 
-function createConfig() {
+function createConfig(extra: Record<string, string> = {}) {
   const values: Record<string, string> = {
     KEYCLOAK_URL: 'https://auth.test',
     KEYCLOAK_REALM: 'psyscale',
+    ...extra,
   };
   return {
     getOrThrow: vi.fn((key: string) => values[key]),
@@ -93,5 +94,58 @@ describe('KeycloakJwtStrategy', () => {
     await expect(
       strategy.validate(makePayload({ sub: 'x', realm_access: { roles: ['assistant'] } })),
     ).rejects.toThrow();
+  });
+
+  // ── azp (authorized party) audience check ──────────────────────────────────
+
+  it('accepts the default web client (azp=psyscale-app)', async () => {
+    const result = await strategy.validate(
+      makePayload({ sub: 'psy-1', azp: 'psyscale-app' }),
+    );
+    expect(result.psychologistUserId).toBe('psy-1');
+  });
+
+  it('accepts the default mobile client (azp=psylib-mobile)', async () => {
+    const result = await strategy.validate(
+      makePayload({ sub: 'psy-1', azp: 'psylib-mobile' }),
+    );
+    expect(result.psychologistUserId).toBe('psy-1');
+  });
+
+  it('rejects a token issued to an unlisted client', async () => {
+    await expect(
+      strategy.validate(makePayload({ sub: 'psy-1', azp: 'malicious-client' })),
+    ).rejects.toThrow('Token émis pour un client non autorisé');
+  });
+
+  it('accepts a token with no azp (no client claim to reject on)', async () => {
+    const result = await strategy.validate(makePayload({ sub: 'psy-1' }));
+    expect(result.psychologistUserId).toBe('psy-1');
+  });
+
+  it('honours a custom KEYCLOAK_ALLOWED_AZP allow-list', async () => {
+    const custom = new KeycloakJwtStrategy(
+      createConfig({ KEYCLOAK_ALLOWED_AZP: 'only-this-client' }),
+      prisma as unknown as import('../common/prisma.service').PrismaService,
+      createCache(),
+    );
+    await expect(
+      custom.validate(makePayload({ sub: 'psy-1', azp: 'psyscale-app' })),
+    ).rejects.toThrow();
+    await expect(
+      custom.validate(makePayload({ sub: 'psy-1', azp: 'only-this-client' })),
+    ).resolves.toMatchObject({ psychologistUserId: 'psy-1' });
+  });
+
+  it('disables the azp check when KEYCLOAK_ALLOWED_AZP is empty (kill-switch)', async () => {
+    const disabled = new KeycloakJwtStrategy(
+      createConfig({ KEYCLOAK_ALLOWED_AZP: '' }),
+      prisma as unknown as import('../common/prisma.service').PrismaService,
+      createCache(),
+    );
+    const result = await disabled.validate(
+      makePayload({ sub: 'psy-1', azp: 'any-client-at-all' }),
+    );
+    expect(result.psychologistUserId).toBe('psy-1');
   });
 });

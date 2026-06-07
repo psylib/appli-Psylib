@@ -437,6 +437,8 @@ export interface JwtPayload {
   sub: string;
   email: string;
   jti?: string; // JWT ID — used for token revocation blacklist
+  azp?: string; // Authorized party — the OIDC client_id the token was issued to
+  aud?: string | string[]; // Audience
   realm_access: {
     roles: string[];
   };
