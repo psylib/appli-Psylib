@@ -3,9 +3,11 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { MatchingService } from './matching.service';
 import { MatchQueryDto } from './dto/matching.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Matching')
-@Controller('public/match') // PAS de garde auth — endpoint public
+@Public() // PAS de garde auth — endpoint public
+@Controller('public/match')
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 

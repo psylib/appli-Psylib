@@ -26,6 +26,7 @@ import { PatientJwtGuard } from './guards/patient-jwt.guard';
 import { PatientPortalService } from './patient-portal.service';
 import { CreateMoodDto, CreateJournalEntryDto, UpdateExerciseDto } from './dto/patient-portal.dto';
 import { CurrentPatient } from './decorators/current-patient.decorator';
+import { AltAuth } from '../auth/decorators/public.decorator';
 import type { PatientUser } from './strategies/patient-jwt.strategy';
 
 class AssessmentAnswerDto {
@@ -47,6 +48,7 @@ class SubmitAssessmentDto {
 
 @ApiTags('Patient Portal')
 @ApiBearerAuth()
+@AltAuth() // authentifié via PatientJwtGuard (HS256), pas Keycloak
 @UseGuards(PatientJwtGuard)
 @Controller('patient-portal')
 export class PatientPortalController {

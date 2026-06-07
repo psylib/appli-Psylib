@@ -34,6 +34,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public, AltAuth } from '../auth/decorators/public.decorator';
 import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { RequirePlan, RequireFeature } from '../billing/decorators/require-plan.decorator';
 import { PatientJwtGuard } from '../patient-portal/guards/patient-jwt.guard';
@@ -173,6 +174,7 @@ export class CoursesController {
 // ─── Public routes controller (no auth required) ─────────────────────────────
 
 @ApiTags('Courses - Public')
+@Public()
 @Controller('courses/public')
 export class CoursesPublicController {
   constructor(private readonly coursesService: CoursesService) {}
@@ -199,6 +201,7 @@ interface RequestWithPatient extends Request {
 }
 
 @ApiTags('Courses - Enrollment')
+@AltAuth() // authentifié via PatientJwtGuard au niveau méthode, pas Keycloak
 @Controller('courses')
 export class CoursesEnrollmentController {
   constructor(private readonly coursesService: CoursesService) {}

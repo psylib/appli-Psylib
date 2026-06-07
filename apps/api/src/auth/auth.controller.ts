@@ -12,6 +12,7 @@ import type { Request } from 'express';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { KeycloakGuard } from './guards/keycloak.guard';
+import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { KeycloakUser } from './keycloak-jwt.strategy';
 import { CacheService } from '../common/cache.service';
@@ -46,6 +47,7 @@ export class AuthController {
    * pour définir le mot de passe.
    */
   @Post('register')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   @ApiOperation({ summary: 'Inscription psychologue' })
@@ -101,6 +103,7 @@ export class AuthController {
    * Triggers Keycloak password reset email via Admin API.
    */
   @Post('forgot-password')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { ttl: 60000, limit: 2 } })
   @ApiOperation({ summary: 'Demande de réinitialisation de mot de passe' })

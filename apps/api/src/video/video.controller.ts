@@ -17,6 +17,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { RequirePlan } from '../billing/decorators/require-plan.decorator';
 import { SubscriptionPlan } from '@psyscale/shared-types';
@@ -222,12 +223,14 @@ export class VideoController {
   // --- Public endpoints (patient, rate limited) ---
 
   @Post('join/:token')
+  @Public()
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   async joinAsPatient(@Param('token', ParseUUIDPipe) token: string) {
     return this.videoService.generatePatientToken(token);
   }
 
   @Post('consent/:token')
+  @Public()
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   async recordConsent(
     @Param('token', ParseUUIDPipe) token: string,
@@ -242,6 +245,7 @@ export class VideoController {
   // --- Guest public flow (rate limited) ---
 
   @Get('guest/:inviteToken')
+  @Public()
   @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Valider un lien d\'invitation invité' })
   async resolveGuestInvite(@Param('inviteToken', ParseUUIDPipe) inviteToken: string) {
@@ -249,6 +253,7 @@ export class VideoController {
   }
 
   @Post('guest/:inviteToken/request')
+  @Public()
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Demander à rejoindre la visio en tant qu\'invité' })
   async requestGuestJoin(
@@ -261,6 +266,7 @@ export class VideoController {
   }
 
   @Get('guest/session/:sessionToken/status')
+  @Public()
   @Throttle({ default: { limit: 40, ttl: 60000 } })
   @ApiOperation({ summary: 'Statut d\'admission de l\'invité (polling)' })
   async getGuestStatus(@Param('sessionToken', ParseUUIDPipe) sessionToken: string) {

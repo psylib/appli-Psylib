@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
 import { GuardianAuthService } from './guardian-auth.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 class GuardianLoginDto {
   @IsEmail()
@@ -15,6 +16,7 @@ class GuardianLoginDto {
 }
 
 @ApiTags('Guardian Portal - Auth')
+@Public()
 @Controller('guardian-portal/auth')
 export class GuardianAuthController {
   constructor(private readonly authService: GuardianAuthService) {}

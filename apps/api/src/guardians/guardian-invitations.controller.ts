@@ -14,6 +14,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 import { GuardianInvitationsService } from './guardian-invitations.service';
 import { PrismaService } from '../common/prisma.service';
@@ -50,12 +51,14 @@ export class GuardianInvitationsController {
   }
 
   @Get('guardian-invitations/:token')
+  @Public()
   @ApiOperation({ summary: 'Valider un token d\'invitation (public)' })
   validateToken(@Param('token', ParseTokenPipe) token: string) {
     return this.service.validateToken(token);
   }
 
   @Post('guardian-invitations/:token/accept')
+  @Public()
   @ApiOperation({ summary: 'Accepter l\'invitation — creer compte guardian' })
   acceptInvitation(
     @Param('token', ParseTokenPipe) token: string,

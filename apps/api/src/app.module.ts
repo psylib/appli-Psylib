@@ -7,6 +7,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AuthModule } from './auth/auth.module';
+import { GlobalAuthGuard } from './auth/guards/global-auth.guard';
 import { CommonModule } from './common/common.module';
 import { HealthModule } from './health/health.module';
 import { PatientsModule } from './patients/patients.module';
@@ -157,6 +158,9 @@ import { AssistantsModule } from './assistants/assistants.module';
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Fail-closed Keycloak auth (opt-out via @Public/@AltAuth).
+    // No-op until GLOBAL_AUTH_GUARD=true — see GlobalAuthGuard for rollout.
+    { provide: APP_GUARD, useClass: GlobalAuthGuard },
   ],
 })
 export class AppModule {}

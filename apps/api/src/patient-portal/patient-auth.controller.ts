@@ -4,8 +4,10 @@ import { Throttle } from '@nestjs/throttler';
 import { PatientAuthService } from './patient-auth.service';
 import { AcceptInvitationDto, PatientLoginDto } from './dto/patient-auth.dto';
 import { ParseTokenPipe } from '../common/parse-slug.pipe';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Patient Portal — Auth')
+@Public()
 @Controller('patient-portal/auth')
 export class PatientAuthController {
   constructor(private readonly authService: PatientAuthService) {}

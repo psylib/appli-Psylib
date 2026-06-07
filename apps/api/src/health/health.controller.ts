@@ -3,8 +3,10 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PrismaService } from '../common/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { createConnection } from 'net';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Health')
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(

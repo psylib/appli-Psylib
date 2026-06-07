@@ -17,8 +17,10 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 import { StripeService } from './stripe.service';
 import { BILLING_QUEUE, PROCESS_WEBHOOK_JOB } from './billing.queue';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Billing')
+@Public() // signature Stripe vérifiée — pas d'auth Keycloak
 @Controller('billing/webhooks')
 export class WebhookController {
   private readonly logger = new Logger(WebhookController.name);

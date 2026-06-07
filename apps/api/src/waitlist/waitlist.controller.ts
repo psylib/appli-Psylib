@@ -22,6 +22,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 class UpdateWaitlistStatusDto {
@@ -107,6 +108,7 @@ export class WaitlistController {
 // ── Public route (no auth) ──────────────────────────────────────────────────
 
 @ApiTags('Public Waitlist')
+@Public()
 @Controller('public/psy')
 export class PublicWaitlistController {
   constructor(private readonly waitlistService: WaitlistService) {}

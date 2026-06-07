@@ -5,9 +5,11 @@ import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { CreateBetaLeadDto } from './dto/create-beta-lead.dto';
 import { LeadNurtureSequenceService } from '../notifications/lead-nurture-sequence.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Leads')
-@Controller('leads') // public — pas de garde Keycloak
+@Public() // public — pas de garde Keycloak
+@Controller('leads')
 export class LeadsController {
   constructor(
     private readonly leadsService: LeadsService,

@@ -4,8 +4,10 @@ import { Throttle } from '@nestjs/throttler';
 import { AppointmentsService } from './appointments.service';
 import { CancelAppointmentDto } from './dto/appointment.dto';
 import { ParseTokenPipe } from '../common/parse-slug.pipe';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Appointment Cancel')
+@Public()
 @Controller('appointments/cancel')
 export class AppointmentCancelController {
   constructor(private readonly appointmentsService: AppointmentsService) {}

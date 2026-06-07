@@ -21,6 +21,7 @@ import { SubscriptionGuard } from '../billing/guards/subscription.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RequirePlan } from '../billing/decorators/require-plan.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { SubscriptionPlan } from '@psyscale/shared-types';
 import { PrismaService } from '../common/prisma.service';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
@@ -48,6 +49,7 @@ export class CalendarSyncController {
   }
 
   @Get('google/callback')
+  @Public() // redirection OAuth Google — pas de bearer (state signé vérifié)
   async handleCallback(
     @Query('code') code: string,
     @Query('state') state: string,
@@ -106,6 +108,7 @@ export class CalendarSyncController {
   }
 
   @Post('google/webhook')
+  @Public() // push notification Google — pas de bearer (channel id vérifié)
   @HttpCode(200)
   @Throttle({ default: { ttl: 60000, limit: 30 } })
   async handleWebhook(

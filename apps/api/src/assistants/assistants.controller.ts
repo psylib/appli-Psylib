@@ -15,6 +15,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 import { AssistantsService } from './assistants.service';
 import {
@@ -54,12 +55,14 @@ export class AssistantsController {
   // Declared before `:id` to avoid route collision.
 
   @Get('invitations/:token')
+  @Public()
   @ApiOperation({ summary: 'Valider un token d\'invitation assistant (public)' })
   validateToken(@Param('token') token: string) {
     return this.service.validateToken(token);
   }
 
   @Post('invitations/:token/accept')
+  @Public()
   @ApiOperation({ summary: 'Accepter l\'invitation assistant — créer le compte (public)' })
   acceptInvitation(
     @Param('token') token: string,

@@ -3,8 +3,10 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { LeadMagnetsService } from './lead-magnets.service';
 import { RequestLeadMagnetDto } from './dto/request-lead-magnet.dto';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Lead Magnets')
+@Public()
 @Controller('lead-magnets')
 export class LeadMagnetsController {
   constructor(private readonly leadMagnetsService: LeadMagnetsService) {}

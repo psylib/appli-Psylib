@@ -4,8 +4,10 @@ import { Throttle } from '@nestjs/throttler';
 import { PublicBookingService } from './public-booking.service';
 import { PublicBookingDto } from './dto/public-booking.dto';
 import { ParseSlugPipe } from '../common/parse-slug.pipe';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Public Booking')
+@Public()
 @Controller('public/psy')
 export class PublicBookingController {
   constructor(private readonly publicBookingService: PublicBookingService) {}

@@ -16,6 +16,7 @@ import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 import { GuardianConsentsService } from './guardian-consents.service';
 import { PrismaService } from '../common/prisma.service';
@@ -54,12 +55,14 @@ export class GuardianConsentsController {
   }
 
   @Get('guardian-consents/:token')
+  @Public()
   @ApiOperation({ summary: 'Page de consentement (public)' })
   getConsentPage(@Param('token', ParseTokenPipe) token: string) {
     return this.service.getConsentPage(token);
   }
 
   @Post('guardian-consents/:token/approve')
+  @Public()
   @ApiOperation({ summary: 'Approuver le consentement' })
   approveConsent(@Param('token', ParseTokenPipe) token: string, @Req() req: Request) {
     const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] ?? req.socket.remoteAddress ?? '';
@@ -67,6 +70,7 @@ export class GuardianConsentsController {
   }
 
   @Post('guardian-consents/:token/refuse')
+  @Public()
   @ApiOperation({ summary: 'Refuser le consentement' })
   refuseConsent(@Param('token', ParseTokenPipe) token: string, @Req() req: Request) {
     const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0] ?? req.socket.remoteAddress ?? '';

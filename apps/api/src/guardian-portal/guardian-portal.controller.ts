@@ -16,10 +16,12 @@ import { GuardianAccessGuard } from './guards/guardian-access.guard';
 import { CurrentGuardian } from './decorators/current-guardian.decorator';
 import { RequirePermission } from './decorators/require-permission.decorator';
 import { GuardianPortalService } from './guardian-portal.service';
+import { AltAuth } from '../auth/decorators/public.decorator';
 import type { GuardianUser } from './strategies/guardian-jwt.strategy';
 
 @ApiTags('Guardian Portal')
 @ApiBearerAuth()
+@AltAuth() // authentifié via GuardianJwtGuard (HS256), pas Keycloak
 @Controller('guardian-portal')
 export class GuardianPortalController {
   constructor(private readonly service: GuardianPortalService) {}
