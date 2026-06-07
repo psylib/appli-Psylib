@@ -40,3 +40,10 @@ export async function moveRebook(
     },
   );
 }
+
+export async function unsubscribeRebook(token: string): Promise<{ success: boolean }> {
+  return publicFetch<{ success: boolean }>(
+    `/public/rebook/${encodeURIComponent(token)}/unsubscribe`,
+    { cache: 'no-store' },
+  );
+}

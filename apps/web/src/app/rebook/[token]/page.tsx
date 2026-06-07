@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { Calendar, CheckCircle2, RefreshCw, XCircle, Home, Clock } from 'lucide-react';
-import { fetchRebook, moveRebook, type RebookInfo } from '@/lib/api/rebook';
+import { fetchRebook, moveRebook, unsubscribeRebook, type RebookInfo } from '@/lib/api/rebook';
 
 function fmt(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', {
@@ -16,24 +16,47 @@ function fmt(iso: string): string {
   });
 }
 
+type UnsubscribeStatus = 'idle' | 'loading' | 'done' | 'error';
+
 export default function RebookPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const token = params['token'] as string;
+  const isUnsubscribe = searchParams.get('unsubscribe') === '1';
 
+  // --- Unsubscribe state machine (one-shot, keyed on token) ---
+  const [unsubStatus, setUnsubStatus] = useState<UnsubscribeStatus>(
+    isUnsubscribe ? 'loading' : 'idle',
+  );
+  const [unsubError, setUnsubError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isUnsubscribe || !token) return;
+    setUnsubStatus('loading');
+    unsubscribeRebook(token)
+      .then(() => setUnsubStatus('done'))
+      .catch((e: Error) => {
+        setUnsubError(e.message);
+        setUnsubStatus('error');
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // intentionally omit isUnsubscribe — runs once per token mount
+
+  // --- Normal slot-picker state ---
   const [info, setInfo] = useState<RebookInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isUnsubscribe);
   const [moving, setMoving] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) return;
+    if (isUnsubscribe || !token) return;
     setLoading(true);
     fetchRebook(token)
       .then(setInfo)
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, isUnsubscribe]);
 
   async function pick(slot: string) {
     if (moving !== null) return;
@@ -67,6 +90,72 @@ export default function RebookPage() {
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="max-w-lg w-full">
 
+          {/* Unsubscribe: loading */}
+          {isUnsubscribe && unsubStatus === 'loading' && (
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F1F0F9] mb-6">
+                <RefreshCw size={28} className="text-[#3D52A0] animate-spin" aria-hidden />
+              </div>
+              <p className="text-base text-gray-500">Désinscription en cours…</p>
+            </div>
+          )}
+
+          {/* Unsubscribe: confirmed */}
+          {isUnsubscribe && unsubStatus === 'done' && (
+            <>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0D9488]/10 mb-4">
+                  <CheckCircle2 size={36} className="text-[#0D9488]" aria-hidden />
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-[#1E1B4B] leading-snug">
+                  Désinscription confirmée
+                </h1>
+                <p className="mt-3 text-base text-gray-500 leading-relaxed">
+                  Vous ne recevrez plus d&apos;alertes lorsqu&apos;une place se libère plus tôt.
+                  Votre rendez-vous actuel reste inchangé.
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#F1F0F9] text-[#1E1B4B] text-sm font-semibold hover:bg-[#E8E6F8] transition-colors"
+                >
+                  <Home size={16} aria-hidden />
+                  Retour à l&apos;accueil
+                </Link>
+              </div>
+            </>
+          )}
+
+          {/* Unsubscribe: error */}
+          {isUnsubscribe && unsubStatus === 'error' && (
+            <>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 mb-4">
+                  <XCircle size={36} className="text-red-500" aria-hidden />
+                </div>
+                <h1 className="text-2xl font-bold text-[#1E1B4B] leading-snug">
+                  Désinscription impossible
+                </h1>
+                <p className="mt-3 text-base text-gray-500 leading-relaxed">
+                  {unsubError ?? 'Une erreur est survenue. Veuillez réessayer ou contacter le support.'}
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#F1F0F9] text-[#1E1B4B] text-sm font-semibold hover:bg-[#E8E6F8] transition-colors"
+                >
+                  <Home size={16} aria-hidden />
+                  Retour à l&apos;accueil
+                </Link>
+              </div>
+            </>
+          )}
+
+          {/* Normal slot-picker UI (hidden when in unsubscribe mode) */}
+          {!isUnsubscribe && (
+            <>
           {/* Loading skeleton */}
           {loading && (
             <div className="text-center">
@@ -238,6 +327,15 @@ export default function RebookPage() {
 
           {/* Footer trust line */}
           {!loading && (
+            <p className="text-center text-xs text-gray-400 mt-8">
+              Données confidentielles · Hébergées en France (HDS) · PsyLib
+            </p>
+          )}
+            </>
+          )} {/* end !isUnsubscribe */}
+
+          {/* Footer trust line (unsubscribe path) */}
+          {isUnsubscribe && unsubStatus !== 'loading' && (
             <p className="text-center text-xs text-gray-400 mt-8">
               Données confidentielles · Hébergées en France (HDS) · PsyLib
             </p>

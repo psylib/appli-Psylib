@@ -70,7 +70,7 @@ export class EarlierSlotService {
           psychologistName: psy.name,
           currentDate: appt.scheduledAt,
           claimUrl: `${frontendUrl}/rebook/${appt.earlierSlotToken}`,
-          unsubscribeUrl: `${frontendUrl}/api/v1/public/rebook/${appt.earlierSlotToken}/unsubscribe`,
+          unsubscribeUrl: `${frontendUrl}/rebook/${appt.earlierSlotToken}?unsubscribe=1`,
         });
 
         await this.prisma.appointment.update({
