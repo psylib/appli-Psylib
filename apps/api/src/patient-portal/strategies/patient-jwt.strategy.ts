@@ -33,6 +33,18 @@ export class PatientJwtStrategy extends PassportStrategy(Strategy, 'patient-jwt'
       throw new UnauthorizedException('Token patient invalide');
     }
 
+    // Defense-in-depth: re-verify the patientId claim actually belongs to this
+    // user. The refresh flow already binds them, but an access token must never
+    // be trusted blindly to address another patient's record.
+    const patient = await this.prisma.patient.findFirst({
+      where: { id: payload.patientId, userId: payload.sub },
+      select: { id: true },
+    });
+
+    if (!patient) {
+      throw new UnauthorizedException('Token patient invalide');
+    }
+
     return { sub: payload.sub, patientId: payload.patientId, email: payload.email };
   }
 }

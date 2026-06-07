@@ -59,9 +59,9 @@ export class FecExportService {
         ecritureDate,
         compteNum,
         compteLib,
-        entry.counterpart ?? '',   // CompAuxNum — contrepartie (patient name for income)
-        entry.counterpart ?? '',   // CompAuxLib
-        entry.pieceRef ?? '',      // PieceRef — numéro de facture ou reçu
+        sanitizeFecField(entry.counterpart ?? ''),   // CompAuxNum — contrepartie (patient name for income)
+        sanitizeFecField(entry.counterpart ?? ''),   // CompAuxLib
+        sanitizeFecField(entry.pieceRef ?? ''),      // PieceRef — numéro de facture ou reçu
         ecritureDate,              // PieceDate — same as EcritureDate
         sanitizeFecField(entry.label),
         formatAmount(Number(entry.debit)),
@@ -103,8 +103,11 @@ function formatAmount(amount: number): string {
 }
 
 /**
- * Remove pipe characters from field values to avoid breaking the FEC format.
+ * Neutralise characters that would break the pipe-delimited, line-based FEC
+ * format: field separators (|) and record separators (CR/LF). Applied to every
+ * free-text field (label, counterpart, pieceRef) since these may contain
+ * user-supplied content (patient names, invoice references).
  */
 function sanitizeFecField(value: string): string {
-  return value.replace(/\|/g, ' ');
+  return value.replace(/[|\r\n]/g, ' ');
 }

@@ -16,6 +16,7 @@ import { AccountingService } from '../accounting/accounting.service';
 import type { UpdateExpenseEntryData } from '../accounting/accounting.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { assertAllowedBinaryContent } from '../common/file-validation';
 
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -264,9 +265,16 @@ export class ExpensesService {
 
     if (!file) throw new BadRequestException('Fichier manquant');
 
-    // Validate MIME type
+    // Validate declared MIME type
     if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
       throw new BadRequestException('Type de fichier non autorisé. Formats acceptés : PDF, JPG, PNG.');
+    }
+
+    // Validate actual file content via magic bytes (declared MIME is spoofable)
+    try {
+      assertAllowedBinaryContent(file.buffer, ALLOWED_MIME_TYPES);
+    } catch {
+      throw new BadRequestException('Le contenu du fichier ne correspond pas au type déclaré.');
     }
 
     // Validate file size

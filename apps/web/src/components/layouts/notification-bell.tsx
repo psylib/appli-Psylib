@@ -63,6 +63,19 @@ export function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
 
+  // Close on Escape and return focus to the trigger (keyboard accessibility).
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen]);
+
   // ── Actions ───────────────────────────────────────────────────────────────
 
   const handleNotificationClick = async (notification: (typeof notifications)[0]) => {
