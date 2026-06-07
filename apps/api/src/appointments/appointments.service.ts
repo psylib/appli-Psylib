@@ -303,7 +303,7 @@ export class AppointmentsService {
     // Earlier-slot waitlist : prévenir les patients dont le RDV est plus tard.
     this.eventEmitter.emit('slot.freed', {
       psychologistId: cancelled.psychologistId,
-      freedAt: existing.scheduledAt,
+      freedAt: existing.scheduledAt, // valeur pré-update — scheduledAt n'est pas modifié par l'annulation
     });
 
     // Audit log for psychologist-initiated cancellation (HDS compliance)
@@ -537,6 +537,12 @@ export class AppointmentsService {
       consultationTypeId: appointment.consultationTypeId ?? undefined,
       isOnline: appointment.isOnline,
       status: 'cancelled',
+    });
+
+    // Earlier-slot waitlist : prévenir les patients dont le RDV est plus tard.
+    this.eventEmitter.emit('slot.freed', {
+      psychologistId: appointment.psychologist.id,
+      freedAt: appointment.scheduledAt,
     });
 
     let refunded = false;

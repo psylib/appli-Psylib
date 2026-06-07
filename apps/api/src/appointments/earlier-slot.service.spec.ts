@@ -16,22 +16,20 @@ describe('EarlierSlotService.notifyFreedSlot', () => {
         findMany: vi.fn().mockResolvedValue(overrides.eligible ?? []),
         update: vi.fn().mockResolvedValue({}),
       },
-      patient: { findUnique: vi.fn().mockResolvedValue({ name: 'Alice', email: 'alice@example.com' }) },
     } as any;
     const availability = {
       getAvailableTimeslots: vi.fn().mockResolvedValue(overrides.slots ?? [freedAt]),
     } as any;
     const email = { sendEarlierSlotAvailable: vi.fn().mockResolvedValue(undefined) } as any;
     const config = { get: vi.fn().mockReturnValue('https://psylib.eu') } as any;
-    const emitter = { emit: vi.fn() } as any;
-    const svc = new EarlierSlotService(prisma, availability, email, config, emitter);
+    const svc = new EarlierSlotService(prisma, availability, email, config);
     return { svc, prisma, availability, email };
   }
 
   it('emails an eligible later appointment when the freed slot fits its duration', async () => {
     const { svc, email, prisma } = build({
       eligible: [
-        { id: 'a1', patientId: 'p1', scheduledAt: new Date('2026-07-10T10:00:00.000Z'), duration: 50, earlierSlotToken: 'tok-1' },
+        { id: 'a1', patientId: 'p1', scheduledAt: new Date('2026-07-10T10:00:00.000Z'), duration: 50, earlierSlotToken: 'tok-1', patient: { name: 'Alice', email: 'alice@example.com' } },
       ],
       slots: [freedAt],
     });
@@ -51,7 +49,7 @@ describe('EarlierSlotService.notifyFreedSlot', () => {
   it('does NOT email when the freed slot does not actually fit (not in available timeslots)', async () => {
     const { svc, email } = build({
       eligible: [
-        { id: 'a1', patientId: 'p1', scheduledAt: new Date('2026-07-10T10:00:00.000Z'), duration: 50, earlierSlotToken: 'tok-1' },
+        { id: 'a1', patientId: 'p1', scheduledAt: new Date('2026-07-10T10:00:00.000Z'), duration: 50, earlierSlotToken: 'tok-1', patient: { name: 'Alice', email: 'alice@example.com' } },
       ],
       slots: [], // availability says freedAt is not really free
     });
@@ -70,5 +68,11 @@ describe('EarlierSlotService.notifyFreedSlot', () => {
 
     expect(prisma.appointment.findMany).not.toHaveBeenCalled();
     expect(email.sendEarlierSlotAvailable).not.toHaveBeenCalled();
+  });
+
+  it('does nothing for a past freed slot', async () => {
+    const { svc, prisma } = build({});
+    await svc.notifyFreedSlot(psyId, new Date('2020-01-01T09:00:00.000Z'));
+    expect(prisma.psychologist.findUnique).not.toHaveBeenCalled();
   });
 });

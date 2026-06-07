@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../common/prisma.service';
 import { AvailabilityService } from '../availability/availability.service';
 import { EmailService } from '../notifications/email.service';
@@ -16,7 +15,6 @@ export class EarlierSlotService {
     private readonly availability: AvailabilityService,
     private readonly email: EmailService,
     private readonly config: ConfigService,
-    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -45,7 +43,7 @@ export class EarlierSlotService {
         earlierSlotToken: { not: null },
         OR: [{ earlierSlotNotifiedAt: null }, { earlierSlotNotifiedAt: { lt: throttleBefore } }],
       },
-      select: { id: true, patientId: true, scheduledAt: true, duration: true, earlierSlotToken: true },
+      select: { id: true, patientId: true, scheduledAt: true, duration: true, earlierSlotToken: true, patient: { select: { name: true, email: true } } },
     });
     if (eligible.length === 0) return;
 
@@ -60,15 +58,12 @@ export class EarlierSlotService {
           windowEnd,
           appt.duration,
         );
-        const fits = free.some((d) => d.getTime() === freedAt.getTime());
+        const freedAtMin = Math.floor(freedAt.getTime() / 60000);
+        const fits = free.some((d) => Math.floor(d.getTime() / 60000) === freedAtMin);
         if (!fits) continue;
 
-        if (!appt.patientId) continue;
-        const patient = await this.prisma.patient.findUnique({
-          where: { id: appt.patientId },
-          select: { name: true, email: true },
-        });
-        if (!patient?.email) continue;
+        if (!appt.patient?.email) continue;
+        const patient = appt.patient as { name: string; email: string };
 
         await this.email.sendEarlierSlotAvailable(patient.email, {
           patientName: patient.name,
@@ -83,7 +78,7 @@ export class EarlierSlotService {
           data: { earlierSlotNotifiedAt: new Date() },
         });
       } catch (err) {
-        this.logger.warn(
+        this.logger.error(
           `notifyFreedSlot: échec pour RDV ${appt.id}: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
