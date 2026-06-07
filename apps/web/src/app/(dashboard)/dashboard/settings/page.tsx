@@ -1,8 +1,10 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { User, CreditCard, Building2, Shield, Bell, Lock, Scale, Banknote, FileText, Users } from 'lucide-react';
 import type { Metadata } from 'next';
+import { PscVerifyCard } from '@/components/settings/psc-verify-card';
 
 export const metadata: Metadata = {
   title: 'Paramètres',
@@ -83,6 +85,10 @@ export default async function SettingsPage() {
           Configurez votre compte et votre cabinet.
         </p>
       </div>
+
+      <Suspense fallback={null}>
+        <PscVerifyCard />
+      </Suspense>
 
       <div className="grid gap-4">
         {settingsLinks.map((item) => (

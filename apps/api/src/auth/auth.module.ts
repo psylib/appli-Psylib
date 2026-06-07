@@ -6,6 +6,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RppsVerificationService } from './rpps-verification.service';
+import { ProSanteConnectService } from './pro-sante-connect.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { BillingModule } from '../billing/billing.module';
 
@@ -22,6 +23,7 @@ import { BillingModule } from '../billing/billing.module';
     RolesGuard,
     AuthService,
     RppsVerificationService,
+    ProSanteConnectService,
   ],
   exports: [KeycloakGuard, RolesGuard, PassportModule, AuthService],
 })
