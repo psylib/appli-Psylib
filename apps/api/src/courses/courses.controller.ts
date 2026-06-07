@@ -173,9 +173,12 @@ export class CoursesController {
 
 // ─── Public routes controller (no auth required) ─────────────────────────────
 
+// Path `public/courses` (convention publique, comme public/psy & public/match) :
+// `courses/public` entrait en collision avec `courses/:id` du CoursesController
+// (gardé Keycloak), enregistré avant lui → 401 sur le catalogue public.
 @ApiTags('Courses - Public')
 @Public()
-@Controller('courses/public')
+@Controller('public/courses')
 export class CoursesPublicController {
   constructor(private readonly coursesService: CoursesService) {}
 
