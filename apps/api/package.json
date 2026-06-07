@@ -29,7 +29,7 @@
     "@nestjs/swagger": "^7.2.0",
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/throttler": "^5.1.1",
-    "@nestjs/websockets": "^10.3.0",
+    "@nestjs/websockets": "^11.1.24",
     "@prisma/client": "^5.8.0",
     "@psyscale/shared-types": "workspace:*",
     "@sentry/node": "8.38.0",
