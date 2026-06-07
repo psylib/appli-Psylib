@@ -33,4 +33,8 @@ export class PublicBookingDto {
   @IsOptional()
   @IsBoolean()
   isOnline?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  notifyEarlierSlot?: boolean;
 }
