@@ -11,6 +11,7 @@ const rows: { feature: string; psylib: CellValue; generic: CellValue; files: Cel
   { feature: 'Hébergement HDS France', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Notes cliniques structurées', psylib: 'yes', generic: 'no', files: 'partial' },
   { feature: 'Paiement Stripe à la réservation', psylib: 'yes', generic: 'partial', files: 'no' },
+  { feature: 'Empreinte bancaire anti-lapin (carte enregistrée)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Rappels SMS & email automatiques', psylib: 'yes', generic: 'yes', files: 'no' },
   { feature: 'Liste d\'attente automatisée', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Alerte « place plus tôt » (style Doctolib)', psylib: 'yes', generic: 'partial', files: 'no' },

@@ -63,9 +63,10 @@ const features: {
   {
     icon: CreditCard,
     title: 'Paiements, factures & zéro no-show',
-    description: 'Paiement Stripe à la réservation. Facture PDF auto-générée après chaque séance (numérotation séquentielle, TVA 0%). Rappels SMS/email, liste d\'attente automatique.',
+    description: 'Si vous le souhaitez, activez le prépaiement à la réservation ou l\'empreinte bancaire (carte enregistrée, encaissée à la séance ou en cas de lapin). Facture PDF auto-générée, rappels SMS/email, liste d\'attente — vous décidez.',
     color: 'text-sage bg-sage-50',
     border: 'border-sage-200',
+    badge: 'Au choix du psy',
   },
   {
     icon: CalendarClock,
