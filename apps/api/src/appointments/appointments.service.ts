@@ -300,6 +300,12 @@ export class AppointmentsService {
       status: 'cancelled',
     });
 
+    // Earlier-slot waitlist : prévenir les patients dont le RDV est plus tard.
+    this.eventEmitter.emit('slot.freed', {
+      psychologistId: cancelled.psychologistId,
+      freedAt: existing.scheduledAt,
+    });
+
     // Audit log for psychologist-initiated cancellation (HDS compliance)
     await this.audit.log({
       actorId: userId,
