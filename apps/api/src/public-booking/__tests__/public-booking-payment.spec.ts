@@ -10,6 +10,7 @@ const mockPsyBase = {
   id: 'psy-id',
   name: 'Dr. Martin',
   slug: 'dr-martin',
+  verificationStatus: 'verified',
   defaultSessionDuration: 50,
   defaultSessionRate: 80,
   user: { email: 'dr.martin@test.fr' },

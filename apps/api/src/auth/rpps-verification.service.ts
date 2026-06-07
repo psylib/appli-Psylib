@@ -62,6 +62,66 @@ export class RppsVerificationService {
   }
 
   /**
+   * Normalise un nom pour comparaison : minuscules, accents retirés, tirets et
+   * apostrophes → espaces, ponctuation supprimée, tokens dédupliqués.
+   */
+  private static nameTokens(raw: string): string[] {
+    return (raw ?? '')
+      .normalize('NFD')
+      // U+0300–U+036F = marques diacritiques combinantes (accents) retirées
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[-'’]/g, ' ') // tirets + apostrophes (droite/typographique)
+      .replace(/[^a-z\s]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean); // garde les initiales (« J. Bernard » à l'annuaire)
+  }
+
+  /**
+   * Compare le nom saisi à l'inscription au nom enregistré à l'annuaire officiel.
+   *
+   * Objectif : démasquer une usurpation (numéro volé d'un autre psychologue) sans
+   * bloquer à tort des cas légitimes (nom marital, nom composé, ordre prénom/nom).
+   * On exige donc une correspondance SOUPLE :
+   *   - le nom de famille saisi est présent dans le nom annuaire, ET
+   *   - le prénom saisi est présent (ou partage son initiale avec un token annuaire).
+   * En cas de doute → renvoie false → le compte passe en revue manuelle (pas un
+   * rejet sec). Un voleur qui met SON nom avec le numéro d'un AUTRE échoue ici.
+   */
+  static namesMatch(
+    firstName: string,
+    lastName: string,
+    annuaireName?: string,
+  ): boolean {
+    if (!annuaireName) return false;
+
+    const annuaire = new Set(RppsVerificationService.nameTokens(annuaireName));
+    if (annuaire.size === 0) return false;
+
+    // Tokens « pleins » (≥ 2 lettres) saisis. Le DTO impose MinLength(2) sur
+    // prénom/nom, donc on n'a jamais d'initiale côté saisie.
+    const first = RppsVerificationService.nameTokens(firstName).filter(
+      (t) => t.length > 1,
+    );
+    const last = RppsVerificationService.nameTokens(lastName).filter(
+      (t) => t.length > 1,
+    );
+    if (first.length === 0 || last.length === 0) return false;
+
+    const has = (t: string) => annuaire.has(t);
+    // Annuaire abrégé « J. Bernard » → token 'j' présent : on tolère que
+    // l'initiale du prénom saisi corresponde à un token mono-lettre annuaire.
+    const matchesAbbrev = (t: string) => annuaire.has(t[0]!);
+
+    // Au moins un token du nom de famille doit matcher exactement l'annuaire.
+    const lastMatch = last.some(has);
+    // Le prénom : match exact, ou correspondance avec une initiale annuaire.
+    const firstMatch = first.some((t) => has(t) || matchesAbbrev(t));
+
+    return lastMatch && firstMatch;
+  }
+
+  /**
    * Vérifie un numéro ADELI/RPPS. Stratégie :
    *  1. Format invalide → blocage immédiat (offline, toujours actif).
    *  2. Pas de clé API / API injoignable → dégradation : on laisse passer

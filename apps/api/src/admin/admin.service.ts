@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma.service';
+import { CacheService } from '../common/cache.service';
+import { EmailService } from '../notifications/email.service';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -33,6 +36,15 @@ export interface FunnelMetrics {
   funnel: FunnelStep[];
   cohorts: CohortWeek[];
   summary: FunnelSummary;
+}
+
+export interface PendingVerification {
+  id: string;
+  name: string;
+  email: string;
+  adeliNumber: string | null;
+  verificationNote: string | null;
+  createdAt: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -76,7 +88,120 @@ function pct(numerator: number, denominator: number): number {
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(AdminService.name);
+  private readonly frontendUrl: string;
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+    private readonly email: EmailService,
+    private readonly config: ConfigService,
+  ) {
+    this.frontendUrl =
+      this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // Vérification d'identité des psychologues (anti-usurpation ADELI/RPPS)
+  // ──────────────────────────────────────────────────────────────────
+
+  /** Liste les inscriptions en attente de contrôle manuel d'identité. */
+  async listPendingVerifications(): Promise<PendingVerification[]> {
+    const psys = await this.prisma.psychologist.findMany({
+      where: { verificationStatus: 'pending' },
+      select: {
+        id: true,
+        name: true,
+        adeliNumber: true,
+        verificationNote: true,
+        createdAt: true,
+        user: { select: { email: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return psys.map((p) => ({
+      id: p.id,
+      name: p.name,
+      email: p.user?.email ?? '—',
+      adeliNumber: p.adeliNumber,
+      verificationNote: p.verificationNote,
+      createdAt: p.createdAt.toISOString(),
+    }));
+  }
+
+  /** Valide manuellement un psychologue → profil public activé. */
+  async approveVerification(psychologistId: string): Promise<void> {
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { id: psychologistId },
+      select: { id: true, slug: true, name: true, user: { select: { email: true } } },
+    });
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
+
+    await this.prisma.psychologist.update({
+      where: { id: psychologistId },
+      data: {
+        verificationStatus: 'verified',
+        rppsVerifiedAt: new Date(),
+        verificationNote: null,
+      },
+    });
+
+    // Le profil public était masqué → purge le cache pour qu'il apparaisse.
+    void this.cache.del(`profile:${psy.slug}`);
+    void this.cache.delByPattern(`slots:${psy.slug}:*`);
+    void this.cache.del(`consultation-types:${psy.slug}`);
+
+    this.logger.log(`Vérification approuvée: psychologistId=${psychologistId}`);
+
+    // Notifie le psy que son profil est désormais visible (non bloquant).
+    const email = psy.user?.email;
+    if (email) {
+      this.email
+        .sendRawEmail(
+          email,
+          'Votre compte PsyLib est vérifié ✅',
+          `<div style="font-family:Inter,Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;">
+            <h2 style="color:#0D9488;margin:0 0 16px;">Identité vérifiée</h2>
+            <p style="font-size:15px;color:#374151;">Bonjour ${psy.name},</p>
+            <p style="font-size:15px;color:#374151;">Votre identité de psychologue a été vérifiée. Votre page de réservation publique est désormais active et vos patients peuvent prendre rendez-vous en ligne.</p>
+            <a href="${this.frontendUrl}/dashboard" style="display:inline-block;margin-top:8px;background:#3D52A0;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600;">Accéder à mon tableau de bord</a>
+          </div>`,
+        )
+        .catch((err) =>
+          this.logger.warn(
+            `Email approbation échoué: ${(err as Error).message}`,
+          ),
+        );
+    }
+  }
+
+  /** Rejette manuellement un psychologue (usurpation suspectée). */
+  async rejectVerification(
+    psychologistId: string,
+    reason?: string,
+  ): Promise<void> {
+    const psy = await this.prisma.psychologist.findUnique({
+      where: { id: psychologistId },
+      select: { id: true, slug: true },
+    });
+    if (!psy) throw new NotFoundException('Psychologue introuvable');
+
+    await this.prisma.psychologist.update({
+      where: { id: psychologistId },
+      data: {
+        verificationStatus: 'rejected',
+        rppsVerifiedAt: null,
+        verificationNote: reason?.slice(0, 500) ?? 'Rejeté manuellement',
+      },
+    });
+
+    void this.cache.del(`profile:${psy.slug}`);
+    void this.cache.delByPattern(`slots:${psy.slug}:*`);
+    void this.cache.del(`consultation-types:${psy.slug}`);
+
+    this.logger.log(`Vérification rejetée: psychologistId=${psychologistId}`);
+  }
 
   async getFunnelMetrics(): Promise<FunnelMetrics> {
     // ------------------------------------------------------------------

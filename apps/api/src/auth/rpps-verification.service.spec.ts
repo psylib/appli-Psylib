@@ -61,6 +61,41 @@ describe('RppsVerificationService', () => {
     });
   });
 
+  describe('namesMatch (anti-usurpation)', () => {
+    it('match exact prénom + nom', () => {
+      expect(RppsVerificationService.namesMatch('Marie', 'Dupont', 'Marie Dupont')).toBe(true);
+    });
+
+    it('insensible aux accents et à la casse', () => {
+      expect(RppsVerificationService.namesMatch('Hélène', 'Lévêque', 'HELENE LEVEQUE')).toBe(true);
+    });
+
+    it('ordre nom/prénom inversé à l’annuaire', () => {
+      expect(RppsVerificationService.namesMatch('Marie', 'Dupont', 'Dupont Marie')).toBe(true);
+    });
+
+    it('nom composé / marital toléré (un token suffit)', () => {
+      expect(RppsVerificationService.namesMatch('Marie', 'Dupont-Martin', 'Marie Dupont')).toBe(true);
+      expect(RppsVerificationService.namesMatch('Marie', 'Martin', 'Marie Dupont Martin')).toBe(true);
+    });
+
+    it('prénom abrégé à l’annuaire (initiale) toléré', () => {
+      expect(RppsVerificationService.namesMatch('Jean', 'Bernard', 'J Bernard')).toBe(true);
+    });
+
+    it('REJETTE un nom totalement différent (numéro volé)', () => {
+      expect(RppsVerificationService.namesMatch('Pierre', 'Voleur', 'Marie Dupont')).toBe(false);
+    });
+
+    it('REJETTE si le nom de famille ne correspond pas', () => {
+      expect(RppsVerificationService.namesMatch('Marie', 'Imposteur', 'Marie Dupont')).toBe(false);
+    });
+
+    it('false si annuaire absent', () => {
+      expect(RppsVerificationService.namesMatch('Marie', 'Dupont', undefined)).toBe(false);
+    });
+  });
+
   describe('sans clé API → dégradation gracieuse', () => {
     it('laisse passer (non bloquant) si format valide mais pas de clé', async () => {
       const svc = new RppsVerificationService(createConfig({}));

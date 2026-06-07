@@ -8,6 +8,7 @@ const mockPsy = {
   id: 'psy-id',
   name: 'Dr. Martin',
   slug: 'dr-martin',
+  verificationStatus: 'verified',
   defaultSessionDuration: 50,
   defaultSessionRate: null,
   allowOnlinePayment: false,
@@ -130,6 +131,7 @@ describe('PublicBookingService', () => {
         id: 'psy-id',
         name: 'Dr. Martin',
         slug: 'dr-martin',
+        verificationStatus: 'verified',
         specialization: 'TCC',
         bio: 'Bio test',
         phone: '0601020304',
@@ -160,9 +162,22 @@ describe('PublicBookingService', () => {
       expect(profile).toMatchObject({ name: 'Dr. Martin', slug: 'dr-martin', city: 'Nancy', acceptsMonSoutienPsy: true });
     });
 
+    it('masque un psy non vérifié (anti-usurpation → 404)', async () => {
+      prisma.psychologist.findUnique.mockResolvedValue({
+        id: 'psy-id', name: 'Dr. Pending', slug: 'dr-pending',
+        verificationStatus: 'pending',
+        specialization: null, bio: null, phone: null, address: null,
+        adeliNumber: null, defaultSessionDuration: 50, defaultSessionRate: null,
+        allowOnlinePayment: false, stripeOnboardingComplete: false,
+        networkProfile: null, user: { avatarUrl: null }, consultationTypes: [],
+      });
+      await expect(service.getPublicProfile('dr-pending')).rejects.toThrow(NotFoundException);
+    });
+
     it('does not expose psy email in public profile', async () => {
       prisma.psychologist.findUnique.mockResolvedValue({
         id: 'psy-id', name: 'Dr. Martin', slug: 'dr-martin',
+        verificationStatus: 'verified',
         specialization: null, bio: null, phone: null, address: null,
         adeliNumber: null, defaultSessionDuration: 50, defaultSessionRate: null,
         allowOnlinePayment: false, stripeOnboardingComplete: false,
@@ -186,7 +201,7 @@ describe('PublicBookingService', () => {
     });
 
     it('caps date range to 30 days max', async () => {
-      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50 });
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50, verificationStatus: 'verified' });
       const from = new Date();
       const to = new Date(from.getTime() + 90 * 86400000); // 90 days — too far
 
@@ -198,7 +213,7 @@ describe('PublicBookingService', () => {
     });
 
     it('returns ISO strings for each available slot', async () => {
-      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50 });
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50, verificationStatus: 'verified' });
       const slot1 = new Date('2026-04-01T10:00:00Z');
       const slot2 = new Date('2026-04-01T11:00:00Z');
       availabilityService.getAvailableTimeslots.mockResolvedValue([slot1, slot2]);
@@ -214,7 +229,7 @@ describe('PublicBookingService', () => {
     });
 
     it('uses consultation type duration when consultationTypeId provided', async () => {
-      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50 });
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50, verificationStatus: 'verified' });
       prisma.consultationType.findFirst.mockResolvedValue({ duration: 90 });
       availabilityService.getAvailableTimeslots.mockResolvedValue([]);
 
@@ -232,7 +247,7 @@ describe('PublicBookingService', () => {
     });
 
     it('falls back to default duration if consultationTypeId invalid', async () => {
-      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50 });
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', defaultSessionDuration: 50, verificationStatus: 'verified' });
       prisma.consultationType.findFirst.mockResolvedValue(null);
       availabilityService.getAvailableTimeslots.mockResolvedValue([]);
 
@@ -259,7 +274,7 @@ describe('PublicBookingService', () => {
     });
 
     it('returns public consultation types with rate as number', async () => {
-      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id' });
+      prisma.psychologist.findUnique.mockResolvedValue({ id: 'psy-id', verificationStatus: 'verified' });
       prisma.consultationType.findMany.mockResolvedValue([
         { id: 'ct-1', name: 'Standard', duration: 50, rate: 70, color: '#3D52A0', category: 'standard' },
         { id: 'ct-2', name: 'MSP', duration: 45, rate: 50, color: '#0D9488', category: 'mon_soutien_psy' },

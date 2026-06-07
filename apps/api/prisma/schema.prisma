@@ -151,6 +151,18 @@ enum PaymentMode {
   both
 }
 
+/// Statut de vérification d'identité du psychologue.
+/// - pending  : inscription faite, en attente de contrôle (annuaire indisponible
+///              ou nom ne correspondant pas à l'annuaire) → profil public masqué.
+/// - verified : numéro ADELI/RPPS confirmé à l'annuaire ET nom correspondant,
+///              ou validé manuellement par un admin → profil public visible.
+/// - rejected : refusé manuellement (usurpation suspectée) → profil masqué.
+enum VerificationStatus {
+  pending
+  verified
+  rejected
+}
+
 enum OfflinePaymentMethod {
   cash
   check
@@ -396,6 +408,8 @@ model Psychologist {
   externalCalendarEvents   ExternalCalendarEvent[]
   bookingConfirmationMessage String?                @map("booking_confirmation_message")
   rppsVerifiedAt           DateTime?                @map("rpps_verified_at")
+  verificationStatus       VerificationStatus       @default(pending) @map("verification_status")
+  verificationNote         String?                  @map("verification_note")
   assistants               Assistant[]
   assistantInvitations     AssistantInvitation[]
   earlierSlotEnabled       Boolean                @default(true) @map("earlier_slot_enabled")

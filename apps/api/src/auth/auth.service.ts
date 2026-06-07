@@ -24,6 +24,7 @@ export class AuthService {
   private readonly adminClientSecret: string;
 
   private readonly adminEmail: string;
+  private readonly frontendUrl: string;
 
   constructor(
     private readonly config: ConfigService,
@@ -40,6 +41,8 @@ export class AuthService {
       config.getOrThrow<string>('KEYCLOAK_ADMIN_SECRET');
     this.adminEmail =
       config.get<string>('ADMIN_NOTIFICATION_EMAIL') ?? 'tony@psylib.eu';
+    this.frontendUrl =
+      config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
   }
 
   // ── Registration ────────────────────────────────────────────────
@@ -72,6 +75,29 @@ export class AuthService {
       );
     }
 
+    // ── Anti-usurpation ───────────────────────────────────────────────
+    // L'annuaire confirme que le NUMÉRO est valide, pas que la PERSONNE en est
+    // titulaire (les numéros RPPS/ADELI sont publics). On n'auto-valide donc le
+    // profil public QUE si le nom saisi correspond au nom de l'annuaire.
+    // Sinon → statut `pending` : le compte est créé et utilisable, mais son
+    // profil public et la réservation patient restent masqués jusqu'à
+    // validation manuelle par un admin.
+    const nameMatches =
+      rppsResult.status === 'verified' &&
+      RppsVerificationService.namesMatch(
+        firstName,
+        lastName,
+        rppsResult.matchedName,
+      );
+    const verificationStatus: 'verified' | 'pending' =
+      rppsResult.status === 'verified' && nameMatches ? 'verified' : 'pending';
+    const pendingReason =
+      verificationStatus === 'verified'
+        ? null
+        : rppsResult.status === 'api_unavailable'
+          ? 'Annuaire indisponible au moment de l’inscription'
+          : 'Le nom saisi ne correspond pas à l’annuaire officiel';
+
     const adminToken = await this.getAdminToken();
     if (!adminToken) {
       throw new InternalServerErrorException(
@@ -97,18 +123,24 @@ export class AuthService {
       firstName,
       lastName,
       adeliOrRpps,
-      rppsResult.status === 'verified',
+      verificationStatus,
+      pendingReason,
     );
 
     // 4. Send password setup email via Keycloak SMTP
     await this.sendPasswordSetupEmail(adminToken, userId);
 
     // 5. Notify admin
-    this.notifyAdmin(firstName, lastName, email, adeliOrRpps, rppsResult).catch(
-      (err) =>
-        this.logger.warn(
-          `Admin notification failed: ${(err as Error).message}`,
-        ),
+    this.notifyAdmin(
+      firstName,
+      lastName,
+      email,
+      adeliOrRpps,
+      rppsResult,
+      verificationStatus,
+      pendingReason,
+    ).catch((err) =>
+      this.logger.warn(`Admin notification failed: ${(err as Error).message}`),
     );
 
     this.logger.log(`Nouveau psychologue inscrit: ${email}`);
@@ -237,7 +269,8 @@ export class AuthService {
     firstName: string,
     lastName: string,
     adeliOrRpps: string,
-    rppsVerified: boolean,
+    verificationStatus: 'verified' | 'pending',
+    verificationNote: string | null,
   ): Promise<void> {
     const fullName = `${firstName} ${lastName}`;
     const slug =
@@ -264,7 +297,9 @@ export class AuthService {
             slug,
             adeliNumber: adeliOrRpps.replace(/\s/g, ''),
             isOnboarded: false,
-            rppsVerifiedAt: rppsVerified ? new Date() : null,
+            verificationStatus,
+            verificationNote,
+            rppsVerifiedAt: verificationStatus === 'verified' ? new Date() : null,
           },
         });
 
@@ -296,6 +331,8 @@ export class AuthService {
     email: string,
     adeliOrRpps: string,
     rppsResult: RppsVerificationResult,
+    verificationStatus: 'verified' | 'pending',
+    pendingReason: string | null,
   ): Promise<void> {
     const date = new Date().toLocaleString('fr-FR', {
       timeZone: 'Europe/Paris',
@@ -303,10 +340,16 @@ export class AuthService {
 
     const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+    const verificationsUrl = `${this.frontendUrl}/dashboard/admin/verifications`;
+
     const rppsBadge =
-      rppsResult.status === 'verified'
-        ? `<span style="color:#0D9488;font-weight:600;">✅ Vérifié à l'annuaire${rppsResult.matchedName ? ` (${esc(rppsResult.matchedName)})` : ''}</span>`
-        : `<span style="color:#B45309;font-weight:600;">⚠️ Non vérifié (annuaire indisponible) — à contrôler manuellement</span>`;
+      verificationStatus === 'verified'
+        ? `<span style="color:#0D9488;font-weight:600;">✅ Vérifié à l'annuaire${rppsResult.matchedName ? ` (${esc(rppsResult.matchedName)})` : ''}</span><br/><span style="color:#0D9488;font-size:13px;">Profil public activé automatiquement.</span>`
+        : `<span style="color:#B45309;font-weight:600;">⚠️ EN ATTENTE — ${esc(pendingReason ?? 'à contrôler')}</span>` +
+          (rppsResult.matchedName
+            ? `<br/><span style="font-size:13px;color:#6B7280;">Annuaire : ${esc(rppsResult.matchedName)}</span>`
+            : '') +
+          `<br/><a href="${verificationsUrl}" style="display:inline-block;margin-top:8px;color:#3D52A0;font-weight:600;">→ Contrôler & valider</a><br/><span style="color:#B45309;font-size:13px;">Profil public masqué tant qu'il n'est pas validé.</span>`;
 
     await this.emailService.sendRawEmail(
       this.adminEmail,

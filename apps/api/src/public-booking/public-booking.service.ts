@@ -41,6 +41,7 @@ export class PublicBookingService {
         id: true,
         name: true,
         slug: true,
+        verificationStatus: true,
         specialization: true,
         bio: true,
         phone: true,
@@ -89,7 +90,10 @@ export class PublicBookingService {
       },
     });
 
-    if (!psy) throw new NotFoundException('Psychologue introuvable');
+    // Profil masqué tant que l'identité n'est pas vérifiée (anti-usurpation).
+    // On renvoie 404 (et non 403) pour ne pas révéler l'existence du compte.
+    if (!psy || psy.verificationStatus !== 'verified')
+      throw new NotFoundException('Psychologue introuvable');
 
     const acceptsOnlinePayment = psy.allowOnlinePayment && psy.stripeOnboardingComplete;
 
@@ -142,9 +146,10 @@ export class PublicBookingService {
 
     const psy = await this.prisma.psychologist.findUnique({
       where: { slug },
-      select: { id: true, defaultSessionDuration: true },
+      select: { id: true, defaultSessionDuration: true, verificationStatus: true },
     });
-    if (!psy) throw new NotFoundException('Psychologue introuvable');
+    if (!psy || psy.verificationStatus !== 'verified')
+      throw new NotFoundException('Psychologue introuvable');
 
     // Résoudre la durée depuis le type de consultation si fourni
     let duration = psy.defaultSessionDuration;
@@ -188,9 +193,10 @@ export class PublicBookingService {
 
     const psy = await this.prisma.psychologist.findUnique({
       where: { slug },
-      select: { id: true },
+      select: { id: true, verificationStatus: true },
     });
-    if (!psy) throw new NotFoundException('Psychologue introuvable');
+    if (!psy || psy.verificationStatus !== 'verified')
+      throw new NotFoundException('Psychologue introuvable');
 
     const types = await this.prisma.consultationType.findMany({
       where: {
@@ -246,14 +252,14 @@ export class PublicBookingService {
 
     const networkWhere: {
       isVisible: boolean;
-      psychologist: { isOnboarded: boolean };
+      psychologist: { isOnboarded: boolean; verificationStatus: 'verified' };
       city?: { contains: string; mode: 'insensitive' };
       department?: string;
       acceptsMonSoutienPsy?: boolean;
       offersVisio?: boolean;
     } = {
       isVisible: true,
-      psychologist: { isOnboarded: true },
+      psychologist: { isOnboarded: true, verificationStatus: 'verified' },
     };
 
     if (city) networkWhere.city = { contains: city, mode: 'insensitive' };
@@ -329,7 +335,7 @@ export class PublicBookingService {
 
   async getPublicSlugs(limit = 500): Promise<Array<{ slug: string; createdAt: Date }>> {
     const psychologists = await this.prisma.psychologist.findMany({
-      where: { isOnboarded: true },
+      where: { isOnboarded: true, verificationStatus: 'verified' },
       select: { slug: true, createdAt: true },
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -343,6 +349,7 @@ export class PublicBookingService {
       select: {
         id: true,
         name: true,
+        verificationStatus: true,
         defaultSessionDuration: true,
         defaultSessionRate: true,
         allowOnlinePayment: true,
@@ -351,7 +358,9 @@ export class PublicBookingService {
         user: { select: { email: true } },
       },
     });
-    if (!psy) throw new NotFoundException('Psychologue introuvable');
+    // Aucune réservation possible tant que le compte n'est pas vérifié.
+    if (!psy || psy.verificationStatus !== 'verified')
+      throw new NotFoundException('Psychologue introuvable');
 
     const scheduledAt = new Date(dto.scheduledAt);
 
