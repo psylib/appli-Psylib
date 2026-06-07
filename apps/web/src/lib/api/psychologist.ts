@@ -34,6 +34,8 @@ export interface PsychologistProfile {
   noShowFee: number | null;
   // Booking confirmation
   bookingConfirmationMessage: string | null;
+  // Earlier slot alerts
+  earlierSlotEnabled: boolean;
 }
 
 export interface UpdateProfileData {
@@ -64,6 +66,8 @@ export interface UpdateProfileData {
   noShowFee?: number;
   // Booking confirmation
   bookingConfirmationMessage?: string;
+  // Earlier slot alerts
+  earlierSlotEnabled?: boolean;
 }
 
 export const psychologistApi = {
