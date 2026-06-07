@@ -23,7 +23,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, IsInt, Min, Max, IsOptional } from 'class-validator';
 import { SessionsService } from './sessions.service';
 import {
   CreateSessionDto,
@@ -44,6 +44,13 @@ class AutosaveDto {
   @IsString()
   @MaxLength(100000)
   notes!: string;
+
+  // Humeur du patient relevée en séance (1-5). Optionnelle ; null = effacée.
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  mood?: number | null;
 }
 
 @ApiTags('Sessions')
@@ -137,6 +144,6 @@ export class SessionsController {
     @Body() body: AutosaveDto,
     @CurrentUser() user: KeycloakUser,
   ) {
-    return this.sessionsService.autosaveNotes(user.sub, id, body.notes, user.sub);
+    return this.sessionsService.autosaveNotes(user.sub, id, body.notes, user.sub, body.mood);
   }
 }

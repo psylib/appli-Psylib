@@ -190,6 +190,7 @@ export interface Session {
     summaryAi: string | null;
     scribeTranscript?: string | null;
     tags: string[];
+    mood?: number | null;
     rate: number | null;
     paymentStatus: SessionPaymentStatus;
     orientation?: string | null;

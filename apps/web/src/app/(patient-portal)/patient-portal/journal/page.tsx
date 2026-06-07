@@ -168,7 +168,8 @@ export default function JournalPage() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Comment s'est passée votre journée ? Qu'avez-vous ressenti ?"
-            className="w-full px-0 py-0 text-sm text-slate-700 resize-none focus:outline-none placeholder:text-slate-300"
+            aria-label="Contenu de l'entrée de journal"
+            className="w-full px-2 py-1 text-sm text-slate-700 resize-none rounded-lg focus:outline-none focus-visible:ring-[3px] focus-visible:ring-[#3D52A0] focus-visible:ring-offset-1 placeholder:text-slate-300"
             rows={4}
           />
 
@@ -180,8 +181,11 @@ export default function JournalPage() {
                 {[2, 4, 5, 7, 9, 10].map((m) => (
                   <button
                     key={m}
+                    type="button"
                     onClick={() => setMood(mood === m ? undefined : m)}
-                    className={`text-lg transition-transform ${mood === m ? 'scale-125' : 'opacity-50 hover:opacity-100'}`}
+                    aria-label={`Humeur ${m} sur 10`}
+                    aria-pressed={mood === m}
+                    className={`flex items-center justify-center min-w-[44px] min-h-[44px] text-lg rounded-lg transition-transform focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[#3D52A0] ${mood === m ? 'scale-125 bg-[#3D52A0]/10' : 'opacity-50 hover:opacity-100'}`}
                     title={`${m}/10`}
                   >
                     {MOOD_EMOJIS[m]}

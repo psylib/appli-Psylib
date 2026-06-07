@@ -228,6 +228,7 @@ export interface Session {
   summaryAi: string | null;
   scribeTranscript?: string | null; // présent uniquement si scribe IA a généré la note
   tags: string[];
+  mood?: number | null; // 1-5 — humeur du patient relevée en séance
   rate: number | null;
   paymentStatus: SessionPaymentStatus;
   orientation?: string | null;

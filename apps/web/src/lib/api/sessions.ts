@@ -28,8 +28,12 @@ export const sessionsApi = {
   update: (id: string, data: Partial<Session>, token: string) =>
     apiClient.put<Session>(`/sessions/${id}`, data, token),
 
-  autosave: (id: string, notes: string, token: string) =>
-    apiClient.patch<{ saved: boolean; at: string }>(`/sessions/${id}/autosave`, { notes }, token),
+  autosave: (id: string, notes: string, token: string, mood?: number | null) =>
+    apiClient.patch<{ saved: boolean; at: string }>(
+      `/sessions/${id}/autosave`,
+      { notes, mood },
+      token,
+    ),
 
   delete: (id: string, token: string) =>
     apiClient.delete<{ deleted: boolean }>(`/sessions/${id}`, token),

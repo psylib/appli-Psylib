@@ -239,6 +239,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
         <SessionNoteEditor
           sessionId={sessionId}
           initialNotes={session.notes}
+          initialMood={session.mood}
           existingSummary={session.summaryAi}
           existingAiMetadata={session.aiMetadata as Record<string, unknown> | null}
           existingTags={session.tags}

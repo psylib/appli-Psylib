@@ -69,6 +69,7 @@ interface AiMetadata {
 interface SessionNoteEditorProps {
   sessionId: string;
   initialNotes?: string | null;
+  initialMood?: number | null;
   existingSummary?: string | null;
   existingAiMetadata?: AiMetadata | null;
   existingTags?: string[];
@@ -185,6 +186,7 @@ function AlertBadge({ level, reason }: { level: string; reason?: string | null }
 export function SessionNoteEditor({
   sessionId,
   initialNotes = '',
+  initialMood = null,
   existingSummary,
   existingAiMetadata,
   existingTags,
@@ -200,7 +202,7 @@ export function SessionNoteEditor({
   const [notes, setNotes] = useState(
     parsedInitial ? '' : (initialNotes ?? ''),
   );
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [selectedMood, setSelectedMood] = useState<number | null>(initialMood ?? null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isDirty, setIsDirty] = useState(false);
@@ -261,7 +263,7 @@ export function SessionNoteEditor({
 
     setSaveStatus('saving');
     try {
-      await sessionsApi.autosave(sessionId, notes, session.accessToken);
+      await sessionsApi.autosave(sessionId, notes, session.accessToken, selectedMood);
       setSaveStatus('saved');
       setLastSaved(new Date());
       setIsDirty(false);
@@ -269,7 +271,7 @@ export function SessionNoteEditor({
     } catch {
       setSaveStatus('error');
     }
-  }, [sessionId, session?.accessToken, isDirty, getNotesForSave]);
+  }, [sessionId, session?.accessToken, isDirty, getNotesForSave, selectedMood]);
 
   // Autosave 30s
   useEffect(() => {
@@ -558,7 +560,11 @@ export function SessionNoteEditor({
               {MOOD_OPTIONS.map((mood) => (
                 <button
                   key={mood.value}
-                  onClick={() => setSelectedMood(selectedMood === mood.value ? null : mood.value)}
+                  type="button"
+                  onClick={() => {
+                    setSelectedMood(selectedMood === mood.value ? null : mood.value);
+                    setIsDirty(true);
+                  }}
                   className={cn(
                     'flex flex-col items-center p-2 rounded-lg transition-colors min-h-[52px] min-w-[48px]',
                     selectedMood === mood.value

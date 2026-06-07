@@ -323,6 +323,7 @@ export class SessionsService {
     sessionId: string,
     notes: string,
     actorId: string,
+    mood?: number | null,
   ): Promise<{ saved: boolean; at: string }> {
     const psy = await this.getPsychologist(psychologistUserId);
 
@@ -333,7 +334,11 @@ export class SessionsService {
 
     await this.prisma.session.update({
       where: { id: sessionId },
-      data: { notes: notes ? this.encryption.encrypt(notes) : null },
+      data: {
+        notes: notes ? this.encryption.encrypt(notes) : null,
+        // mood non chiffré (1-5, pas une donnée libre) ; undefined = champ non transmis → inchangé
+        ...(mood === undefined ? {} : { mood }),
+      },
     });
 
     await this.audit.log({
