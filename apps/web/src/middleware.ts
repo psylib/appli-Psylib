@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { UserRole } from '@psyscale/shared-types';
+import { buildCspWithNonce, generateNonce, isCspNonceEnabled } from '@/lib/security/csp';
 
 /**
  * Middleware PsyLib — Auth guard + redirects
@@ -13,11 +14,26 @@ import { UserRole } from '@psyscale/shared-types';
  * - /(patient-portal)/* → redirect vers /login si non authentifié
  * - /onboarding/* → redirect vers /dashboard si is_onboarded = true
  */
-// Helper: NextResponse.next() with pathname header for server components
+// Helper: NextResponse.next() with pathname header for server components.
+// Quand CSP_NONCE=true, injecte un nonce par requête + la CSP durcie (nonce+strict-dynamic).
+// Next.js lit la CSP des request headers pour propager le nonce à ses propres <script>.
+// Flag OFF (défaut) : comportement inchangé, la CSP statique de next.config.mjs s'applique.
 function nextWithPathname(req: NextRequest) {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-next-pathname', req.nextUrl.pathname);
-  return NextResponse.next({ request: { headers: requestHeaders } });
+
+  if (!isCspNonceEnabled()) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
+  const nonce = generateNonce();
+  const csp = buildCspWithNonce(nonce);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', csp);
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set('Content-Security-Policy', csp);
+  return response;
 }
 
 
