@@ -47,6 +47,7 @@ import { GuardiansModule } from './guardians/guardians.module';
 import { GuardianPortalModule } from './guardian-portal/guardian-portal.module';
 import { CalendarSyncModule } from './calendar-sync/calendar-sync.module';
 import { AssistantsModule } from './assistants/assistants.module';
+import { RebookModule } from './rebook/rebook.module';
 
 @Module({
   imports: [
@@ -155,6 +156,7 @@ import { AssistantsModule } from './assistants/assistants.module';
     GuardianPortalModule,
     CalendarSyncModule,
     AssistantsModule,
+    RebookModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
