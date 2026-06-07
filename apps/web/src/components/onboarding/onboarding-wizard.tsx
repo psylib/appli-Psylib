@@ -660,29 +660,38 @@ export function OnboardingWizard({ currentStep, currentStepIndex, totalSteps: _t
   // Success page — full-width, no split-screen
   if (currentStep === 'success') return <SuccessStep />;
 
+  // Step fields are rendered ONCE — rendering them in both a desktop and a
+  // mobile container at the same time would call form.register() twice for each
+  // field (duplicate inputs sharing the same name/id), which breaks react-hook-form
+  // value capture (e.g. "Nom complet" reported empty even when filled).
+  const stepContent = (
+    <StepTransition stepKey={currentStep} direction={direction}>
+      <div className="rounded-xl border border-border bg-white p-5 md:p-6 shadow-sm space-y-5">
+        {currentStep === 'profile' && <ProfileStep form={profileForm} />}
+        {currentStep === 'practice' && <PracticeStep form={practiceForm} />}
+        {currentStep === 'preferences' && <PreferencesStep form={preferencesForm} />}
+        {currentStep === 'first_patient' && <FirstPatientStep form={firstPatientForm} />}
+        {apiError && (
+          <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive" role="alert">
+            {apiError}
+          </div>
+        )}
+      </div>
+    </StepTransition>
+  );
+
   // Form steps — split-screen
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
       <OnboardingSidebar currentStepIndex={currentStepIndex} />
 
       <div className="flex-1 flex flex-col overflow-y-auto bg-white">
-        {/* Desktop form area */}
-        <div className="hidden md:flex flex-1 items-center justify-center p-12">
+        {/* Form area — single render, responsive layout */}
+        <div className="flex-1 flex md:items-center md:justify-center p-4 pb-20 md:p-12">
           <div className="w-full max-w-md">
-            <StepTransition stepKey={currentStep} direction={direction}>
-              <div className="rounded-xl border border-border bg-white p-6 shadow-sm space-y-5">
-                {currentStep === 'profile' && <ProfileStep form={profileForm} />}
-                {currentStep === 'practice' && <PracticeStep form={practiceForm} />}
-                {currentStep === 'preferences' && <PreferencesStep form={preferencesForm} />}
-                {currentStep === 'first_patient' && <FirstPatientStep form={firstPatientForm} />}
-                {apiError && (
-                  <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive" role="alert">
-                    {apiError}
-                  </div>
-                )}
-              </div>
-            </StepTransition>
-            <div className="flex items-center justify-between mt-6">
+            {stepContent}
+            {/* Desktop nav — inline below the card */}
+            <div className="hidden md:flex items-center justify-between mt-6">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button variant="outline" onClick={goBack} disabled={currentStep === 'profile'}
                   className={cn(currentStep === 'profile' && 'invisible')}>
@@ -704,23 +713,6 @@ export function OnboardingWizard({ currentStep, currentStepIndex, totalSteps: _t
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Mobile form area */}
-        <div className="md:hidden flex-1 p-4 pb-20">
-          <StepTransition stepKey={currentStep} direction={direction}>
-            <div className="rounded-xl border border-border bg-white p-5 shadow-sm space-y-5">
-              {currentStep === 'profile' && <ProfileStep form={profileForm} />}
-              {currentStep === 'practice' && <PracticeStep form={practiceForm} />}
-              {currentStep === 'preferences' && <PreferencesStep form={preferencesForm} />}
-              {currentStep === 'first_patient' && <FirstPatientStep form={firstPatientForm} />}
-              {apiError && (
-                <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive" role="alert">
-                  {apiError}
-                </div>
-              )}
-            </div>
-          </StepTransition>
         </div>
 
         {/* Mobile sticky bottom nav */}
