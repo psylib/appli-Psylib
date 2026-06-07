@@ -51,6 +51,7 @@ export interface BookingDto {
   consultationTypeId?: string;
   payOnline?: boolean;
   isOnline?: boolean;
+  notifyEarlierSlot?: boolean;
 }
 
 export interface BookingResult {

@@ -179,6 +179,7 @@ function BookingModal({
     reason: '',
   });
   const [payOnline, setPayOnline] = useState(false);
+  const [notifyEarlierSlot, setNotifyEarlierSlot] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -216,6 +217,7 @@ function BookingModal({
         consultationTypeId: consultationType?.id,
         payOnline: showPaymentChoice ? payOnline : undefined,
         isOnline: (modalityIsFixed || showModalityChoice) ? isOnline : undefined,
+        notifyEarlierSlot: notifyEarlierSlot || undefined,
       });
       onSuccess(result.appointmentId, result.checkoutUrl);
     } catch (err) {
@@ -407,6 +409,17 @@ function BookingModal({
               </label>
             </div>
           )}
+
+          {/* Notification créneau libéré plus tôt */}
+          <label className="flex items-start gap-2 text-sm text-[#1E1B4B] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notifyEarlierSlot}
+              onChange={(e) => setNotifyEarlierSlot(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 accent-[#3D52A0]"
+            />
+            <span>Prévenez-moi par email si une place se libère plus tôt</span>
+          </label>
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
