@@ -71,6 +71,7 @@ export const authConfig: NextAuthConfig = {
 
           const data = (await res.json()) as {
             accessToken: string;
+            refreshToken?: string;
             userId: string;
             patientId: string;
             email: string;
@@ -82,6 +83,7 @@ export const authConfig: NextAuthConfig = {
             role: UserRole.PATIENT,
             patientId: data.patientId,
             accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
           };
         } catch {
           return null;
@@ -107,8 +109,8 @@ export const authConfig: NextAuthConfig = {
             body: JSON.stringify({ email: credentials.email, password: credentials.password }),
           });
           if (!res.ok) return null;
-          const data = (await res.json()) as { accessToken: string; userId: string; email: string };
-          return { id: data.userId, email: data.email, role: UserRole.GUARDIAN, accessToken: data.accessToken };
+          const data = (await res.json()) as { accessToken: string; refreshToken?: string; userId: string; email: string };
+          return { id: data.userId, email: data.email, role: UserRole.GUARDIAN, accessToken: data.accessToken, refreshToken: data.refreshToken };
         } catch { return null; }
       },
     }),
@@ -137,31 +139,41 @@ export const authConfig: NextAuthConfig = {
         token.role = extractRole(realmRoles);
       }
 
-      // Patient credentials login
+      // Patient credentials login — access token HS256 de 1h + refresh token 7j
       if (account?.provider === 'patient-credentials' && user) {
-        const patientUser = user as typeof user & { patientId: string; accessToken: string; role: UserRole };
+        const patientUser = user as typeof user & { patientId: string; accessToken: string; refreshToken?: string; role: UserRole };
         token.role = UserRole.PATIENT;
         token.patientId = patientUser.patientId;
         token.accessToken = patientUser.accessToken;
+        token.refreshToken = patientUser.refreshToken;
+        token.expiresAt = Math.floor(Date.now() / 1000) + PORTAL_ACCESS_TTL_SEC;
         return token;
       }
 
       // Guardian credentials login
       if (account?.provider === 'guardian-credentials' && user) {
-        const guardianUser = user as typeof user & { accessToken: string; role: UserRole };
+        const guardianUser = user as typeof user & { accessToken: string; refreshToken?: string; role: UserRole };
         token.role = UserRole.GUARDIAN;
         token.accessToken = guardianUser.accessToken;
+        token.refreshToken = guardianUser.refreshToken;
+        token.expiresAt = Math.floor(Date.now() / 1000) + PORTAL_ACCESS_TTL_SEC;
         return token;
       }
 
-      // Refresh Keycloak token si expiré (ou expire dans < 60s)
+      // Token encore valide (ou expire dans > 60s) — rien à faire
       const nowSec = Math.floor(Date.now() / 1000);
       if (token.expiresAt && nowSec < token.expiresAt - 60) {
-        return token; // Encore valide
+        return token;
       }
 
       if (!token.refreshToken) return token; // Pas de refresh token disponible
 
+      // Refresh des tokens portail (patient/tuteur) via l'API NestJS (HS256, pas Keycloak)
+      if (token.role === UserRole.PATIENT || token.role === UserRole.GUARDIAN) {
+        return refreshPortalAccessToken(token);
+      }
+
+      // Refresh Keycloak token (psy/admin/assistant)
       try {
         const keycloakUrl = process.env['KEYCLOAK_URL'] ?? 'https://auth.psylib.eu';
         const realm = process.env['KEYCLOAK_REALM'] ?? 'psyscale';
@@ -240,4 +252,44 @@ function extractRole(roles: string[]): UserRole {
   if (roles.includes('assistant')) return UserRole.ASSISTANT;
   if (roles.includes('guardian')) return UserRole.GUARDIAN;
   return UserRole.PATIENT;
+}
+
+/** Durée de vie de l'access token portail (HS256) — aligné sur l'API NestJS (1h). */
+export const PORTAL_ACCESS_TTL_SEC = 60 * 60;
+
+/**
+ * Rafraîchit un access token portail (patient/tuteur) via l'API NestJS.
+ * Renvoie un token avec accessToken vidé (force la reconnexion) si le refresh échoue.
+ */
+export async function refreshPortalAccessToken(token: JWT): Promise<JWT> {
+  if (!token.refreshToken) {
+    return { ...token, accessToken: '', refreshToken: undefined };
+  }
+  const apiUrl = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
+  const segment = token.role === UserRole.GUARDIAN ? 'guardian-portal' : 'patient-portal';
+  try {
+    const res = await fetch(`${apiUrl}/api/v1/${segment}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: token.refreshToken }),
+    });
+    if (!res.ok) {
+      return { ...token, accessToken: '', refreshToken: undefined };
+    }
+    const data = (await res.json()) as {
+      accessToken: string;
+      refreshToken?: string;
+      patientId?: string;
+    };
+    return {
+      ...token,
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken ?? token.refreshToken,
+      patientId: data.patientId ?? token.patientId,
+      expiresAt: Math.floor(Date.now() / 1000) + PORTAL_ACCESS_TTL_SEC,
+    };
+  } catch {
+    // Erreur réseau — forcer la reconnexion pour éviter une UI semi-fonctionnelle
+    return { ...token, accessToken: '', refreshToken: undefined };
+  }
 }
