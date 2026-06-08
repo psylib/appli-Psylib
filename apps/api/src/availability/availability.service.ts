@@ -70,6 +70,32 @@ export class AvailabilityService {
   }
 
   /**
+   * Vérifie qu'un créneau PRÉCIS est réellement réservable : il tombe dans une
+   * plage de disponibilité active, ne chevauche aucun RDV ni événement de
+   * calendrier externe et respecte `minBreakMinutes`. Source unique de vérité =
+   * `getAvailableTimeslots` (exactement les créneaux proposés au patient).
+   * Comparaison à la minute. Sert de garde serveur sur les chemins d'écriture
+   * (réservation publique, déplacement « place plus tôt ») où la validation UI
+   * est contournable par appel API direct.
+   */
+  async isSlotBookable(
+    psychologistId: string,
+    slot: Date,
+    sessionDuration: number = 50,
+  ): Promise<boolean> {
+    if (isNaN(slot.getTime()) || slot.getTime() <= Date.now()) return false;
+    const end = new Date(slot.getTime() + sessionDuration * 60000);
+    const offered = await this.getAvailableTimeslots(
+      psychologistId,
+      slot,
+      end,
+      sessionDuration,
+    );
+    const slotMin = Math.floor(slot.getTime() / 60000);
+    return offered.some((d) => Math.floor(d.getTime() / 60000) === slotMin);
+  }
+
+  /**
    * Génère les créneaux disponibles sur une période (max 30 jours).
    * Exclut les RDV existants.
    * Toutes les heures de disponibilité sont interprétées en Europe/Paris.

@@ -74,6 +74,19 @@ export class RebookService {
     const oldDate = appt.scheduledAt;
     const duration = appt.duration;
 
+    // F1 (audit 2026-06-08) : le créneau cible doit réellement être proposé par
+    // les disponibilités du psy (plage active, hors RDV/événements externes,
+    // minBreak). Sans ça, tout horaire « plus tôt » non chevauchant passait
+    // (nuit, dimanche, pause déjeuner, jour fermé) via appel API direct.
+    const bookable = await this.availability.isSlotBookable(
+      appt.psychologistId,
+      newSlot,
+      duration,
+    );
+    if (!bookable) {
+      throw new BadRequestException("Ce créneau n'est plus disponible");
+    }
+
     await this.prisma.$transaction(
       async (tx) => {
         // FIX I-2: Re-read status inside the transaction to guard against a concurrent cancellation

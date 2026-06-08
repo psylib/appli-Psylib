@@ -89,6 +89,7 @@ function createCacheMock() {
 function createAvailabilityMock() {
   return {
     getAvailableTimeslots: vi.fn().mockResolvedValue([]),
+    isSlotBookable: vi.fn().mockResolvedValue(true),
   };
 }
 

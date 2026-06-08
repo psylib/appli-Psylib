@@ -391,6 +391,22 @@ export class PublicBookingService {
       !!psy.stripeAccountId;
     const wantsOnlinePayment = dto.payOnline === true && psyAcceptsPayment;
 
+    // F1 (audit 2026-06-08) : garde serveur — le créneau demandé doit tomber
+    // dans une plage de disponibilité publiée. Les disponibilités sont la seule
+    // règle horaire ; l'overlap en transaction ne couvre QUE le double-booking.
+    // Empêche les réservations directes par API hors horaires (nuit, jours
+    // fermés, pauses) que l'UI n'aurait jamais proposées.
+    const slotBookable = await this.availabilityService.isSlotBookable(
+      psy.id,
+      scheduledAt,
+      duration,
+    );
+    if (!slotBookable) {
+      throw new BadRequestException(
+        "Ce créneau n'est pas disponible à la réservation.",
+      );
+    }
+
     const cancelToken = randomUUID();
     const earlierSlotToken = dto.notifyEarlierSlot ? randomUUID() : null;
 

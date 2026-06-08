@@ -64,6 +64,9 @@ function createPrismaMock() {
 function createAvailabilityMock() {
   return {
     getAvailableTimeslots: vi.fn().mockResolvedValue([]),
+    // Par défaut le créneau demandé est réservable ; les tests qui veulent
+    // simuler un créneau hors-disponibilité surchargent à false.
+    isSlotBookable: vi.fn().mockResolvedValue(true),
   };
 }
 
@@ -297,6 +300,16 @@ describe('PublicBookingService', () => {
     it('throws NotFoundException when psy slug not found', async () => {
       prisma.psychologist.findUnique.mockResolvedValue(null);
       await expect(service.bookAppointment('inconnu', validBookingDto)).rejects.toThrow(NotFoundException);
+    });
+
+    it('rejette un créneau hors plage de disponibilité (F1 — garde serveur)', async () => {
+      // Le créneau ne chevauche aucun RDV mais ne tombe pas dans une plage
+      // publiée : la réservation directe par API doit être refusée.
+      availabilityService.isSlotBookable.mockResolvedValue(false);
+      await expect(service.bookAppointment('dr-martin', validBookingDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(prisma.appointment.create).not.toHaveBeenCalled();
     });
 
     it('throws ConflictException on slot conflict', async () => {

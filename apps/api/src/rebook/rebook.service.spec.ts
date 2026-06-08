@@ -6,7 +6,7 @@ describe('RebookService', () => {
   const current = new Date('2026-07-10T10:00:00.000Z');
   const earlier = new Date('2026-07-02T09:00:00.000Z');
 
-  function build(opts: { appt?: any; slots?: Date[] } = {}) {
+  function build(opts: { appt?: any; slots?: Date[]; bookable?: boolean } = {}) {
     const appt = opts.appt ?? {
       id: 'a1',
       psychologistId: 'psy-1',
@@ -34,7 +34,10 @@ describe('RebookService', () => {
       patient: { findUnique: vi.fn().mockResolvedValue({ name: 'Alice', email: 'a@x.fr' }) },
       $transaction: vi.fn(async (fn: any) => fn(tx)),
     } as any;
-    const availability = { getAvailableTimeslots: vi.fn().mockResolvedValue(opts.slots ?? [earlier]) } as any;
+    const availability = {
+      getAvailableTimeslots: vi.fn().mockResolvedValue(opts.slots ?? [earlier]),
+      isSlotBookable: vi.fn().mockResolvedValue(opts.bookable ?? true),
+    } as any;
     const email = { sendBookingReceivedToPatient: vi.fn().mockResolvedValue(undefined) } as any;
     const config = { get: vi.fn().mockReturnValue('https://psylib.eu') } as any;
     const emitter = { emit: vi.fn() } as any;
@@ -69,6 +72,17 @@ describe('RebookService', () => {
       expect.objectContaining({ where: { id: 'a1' }, data: expect.objectContaining({ scheduledAt: earlier }) }),
     );
     expect(emitter.emit).toHaveBeenCalledWith('slot.freed', { psychologistId: 'psy-1', freedAt: current });
+  });
+
+  it('moveToSlot rejects a slot outside the psychologist availability windows (F1)', async () => {
+    // Créneau plus tôt, futur, sans chevauchement, mais NON proposé par les
+    // disponibilités (ex. 2h du matin) → la garde isSlotBookable doit refuser.
+    const offHours = new Date('2026-07-02T02:00:00.000Z');
+    const { svc, availability } = build({ bookable: false });
+    await expect(svc.moveToSlot('tok-1', offHours.toISOString())).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    expect(availability.isSlotBookable).toHaveBeenCalled();
   });
 
   it('unsubscribe sets notifyEarlierSlot=false', async () => {
