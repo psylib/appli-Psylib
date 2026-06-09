@@ -79,11 +79,17 @@ export class GoogleCalendarProvider {
       ? new Date(tokens.expiry_date)
       : new Date(Date.now() + 3600 * 1000);
 
-    // Fetch user email via oauth2.userinfo
+    // Fetch user email via oauth2.userinfo (best-effort: l'email est cosmétique,
+    // la sync fonctionne avec calendarId="primary" même sans email).
     client.setCredentials(tokens);
-    const oauth2 = google.oauth2({ version: 'v2', auth: client });
-    const userInfo = await oauth2.userinfo.get();
-    const email = userInfo.data.email ?? '';
+    let email = '';
+    try {
+      const oauth2 = google.oauth2({ version: 'v2', auth: client });
+      const userInfo = await oauth2.userinfo.get();
+      email = userInfo.data.email ?? '';
+    } catch (err) {
+      this.logger.warn(`Could not fetch Google account email (non-blocking): ${(err as Error).message}`);
+    }
 
     return { accessToken, refreshToken, expiresAt, email };
   }
