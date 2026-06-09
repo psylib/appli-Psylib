@@ -330,7 +330,7 @@ export default function ArticleLogicielGestionCabinet() {
 
         {/* CTA */}
         <section className="mb-12 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
-          <h2 className="mb-3 font-playfair text-2xl font-bold">Testez PsyLib gratuitement pendant 14 jours</h2>
+          <h2 className="mb-3 font-playfair text-2xl font-bold">Testez PsyLib gratuitement</h2>
           <p className="mb-6 text-white/80">
             Accès complet au plan Pro. Sans carte bancaire. Conforme HDS.
           </p>

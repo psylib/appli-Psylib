@@ -51,9 +51,9 @@ export default async function LegalPage() {
             de la santé publique.
           </p>
           <ul className="mt-2 space-y-1 text-muted-foreground">
-            <li>Infrastructure principale : AWS eu-west-3 (Paris) — certifié HDS</li>
-            <li>Authentification : OVH HDS (Keycloak)</li>
-            <li>Sauvegardes : OVH HDS Object Storage</li>
+            <li>Infrastructure principale : OVHcloud (France) — hébergeur certifié HDS</li>
+            <li>Authentification : OVHcloud (Keycloak)</li>
+            <li>Sauvegardes : OVHcloud Object Storage</li>
           </ul>
         </section>
 

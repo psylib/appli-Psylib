@@ -32,20 +32,20 @@ PsyScale = "Doctolib + Kajabi + Notion + ChatGPT" pour psychologues libéraux.
 - **Socket.io** (realtime messagerie)
 - **Bull/BullMQ** (queues : emails, IA, webhooks)
 
-## Infrastructure (double cloud HDS)
+## Infrastructure (OVHcloud — France)
 
-| Rôle | Provider | Service | HDS |
-|---|---|---|---|
-| Compute API | **AWS eu-west-3** (Paris) | ECS / EC2 Docker | ✅ |
-| Load Balancer | **AWS eu-west-3** | ALB (Application Load Balancer) | ✅ |
-| Base de données | **AWS eu-west-3** | RDS PostgreSQL (chiffrement at-rest) | ✅ |
-| Stockage fichiers patients | **AWS eu-west-3** | S3 (bucket privé chiffré SSE-KMS) | ✅ |
-| Stockage vidéos cours | **AWS eu-west-3** | S3 + CloudFront | ✅ |
-| Auth (Keycloak) | **OVH HDS** | Instance dédiée Docker | ✅ |
-| Backup DB | **OVH HDS** | Object Storage | ✅ |
+| Rôle | Provider | Service |
+|---|---|---|
+| Compute API | **OVHcloud** (France) | VPS Docker — NestJS API |
+| Base de données | **OVHcloud** (France) | PostgreSQL (Docker, chiffrement disque) |
+| Cache / Queues | **OVHcloud** (France) | Redis (Docker) |
+| Stockage fichiers patients | **OVHcloud Object Storage** (région GRA) | Bucket privé S3 chiffré SSE |
+| Auth (Keycloak) | **OVHcloud** (France) | Instance Docker dédiée |
+| Visioconférence (LiveKit) | **OVHcloud** (France) | Auto-hébergé (même infra) |
+| Backup DB | **OVHcloud Object Storage** | Snapshots chiffrés |
+| Frontend | **Vercel** | Next.js (aucune donnée de santé) |
 
-> AWS eu-west-3 (Paris) est **certifié HDS** depuis 2022 pour EC2, RDS, S3, ECS, EKS.
-> Les deux providers sont conformes — AWS pour le compute/data, OVH pour Keycloak et les backups.
+> ⚠️ **Statut HDS — réalité à ne pas surévaluer.** OVHcloud est un **hébergeur certifié HDS**, mais cette certification couvre les **activités 1-4 et 6** (sites physiques, infra matérielle/virtuelle, plateforme d'hébergement, sauvegarde) — **PAS l'activité 5** (administration et exploitation du SI de santé), qui est assurée par PsyLib et reste **à couvrir** (certification HDS propre ou infogérance HDS). De plus, **à confirmer** : le produit OVH hébergeant la prod doit être dans le périmètre HDS (Public Cloud HDS / Hosted Private Cloud) — un VPS standard n'est pas dans le périmètre certifié. Ne JAMAIS affirmer publiquement « PsyLib est certifié HDS ». Formulation exacte : « données hébergées en France chez OVHcloud, hébergeur certifié HDS ».
 
 ## Services tiers
 - **Stripe** (paiements + subscriptions)
@@ -169,8 +169,9 @@ KEYCLOAK_ADMIN_SECRET=***
 
 | Exigence | Solution | Statut |
 |---|---|---|
-| Hébergement HDS | AWS eu-west-3 Paris + OVH HDS | ✅ |
-| Chiffrement at-rest | AWS RDS AES-256 + S3 SSE-KMS | ✅ |
+| Hébergement HDS (infra) | OVHcloud, hébergeur certifié HDS — France | ✅ (activités 1-4, 6) |
+| Activité 5 HDS (exploitation SI) | Assurée par PsyLib — **certification/infogérance à mettre en place** | ⚠️ à couvrir |
+| Chiffrement at-rest | Chiffrement disque infra + AES-256-GCM applicatif | ✅ |
 | Chiffrement applicatif | AES-256-GCM (NestJS) sur champs sensibles | ✅ |
 | Chiffrement transit | TLS 1.3 partout | ✅ |
 | Authentification forte | Keycloak + MFA TOTP obligatoire (psys) | ✅ |
@@ -180,7 +181,7 @@ KEYCLOAK_ADMIN_SECRET=***
 | Droit à l'effacement | Endpoint `/patients/:id/purge` | ✅ |
 | Isolation multi-tenant | `psychologist_id` filtre applicatif + DB | ✅ |
 | Pas de données patients hors HDS | IA : données anonymisées seulement | ✅ |
-| Backup cross-cloud | RDS → OVH HDS Object Storage | ✅ |
+| Backup | PostgreSQL → OVHcloud Object Storage (chiffré) | ✅ |
 
 **Obligations implémentées :**
 - Chiffrement AES-256-GCM des champs sensibles (`notes`, `summary_ai`, `journal content`, `messages`)
@@ -195,32 +196,27 @@ KEYCLOAK_ADMIN_SECRET=***
 # ARCHITECTURE SYSTÈME
 
 ```
-Client (Next.js — Vercel ou AWS CloudFront)
+Client (Next.js — Vercel)
       │  HTTPS / TLS 1.3
       ▼
-AWS ALB — Load Balancer (eu-west-3 Paris HDS)
-      │
-      ▼
-AWS ECS — NestJS API (Docker)   ←→   Bull Queue (jobs async)
-      │                                     │
-      ├─ Prisma ORM                         ├─ Email worker (Resend)
-      │                                     ├─ AI worker (OpenAI/Claude)
-      ▼                                     └─ Stripe webhook worker
-AWS RDS PostgreSQL (eu-west-3 HDS)
-      │  Chiffrement at-rest (AES-256)
-      ├─ Champs sensibles chiffrés AES-256-GCM (applicatif)
-      └─ Audit logs
+OVHcloud VPS (France) — Docker
+  ├─ NestJS API   ←→   Bull/Redis Queue (jobs async)
+  │     │                   ├─ Email worker (Resend)
+  │     │                   ├─ AI worker (OpenRouter)
+  │     │                   └─ Stripe webhook worker
+  │     ├─ Prisma ORM
+  │     └─ Socket.io Gateway — messagerie temps réel psy ↔ patient
+  │
+  ├─ PostgreSQL (Docker)
+  │     ├─ Champs sensibles chiffrés AES-256-GCM (applicatif)
+  │     └─ Audit logs
+  │
+  ├─ Keycloak (instance Docker dédiée — MFA TOTP)
+  └─ LiveKit (visioconférence auto-hébergée)
 
-AWS S3 (eu-west-3 HDS — SSE-KMS)
+OVHcloud Object Storage (région GRA, chiffré SSE)
       ├─ Documents patients (bucket privé, accès signé)
-      └─ Vidéos cours (bucket + CloudFront CDN)
-
-OVH HDS
-      ├─ Keycloak (instance Docker dédiée)
-      └─ Backup RDS (snapshots cross-cloud)
-
-Socket.io Gateway (NestJS ECS)
-      └─ Messagerie temps réel psy ↔ patient
+      └─ Backups PostgreSQL (snapshots chiffrés)
 ```
 
 **Multi-tenant :** chaque psychologue est un tenant isolé via `psychologist_id` sur toutes les tables. Defense en profondeur : filtre applicatif + contraintes DB.

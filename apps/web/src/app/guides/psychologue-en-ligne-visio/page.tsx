@@ -258,7 +258,7 @@ export default function PagePsychoEnLigne() {
 
         <section className="mb-12 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">
-            Essayez PsyLib gratuitement pendant 14 jours
+            Essayez PsyLib gratuitement
           </h2>
           <p className="mb-6 text-white/80">
             Agenda présentiel + visio, messagerie HDS, dossiers patients, facturation conforme.

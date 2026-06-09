@@ -532,7 +532,7 @@ export function RevenueCalculator() {
               href="/login"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white text-blue-600 font-semibold hover:bg-blue-50 transition-colors shadow-sm"
             >
-              Essayer gratuitement 14 jours <ArrowRight size={15} />
+              Essayer gratuitement <ArrowRight size={15} />
             </Link>
             <Link
               href="/fonctionnalites/outcome-tracking"

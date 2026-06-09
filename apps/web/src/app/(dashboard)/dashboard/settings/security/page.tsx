@@ -126,8 +126,8 @@ export default function SecurityPage() {
       <div className="rounded-xl border border-accent/20 bg-accent/5 p-4">
         <p className="text-sm text-foreground font-medium">Infrastructure certifiée HDS</p>
         <p className="text-xs text-muted-foreground mt-1">
-          Toutes les données de santé sont hébergées sur AWS eu-west-3 (Paris) et OVH,
-          tous deux certifiés HDS conformément à l&apos;article L.1111-8 du Code de la santé publique.
+          Toutes les données de santé sont hébergées en France chez OVHcloud,
+          hébergeur certifié HDS conformément à l&apos;article L.1111-8 du Code de la santé publique.
         </p>
       </div>
     </div>

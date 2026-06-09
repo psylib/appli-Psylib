@@ -14,11 +14,11 @@
 | Champ | Detail |
 |---|---|
 | **Raison sociale** | OVHcloud SAS |
-| **Role** | Hebergement principal (VPS HDS) — compute, base de donnees PostgreSQL, stockage fichiers, authentification Keycloak, visioconference LiveKit |
+| **Role** | Hebergement principal — compute, base de donnees PostgreSQL, stockage fichiers (Object Storage), authentification Keycloak, visioconference LiveKit |
 | **Donnees transmises** | Toutes les donnees de la plateforme : donnees patients (chiffrees AES-256-GCM), donnees psychologues, fichiers partages, sessions, rendez-vous, audit logs |
 | **Sensibilite des donnees** | Elevee — donnees de sante au sens de l'article L.1111-8 du Code de la sante publique |
-| **Localisation** | France (datacenters Gravelines / Strasbourg) |
-| **Certification HDS** | Oui — certifie COFRAC (hebergeur de donnees de sante) |
+| **Localisation** | France (datacenters OVHcloud) |
+| **Certification HDS** | OVHcloud est certifie hebergeur de donnees de sante (HDS), certification delivree par un organisme accredite COFRAC |
 | **DPA / Contrat** | Inclus dans le contrat d'hebergement HDS OVH |
 
 ---

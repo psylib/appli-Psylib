@@ -281,8 +281,7 @@ export default function PrivacyPage() {
               Donnees de Sante (HDS) situee en France :
             </p>
             <ul className="list-inside list-disc space-y-1 text-gray-700">
-              <li><strong>AWS eu-west-3 (Paris) :</strong> base de donnees PostgreSQL, API backend, stockage fichiers — certifie HDS depuis 2022</li>
-              <li><strong>OVH (France) :</strong> serveur d&apos;authentification Keycloak, sauvegardes — certifie HDS</li>
+              <li><strong>OVHcloud (France) :</strong> API backend, base de donnees PostgreSQL, stockage fichiers, authentification Keycloak et sauvegardes — heberges chez OVHcloud, hebergeur certifie HDS</li>
             </ul>
           </div>
 
@@ -293,7 +292,7 @@ export default function PrivacyPage() {
             <li>
               <strong>Chiffrement au repos :</strong> AES-256-GCM sur les champs sensibles
               (notes de seance, resumes IA, messages, journal therapeutique) au niveau applicatif,
-              en complement du chiffrement natif de la base de donnees (AWS RDS AES-256)
+              en complement du chiffrement du stockage de l&apos;infrastructure HDS
             </li>
             <li>
               <strong>Chiffrement en transit :</strong> TLS 1.3 sur toutes les communications
@@ -378,7 +377,7 @@ export default function PrivacyPage() {
               Engagement fondamental : les donnees de sante des patients (notes de seance,
               dossiers cliniques, messages) ne sont <strong>jamais</strong> transmises a des
               services tiers non certifies HDS. Elles restent exclusivement sur l&apos;infrastructure
-              HDS certifiee (AWS eu-west-3 Paris + OVH France).
+              HDS certifiee, hebergee chez OVHcloud en France.
             </p>
           </div>
         </section>
@@ -389,8 +388,8 @@ export default function PrivacyPage() {
             8. Transferts de donnees hors de l&apos;Union europeenne
           </h2>
           <p className="mb-4 leading-relaxed">
-            Les donnees de sante sont hebergees exclusivement en France (AWS eu-west-3 Paris
-            et OVH France). Aucun transfert de donnees de sante n&apos;est effectue hors de
+            Les donnees de sante sont hebergees exclusivement en France, chez OVHcloud
+            (hebergeur certifie HDS). Aucun transfert de donnees de sante n&apos;est effectue hors de
             l&apos;Union europeenne.
           </p>
           <p className="leading-relaxed">
@@ -552,7 +551,7 @@ export default function PrivacyPage() {
           </h2>
           <p className="mb-6 text-white/80">
             Hebergement HDS certifie France, chiffrement AES-256-GCM, MFA obligatoire.
-            Essayez PsyLib gratuitement pendant 14 jours.
+            Essayez PsyLib gratuitement.
           </p>
           <Link
             href="/login"

@@ -297,7 +297,7 @@ export default function ArticleAgendaPsychologue() {
         {/* CTA */}
         <section className="mb-12 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">
-            Testez PsyLib gratuitement pendant 14 jours
+            Testez PsyLib gratuitement
           </h2>
           <p className="mb-6 text-white/80">
             Agenda, dossiers patients, facturation PDF. Accès complet. Sans carte bancaire.
@@ -306,7 +306,7 @@ export default function ArticleAgendaPsychologue() {
             href="https://psylib.eu/login"
             className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100"
           >
-            Essayer PsyLib gratuitement 14 jours
+            Essayer PsyLib gratuitement
           </a>
         </section>
 

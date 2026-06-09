@@ -53,8 +53,8 @@ const faqCategories = [
     title: "Securite et Conformite",
     questions: [
       {
-        q: "PsyLib est-il certifie HDS (Hebergeur de Donnees de Sante) ?",
-        a: "Oui, PsyLib est heberge sur une infrastructure certifiee HDS en France, conformement a l\"article L.1111-8 du Code de la sante publique. Les donnees de vos patients sont stockees exclusivement sur des serveurs situes en France.",
+        q: "Ou sont hebergees les donnees de mes patients ? L'hebergement est-il conforme HDS ?",
+        a: "Les donnees de vos patients sont hebergees exclusivement en France chez OVHcloud, hebergeur certifie HDS (Hebergeur de Donnees de Sante), conformement a l\"article L.1111-8 du Code de la sante publique. Elles sont en outre chiffrees au niveau applicatif (AES-256-GCM). Aucune donnee de sante ne quitte le territoire francais.",
       },
       {
         q: "Comment les donnees de mes patients sont-elles chiffrees ?",
@@ -290,7 +290,7 @@ export default function FaqPage() {
           Pret a simplifier la gestion de votre cabinet ?
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-white/90">
-          Essayez PsyLib gratuitement pendant 14 jours. Sans carte bancaire,
+          Essayez PsyLib gratuitement. Sans carte bancaire,
           sans engagement.
         </p>
         <Link

@@ -138,19 +138,11 @@ export default function LegalPage() {
             <div className="rounded-xl border border-gray-200 p-5">
               <h3 className="mb-2 font-semibold text-[#1E1B4B]">Backend et donnees de sante (HDS)</h3>
               <ul className="list-inside list-disc space-y-1 text-gray-700">
-                <li><strong>Hebergeur :</strong> Amazon Web Services (AWS) — Region eu-west-3 (Paris)</li>
-                <li><strong>Certification HDS :</strong> Oui (depuis 2022)</li>
-                <li><strong>Objet :</strong> API backend, base de donnees PostgreSQL, stockage de fichiers patients</li>
-                <li><strong>Chiffrement :</strong> AES-256 au repos (RDS) + AES-256-GCM applicatif + TLS 1.3 en transit</li>
-              </ul>
-            </div>
-            <div className="rounded-xl border border-gray-200 p-5">
-              <h3 className="mb-2 font-semibold text-[#1E1B4B]">Authentification et sauvegardes (HDS)</h3>
-              <ul className="list-inside list-disc space-y-1 text-gray-700">
-                <li><strong>Hebergeur :</strong> OVHcloud</li>
+                <li><strong>Hebergeur :</strong> OVHcloud SAS</li>
                 <li><strong>Adresse :</strong> 2 rue Kellermann, 59100 Roubaix, France</li>
-                <li><strong>Certification HDS :</strong> Oui</li>
-                <li><strong>Objet :</strong> serveur d&apos;authentification Keycloak (MFA TOTP), sauvegardes chiffrees de la base de donnees</li>
+                <li><strong>Certification HDS :</strong> OVHcloud est certifie hebergeur de donnees de sante (HDS)</li>
+                <li><strong>Objet :</strong> API backend, base de donnees PostgreSQL, stockage de fichiers patients, authentification Keycloak (MFA TOTP), sauvegardes chiffrees</li>
+                <li><strong>Chiffrement :</strong> AES-256-GCM applicatif sur les champs sensibles + TLS 1.3 en transit</li>
               </ul>
             </div>
           </div>

@@ -46,7 +46,7 @@ const jsonLd = {
         {
           '@type': 'Question',
           name: 'Comment le RGPD s\'applique-t-il aux données de consultation psychologique ?',
-          acceptedAnswer: { '@type': 'Answer', text: 'Les données psychologiques sont des données de santé au sens du RGPD, bénéficiant d\'une protection renforcée. Elles ne peuvent être collectées qu\'avec le consentement explicite du patient, stockées sur infrastructure HDS certifiée, et ne peuvent être transmises à des tiers sans base légale. PsyLib stocke toutes les données sur infrastructure AWS certifiée HDS (Hébergeur de Données de Santé).' },
+          acceptedAnswer: { '@type': 'Answer', text: 'Les données psychologiques sont des données de santé au sens du RGPD, bénéficiant d\'une protection renforcée. Elles ne peuvent être collectées qu\'avec le consentement explicite du patient, stockées sur infrastructure HDS certifiée, et ne peuvent être transmises à des tiers sans base légale. PsyLib héberge toutes les données en France chez OVHcloud, hébergeur certifié HDS (Hébergeur de Données de Santé).' },
         },
       ],
     },
@@ -135,8 +135,8 @@ export default function PageSecretProfessionnel() {
             Le RGPD et la réglementation HDS imposent que les données de santé des patients soient
             stockées sur infrastructure certifiée. L&apos;utilisation de Google Drive, Dropbox ou
             d&apos;un simple email pour stocker ou transmettre des notes de séance est légalement
-            non conforme. PsyLib stocke toutes les données sur AWS eu-west-3 (Paris) certifié
-            Hébergeur de Données de Santé, et chiffre les notes de séance avec AES-256-GCM.
+            non conforme. PsyLib héberge toutes les données en France chez OVHcloud, hébergeur certifié
+            Hébergeur de Données de Santé (HDS), et chiffre les notes de séance avec AES-256-GCM.
           </p>
         </section>
 

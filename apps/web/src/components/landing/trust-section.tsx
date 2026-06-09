@@ -5,7 +5,7 @@ const trustBadges = [
   {
     icon: Shield,
     title: 'Hébergement HDS',
-    description: 'OVH HDS certifié Hébergeur de Données de Santé',
+    description: 'Données hébergées en France chez OVHcloud, hébergeur certifié HDS',
     color: 'text-sage bg-sage-50 border-sage-200',
   },
   {
@@ -42,7 +42,7 @@ export function TrustSection() {
               La conformité HDS n&apos;est pas une option
             </h2>
             <p className="text-charcoal-400 text-lg max-w-2xl mx-auto">
-              En France, stocker des données de santé sur une infrastructure non certifiée HDS est une infraction. PsyLib est la seule plateforme psy conçue de zéro pour respecter ce cadre légal.
+              En France, stocker des données de santé sur une infrastructure non certifiée HDS est une infraction. PsyLib est conçue dès l&apos;origine autour de ce cadre : données hébergées en France sur infrastructure certifiée HDS, chiffrement de bout en bout, accès tracés.
             </p>
           </div>
         </ScrollReveal>

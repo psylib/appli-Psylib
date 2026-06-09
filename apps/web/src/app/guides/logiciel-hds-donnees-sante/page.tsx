@@ -260,20 +260,19 @@ export default function PageLogicielHDS() {
           </p>
 
           <h3 className="mb-3 font-playfair text-xl font-semibold text-[#1E1B4B]">
-            PsyLib : certifié HDS, hébergé en France
+            PsyLib : données hébergées en France, sur infrastructure certifiée HDS
           </h3>
           <p className="mb-4 leading-relaxed">
-            PsyLib est hébergé sur infrastructure certifiée HDS en France (AWS eu-west-3 Paris
-            pour le compute et la base de données, OVHcloud HDS pour l&apos;authentification
-            et les backups). Les données cliniques sont chiffrées en AES-256-GCM au niveau
-            applicatif. L&apos;assistant IA ne traite jamais de données identifiantes sans
-            consentement explicite du patient. Un DPA RGPD est disponible sur demande.
+            PsyLib héberge l&apos;ensemble de ses données en France chez OVHcloud, hébergeur
+            certifié HDS (Hébergeur de Données de Santé). Les données cliniques sont chiffrées
+            en AES-256-GCM au niveau applicatif. L&apos;assistant IA ne traite jamais de données
+            identifiantes sans consentement explicite du patient. Un DPA RGPD est disponible sur demande.
           </p>
         </section>
 
         <section className="mb-12 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">
-            Essayez PsyLib gratuitement pendant 14 jours
+            Essayez PsyLib gratuitement
           </h2>
           <p className="mb-6 text-white/80">
             Hébergement certifié HDS en France, chiffrement AES-256-GCM, conformité RGPD intégrée.
@@ -311,7 +310,7 @@ export default function PageLogicielHDS() {
               },
               {
                 q: "Comment PsyLib garantit-il la conformité HDS ?",
-                a: "PsyLib est hébergé sur AWS eu-west-3 Paris (certifié HDS) et OVHcloud HDS. Les données sont chiffrées en AES-256-GCM au niveau applicatif. Un DPA RGPD est disponible. L'IA ne traite jamais de données identifiantes sans consentement.",
+                a: "PsyLib héberge l'ensemble de ses données en France chez OVHcloud, hébergeur certifié HDS. Les données cliniques sont chiffrées en AES-256-GCM au niveau applicatif. Un DPA RGPD est disponible. L'IA ne traite jamais de données identifiantes sans consentement.",
               },
             ].map((item) => (
               <details key={item.q} className="rounded-xl border border-gray-200 p-5">

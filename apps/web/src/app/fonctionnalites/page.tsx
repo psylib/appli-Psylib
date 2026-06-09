@@ -136,7 +136,7 @@ export default function FonctionnalitesPage() {
       {/* CTA */}
       <section className="bg-gradient-to-r from-[#3D52A0] to-[#7B9CDA] py-16 text-center text-white">
         <h2 className="text-2xl font-bold md:text-3xl">
-          Essayez PsyLib gratuitement pendant 14 jours
+          Essayez PsyLib gratuitement
         </h2>
         <p className="mx-auto mt-3 max-w-xl text-white/90">
           Agenda, dossiers patients, facturation, notes structurees, conformite

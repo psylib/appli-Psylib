@@ -364,7 +364,7 @@ export default function NotesCliniquesPage() {
             Rédigez vos notes cliniques 3x plus vite
           </h2>
           <p className="mb-6 text-white/80">
-            Templates TCC, ACT, psychodynamique, systémique inclus. Essai 14 jours gratuit.
+            Templates TCC, ACT, psychodynamique, systémique inclus. Essai gratuit.
           </p>
           <Link
             href="/login"

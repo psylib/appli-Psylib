@@ -389,7 +389,7 @@ export default function ArticleAlternativeDoctolib() {
         <section className="mb-12 rounded-2xl bg-[#3D52A0] px-8 py-10 text-center text-white">
           <h2 className="mb-3 font-playfair text-2xl font-bold">Prêt à quitter Doctolib ?</h2>
           <p className="mb-6 text-white/80">
-            Testez PsyLib gratuitement pendant 14 jours. Accès complet, sans carte bancaire, conforme HDS.
+            Testez PsyLib gratuitement. Accès complet, sans carte bancaire, conforme HDS.
           </p>
           <Link href="/beta" className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-[#3D52A0] transition hover:bg-gray-100">
             Commencer gratuitement
