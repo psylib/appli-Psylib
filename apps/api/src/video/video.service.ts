@@ -304,7 +304,7 @@ export class VideoService {
    */
   async generatePatientToken(
     joinToken: string,
-  ): Promise<VideoTokenResponse & { needsConsent?: boolean }> {
+  ): Promise<VideoTokenResponse & { needsConsent?: boolean; patientName?: string; psychologistName?: string }> {
     if (!this.livekitApiKey || !this.livekitApiSecret) {
       throw new ForbiddenException('Visio non configurée — clés LiveKit manquantes');
     }
@@ -340,6 +340,7 @@ export class VideoService {
           appointment: {
             include: {
               videoRoom: true,
+              patient: { select: { id: true, name: true } },
               psychologist: { select: { name: true } },
             },
           },
@@ -348,7 +349,7 @@ export class VideoService {
 
       if (!participant) throw new UnauthorizedException('Lien de visio invalide ou expiré');
 
-      appointment = participant.appointment as any;
+      appointment = participant.appointment;
       patientId = participant.patient.id;
       patientName = participant.patient.name;
       psychologistName = participant.appointment.psychologist.name;
@@ -376,7 +377,7 @@ export class VideoService {
         roomName: '',
         patientName,
         psychologistName,
-      } as any;
+      };
     }
 
     const room = appointment!.videoRoom!;

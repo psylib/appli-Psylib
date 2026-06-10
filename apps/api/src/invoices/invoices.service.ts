@@ -277,7 +277,7 @@ export class InvoicesService {
     patientId: string,
     patientName: string,
     psychologistName: string,
-    invoice: { invoiceNumber: string; amountTtc: any; issuedAt: Date },
+    invoice: { invoiceNumber: string; amountTtc: Prisma.Decimal; issuedAt: Date },
     pdfBuffer?: Buffer,
   ): Promise<void> {
     try {
@@ -465,7 +465,7 @@ export class InvoicesService {
   }
 
   /** Public accessor for auto-invoice processor */
-  async buildPdfBufferPublic(invoice: any, sessions: any[]): Promise<Buffer> {
+  async buildPdfBufferPublic(invoice: InvoiceWithRelations, sessions: Session[]): Promise<Buffer> {
     return this.buildPdfBuffer(invoice, sessions);
   }
 

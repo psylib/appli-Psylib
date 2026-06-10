@@ -54,11 +54,12 @@ class MockAuthGuard implements CanActivate {
 }
 
 // Route-level metadata to tag feature requirements
-const featureMap = new Map<Function, string>();
+type AnyFn = (...args: unknown[]) => unknown;
+const featureMap = new Map<AnyFn, string>();
 
 function RequireFeature(feature: string): MethodDecorator {
   return (_target, _key, descriptor: PropertyDescriptor) => {
-    featureMap.set(descriptor.value as Function, feature);
+    featureMap.set(descriptor.value as AnyFn, feature);
     return descriptor;
   };
 }

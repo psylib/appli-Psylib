@@ -35,8 +35,8 @@ describe('useVideoChat', () => {
     );
     act(() => { result.current.sendMessage('Bonjour'); });
     expect(result.current.messages).toHaveLength(1);
-    expect(result.current.messages[0].text).toBe('Bonjour');
-    expect(result.current.messages[0].sender).toBe('psy');
+    expect(result.current.messages[0]!.text).toBe('Bonjour');
+    expect(result.current.messages[0]!.sender).toBe('psy');
     expect(mockPublishData).toHaveBeenCalledOnce();
   });
 
@@ -53,7 +53,7 @@ describe('useVideoChat', () => {
     const { result } = renderHook(() =>
       useVideoChat({ sender: 'psy', senderName: 'Dr Dupont' })
     );
-    const handler = (mockRoom.on as ReturnType<typeof vi.fn>).mock.calls[0][1];
+    const handler = (mockRoom.on as ReturnType<typeof vi.fn>).mock.calls[0]![1];
     const incomingMsg = {
       id: 'abc', sender: 'patient', senderName: 'Alice', text: 'Allo', timestamp: Date.now(),
     };
@@ -67,7 +67,7 @@ describe('useVideoChat', () => {
     const { result } = renderHook(() =>
       useVideoChat({ sender: 'psy', senderName: 'Dr Dupont' })
     );
-    const handler = (mockRoom.on as ReturnType<typeof vi.fn>).mock.calls[0][1];
+    const handler = (mockRoom.on as ReturnType<typeof vi.fn>).mock.calls[0]![1];
     const encoder = new TextEncoder();
     const msg = { id: 'x', sender: 'patient', senderName: 'Alice', text: 'Hi', timestamp: Date.now() };
     act(() => { handler(encoder.encode(JSON.stringify(msg))); });
@@ -80,7 +80,7 @@ describe('useVideoChat', () => {
     const { result } = renderHook(() =>
       useVideoChat({ sender: 'psy', senderName: 'Dr Dupont' })
     );
-    const handler = (mockRoom.on as ReturnType<typeof vi.fn>).mock.calls[0][1];
+    const handler = (mockRoom.on as ReturnType<typeof vi.fn>).mock.calls[0]![1];
     const encoder = new TextEncoder();
     act(() => { handler(encoder.encode('not json')); });
     expect(result.current.messages).toHaveLength(0);

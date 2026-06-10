@@ -4,6 +4,7 @@ import { Job } from 'bullmq';
 import { InvoicesService } from './invoices.service';
 import { EmailService } from '../notifications/email.service';
 import { AuditService } from '../common/audit.service';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../common/prisma.service';
 
 export const INVOICE_GENERATION_QUEUE = 'invoice-generation';
@@ -129,7 +130,7 @@ export class InvoiceGenerationProcessor extends WorkerHost {
     patientId: string,
     patientName: string,
     psychologistName: string,
-    invoice: { id: string; invoiceNumber: string; amountTtc: any; issuedAt: Date },
+    invoice: { id: string; invoiceNumber: string; amountTtc: Prisma.Decimal; issuedAt: Date },
   ): Promise<void> {
     const guardians = await this.prisma.legalGuardian.findMany({
       where: { patientId },
