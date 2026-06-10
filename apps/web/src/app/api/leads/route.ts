@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           from: 'PsyLib <noreply@send.psylib.eu>',
           to: [email],
-          subject: 'Bienvenue sur PsyLib — Votre plan Pro offert 6 mois',
+          subject: 'Bienvenue sur PsyLib — Créez votre compte gratuitement',
           html: `
             <div style="font-family: 'Inter', -apple-system, sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; color: #1E1B4B;">
               <div style="text-align: center; margin-bottom: 32px;">
@@ -70,10 +70,10 @@ export async function POST(req: NextRequest) {
               </div>
               <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">Bonjour,</p>
               <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
-                Merci pour votre int&eacute;r&ecirc;t pour PsyLib ! Pour vous remercier, nous vous offrons le <strong style="color: #3D52A0;">plan Pro gratuitement pendant 6 mois</strong>.
+                Merci pour votre int&eacute;r&ecirc;t pour PsyLib ! Vous pouvez d&eacute;marrer d&egrave;s maintenant avec le <strong style="color: #3D52A0;">plan gratuit</strong>, sans carte bancaire.
               </p>
               <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 16px;">
-                Le plan Pro inclut : patients illimit&eacute;s, s&eacute;ances illimit&eacute;es, r&eacute;sum&eacute;s IA illimit&eacute;s, AI Scribe audio, portail patient, visio, comptabilit&eacute; int&eacute;gr&eacute;e.
+                Le plan gratuit inclut : jusqu&apos;&agrave; 15 patients, s&eacute;ances illimit&eacute;es et comptabilit&eacute; int&eacute;gr&eacute;e. Passez au plan Solo ou Pro quand vous le souhaitez pour l&apos;IA, la visio et le portail patient.
               </p>
               <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
                 Cr&eacute;ez votre compte en un clic :

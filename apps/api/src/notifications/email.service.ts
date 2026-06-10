@@ -117,7 +117,7 @@ export class EmailService {
         rédiger vos notes de séance et utiliser l'assistant IA.
       </p>
       <p>
-        14 jours d'essai gratuit — aucune carte de crédit requise.
+        Vous démarrez sur le plan gratuit — aucune carte de crédit requise.
       </p>
       <div style="text-align:center;">
         <a href="${data.dashboardUrl}" class="btn">Accéder à mon espace</a>

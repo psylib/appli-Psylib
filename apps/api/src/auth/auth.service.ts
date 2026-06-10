@@ -280,10 +280,6 @@ export class AuthService {
       '-' +
       randomBytes(4).toString('hex');
 
-    // Pro trial : 6 months from now
-    const trialEndsAt = new Date();
-    trialEndsAt.setMonth(trialEndsAt.getMonth() + 6);
-
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.user.create({
@@ -303,13 +299,12 @@ export class AuthService {
           },
         });
 
-        // Auto-activate 6-month Pro trial for every new registration
+        // New registrations start on the Free plan (no trial offer)
         await tx.subscription.create({
           data: {
             psychologistId: psy.id,
-            plan: SubscriptionPlan.PRO,
-            status: SubscriptionStatus.TRIALING,
-            trialEndsAt,
+            plan: SubscriptionPlan.FREE,
+            status: SubscriptionStatus.ACTIVE,
           },
         });
       });
@@ -362,7 +357,7 @@ export class AuthService {
           <tr><td style="padding:8px 0;color:#6B7280;">ADELI/RPPS</td><td style="padding:8px 0;font-family:monospace;">${esc(adeliOrRpps)}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Annuaire</td><td style="padding:8px 0;">${rppsBadge}</td></tr>
           <tr><td style="padding:8px 0;color:#6B7280;">Date</td><td style="padding:8px 0;">${date}</td></tr>
-          <tr><td style="padding:8px 0;color:#6B7280;">Plan activé</td><td style="padding:8px 0;"><strong style="color:#0D9488;">Pro — 6 mois offerts (trial auto)</strong></td></tr>
+          <tr><td style="padding:8px 0;color:#6B7280;">Plan activé</td><td style="padding:8px 0;"><strong style="color:#0D9488;">Free</strong></td></tr>
         </table>
       </div>`,
     );
