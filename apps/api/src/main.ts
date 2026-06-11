@@ -98,8 +98,8 @@ async function bootstrap() {
     }),
   );
 
-  // API prefix — exclude /health for root-level monitoring probes
-  app.setGlobalPrefix('api/v1', { exclude: ['health'] });
+  // API prefix — health vit sous /api/v1/health (aligné Dockerfile healthcheck + proxy externe)
+  app.setGlobalPrefix('api/v1');
 
   // Swagger — désactivé en production
   if (process.env['NODE_ENV'] !== 'production') {

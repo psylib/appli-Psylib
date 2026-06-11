@@ -11,6 +11,9 @@ apps/web/playwright-report/
 *.jpg
 *.jpeg
 *.mp4
+# Ré-inclure les icônes PWA servies statiquement (sinon 404 en prod)
+!apps/web/public/icon-192.png
+!apps/web/public/icon-512.png
 node_modules/
 .turbo/
 .next/
