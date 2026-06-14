@@ -19,9 +19,11 @@ const isProd = process.env.NODE_ENV === 'production';
 // 'unsafe-inline' conservé : la suppression nécessite une migration vers des nonces
 //   (next/script Crisp inject dynamiquement → exigerait 'strict-dynamic') à valider
 //   en navigateur sur Crisp/PostHog/Sentry avant cutover.
+// eu-assets.i.posthog.com : héberge les assets statiques PostHog (config.js,
+//   array.js, recorder…) sur le cloud EU — distinct de l'ingestion eu.i.posthog.com.
 const scriptSrc = isProd
-  ? "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://client.crisp.chat"
-  : "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://client.crisp.chat";
+  ? "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://client.crisp.chat https://eu-assets.i.posthog.com"
+  : "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://client.crisp.chat https://eu-assets.i.posthog.com";
 
 const nextConfig = {
   // Output standalone pour Docker — désactivé sur Vercel (Vercel gère nativement)
@@ -66,7 +68,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
               // connect-src dynamique : dev (localhost) + prod (vraies URLs)
-              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://eu.i.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
+              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://eu.i.posthog.com https://eu-assets.i.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
               "media-src 'self' blob: mediastream:",
               "worker-src 'self' blob:",
               "frame-src 'self' https://game.crisp.chat",
