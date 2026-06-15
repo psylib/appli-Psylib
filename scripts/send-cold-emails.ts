@@ -254,62 +254,50 @@ function footerText(unsubUrl: string): string {
 function template1(lead: Lead): { subject: string; html: string; text: string } {
   const fn = lead.firstName || 'Docteur';
   const unsub = unsubscribePageUrl(lead.email);
-  const subject = `${fn}, 6 mois offerts sur PsyLib — logiciel cabinet 100% HDS`;
+  const subject = `${fn}, votre administratif de cabinet en une seule appli`;
+  const registerUrl =
+    'https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-q2&utm_content=email1';
 
   const html = `<div style="${baseStyle()}">
 <p>Bonjour ${fn},</p>
-<p>Je vous écris depuis <strong>PsyLib</strong> — le premier logiciel de gestion de cabinet 100% HDS pour psychologues libéraux.</p>
-<p>Je vous contacte avec une offre simple : <strong>6 mois offerts sur le plan Pro</strong> (valeur 240€), sans engagement, sans carte bancaire requise à l'inscription.</p>
-<p>Pourquoi ? Parce que je cherche des psychologues libéraux qui veulent tester sérieusement un outil conforme HDS et me donner leurs retours terrain.</p>
+<p>Je me permets de vous écrire car j'ai créé <strong>PsyLib</strong>, un outil de gestion pensé spécifiquement pour les psychologues libéraux en France.</p>
+<p>L'idée : regrouper au même endroit vos <strong>patients, séances, agenda, factures et votre comptabilité</strong> — pour ne plus jongler entre un tableur, un agenda et des outils dispersés.</p>
 <p style="background:#F1F0F9;border-left:4px solid #3D52A0;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;">
-  <strong>Plan Pro inclus pendant 6 mois :</strong><br />
-  ✓ Agenda + prise de RDV en ligne<br />
-  ✓ Notes de séance structurées + autosave<br />
-  ✓ Comptabilité intégrée + facturation automatique<br />
-  ✓ IA clinique illimitée (résumés de séance, exercices)<br />
-  ✓ Visio sécurisée HDS (patients individuels ou en groupe)<br />
-  ✓ Espace patient (humeur, journal, exercices)<br />
-  ✓ 100% HDS France — chiffrement AES-256-GCM
+  Ce qui revient le plus chez les confrères qui l'utilisent :<br />
+  ✓ <strong>Comptabilité intégrée</strong> : suivi recettes/dépenses et export prêt pour la déclaration 2035<br />
+  ✓ Notes de séance, agenda et <strong>facturation automatique</strong><br />
+  ✓ Visio et messagerie sécurisée intégrées<br />
+  ✓ Données <strong>hébergées en France chez OVHcloud</strong> (hébergeur certifié HDS) et chiffrées
 </p>
-<p>Petite question franche au passage : votre logiciel actuel est-il certifié HDS (Hébergeur de Données de Santé) ? L'article L.1111-8 du Code de la santé publique l'impose. En pratique, ~80% des psys utilisent des outils non conformes — souvent sans le savoir. Sanction CNIL : jusqu'à 20 M€.</p>
-<p style="margin:24px 0;"><a href="https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Créer mon compte — 6 mois Pro offerts automatiquement →</a></p>
-<p style="font-size:13px;color:#666;">Le plan Pro s'active automatiquement dès votre inscription — aucune carte bancaire, aucune action supplémentaire.</p>
-<p>Cordialement,<br />
-<strong>Tony</strong><br />
-Fondateur PsyLib — <a href="https://psylib.eu" style="color:#3D52A0;">psylib.eu</a></p>
-<p style="font-size:13px;color:#666;"><em>P.S. Si ce n'est pas le bon moment, aucun souci — je vous enverrai dans 4 jours un guide gratuit "RGPD & HDS pour psychologues" (12 pages) qui peut déjà vous être utile.</em></p>
+<p>Vous pouvez tester gratuitement, <strong>sans carte bancaire</strong>, en 2 minutes :</p>
+<p style="margin:24px 0;"><a href="${registerUrl}" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Tester PsyLib gratuitement →</a></p>
+<p>Et si ce n'est pas le bon moment, aucun souci — je reste disponible pour toute question.</p>
+<p>Bien à vous,<br />
+<strong>Tony Ruppel</strong><br />
+Fondateur de PsyLib — <a href="https://psylib.eu" style="color:#3D52A0;">psylib.eu</a></p>
 ${footerHtml(unsub)}
 </div>`;
 
   const text = `Bonjour ${fn},
 
-Je vous écris depuis PsyLib — le premier logiciel de gestion de cabinet 100% HDS pour psychologues libéraux.
+Je me permets de vous écrire car j'ai créé PsyLib, un outil de gestion pensé spécifiquement pour les psychologues libéraux en France.
 
-Je vous contacte avec une offre simple : 6 mois offerts sur le plan Pro (valeur 240€), sans engagement, sans carte bancaire requise à l'inscription.
+L'idée : regrouper au même endroit vos patients, séances, agenda, factures et votre comptabilité — pour ne plus jongler entre un tableur, un agenda et des outils dispersés.
 
-Pourquoi ? Parce que je cherche des psychologues libéraux qui veulent tester sérieusement un outil conforme HDS et me donner leurs retours terrain.
+Ce qui revient le plus chez les confrères qui l'utilisent :
+✓ Comptabilité intégrée : suivi recettes/dépenses et export prêt pour la déclaration 2035
+✓ Notes de séance, agenda et facturation automatique
+✓ Visio et messagerie sécurisée intégrées
+✓ Données hébergées en France chez OVHcloud (hébergeur certifié HDS) et chiffrées
 
-Plan Pro inclus pendant 6 mois :
-✓ Agenda + prise de RDV en ligne
-✓ Notes de séance structurées + autosave
-✓ Comptabilité intégrée + facturation automatique
-✓ IA clinique illimitée (résumés de séance, exercices)
-✓ Visio sécurisée HDS
-✓ Espace patient (humeur, journal, exercices)
-✓ 100% HDS France — chiffrement AES-256-GCM
+Vous pouvez tester gratuitement, sans carte bancaire, en 2 minutes :
+${registerUrl}
 
-Petite question franche : votre logiciel actuel est-il certifié HDS ? L'article L.1111-8 l'impose. ~80% des psys utilisent des outils non conformes - souvent sans le savoir. Sanction CNIL : jusqu'à 20 M€.
+Et si ce n'est pas le bon moment, aucun souci — je reste disponible pour toute question.
 
-Créer mon compte — 6 mois Pro offerts automatiquement :
-https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email1
-
-Le plan Pro s'active automatiquement dès votre inscription. Aucune carte bancaire requise.
-
-Cordialement,
-Tony - Fondateur PsyLib
-https://psylib.eu
-
-P.S. Si ce n'est pas le bon moment, dans 4 jours je vous envoie un guide gratuit "RGPD & HDS pour psychologues" (12 pages).${footerText(unsub)}`;
+Bien à vous,
+Tony Ruppel — Fondateur de PsyLib
+https://psylib.eu${footerText(unsub)}`;
 
   return { subject, html, text };
 }
