@@ -18,6 +18,7 @@ import {
 import type { Response } from 'express';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { KeycloakGuard } from '../auth/guards/keycloak.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -46,6 +47,17 @@ export class InvoicesController {
     @CurrentUser() user: KeycloakUser,
   ) {
     return this.invoicesService.create(user.sub, dto);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Modifier une facture en brouillon' })
+  @ApiResponse({ status: 200, description: 'Facture modifiée' })
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateInvoiceDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.invoicesService.update(user.sub, id, dto);
   }
 
   @Get(':id/pdf')

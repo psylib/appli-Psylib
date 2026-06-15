@@ -14,6 +14,7 @@ import { PrismaService } from '../common/prisma.service';
 import { EmailService } from '../notifications/email.service';
 import { PaymentCompletedEvent } from '../accounting/events/payment-completed.event';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import {
   Prisma,
   type Invoice,
@@ -152,6 +153,55 @@ export class InvoicesService {
     }
 
     throw new InternalServerErrorException('Impossible de générer un numéro de facture unique');
+  }
+
+  /**
+   * Modifie une facture EN BROUILLON (patient, montant, date).
+   * Une facture envoyée ou payée n'est jamais modifiable (intégrité comptable / FEC).
+   */
+  async update(userId: string, invoiceId: string, dto: UpdateInvoiceDto): Promise<Invoice> {
+    const psychologistId = await this.resolvePsychologistId(userId);
+
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id: invoiceId, psychologistId },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException('Facture introuvable');
+    }
+
+    if (invoice.status !== 'draft') {
+      throw new ForbiddenException(
+        'Seules les factures en brouillon peuvent être modifiées',
+      );
+    }
+
+    // Si on change le patient, vérifier qu'il appartient bien à ce psychologue
+    if (dto.patientId && dto.patientId !== invoice.patientId) {
+      const patient = await this.prisma.patient.findFirst({
+        where: { id: dto.patientId, psychologistId },
+        select: { id: true },
+      });
+      if (!patient) {
+        throw new NotFoundException('Patient introuvable');
+      }
+    }
+
+    const data: Prisma.InvoiceUpdateInput = {};
+    if (dto.patientId !== undefined) {
+      data.patient = { connect: { id: dto.patientId } };
+    }
+    if (dto.amountTtc !== undefined) {
+      data.amountTtc = dto.amountTtc;
+    }
+    if (dto.issuedAt !== undefined) {
+      data.issuedAt = new Date(dto.issuedAt);
+    }
+
+    return this.prisma.invoice.update({
+      where: { id: invoiceId },
+      data,
+    });
   }
 
   async generatePdf(

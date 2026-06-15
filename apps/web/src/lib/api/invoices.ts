@@ -22,12 +22,21 @@ export interface CreateInvoicePayload {
   issuedAt: string;
 }
 
+export interface UpdateInvoicePayload {
+  patientId?: string;
+  amountTtc?: number;
+  issuedAt?: string;
+}
+
 export const invoicesApi = {
   list: (token: string) =>
     apiClient.get<InvoiceRecord[]>('/invoices', token),
 
   create: (data: CreateInvoicePayload, token: string) =>
     apiClient.post<InvoiceRecord>('/invoices', data, token),
+
+  update: (id: string, data: UpdateInvoicePayload, token: string) =>
+    apiClient.patch<InvoiceRecord>(`/invoices/${id}`, data, token),
 
   markAsSent: (id: string, token: string) =>
     apiClient.patch<InvoiceRecord>(`/invoices/${id}/send`, {}, token),

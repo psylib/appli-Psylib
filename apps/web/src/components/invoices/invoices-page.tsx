@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Receipt, Plus, Download, Send, FileText, Loader2, CheckCircle2 } from 'lucide-react';
+import { Receipt, Plus, Download, Send, FileText, Loader2, CheckCircle2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -156,12 +156,135 @@ function CreateInvoiceModal({
   );
 }
 
+// ─── Modal edit (brouillons uniquement) ────────────────────────────────────────
+
+function EditInvoiceModal({
+  invoice,
+  token,
+  onClose,
+}: {
+  invoice: InvoiceRecord;
+  token: string;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const { success, error } = useToast();
+  const { data: patients, isLoading: loadingPatients } = useQuery({
+    queryKey: ['patients', 'all'],
+    queryFn: () => patientsApi.list({ limit: 200 }, token),
+    enabled: !!token,
+    staleTime: 30_000,
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreateForm>({
+    resolver: zodResolver(createSchema as any),
+    defaultValues: {
+      patientId: invoice.patient?.id ?? '',
+      amountTtc: Number(invoice.amountTtc),
+      issuedAt: new Date(invoice.issuedAt).toISOString().split('T')[0],
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data: CreateForm) =>
+      invoicesApi.update(
+        invoice.id,
+        { patientId: data.patientId, amountTtc: data.amountTtc, issuedAt: data.issuedAt },
+        token,
+      ),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['invoices'] });
+      success(`Facture ${invoice.invoiceNumber} modifiée`);
+      onClose();
+    },
+    onError: () => error('Erreur lors de la modification'),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Modifier le brouillon</h2>
+          <p className="text-xs text-muted-foreground mt-0.5 font-mono">{invoice.invoiceNumber}</p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit((d) => mutation.mutate(d))}
+          className="space-y-4"
+        >
+          {/* Patient */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-foreground">Patient</label>
+            <select
+              {...register('patientId')}
+              disabled={loadingPatients}
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+            >
+              <option value="">{loadingPatients ? 'Chargement...' : 'Choisir un patient…'}</option>
+              {patients?.data.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            {errors.patientId && (
+              <p className="text-xs text-destructive">{errors.patientId.message}</p>
+            )}
+          </div>
+
+          {/* Montant */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-foreground">Montant TTC (€)</label>
+            <Input
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="ex : 60.00"
+              {...register('amountTtc', { valueAsNumber: true })}
+            />
+            {errors.amountTtc && (
+              <p className="text-xs text-destructive">{errors.amountTtc.message}</p>
+            )}
+          </div>
+
+          {/* Date */}
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-foreground">Date d&apos;émission</label>
+            <Input type="date" {...register('issuedAt')} />
+            {errors.issuedAt && (
+              <p className="text-xs text-destructive">{errors.issuedAt.message}</p>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button type="submit" className="flex-1" disabled={mutation.isPending}>
+              {mutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              Enregistrer
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Row actions ──────────────────────────────────────────────────────────────
 
 function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string }) {
   const qc = useQueryClient();
   const { success, error } = useToast();
   const [downloading, setDownloading] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const sendMutation = useMutation({
     mutationFn: () => invoicesApi.markAsSent(invoice.id, token),
@@ -261,6 +384,15 @@ function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string 
             <Download size={15} aria-hidden />
           )}
         </button>
+        {invoice.status === 'draft' && (
+          <button
+            onClick={() => setEditing(true)}
+            className="p-1.5 rounded-lg hover:bg-surface text-muted-foreground hover:text-foreground transition-colors"
+            title="Modifier le brouillon"
+          >
+            <Pencil size={15} aria-hidden />
+          </button>
+        )}
         {invoice.status === 'draft' && invoice.patient?.email && (
           <button
             onClick={() => sendMutation.mutate()}
@@ -290,6 +422,14 @@ function InvoiceRow({ invoice, token }: { invoice: InvoiceRecord; token: string 
           </button>
         )}
       </div>
+
+      {editing && (
+        <EditInvoiceModal
+          invoice={invoice}
+          token={token}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </li>
   );
 }

@@ -40,3 +40,66 @@ describe('InvoicesService.nextInvoiceNumber', () => {
     expect(n).toBe('PSY-2026-008');
   });
 });
+
+describe('InvoicesService.update', () => {
+  function buildUpdateService(invoice: any, patientExists = true) {
+    const prisma = {
+      psychologist: { findUnique: vi.fn().mockResolvedValue({ id: 'psy1' }) },
+      patient: {
+        findFirst: vi.fn().mockResolvedValue(patientExists ? { id: 'patient2' } : null),
+      },
+      invoice: {
+        findFirst: vi.fn().mockResolvedValue(invoice),
+        update: vi.fn().mockImplementation(({ data }) => Promise.resolve({ ...invoice, ...data })),
+      },
+    };
+    const service = new InvoicesService(prisma as any, {} as any, {} as any, {} as any);
+    return { service, prisma };
+  }
+
+  it('modifie une facture en brouillon (montant + date)', async () => {
+    const { service, prisma } = buildUpdateService({
+      id: 'inv1',
+      status: 'draft',
+      patientId: 'patient1',
+    });
+    await service.update('user1', 'inv1', { amountTtc: 80, issuedAt: '2026-04-01' });
+    expect(prisma.invoice.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'inv1' },
+        data: expect.objectContaining({ amountTtc: 80 }),
+      }),
+    );
+  });
+
+  it('refuse de modifier une facture envoyée', async () => {
+    const { service } = buildUpdateService({ id: 'inv1', status: 'sent', patientId: 'p1' });
+    await expect(service.update('user1', 'inv1', { amountTtc: 80 })).rejects.toThrow(
+      /brouillon/i,
+    );
+  });
+
+  it('refuse de modifier une facture payée', async () => {
+    const { service } = buildUpdateService({ id: 'inv1', status: 'paid', patientId: 'p1' });
+    await expect(service.update('user1', 'inv1', { amountTtc: 80 })).rejects.toThrow(
+      /brouillon/i,
+    );
+  });
+
+  it('rejette un changement vers un patient inexistant', async () => {
+    const { service } = buildUpdateService(
+      { id: 'inv1', status: 'draft', patientId: 'patient1' },
+      false,
+    );
+    await expect(
+      service.update('user1', 'inv1', { patientId: 'patient2' }),
+    ).rejects.toThrow(/patient introuvable/i);
+  });
+
+  it('rejette une facture introuvable', async () => {
+    const { service } = buildUpdateService(null);
+    await expect(service.update('user1', 'inv1', { amountTtc: 80 })).rejects.toThrow(
+      /facture introuvable/i,
+    );
+  });
+});
