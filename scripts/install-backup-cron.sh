@@ -17,6 +17,10 @@ LOG_FILE="/var/log/psyscale-backup.log"
 LOG_KEYCLOAK="/var/log/keycloak-backup.log"
 LOG_RESTORE="/var/log/psyscale-restore-verify.log"
 
+# Utilisateur proprietaire des fichiers de log — auto-detecte depuis SCRIPTS_DIR
+# (azndeploy sur AZNetwork, ubuntu sur OVH legacy) ; fallback root si introuvable.
+BACKUP_USER="${BACKUP_USER:-$(stat -c '%U' "$SCRIPTS_DIR" 2>/dev/null || echo root)}"
+
 log() {
   echo "[install-backup-cron] $*"
 }
@@ -25,7 +29,7 @@ log() {
 for LOG in "$LOG_FILE" "$LOG_KEYCLOAK" "$LOG_RESTORE"; do
   if [ ! -f "$LOG" ]; then
     sudo touch "$LOG"
-    sudo chown ubuntu:ubuntu "$LOG"
+    sudo chown "${BACKUP_USER}:${BACKUP_USER}" "$LOG" || true
     sudo chmod 644 "$LOG"
     log "Cree $LOG"
   fi
