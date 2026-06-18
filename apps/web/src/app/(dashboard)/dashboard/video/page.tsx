@@ -160,7 +160,7 @@ function InstantVideoDialog({ token, onClose }: { token: string; onClose: () => 
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ appointmentId: string; patientLink: string } | null>(null);
+  const [result, setResult] = useState<{ appointmentId: string; patientLink: string; isGuestLink: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const { data: patientsData } = useQuery({
@@ -176,7 +176,7 @@ function InstantVideoDialog({ token, onClose }: { token: string; onClose: () => 
     setError(null);
     try {
       const data = await videoApi.createInstantRoom(token, selectedPatientId);
-      setResult({ appointmentId: data.appointmentId, patientLink: data.patientLink });
+      setResult({ appointmentId: data.appointmentId, patientLink: data.patientLink, isGuestLink: data.isGuestLink ?? !selectedPatientId });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur lors de la creation');
     } finally {
@@ -285,7 +285,9 @@ function InstantVideoDialog({ token, onClose }: { token: string; onClose: () => 
               <div className="rounded-lg bg-green-50 border border-green-200 p-4 mb-4">
                 <p className="text-sm font-medium text-green-800 mb-2">Visio creee avec succes !</p>
                 <p className="text-xs text-green-700 mb-3">
-                  Partagez ce lien avec votre patient pour qu&apos;il rejoigne la consultation :
+                  {result.isGuestLink
+                    ? 'Partagez ce lien invité. La personne patientera dans la salle d’attente jusqu’à ce que vous l’admettiez :'
+                    : 'Partagez ce lien avec votre patient pour qu’il rejoigne la consultation :'}
                 </p>
                 <div className="flex items-center gap-2">
                   <input

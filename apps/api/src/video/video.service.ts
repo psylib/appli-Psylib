@@ -197,9 +197,18 @@ export class VideoService {
     };
     token.addGrant(grant);
 
+    // Visio instantanée SANS patient : le lien portail patient est inutilisable
+    // (generatePatientToken exige un patient). On génère un lien invité (flux
+    // video_guests avec salle d'attente) qui, lui, fonctionne sans dossier patient.
+    const guestInviteToken = patientId ? null : crypto.randomUUID();
+
     await this.prisma.videoRoom.update({
       where: { id: videoRoom.id },
-      data: { psyJoinedAt: new Date(), status: 'active' },
+      data: {
+        psyJoinedAt: new Date(),
+        status: 'active',
+        ...(guestInviteToken ? { guestInviteToken } : {}),
+      },
     });
 
     await this.audit.log({
@@ -212,13 +221,17 @@ export class VideoService {
     });
 
     const frontendUrl = this.config.get<string>('FRONTEND_URL') ?? 'https://psylib.eu';
+    const patientLink = guestInviteToken
+      ? `${frontendUrl}/video/guest/${guestInviteToken}`
+      : `${frontendUrl}/patient-portal/video/${videoJoinToken}`;
 
     return {
       appointmentId: appointment.id,
       token: await token.toJwt(),
       wsUrl: this.livekitWsUrl,
       roomName,
-      patientLink: `${frontendUrl}/patient-portal/video/${videoJoinToken}`,
+      patientLink,
+      isGuestLink: !patientId,
       durationMin: 120,
     };
   }

@@ -5,7 +5,10 @@ export interface InstantRoomResponse {
   token: string;
   wsUrl: string;
   roomName: string;
+  /** Lien à partager : portail patient si patient associé, sinon lien invité (salle d'attente). */
   patientLink: string;
+  /** true si patientLink est un lien invité (visio instantanée sans patient). */
+  isGuestLink?: boolean;
   durationMin: number;
 }
 
