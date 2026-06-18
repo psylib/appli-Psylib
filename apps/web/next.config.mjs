@@ -9,6 +9,11 @@ const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:4000';
 const keycloakUrl = process.env.KEYCLOAK_URL || 'http://localhost:8080';
 const livekitWsUrl = process.env.NEXT_PUBLIC_LIVEKIT_WS_URL || '';
 
+// Socket.io upgrade http(s):// → ws(s):// automatiquement, mais la CSP traite les
+// schémes ws/wss distinctement de http/https. On dérive donc la forme ws(s):// de
+// l'URL API/WS pour que `connect-src` autorise réellement la connexion temps réel.
+const wsUrlSecure = wsUrl.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
+
 const isProd = process.env.NODE_ENV === 'production';
 
 // script-src :
@@ -68,7 +73,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
               // connect-src dynamique : dev (localhost) + prod (vraies URLs)
-              `connect-src 'self' ${apiUrl} ${wsUrl} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://eu.i.posthog.com https://eu-assets.i.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
+              `connect-src 'self' ${apiUrl} ${wsUrl} ${wsUrlSecure} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://eu.i.posthog.com https://eu-assets.i.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
               "media-src 'self' blob: mediastream:",
               "worker-src 'self' blob:",
               "frame-src 'self' https://game.crisp.chat",
