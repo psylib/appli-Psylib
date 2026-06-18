@@ -287,7 +287,7 @@ export default function ArticleAlternativeDoctolib() {
 
           <h3 className="mb-2 mt-6 font-playfair text-xl font-semibold">PsyLib</h3>
           <p className="mb-4 leading-relaxed">
-            Plateforme conçue spécifiquement pour les psychologues libéraux en France. Combine agenda + dossier patient + notes de séance structurées par orientation + outcome tracking (PHQ-9, GAD-7, CORE-OM) + facturation conforme + espace patient + assistant IA + paiement en ligne Stripe Connect. Hébergement HDS OVH + chiffrement AES-256-GCM applicatif sur tous les champs cliniques (notes, messages, journal patient).
+            Plateforme conçue spécifiquement pour les psychologues libéraux en France. Combine agenda + dossier patient + notes de séance structurées par orientation + outcome tracking (PHQ-9, GAD-7, CORE-OM) + facturation conforme + espace patient + assistant IA + paiement en ligne Stripe Connect. Hébergement HDS V2 AZNetwork (6 activités + ISO 27001) + chiffrement AES-256-GCM applicatif sur tous les champs cliniques (notes, messages, journal patient).
           </p>
           <p className="mb-4 leading-relaxed">
             <strong>Pour qui :</strong> les psychologues libéraux qui veulent une solution unique et complète pensée pour leur métier, avec sécurité de niveau hospitalier. <strong>Limite :</strong> solution récente, base utilisateurs en croissance.

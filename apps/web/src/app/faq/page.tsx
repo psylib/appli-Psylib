@@ -54,7 +54,7 @@ const faqCategories = [
     questions: [
       {
         q: "Ou sont hebergees les donnees de mes patients ? L'hebergement est-il conforme HDS ?",
-        a: "Les donnees de vos patients sont hebergees exclusivement en France chez OVHcloud, hebergeur certifie HDS (Hebergeur de Donnees de Sante), conformement a l\"article L.1111-8 du Code de la sante publique. Elles sont en outre chiffrees au niveau applicatif (AES-256-GCM). Aucune donnee de sante ne quitte le territoire francais.",
+        a: "Les donnees de vos patients sont hebergees exclusivement en France chez AZNETWORK, hebergeur certifie HDS V2 sur les 6 activites (dont l\"administration et l\"exploitation du systeme) et ISO/IEC 27001:2022, conformement a l\"article L.1111-8 du Code de la sante publique. Sauvegardes chiffrees et plan de reprise d\"activite (PRA) sur un second datacenter francais certifie. Les donnees cliniques sont en outre chiffrees au niveau applicatif (AES-256-GCM). Aucune donnee de sante ne quitte le territoire francais.",
       },
       {
         q: "Comment les donnees de mes patients sont-elles chiffrees ?",

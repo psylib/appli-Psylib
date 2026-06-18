@@ -281,7 +281,7 @@ export default function PrivacyPage() {
               Donnees de Sante (HDS) situee en France :
             </p>
             <ul className="list-inside list-disc space-y-1 text-gray-700">
-              <li><strong>OVHcloud (France) :</strong> API backend, base de donnees PostgreSQL, stockage fichiers, authentification Keycloak et sauvegardes — heberges chez OVHcloud, hebergeur certifie HDS</li>
+              <li><strong>AZNETWORK (France) :</strong> API backend, base de donnees PostgreSQL, stockage fichiers, authentification Keycloak, visio-consultation, sauvegardes et infogerance — heberges chez AZNETWORK, hebergeur certifie HDS V2 (6 activites) et ISO/IEC 27001:2022</li>
             </ul>
           </div>
 
@@ -377,7 +377,7 @@ export default function PrivacyPage() {
               Engagement fondamental : les donnees de sante des patients (notes de seance,
               dossiers cliniques, messages) ne sont <strong>jamais</strong> transmises a des
               services tiers non certifies HDS. Elles restent exclusivement sur l&apos;infrastructure
-              HDS certifiee, hebergee chez OVHcloud en France.
+              HDS certifiee, hebergee chez AZNETWORK en France.
             </p>
           </div>
         </section>
@@ -388,8 +388,8 @@ export default function PrivacyPage() {
             8. Transferts de donnees hors de l&apos;Union europeenne
           </h2>
           <p className="mb-4 leading-relaxed">
-            Les donnees de sante sont hebergees exclusivement en France, chez OVHcloud
-            (hebergeur certifie HDS). Aucun transfert de donnees de sante n&apos;est effectue hors de
+            Les donnees de sante sont hebergees exclusivement en France, chez AZNETWORK
+            (hebergeur certifie HDS V2 sur les 6 activites et ISO 27001). Aucun transfert de donnees de sante n&apos;est effectue hors de
             l&apos;Union europeenne.
           </p>
           <p className="leading-relaxed">

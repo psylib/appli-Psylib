@@ -188,7 +188,7 @@ export default function TermsPage() {
             </li>
             <li>
               <strong>Securite des donnees :</strong> heberger toutes les donnees de sante sur
-              infrastructure certifiee HDS en France (OVHcloud), chiffrer les
+              infrastructure certifiee HDS en France (AZNETWORK), chiffrer les
               donnees sensibles avec AES-256-GCM, et mettre en oeuvre les mesures techniques et
               organisationnelles appropriees
             </li>
@@ -250,7 +250,7 @@ export default function TermsPage() {
           <div className="rounded-2xl bg-[#F1F0F9] p-6">
             <p className="mb-2 font-semibold text-[#1E1B4B]">Points essentiels :</p>
             <ul className="list-inside list-disc space-y-1 text-gray-700">
-              <li>Hebergement HDS certifie en France (OVHcloud)</li>
+              <li>Hebergement HDS V2 certifie en France (AZNETWORK, 6 activites + ISO 27001)</li>
               <li>Chiffrement AES-256-GCM des donnees cliniques sensibles</li>
               <li>Authentification MFA obligatoire</li>
               <li>Audit de tous les acces aux donnees patients</li>

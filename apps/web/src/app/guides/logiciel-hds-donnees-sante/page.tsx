@@ -159,8 +159,9 @@ export default function PageLogicielHDS() {
           <p className="mb-4 leading-relaxed">
             Un éditeur de logiciel santé doit être certifié HDS niveau 2 et s&apos;appuyer
             sur un prestataire d&apos;infrastructure certifié niveau 1. En France, les principaux
-            prestataires certifiés HDS niveau 1 sont : AWS eu-west-3 (Paris), OVHcloud HDS,
-            Microsoft Azure France Central, et quelques opérateurs français spécialisés.
+            prestataires certifiés HDS sont : AZNetwork (HDS V2 sur les 6 activités, ISO 27001),
+            AWS eu-west-3 (Paris), OVHcloud HDS, Microsoft Azure France Central, et quelques
+            opérateurs français spécialisés.
           </p>
         </section>
 
@@ -263,8 +264,8 @@ export default function PageLogicielHDS() {
             PsyLib : données hébergées en France, sur infrastructure certifiée HDS
           </h3>
           <p className="mb-4 leading-relaxed">
-            PsyLib héberge l&apos;ensemble de ses données en France chez OVHcloud, hébergeur
-            certifié HDS (Hébergeur de Données de Santé). Les données cliniques sont chiffrées
+            PsyLib héberge l&apos;ensemble de ses données en France chez AZNetwork, hébergeur
+            certifié HDS V2 sur les 6 activités (dont l&apos;exploitation du système) et ISO/IEC 27001:2022. Les données cliniques sont chiffrées
             en AES-256-GCM au niveau applicatif. L&apos;assistant IA ne traite jamais de données
             identifiantes sans consentement explicite du patient. Un DPA RGPD est disponible sur demande.
           </p>
@@ -310,7 +311,7 @@ export default function PageLogicielHDS() {
               },
               {
                 q: "Comment PsyLib garantit-il la conformité HDS ?",
-                a: "PsyLib héberge l'ensemble de ses données en France chez OVHcloud, hébergeur certifié HDS. Les données cliniques sont chiffrées en AES-256-GCM au niveau applicatif. Un DPA RGPD est disponible. L'IA ne traite jamais de données identifiantes sans consentement.",
+                a: "PsyLib héberge l'ensemble de ses données en France chez AZNetwork, hébergeur certifié HDS V2 sur les 6 activités et ISO/IEC 27001:2022. Les données cliniques sont chiffrées en AES-256-GCM au niveau applicatif. Un DPA RGPD est disponible. L'IA ne traite jamais de données identifiantes sans consentement.",
               },
             ].map((item) => (
               <details key={item.q} className="rounded-xl border border-gray-200 p-5">

@@ -300,7 +300,7 @@ export default function ModeleConsentementPage() {
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Au repos (disque)</td>
-                  <td className="py-3 pr-4">Chiffrement OVH</td>
+                  <td className="py-3 pr-4">Chiffrement HDS AZNetwork</td>
                   <td className="py-3">Toute la base de donnees</td>
                 </tr>
                 <tr className="border-b border-gray-100">
@@ -334,7 +334,7 @@ export default function ModeleConsentementPage() {
             <li><strong>Vous-meme :</strong> acces a votre espace patient (humeur, exercices, journal, documents partages)</li>
           </ul>
           <p className="leading-relaxed">
-            Les sous-traitants techniques (hebergeur OVH, paiement Stripe, email Resend) n&apos;ont
+            Les sous-traitants techniques (hebergeur HDS AZNetwork, paiement Stripe, email Resend) n&apos;ont
             pas acces au contenu clinique. La liste complete des sous-traitants est consultable sur{' '}
             <Link href="/sous-traitants" className="text-[#3D52A0] hover:underline">
               psylib.eu/sous-traitants

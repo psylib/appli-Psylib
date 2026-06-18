@@ -275,7 +275,7 @@ export default function DpaPage() {
           </h3>
           <div className="mb-4 rounded-2xl bg-[#F1F0F9] p-6">
             <ul className="list-inside list-disc space-y-2 text-gray-700">
-              <li><strong>Infrastructure :</strong> OVHcloud, serveur dedie en France, certifie HDS (Hebergeur de Donnees de Sante)</li>
+              <li><strong>Infrastructure :</strong> AZNETWORK, serveur dedie en France, certifie HDS V2 sur les 6 activites (Hebergeur de Donnees de Sante) et ISO/IEC 27001:2022</li>
               <li><strong>Localisation :</strong> France exclusivement pour toutes les donnees de sante</li>
               <li><strong>Certification :</strong> conforme aux exigences de l&apos;article L.1111-8 du Code de la sante publique</li>
             </ul>
@@ -294,7 +294,7 @@ export default function DpaPage() {
             7.3. Authentification et controle d&apos;acces
           </h3>
           <ul className="mb-4 list-inside list-disc space-y-2 text-gray-700">
-            <li><strong>Authentification :</strong> Keycloak (OpenID Connect) heberge sur OVH HDS</li>
+            <li><strong>Authentification :</strong> Keycloak (OpenID Connect) heberge sur l&apos;infrastructure HDS AZNETWORK</li>
             <li><strong>MFA :</strong> authentification multi-facteurs TOTP obligatoire pour les praticiens</li>
             <li><strong>Tokens :</strong> access token JWT 15 minutes, refresh token 8 heures</li>
             <li><strong>RBAC :</strong> controle d&apos;acces base sur les roles (praticien, patient, admin)</li>
@@ -315,7 +315,7 @@ export default function DpaPage() {
           </h3>
           <ul className="list-inside list-disc space-y-2 text-gray-700">
             <li>Sauvegardes automatiques quotidiennes de la base de donnees</li>
-            <li>Sauvegardes stockees sur OVH HDS (France)</li>
+            <li>Sauvegardes chiffrees stockees sur l&apos;infrastructure HDS AZNETWORK (France), avec PRA sur un second datacenter francais certifie</li>
             <li>Tests de restauration reguliers</li>
             <li>Retention de 7 jours</li>
           </ul>

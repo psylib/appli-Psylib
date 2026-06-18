@@ -5,7 +5,7 @@ const trustBadges = [
   {
     icon: Shield,
     title: 'Hébergement HDS',
-    description: 'Données hébergées en France chez OVHcloud, hébergeur certifié HDS',
+    description: 'Données hébergées en France chez AZNetwork, hébergeur certifié HDS et ISO 27001 sur les 6 activités',
     color: 'text-sage bg-sage-50 border-sage-200',
   },
   {
@@ -66,8 +66,9 @@ export function TrustSection() {
             <div className="flex items-center justify-center gap-8">
               <div className="text-center">
                 <div className="text-xs text-charcoal-400 mb-1">Hébergement certifié</div>
-                <div className="flex items-center gap-3">
-                  <span className="font-dm-mono text-sm font-medium text-charcoal-400 px-3 py-1 rounded-lg border border-charcoal-200">OVH HDS</span>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <span className="font-dm-mono text-sm font-medium text-charcoal-400 px-3 py-1 rounded-lg border border-charcoal-200">AZNetwork · HDS V2</span>
+                  <span className="font-dm-mono text-sm font-medium text-charcoal-400 px-3 py-1 rounded-lg border border-charcoal-200">ISO 27001:2022</span>
                 </div>
               </div>
             </div>

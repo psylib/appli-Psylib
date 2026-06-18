@@ -138,10 +138,10 @@ export default function LegalPage() {
             <div className="rounded-xl border border-gray-200 p-5">
               <h3 className="mb-2 font-semibold text-[#1E1B4B]">Backend et donnees de sante (HDS)</h3>
               <ul className="list-inside list-disc space-y-1 text-gray-700">
-                <li><strong>Hebergeur :</strong> OVHcloud SAS</li>
-                <li><strong>Adresse :</strong> 2 rue Kellermann, 59100 Roubaix, France</li>
-                <li><strong>Certification HDS :</strong> OVHcloud est certifie hebergeur de donnees de sante (HDS)</li>
-                <li><strong>Objet :</strong> API backend, base de donnees PostgreSQL, stockage de fichiers patients, authentification Keycloak (MFA TOTP), sauvegardes chiffrees</li>
+                <li><strong>Hebergeur :</strong> AZNETWORK S.A.S.</li>
+                <li><strong>Adresse :</strong> 40 rue Ampere, 61000 Alencon, France (RCS Alencon 423 880 061)</li>
+                <li><strong>Certification HDS :</strong> AZNETWORK est certifie Hebergeur de Donnees de Sante (HDS V2) sur les 6 activites, dont l&apos;administration et l&apos;exploitation du systeme d&apos;information de sante, ainsi que ISO/IEC 27001:2022</li>
+                <li><strong>Objet :</strong> API backend, base de donnees PostgreSQL, stockage de fichiers patients, authentification Keycloak (MFA TOTP), visio-consultation, sauvegardes chiffrees et plan de reprise d&apos;activite (PRA) sur un second datacenter francais certifie</li>
                 <li><strong>Chiffrement :</strong> AES-256-GCM applicatif sur les champs sensibles + TLS 1.3 en transit</li>
               </ul>
             </div>

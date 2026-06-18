@@ -7,7 +7,7 @@ import { ScrollReveal } from '@/components/ui/scroll-reveal';
 const faqs = [
   {
     q: 'PsyLib est-il conforme HDS ?',
-    a: 'Oui. PsyLib est hébergé sur OVH HDS, certifié Hébergeur de Données de Santé au sens du Code de la santé publique. Toutes les données cliniques sont chiffrées avec AES-256-GCM.',
+    a: 'Oui. Vos données sont hébergées en France chez AZNetwork, hébergeur certifié HDS V2 sur les 6 activités (dont l\'exploitation du système) et ISO/IEC 27001:2022, au sens du Code de la santé publique. Sauvegardes chiffrées et plan de reprise d\'activité (PRA) sur un second datacenter français certifié. Toutes les données cliniques sont chiffrées avec AES-256-GCM.',
   },
   {
     q: 'Puis-je importer mes patients existants ?',

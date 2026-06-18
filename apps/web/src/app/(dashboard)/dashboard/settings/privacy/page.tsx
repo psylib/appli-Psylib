@@ -91,7 +91,7 @@ export default function PrivacyPage() {
           </li>
           <li className="flex items-start gap-2">
             <span className="mt-0.5 h-4 w-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
-            Hébergement HDS France (OVH HDS)
+            Hébergement HDS France (AZNetwork — HDS V2 + ISO 27001)
           </li>
           <li className="flex items-start gap-2">
             <span className="mt-0.5 h-4 w-4 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>

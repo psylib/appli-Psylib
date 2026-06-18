@@ -277,7 +277,7 @@ export default function PsyLibVsScriboupsyPage() {
             </h2>
             <div className="prose prose-charcoal text-charcoal-400">
               <p>
-                PsyLib est hébergé sur <strong>infrastructure certifiée HDS</strong> (OVH, France) avec chiffrement
+                PsyLib est hébergé sur <strong>infrastructure certifiée HDS V2</strong> (AZNetwork, France — 6 activités + ISO 27001) avec chiffrement
                 applicatif AES-256-GCM sur chaque note clinique. C&apos;est une obligation légale pour le stockage
                 de données de santé en France.
               </p>

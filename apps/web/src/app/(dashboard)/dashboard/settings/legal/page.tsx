@@ -51,9 +51,9 @@ export default async function LegalPage() {
             de la santé publique.
           </p>
           <ul className="mt-2 space-y-1 text-muted-foreground">
-            <li>Infrastructure principale : OVHcloud (France) — hébergeur certifié HDS</li>
-            <li>Authentification : OVHcloud (Keycloak)</li>
-            <li>Sauvegardes : OVHcloud Object Storage</li>
+            <li>Infrastructure principale : AZNetwork (France) — hébergeur certifié HDS V2 (6 activités) et ISO 27001</li>
+            <li>Authentification : AZNetwork (Keycloak)</li>
+            <li>Sauvegardes : AZNetwork — chiffrées, avec PRA sur un second datacenter français certifié</li>
           </ul>
         </section>
 

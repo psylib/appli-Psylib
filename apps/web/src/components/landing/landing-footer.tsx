@@ -85,7 +85,7 @@ export function LandingFooter() {
             © 2026 PsyLib — Conforme HDS · SIRET 10278495600017
           </p>
           <div className="flex items-center gap-4 text-xs text-charcoal-400">
-            <span className="font-dm-mono">OVH HDS</span>
+            <span className="font-dm-mono">AZNetwork · HDS V2</span>
             <span>·</span>
             <span>France 🇫🇷</span>
           </div>

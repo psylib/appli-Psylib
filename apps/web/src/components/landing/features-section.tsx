@@ -114,7 +114,7 @@ const features: {
   {
     icon: Shield,
     title: 'Conformité HDS totale',
-    description: 'Hébergement OVH HDS certifié. Chiffrement AES-256-GCM. RGPD. La seule plateforme légalement conforme.',
+    description: 'Hébergement AZNetwork certifié HDS V2 (6 activités) et ISO 27001. Chiffrement AES-256-GCM. RGPD. La seule plateforme légalement conforme.',
     color: 'text-charcoal bg-charcoal-100',
     border: 'border-charcoal-200',
   },

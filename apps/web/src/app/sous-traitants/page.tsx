@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Liste des sous-traitants | PsyLib",
     description:
-      "Sous-traitants de PsyLib : OVHcloud HDS, Stripe, Resend, OpenRouter. Transparence totale.",
+      "Sous-traitants de PsyLib : AZNETWORK (HDS V2 + ISO 27001), Stripe, Resend, OpenRouter. Transparence totale.",
     url: 'https://psylib.eu/sous-traitants',
     type: 'article',
     locale: 'fr_FR',
@@ -84,17 +84,17 @@ export default function SousTraitantsPage() {
           <div className="space-y-4">
             <div className="rounded-xl border border-gray-200 p-5">
               <div className="mb-2 flex items-center gap-3">
-                <h3 className="font-semibold text-[#1E1B4B]">OVHcloud</h3>
+                <h3 className="font-semibold text-[#1E1B4B]">AZNETWORK</h3>
                 <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                  HDS certifie
+                  HDS V2 · ISO 27001
                 </span>
               </div>
               <ul className="list-inside list-disc space-y-1 text-sm text-gray-700">
-                <li><strong>Role :</strong> hebergement des serveurs API, base de donnees PostgreSQL, authentification Keycloak, sauvegardes, visio-consultation (LiveKit)</li>
+                <li><strong>Role :</strong> hebergement des serveurs API, base de donnees PostgreSQL, authentification Keycloak, visio-consultation (LiveKit), sauvegardes et infogerance (administration et exploitation du systeme — activite 5 HDS)</li>
                 <li><strong>Donnees traitees :</strong> toutes les donnees de sante (notes, messages, dossiers patients), donnees d&apos;authentification, sauvegardes</li>
-                <li><strong>Localisation :</strong> Roubaix, France</li>
-                <li><strong>Certification HDS :</strong> oui — conforme article L.1111-8 du Code de la sante publique</li>
-                <li><strong>Site web :</strong> <a href="https://www.ovhcloud.com/fr/" className="text-[#3D52A0] hover:underline" target="_blank" rel="noopener noreferrer">ovhcloud.com</a></li>
+                <li><strong>Localisation :</strong> Alencon (France) — PRA sur un second datacenter francais certifie</li>
+                <li><strong>Certification HDS :</strong> HDS V2 certifie sur les 6 activites + ISO/IEC 27001:2022 — conforme article L.1111-8 du Code de la sante publique</li>
+                <li><strong>Site web :</strong> <a href="https://www.aznetwork.eu/" className="text-[#3D52A0] hover:underline" target="_blank" rel="noopener noreferrer">aznetwork.eu</a></li>
               </ul>
             </div>
 
@@ -245,8 +245,8 @@ export default function SousTraitantsPage() {
               </thead>
               <tbody className="text-gray-700">
                 <tr className="border-b border-gray-100">
-                  <td className="py-3 pr-3 font-medium">OVHcloud</td>
-                  <td className="py-3 pr-3">Hebergement, DB, auth, backups, visio</td>
+                  <td className="py-3 pr-3 font-medium">AZNETWORK</td>
+                  <td className="py-3 pr-3">Hebergement, DB, auth, backups, visio, infogerance</td>
                   <td className="py-3 pr-3">France</td>
                   <td className="py-3 pr-3 text-green-700 font-medium">Oui</td>
                   <td className="py-3 text-green-700 font-medium">Oui</td>
