@@ -133,6 +133,67 @@ export class EmailService {
     await this.send(to, 'Bienvenue sur PsyLib — votre espace est prêt', html, 'sendWelcomeEmail');
   }
 
+  // ─── PREMIERS PAS (à l'inscription — prépare au mot de passe + 2FA) ──────────
+
+  async sendRegistrationGetStarted(
+    to: string,
+    data: { psychologistName: string; loginUrl: string },
+  ): Promise<void> {
+    const html = emailLayout(
+      'Bienvenue sur PsyLib — vos 2 étapes pour démarrer',
+      `<h1>Bienvenue sur PsyLib, ${escapeHtml(data.psychologistName)} !</h1>
+      <p>
+        Votre compte vient d'être créé. Pour accéder à votre espace en toute sécurité,
+        il y a <strong>2 petites étapes</strong> à suivre — comptez 2 minutes.
+      </p>
+
+      <div class="info-box">
+        <p style="margin:0 0 8px;font-size:15px;color:#1E1B4B;"><strong>① Définissez votre mot de passe</strong></p>
+        <p style="margin:0;font-size:14px;color:#374151;">
+          Vous recevez à l'instant un <strong>second email</strong> (expéditeur « PsyLib ») avec un lien
+          pour choisir votre mot de passe. Pensez à vérifier vos spams si vous ne le voyez pas.
+        </p>
+      </div>
+
+      <div class="info-box" style="margin-top:12px;">
+        <p style="margin:0 0 8px;font-size:15px;color:#1E1B4B;"><strong>② Activez la double sécurité (à la 1ʳᵉ connexion)</strong></p>
+        <p style="margin:0 0 8px;font-size:14px;color:#374151;">
+          PsyLib protège les données de vos patients avec une <strong>application d'authentification</strong>.
+          À votre première connexion, vous scannerez un QR code et saisirez un <strong>code à 6 chiffres</strong>.
+        </p>
+        <p style="margin:0;font-size:14px;color:#374151;">
+          👉 <strong>Installez dès maintenant</strong> une de ces applications gratuites sur votre téléphone :
+          <em>Google Authenticator</em>, <em>Microsoft Authenticator</em> ou <em>Authy</em>.
+        </p>
+      </div>
+
+      <div class="alert-box alert-warning" style="margin-top:16px;">
+        <div>
+          <strong style="color:#92400E;">Bon à savoir</strong><br />
+          <span style="font-size:14px;color:#78350F;">
+            Le code de connexion <strong>n'est pas envoyé par email</strong> : il s'affiche dans votre
+            application d'authentification et change toutes les 30 secondes.
+          </span>
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <a href="${data.loginUrl}" class="btn">Me connecter à PsyLib</a>
+      </div>
+
+      <p style="font-size:13px;color:#9CA3AF;margin-top:24px;">
+        Une question ou un blocage ? Répondez simplement à cet email, nous vous aidons (au besoin par téléphone).
+      </p>`,
+    );
+
+    await this.send(
+      to,
+      'Bienvenue sur PsyLib — vos 2 étapes pour démarrer',
+      html,
+      'sendRegistrationGetStarted',
+    );
+  }
+
   // ─── CONFIRMATION RENDEZ-VOUS ────────────────────────────────────────────────
 
   async sendAppointmentConfirmation(

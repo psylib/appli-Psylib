@@ -130,6 +130,19 @@ export class AuthService {
     // 4. Send password setup email via Keycloak SMTP
     await this.sendPasswordSetupEmail(adminToken, userId);
 
+    // 4b. Send "premiers pas" email (prépare au mot de passe + 2FA TOTP).
+    // Non-bloquant : un échec ne doit pas faire échouer l'inscription.
+    this.emailService
+      .sendRegistrationGetStarted(email.toLowerCase(), {
+        psychologistName: firstName,
+        loginUrl: `${this.frontendUrl}/login`,
+      })
+      .catch((err) =>
+        this.logger.warn(
+          `Get-started email failed: ${(err as Error).message}`,
+        ),
+      );
+
     // 5. Notify admin
     this.notifyAdmin(
       firstName,
