@@ -32,6 +32,8 @@ export function LandingNav() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" alt="" aria-hidden className="h-8 w-8" />
           <span className="font-playfair text-xl font-bold text-charcoal group-hover:text-sage transition-colors">
             PsyLib
           </span>

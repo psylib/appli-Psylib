@@ -25,7 +25,11 @@ export default async function PatientPortalLayout({
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="bg-white border-b border-border px-4 py-3 flex items-center justify-between">
-        <span className="text-lg font-semibold text-primary">PsyLib</span>
+        <span className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" alt="" aria-hidden className="h-7 w-7" />
+          <span className="text-lg font-semibold text-primary">PsyLib</span>
+        </span>
         <div className="flex items-center gap-3">
           {isGuardian && (
             <span className="text-xs font-medium bg-accent/10 text-accent px-2 py-1 rounded-full">

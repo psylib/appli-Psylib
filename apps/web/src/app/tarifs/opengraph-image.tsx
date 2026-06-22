@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { LOGO_MARK_DATA_URI } from '../_logo-mark-data';
 
 export const runtime = 'edge';
 export const alt = 'Tarifs PsyLib — Logiciel psychologue libéral';
@@ -20,9 +21,17 @@ export default function OgImage() {
           fontFamily: 'system-ui, sans-serif',
         }}
       >
-        <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.8)', margin: '0 0 12px 0' }}>
-          PsyLib — Tarifs
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '0 0 16px 0' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={LOGO_MARK_DATA_URI}
+            width={56}
+            height={56}
+            alt="PsyLib"
+            style={{ background: 'white', borderRadius: '14px', padding: '6px' }}
+          />
+          <span style={{ fontSize: '18px', color: 'rgba(255,255,255,0.8)' }}>PsyLib — Tarifs</span>
+        </div>
         <h1 style={{ fontSize: '56px', fontWeight: 800, color: 'white', margin: '0 0 32px 0' }}>
           Gratuit puis 25€/mois
         </h1>

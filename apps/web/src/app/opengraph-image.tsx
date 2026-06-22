@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { LOGO_MARK_DATA_URI } from './_logo-mark-data';
 
 export const runtime = 'edge';
 export const alt = 'PsyLib — Gestion cabinet psychologue libéral';
@@ -46,7 +47,17 @@ export default function OgImage() {
           </span>
         </div>
 
-        {/* Logo */}
+        {/* Logo mark */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={LOGO_MARK_DATA_URI}
+          width={132}
+          height={132}
+          alt="PsyLib"
+          style={{ marginBottom: '12px' }}
+        />
+
+        {/* Wordmark */}
         <h1
           style={{
             fontSize: '72px',

@@ -45,10 +45,7 @@ export const metadata: Metadata = {
     google: 'ISMAeTxcb6Vrb24Vp48cGSBCXi85fucll866a-500sk',
   },
   manifest: '/manifest.json',
-  icons: {
-    icon: '/icon-192.png',
-    apple: '/icon-192.png',
-  },
+  // Favicon + apple-touch-icon générés par convention Next via app/icon.png et app/apple-icon.png
 };
 
 const organizationJsonLd = {

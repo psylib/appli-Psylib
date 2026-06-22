@@ -59,6 +59,13 @@ export default async function LoginPage({
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
           {/* Logo */}
           <div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-mark.png"
+              alt=""
+              aria-hidden
+              className="h-12 w-12 rounded-xl bg-white p-1.5 shadow-sm mb-4"
+            />
             <h1 className="text-3xl font-bold tracking-tight">PsyLib</h1>
             <p className="text-white/60 text-sm mt-1">Votre cabinet, simplifié</p>
           </div>
@@ -107,6 +114,8 @@ export default async function LoginPage({
         <div className="w-full max-w-sm space-y-8">
           {/* Mobile logo */}
           <div className="text-center lg:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-mark.png" alt="" aria-hidden className="h-12 w-12 mx-auto mb-3" />
             <h1 className="text-3xl font-bold text-foreground">
               <span className="text-primary">PsyLib</span>
             </h1>

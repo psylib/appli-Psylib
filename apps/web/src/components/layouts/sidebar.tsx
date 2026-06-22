@@ -126,9 +126,8 @@ export function Sidebar({ userEmail, userName, role }: SidebarProps) {
       {/* Logo */}
       <div className="p-5 border-b border-border">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-white text-sm font-bold">PS</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" alt="" aria-hidden className="h-8 w-8" />
           <span className="text-lg font-bold text-primary">PsyLib</span>
         </Link>
       </div>
