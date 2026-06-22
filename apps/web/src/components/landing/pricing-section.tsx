@@ -12,7 +12,7 @@ const plans = [
     annual: 0,
     description: 'Pour découvrir PsyLib',
     features: [
-      '15 patients max',
+      '10 patients max',
       'Séances illimitées',
       'Notes cliniques',
       'Chiffrement HDS',
@@ -29,7 +29,6 @@ const plans = [
       'Patients illimités',
       'Séances illimitées',
       '10 résumés IA / mois',
-      'Visio illimitée',
       'Agenda & rappels SMS/email',
       'Facturation PDF',
     ],

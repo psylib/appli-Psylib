@@ -1517,13 +1517,13 @@ export class EmailService {
         <span style="font-size:24px;">&#128680;</span>
         <div>
           <strong>Votre essai gratuit expire aujourd'hui.</strong>
-          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan Free (15 patients max, sessions illimit&eacute;es, sans IA ni visio).</p>
+          <p style="margin:4px 0 0;font-size:14px;">Demain, votre acc&egrave;s sera limit&eacute; au plan Free (10 patients max, sessions illimit&eacute;es, sans IA ni visio).</p>
         </div>
       </div>
       <p>Tout ce que vous avez cr&eacute;&eacute; reste sauvegard&eacute;. Mais les fonctionnalit&eacute;s premium seront d&eacute;sactiv&eacute;es.</p>
       <div class="info-box">
-        <p style="margin:0;font-size:15px;"><strong>Solo</strong> &mdash; 25&euro;/mois (patients illimit&eacute;s, IA + visio incluses)<br/>
-        <strong>Pro</strong> &mdash; 50&euro;/mois (illimit&eacute;, formations)<br/>
+        <p style="margin:0;font-size:15px;"><strong>Solo</strong> &mdash; 25&euro;/mois (patients illimit&eacute;s, IA incluse)<br/>
+        <strong>Pro</strong> &mdash; 40&euro;/mois (IA illimit&eacute;e, visio, portail patient)<br/>
         <strong>Clinic</strong> &mdash; 79&euro;/mois (multi-praticiens)</p>
       </div>
       <a href="${data.billingUrl}" class="btn">Conserver mon acc&egrave;s</a>

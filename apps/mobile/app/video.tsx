@@ -161,7 +161,7 @@ export default function VideoScreen() {
               </TouchableOpacity>
             ) : (
               <View style={styles.instantBtnLocked}>
-                <Text style={styles.instantBtnLockedText}>⚡ Visio instantanee — Plan Solo+</Text>
+                <Text style={styles.instantBtnLockedText}>⚡ Visio instantanee — Plan Pro+</Text>
               </View>
             )}
             <InstantVideoSheet visible={showInstantSheet} onClose={() => setShowInstantSheet(false)} />

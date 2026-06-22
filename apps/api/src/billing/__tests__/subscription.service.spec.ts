@@ -322,10 +322,10 @@ describe('SubscriptionService', () => {
       expect(mockPrisma.patient.count).not.toHaveBeenCalled();
     });
 
-    it('lève une erreur sur plan FREE quand la limite de 15 patients est atteinte', async () => {
-      // FREE: patients = 15
+    it('lève une erreur sur plan FREE quand la limite de 10 patients est atteinte', async () => {
+      // FREE: patients = 10
       mockPrisma.subscription.findUnique.mockResolvedValue(null);
-      mockPrisma.patient.count.mockResolvedValue(15);
+      mockPrisma.patient.count.mockResolvedValue(10);
 
       await expect(service.checkPatientLimit('psy-1')).rejects.toThrow();
     });

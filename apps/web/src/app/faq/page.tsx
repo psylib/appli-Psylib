@@ -37,11 +37,11 @@ const faqCategories = [
       },
       {
         q: "A qui s\"adresse PsyLib ?",
-        a: "PsyLib s\"adresse a tous les psychologues liberaux en France, qu\"ils soient en debut de carriere ou praticiens etablis. Le plan Free permet de decouvrir l\"outil (jusqu\"a 15 patients, sessions illimitees), le plan Solo ajoute l\"IA, la visio et les patients illimites, le plan Pro offre toutes les fonctionnalites avancees, et le plan Clinic est concu pour les cabinets multi-praticiens.",
+        a: "PsyLib s\"adresse a tous les psychologues liberaux en France, qu\"ils soient en debut de carriere ou praticiens etablis. Le plan Free permet de decouvrir l\"outil (jusqu\"a 10 patients, sessions illimitees), le plan Solo ajoute l\"IA et les patients illimites, le plan Pro offre toutes les fonctionnalites avancees, et le plan Clinic est concu pour les cabinets multi-praticiens.",
       },
       {
         q: "Puis-je essayer PsyLib gratuitement ?",
-        a: "Oui, le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 15 patients et des sessions illimitees. Passez a un plan payant pour acceder a l\"IA, la visio, les patients illimites et les fonctionnalites avancees.",
+        a: "Oui, le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 10 patients et des sessions illimitees. Passez a un plan payant pour acceder a l\"IA, la visio, les patients illimites et les fonctionnalites avancees.",
       },
       {
         q: "Comment demarrer avec PsyLib ?",
@@ -96,11 +96,11 @@ const faqCategories = [
     questions: [
       {
         q: "Quels sont les plans disponibles ?",
-        a: "PsyLib propose quatre plans : Free (gratuit, 15 patients max, sessions illimitees), Solo (25 euros/mois ou 22 euros/mois en annuel, patients illimites + 10 resumes IA + visio illimitee), Pro (40 euros/mois ou 36 euros/mois en annuel, IA illimitee + portail patient), et Clinic (79 euros/mois ou 69 euros/mois en annuel, multi-praticiens).",
+        a: "PsyLib propose quatre plans : Free (gratuit, 10 patients max, sessions illimitees), Solo (25 euros/mois ou 22 euros/mois en annuel, patients illimites + 10 resumes IA), Pro (40 euros/mois ou 36 euros/mois en annuel, IA illimitee + portail patient), et Clinic (79 euros/mois ou 69 euros/mois en annuel, multi-praticiens).",
       },
       {
         q: "Comment fonctionne le plan gratuit ?",
-        a: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 15 patients et des sessions illimitees. Pour acceder a l\"IA, la visio, les patients illimites et les fonctionnalites avancees, passez a un plan payant a tout moment depuis votre espace de facturation.",
+        a: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 10 patients et des sessions illimitees. Pour acceder a l\"IA, la visio, les patients illimites et les fonctionnalites avancees, passez a un plan payant a tout moment depuis votre espace de facturation.",
       },
       {
         q: "Puis-je resilier a tout moment ?",

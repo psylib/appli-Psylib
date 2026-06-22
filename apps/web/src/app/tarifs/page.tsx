@@ -44,7 +44,7 @@ const tarifsJsonLd = {
           price: "0",
           priceCurrency: "EUR",
           description:
-            "15 patients max, sessions illimitees, notes cliniques, chiffrement HDS",
+            "10 patients max, sessions illimitees, notes cliniques, chiffrement HDS",
         },
         {
           "@type": "Offer",
@@ -58,7 +58,7 @@ const tarifsJsonLd = {
             billingDuration: "P1M",
           },
           description:
-            "Patients illimites, sessions illimitees, 10 resumes IA/mois, visio illimitee, facturation PDF",
+            "Patients illimites, sessions illimitees, 10 resumes IA/mois, facturation PDF",
         },
         {
           "@type": "Offer",
@@ -106,7 +106,7 @@ const tarifsJsonLd = {
           name: "Comment fonctionne le plan Free ?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu'a 15 patients et des sessions illimitees. Pour acceder a l'IA, la visio et des patients illimites, passez a un plan payant a tout moment.",
+            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu'a 10 patients et des sessions illimitees. Pour acceder a l'IA, la visio et des patients illimites, passez a un plan payant a tout moment.",
           },
         },
         {
@@ -146,7 +146,7 @@ const plans = [
     priceAnnual: 0,
     highlighted: false,
     features: [
-      "15 patients max",
+      "10 patients max",
       "Sessions illimitees",
       "Notes cliniques SOAP / DAP",
       "Dossiers patients securises",
@@ -167,7 +167,6 @@ const plans = [
       "Patients illimites",
       "Sessions illimitees",
       "10 resumes IA par mois",
-      "Visio illimitee",
       "Profil public psylib.eu/psy/votre-nom",
       "Prise de RDV en ligne",
       "Notes cliniques SOAP / DAP",
@@ -219,10 +218,10 @@ const plans = [
 ];
 
 const comparisonFeatures = [
-  { name: "Patients", free: "15 max", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
+  { name: "Patients", free: "10 max", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
   { name: "Sessions / mois", free: "Illimite", solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
   { name: "Resumes IA / mois", free: "0", solo: "10", pro: "Illimite", clinic: "Illimite" },
-  { name: "Visio securisee", free: false, solo: "Illimite", pro: "Illimite", clinic: "Illimite" },
+  { name: "Visio securisee", free: false, solo: false, pro: "Illimite", clinic: "Illimite" },
   { name: "Notes cliniques SOAP / DAP", free: true, solo: true, pro: true, clinic: true },
   { name: "Profil public", free: true, solo: true, pro: true, clinic: true },
   { name: "Prise de RDV en ligne", free: true, solo: true, pro: true, clinic: true },
@@ -248,7 +247,7 @@ const faqs = [
   {
     question: "Comment fonctionne le plan gratuit ?",
     answer:
-      "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 15 patients et des sessions illimitees. Pour acceder a l\"IA, la visio et des patients illimites, passez a un plan payant a tout moment.",
+      "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\"a 10 patients et des sessions illimitees. Pour acceder a l\"IA, la visio et des patients illimites, passez a un plan payant a tout moment.",
   },
   {
     question: "Y a-t-il un engagement de duree ?",

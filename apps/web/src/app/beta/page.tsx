@@ -80,7 +80,7 @@ export default function BetaPage() {
                 <ArrowRight size={18} />
               </Link>
               <p className="text-xs text-charcoal-300">
-                Plan Free pour toujours — 15 patients, séances illimitées
+                Plan Free pour toujours — 10 patients, séances illimitées
               </p>
             </div>
           </div>

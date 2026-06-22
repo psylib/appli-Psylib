@@ -54,7 +54,7 @@ export class TrialExpiryCron {
           <p>Votre période d'essai <strong>Pro gratuit 6 mois</strong> vient de se terminer. Votre compte est passé au plan <strong>Free</strong>.</p>
           <p>Sur le plan Free, vous conservez :</p>
           <ul>
-            <li>Jusqu'à 15 patients</li>
+            <li>Jusqu'à 10 patients</li>
             <li>Les séances et notes illimitées</li>
             <li>L'agenda et la prise de RDV</li>
           </ul>

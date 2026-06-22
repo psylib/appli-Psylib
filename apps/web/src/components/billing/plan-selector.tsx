@@ -11,7 +11,7 @@ import type { SubscriptionDetails } from '@/lib/api/billing';
 
 const PLAN_FEATURES: Record<string, string[]> = {
   [SubscriptionPlan.FREE]: [
-    '15 patients max',
+    '10 patients max',
     'Séances illimitées',
     'Support email',
   ],
@@ -19,13 +19,14 @@ const PLAN_FEATURES: Record<string, string[]> = {
     'Patients illimités',
     'Séances illimitées',
     '10 résumés IA / mois',
-    'Visio illimitée',
+    'Synchronisation agenda',
     'Support email',
   ],
   [SubscriptionPlan.PRO]: [
     'Patients illimités',
     'Séances illimitées',
     '100 résumés IA / mois',
+    'Visio illimitée',
     'Comptabilité intégrée',
     'Analytics avancées',
     'Support prioritaire',

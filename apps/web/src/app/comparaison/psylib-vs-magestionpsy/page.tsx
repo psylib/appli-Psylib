@@ -142,7 +142,7 @@ export default function PsyLibVsMaGestionPsyPage() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-charcoal mb-1">0€ <span className="text-base font-normal text-charcoal-400">→ 25€/mois</span></div>
-              <p className="text-sm text-charcoal-400">Plan Free gratuit (15 patients), puis Solo à 25€/mois</p>
+              <p className="text-sm text-charcoal-400">Plan Free gratuit (10 patients), puis Solo à 25€/mois</p>
             </div>
             <div className="rounded-2xl border border-cream-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
@@ -262,8 +262,8 @@ export default function PsyLibVsMaGestionPsyPage() {
             <div className="prose prose-charcoal text-charcoal-400">
               <p>
                 Les deux logiciels ont des tarifs proches : <strong>29€/mois</strong> pour MaGestionPsy Standard
-                contre <strong>25€/mois</strong> pour PsyLib Solo. Mais PsyLib inclut la visio dès le plan Solo,
-                et propose l&apos;IA clinique et le portail patient à partir du plan Pro (40€/mois).
+                contre <strong>25€/mois</strong> pour PsyLib Solo. PsyLib propose la visio,
+                l&apos;IA clinique et le portail patient à partir du plan Pro (40€/mois).
               </p>
               <p>
                 Le plan gratuit de MaGestionPsy est limité à 20 patients. Celui de PsyLib n&apos;a <strong>aucune limite
@@ -298,7 +298,7 @@ export default function PsyLibVsMaGestionPsyPage() {
               Un logiciel conçu par et pour les psychologues
             </h2>
             <p className="text-sage-100 text-lg">
-              Commencez gratuitement. 15 patients inclus. Sans carte bancaire.
+              Commencez gratuitement. 10 patients inclus. Sans carte bancaire.
             </p>
             <Link
               href="/register"

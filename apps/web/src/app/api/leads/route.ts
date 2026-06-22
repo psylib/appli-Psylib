@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
                 Merci pour votre int&eacute;r&ecirc;t pour PsyLib ! Vous pouvez d&eacute;marrer d&egrave;s maintenant avec le <strong style="color: #3D52A0;">plan gratuit</strong>, sans carte bancaire.
               </p>
               <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin-bottom: 16px;">
-                Le plan gratuit inclut : jusqu&apos;&agrave; 15 patients, s&eacute;ances illimit&eacute;es et comptabilit&eacute; int&eacute;gr&eacute;e. Passez au plan Solo ou Pro quand vous le souhaitez pour l&apos;IA, la visio et le portail patient.
+                Le plan gratuit inclut : jusqu&apos;&agrave; 10 patients, s&eacute;ances illimit&eacute;es et comptabilit&eacute; int&eacute;gr&eacute;e. Passez au plan Solo ou Pro quand vous le souhaitez pour l&apos;IA, la visio et le portail patient.
               </p>
               <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
                 Cr&eacute;ez votre compte en un clic :

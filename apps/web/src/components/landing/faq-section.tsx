@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: 'Comment fonctionne le plan gratuit ?',
-    a: 'Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\'à 15 patients et des séances illimitées. Passez à un plan payant pour accéder à l\'IA, la visio et des patients illimités. Vos données restent exportables à tout moment.',
+    a: 'Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu\'à 10 patients et des séances illimitées. Passez à un plan payant pour accéder à l\'IA, la visio et des patients illimités. Vos données restent exportables à tout moment.',
   },
   {
     q: 'Puis-je annuler à tout moment ?',
@@ -39,7 +39,7 @@ const faqs = [
   },
   {
     q: 'PsyLib propose-t-il la téléconsultation ?',
-    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible dès le plan Solo.',
+    a: 'Oui. PsyLib intègre la visio-consultation HD, hébergée sur infrastructure HDS certifiée en France. Pas besoin de Zoom ou Google Meet — tout se passe dans PsyLib. Lien unique envoyé au patient, prise de notes pendant la consultation. Disponible dès le plan Pro.',
   },
   {
     q: 'Comment fonctionne l\'espace patient ?',

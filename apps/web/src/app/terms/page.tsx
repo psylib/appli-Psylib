@@ -292,12 +292,12 @@ export default function TermsPage() {
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Free</td>
                   <td className="py-3 pr-4">0 euros</td>
-                  <td className="py-3">15 patients max, sessions illimitees, notes cliniques</td>
+                  <td className="py-3">10 patients max, sessions illimitees, notes cliniques</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Solo</td>
                   <td className="py-3 pr-4">25 euros HT</td>
-                  <td className="py-3">Patients illimites, sessions illimitees, 10 resumes IA, visio illimitee</td>
+                  <td className="py-3">Patients illimites, sessions illimitees, 10 resumes IA</td>
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-3 pr-4 font-medium">Pro</td>

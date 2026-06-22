@@ -158,7 +158,7 @@ describe('Patients API — Integration (réel)', () => {
   describe('SubscriptionGuard réel sur POST /patients', () => {
     it('limite de patients atteinte → 403 (checkPatientLimit refuse)', async () => {
       subscriptionService.checkPatientLimit.mockRejectedValueOnce(
-        new ForbiddenException('Limite de patients atteinte (plan Free : 15)'),
+        new ForbiddenException('Limite de patients atteinte (plan Free : 10)'),
       );
       await request(app.getHttpServer())
         .post('/patients')

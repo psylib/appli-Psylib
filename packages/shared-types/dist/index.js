@@ -159,8 +159,8 @@ var CalendarProvider;
 })(CalendarProvider || (exports.CalendarProvider = CalendarProvider = {}));
 // Plan limits
 exports.PLAN_LIMITS = {
-    [SubscriptionPlan.FREE]: { patients: 15, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 0, documentsBytesMonthly: 0, calendarSync: false, accounting: false, assistants: 0 },
-    [SubscriptionPlan.SOLO]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: null, courses: 0, expenses: 0, documentsBytesMonthly: 52428800, calendarSync: true, accounting: false, assistants: 1 },
+    [SubscriptionPlan.FREE]: { patients: 10, sessions: null, aiSummaries: 0, videoConsultations: 0, courses: 0, expenses: 0, documentsBytesMonthly: 0, calendarSync: false, accounting: false, assistants: 0 },
+    [SubscriptionPlan.SOLO]: { patients: null, sessions: null, aiSummaries: 10, videoConsultations: 0, courses: 0, expenses: 0, documentsBytesMonthly: 52428800, calendarSync: true, accounting: false, assistants: 1 },
     [SubscriptionPlan.PRO]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: 5, expenses: null, documentsBytesMonthly: null, calendarSync: true, accounting: true, assistants: 3 }, // null/-1 = unlimited
     [SubscriptionPlan.CLINIC]: { patients: null, sessions: null, aiSummaries: -1, videoConsultations: null, courses: null, expenses: null, documentsBytesMonthly: null, calendarSync: true, accounting: true, assistants: -1 }, // -1 / null = illimité
 };

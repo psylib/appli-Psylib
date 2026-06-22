@@ -90,7 +90,7 @@ const jsonLd = {
           name: "Combien coute PsyLib ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "PsyLib propose quatre formules : Free (gratuit, 15 patients max), Solo a 25 EUR/mois (patients illimites + IA + visio), Pro a 40 EUR/mois (IA illimitee + portail patient) et Clinic a 79 EUR/mois (multi-praticiens).",
+            text: "PsyLib propose quatre formules : Free (gratuit, 10 patients max), Solo a 25 EUR/mois (patients illimites + IA), Pro a 40 EUR/mois (IA illimitee + portail patient) et Clinic a 79 EUR/mois (multi-praticiens).",
           },
         },
         {
@@ -106,7 +106,7 @@ const jsonLd = {
           name: "Comment fonctionne le plan gratuit ?",
           acceptedAnswer: {
             '@type': 'Answer',
-            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu'a 15 patients et des sessions illimitees. Passez a un plan payant pour acceder a l'IA, la visio et des patients illimites. Vos donnees restent exportables.",
+            text: "Le plan Free est gratuit pour toujours, sans carte bancaire. Il inclut jusqu'a 10 patients et des sessions illimitees. Passez a un plan payant pour acceder a l'IA, la visio et des patients illimites. Vos donnees restent exportables.",
           },
         },
         {

@@ -17,7 +17,7 @@ const PLAN_CONFIG = {
     highlights: [
       'Patients illimités + séances illimitées',
       '10 résumés IA / mois',
-      'Visio illimitée',
+      'Synchronisation agenda',
       'Facturation PDF',
     ],
   },
@@ -27,7 +27,7 @@ const PLAN_CONFIG = {
     highlights: [
       'Patients illimités + séances illimitées',
       'IA illimitée',
-      'Analytics avancées',
+      'Visio illimitée',
       'Portail patient sécurisé',
     ],
   },

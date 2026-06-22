@@ -40,7 +40,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Créer une visio instantanée (sans RDV préalable)' })
   @ApiResponse({ status: 201, description: 'Visio instantanée créée' })
@@ -55,7 +55,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async createRoom(
     @Body() dto: CreateVideoRoomDto,
     @CurrentUser() user: KeycloakUser,
@@ -78,7 +78,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   async getPsyToken(
     @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
     @CurrentUser() user: KeycloakUser,
@@ -112,7 +112,7 @@ export class VideoController {
   @ApiBearerAuth()
   @UseGuards(KeycloakGuard, RolesGuard, SubscriptionGuard)
   @Roles('psychologist', 'admin')
-  @RequirePlan(SubscriptionPlan.SOLO, SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
   @ApiOperation({ summary: 'Générer un lien d\'invitation invité pour la visio en cours' })
   async createGuestInvite(
     @Param('appointmentId', ParseUUIDPipe) appointmentId: string,
