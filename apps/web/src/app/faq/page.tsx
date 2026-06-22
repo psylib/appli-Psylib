@@ -110,6 +110,10 @@ const faqCategories = [
         q: "Quels moyens de paiement sont acceptes ?",
         a: "Nous acceptons les cartes bancaires (Visa, Mastercard, CB) via Stripe, notre partenaire de paiement certifie PCI DSS. Le prelevement SEPA est disponible pour les abonnements annuels. Toutes les transactions sont securisees.",
       },
+      {
+        q: "Suis-je concerne par la facturation electronique obligatoire (reforme 2026-2027) ?",
+        a: "Pour vos consultations : non. Les soins des psychologues titulaires du titre sont exoneres de TVA (article 261-4-1 du CGI) : a ce titre, vous n'avez pas d'obligation d'emettre de factures electroniques ni de faire de e-reporting pour vos seances. Attention : cette dispense vient de l'exoneration, pas du simple fait de ne pas facturer de TVA (etre en franchise en base ne suffit pas). Si vous exercez une activite soumise a TVA (formations, conseil, expertise, supervision), celle-ci sera concernee par l'obligation d'emission a partir du 1er septembre 2027. Pour la reception des factures de vos fournisseurs (a partir de septembre 2026), votre situation depend de votre statut : verifiez avec votre expert-comptable. Avec PsyLib, vos factures sont deja generees et archivees proprement, et nous suivons la reglementation pour rester conformes au fil des echeances.",
+      },
     ],
   },
   {
