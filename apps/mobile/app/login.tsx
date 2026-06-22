@@ -11,6 +11,7 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  Image,
 } from 'react-native';
 import { Redirect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -60,9 +61,12 @@ export default function LoginScreen() {
         {/* Logo / Branding */}
         <View style={styles.header}>
           <View style={styles.logoContainer} accessibilityLabel="PsyLib">
-            <View style={styles.logoMark}>
-              <Text style={styles.logoChar}>Ψ</Text>
-            </View>
+            <Image
+              source={require('../assets/logo-mark.png')}
+              style={styles.logoMark}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
             <Text style={styles.logoText}>PsyLib</Text>
           </View>
           <Text style={styles.tagline}>
@@ -206,20 +210,6 @@ const styles = StyleSheet.create({
   logoMark: {
     width: 72,
     height: 72,
-    borderRadius: 20,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  logoChar: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: Colors.white,
   },
   logoText: {
     fontSize: 28,

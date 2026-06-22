@@ -31,7 +31,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#3D52A0"
+        "backgroundColor": "#FEF8EC"
       },
       "package": "eu.psylib.app",
       "versionCode": 1,
