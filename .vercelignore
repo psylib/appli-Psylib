@@ -18,6 +18,8 @@ apps/web/playwright-report/
 !apps/web/public/logo-mark.png
 !apps/web/src/app/icon.png
 !apps/web/src/app/apple-icon.png
+# Cartes autoposter n8n (servies à psylib.eu/cards/ ; le conteneur n8n AZNetwork ne peut pas joindre n8n.psylib.eu en hairpin)
+!apps/web/public/cards/*.png
 node_modules/
 .turbo/
 .next/
