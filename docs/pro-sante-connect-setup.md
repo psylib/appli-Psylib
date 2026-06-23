@@ -12,24 +12,52 @@ l'activer.
 
 ---
 
-## 1. Demander l'habilitation à l'ANS (Tony)
+## 1. Demander l'habilitation à l'ANS (Tony) — parcours réel vérifié 2026-06-22
 
-1. Créer/се connecter sur l'espace industriels de l'ANS :
-   **https://industriels.esante.gouv.fr**
-2. Déposer une demande d'accès à **Pro Santé Connect** (commencer par le **bac à
-   sable / BAS**, puis la **production**).
-3. Renseigner lors de la demande :
-   - **Nom du service** : PsyLib
-   - **Type de flux** : OpenID Connect — Authorization Code Flow
-   - **redirect_uri (callback)** :
-     - Bac à sable / prod : `https://api.psylib.eu/api/v1/auth/psc/callback`
-   - **Scopes** : `openid scope_all`
-   - **acr_values** : `eidas1`
-4. L'ANS fournit en retour : un **`client_id`** et un **`client_secret`**
-   (un jeu pour le bac à sable, un autre pour la prod).
+> ⚠️ Le parcours réel (vérifié en naviguant le portail le 2026-06-22) **n'est PAS**
+> un simple dépôt sur `industriels.esante.gouv.fr`. Il enchaîne 3 briques :
+> **(A) compte industriel iSC → (B) habilitation DataPass → (C) formulaire de
+> raccordement BAS qui délivre le `client_id`/`client_secret`.**
 
-> 📄 Réf. : https://esante.gouv.fr/produits-services/pro-sante-connect
-> Guide technique OIDC : https://esante.gouv.fr/ens/offre/pro-sante-connect/documentation-technique
+### A. Compte industriel iSC + profil Portail (✅ FAIT le 2026-06-22)
+- **iSC** = `https://isconnect.esante.gouv.fr` — identité industriel + SSO. Compte
+  Tony Ruppel, statut **Mandataire**, raison sociale **TONY RUPPEL**, **SIREN 102784956**.
+  Login = `ruppel.tony`, **2FA par code email** (envoyé à `tony.ruppel7@gmail.com`,
+  valable 5 min — pas une appli TOTP).
+- Le **Portail Industriels** (`esante.gouv.fr/user/...`) est un portail Drupal
+  distinct : il faut s'y connecter via le bouton **« Se connecter » → Menu utilisateur**
+  (flux OIDC esante↔iSC, `redirect_uri=https://esante.gouv.fr/openid-connect/fii`),
+  puis **compléter le profil** obligatoire (modale « Complétez votre profil » :
+  Je suis = éditeur de solutions logicielles / Secteur = sanitaire / Intérêts =
+  PSC, e-CPS, RPPS, HDS / CGU acceptées). **Profil rempli et enregistré le 2026-06-22.**
+
+### B. Habilitation DataPass (⏳ À FAIRE — vraie porte d'entrée)
+- La rubrique **« Gérez vos services Pro Santé Connect »**
+  (`esante.gouv.fr/user/gerez-vos-services-pro-sante-connect`) **renvoie 403
+  « autorisations requises » tant que l'habilitation DataPass n'est pas accordée**
+  (vérifié : 403 même authentifié + profil complété).
+- Guichet : **`https://datapass.api.gouv.fr/demandes/api-pro-sante-connect/nouveau`**
+  (lien depuis `https://www.data.gouv.fr/fr/dataservices/api-pro-sante-connect/`).
+  Éligibilité : choisir **« Une entreprise ou une association »** → connexion
+  **ProConnect** → formulaire d'habilitation (cas d'usage, contacts technique/métier,
+  redirect URIs, **déclarations RGPD + homologation de sécurité**).
+- 📄 Guide : « Comment remplir Datapass ? » →
+  `https://industriels.esante.gouv.fr/sites/default/files/media/document/ANS-PSC-Guide-Demande-Datapass-V2.pdf`
+- ⏱️ Instruction ANS ≈ **2 semaines**. À l'issue → accès BAS débloqué.
+
+### C. Formulaire de raccordement BAS → client_id/secret
+- Une fois DataPass accordé : **« Soumettez une demande de raccordement (création)
+  en BAS »** sur `esante.gouv.fr/user/gerez-vos-services-pro-sante-connect`.
+- Valeurs à renseigner (déjà alignées avec le code PsyLib) :
+  - **Nom du service** : PsyLib
+  - **Type de flux** : OpenID Connect — Authorization Code Flow
+  - **redirect_uri (callback)** : `https://api.psylib.eu/api/v1/auth/psc/callback`
+  - **Scopes** : `openid scope_all`
+  - **acr_values** : `eidas1`
+- L'ANS délivre un **`client_id`** + **`client_secret`** (jeu BAS, puis refaire pour la prod).
+
+> 📄 Réf. : https://esante.gouv.fr/ens/offre/pro-sante-connect (section « Parcours de raccordement »)
+> Guide technique OIDC : https://esante.gouv.fr/produits-services/pro-sante-connect/documentation-technique
 
 ---
 
