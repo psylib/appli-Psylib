@@ -102,3 +102,6 @@ apps/mobile/*.png
 
 # Secrets sync backup OVH (jamais commiter)
 scripts/ovh-backup.env
+
+# Cartes animées : GIF lourds régénérables (les MP4 suffisent en prod)
+docs/marketing/visuals/animated/*.gif
