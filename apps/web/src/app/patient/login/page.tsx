@@ -61,6 +61,8 @@ function PatientLoginForm() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-mark.png" alt="" aria-hidden className="h-12 w-12 mx-auto mb-3" />
           <span className="text-2xl font-bold text-[#3D52A0]">PsyLib</span>
           <p className="mt-2 text-sm text-slate-500">Votre espace patient</p>
         </div>
