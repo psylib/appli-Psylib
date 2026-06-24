@@ -32,6 +32,7 @@ function createPrisma() {
 function createCache() {
   return {
     get: vi.fn().mockResolvedValue(null),
+    set: vi.fn().mockResolvedValue(undefined),
   } as unknown as import('../common/cache.service').CacheService;
 }
 
@@ -71,6 +72,24 @@ describe('KeycloakJwtStrategy', () => {
     );
     expect(result.role).toBe('admin');
     expect(result.psychologistUserId).toBe('admin-1');
+  });
+
+  it('skips the DB provisioning lookup when the provisioned flag is cached', async () => {
+    const cache = {
+      get: vi.fn().mockResolvedValue('1'), // déjà provisionné (cache chaud)
+      set: vi.fn().mockResolvedValue(undefined),
+    } as unknown as import('../common/cache.service').CacheService;
+    const warmStrategy = new KeycloakJwtStrategy(
+      createConfig(),
+      prisma as unknown as import('../common/prisma.service').PrismaService,
+      cache,
+    );
+    const result = await warmStrategy.validate(
+      makePayload({ sub: 'psy-1', realm_access: { roles: ['psychologist'] } }),
+    );
+    expect(result.psychologistUserId).toBe('psy-1');
+    // hot path : aucun accès DB pour le provisioning
+    expect(prisma.psychologist.findUnique).not.toHaveBeenCalled();
   });
 
   it('resolves psychologistUserId for an assistant token', async () => {

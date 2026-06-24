@@ -41,7 +41,8 @@ export default async function PatientPortalLayout({
         </div>
       </header>
 
-      <main className="flex-1 p-4">{children}</main>
+      {/* pb-24 sur mobile pour dégager le contenu sous la bottom nav fixe (md:hidden) */}
+      <main className="flex-1 p-4 pb-24 md:pb-4">{children}</main>
 
       {/* Bottom nav — mobile (client component for active state) */}
       <PatientBottomNav />

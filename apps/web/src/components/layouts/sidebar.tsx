@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { revokeAndSignOut } from '@/lib/auth/logout';
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard,
@@ -107,6 +108,7 @@ interface SidebarProps {
 
 export function Sidebar({ userEmail, userName, role }: SidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const isAssistant = role === UserRole.ASSISTANT;
 
   const navGroups = isAssistant
@@ -218,7 +220,9 @@ export function Sidebar({ userEmail, userName, role }: SidebarProps) {
             )}
           </div>
           <button
-            onClick={() => void signOut({ callbackUrl: '/login' })}
+            onClick={() =>
+              void revokeAndSignOut((session as { accessToken?: string } | null)?.accessToken)
+            }
             className="p-1.5 rounded hover:bg-surface text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Se déconnecter"
           >

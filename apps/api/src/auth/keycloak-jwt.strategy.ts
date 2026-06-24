@@ -110,8 +110,10 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
 
     // Auto-provisioning : crée User + Psychologist si absent (premier login Keycloak)
     // Jamais pour un assistant — un assistant n'est pas un psychologue.
+    // Mis en cache une fois confirmé : un psy provisionné ne se "dé-provisionne"
+    // jamais → on évite un findUnique par requête sur le hot path auth.
     if (role === 'psychologist' || role === 'admin') {
-      await this.provisionUser(payload.sub, payload.email, role);
+      await this.ensureProvisioned(payload.sub, payload.email, role);
     }
 
     // Résolution du tenant : pour un assistant, le tenant est le psychologue rattaché.
@@ -138,10 +140,19 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
     };
   }
 
-  private async provisionUser(sub: string, email: string, role: string): Promise<void> {
+  private async ensureProvisioned(sub: string, email: string, role: string): Promise<void> {
+    const cacheKey = `provisioned:${sub}`;
+    // Cache chaud : profil déjà confirmé provisionné → aucun accès DB.
+    // Sûr car un psy provisionné ne revient jamais en arrière ; si Redis est
+    // indisponible, cache.get renvoie null → on retombe sur la vérification DB.
+    if (await this.cache.get<string>(cacheKey)) return;
+
     try {
       const existing = await this.prisma.psychologist.findUnique({ where: { userId: sub } });
-      if (existing) return; // Déjà provisionné
+      if (existing) {
+        await this.cache.set(cacheKey, '1', 3600); // confirmé pour 1h
+        return;
+      }
 
       // Créer le User avec l'UUID Keycloak comme id
       await this.prisma.user.upsert({
@@ -157,9 +168,11 @@ export class KeycloakJwtStrategy extends PassportStrategy(Strategy, 'keycloak-jw
         data: { userId: sub, name: baseName, slug, isOnboarded: false },
       });
 
+      await this.cache.set(cacheKey, '1', 3600);
       this.logger.log(`Profil auto-provisionné pour ${email}`);
     } catch (err) {
-      // Ne pas bloquer la connexion si le provisioning échoue
+      // Ne pas bloquer la connexion si le provisioning échoue.
+      // On NE cache PAS en cas d'échec → nouvelle tentative au prochain appel.
       this.logger.error(`Erreur provisioning ${email}: ${(err as Error).message}`);
     }
   }

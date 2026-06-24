@@ -1,28 +1,14 @@
 'use client';
 
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { LogOut } from 'lucide-react';
 import { cn, getInitials } from '@/lib/utils';
+import { revokeAndSignOut } from '@/lib/auth/logout';
 import { NotificationBell } from './notification-bell';
 
 interface TopbarProps {
   userEmail: string;
   userName: string;
-}
-
-async function revokeAndSignOut(accessToken?: string) {
-  if (accessToken) {
-    try {
-      const apiBase = process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000';
-      await fetch(`${apiBase}/api/v1/auth/revoke`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    } catch {
-      // silencieux — on déconnecte quoi qu'il arrive
-    }
-  }
-  void signOut({ callbackUrl: '/login' });
 }
 
 export function Topbar({ userEmail, userName }: TopbarProps) {

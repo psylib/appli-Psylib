@@ -265,6 +265,8 @@ export default function ComparaisonPage() {
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
+              { name: 'PsyLib vs Doctolib', href: '/comparaison/psylib-vs-doctolib', price: '~129€/mois', desc: 'Prise de RDV et visibilité vs gestion de cabinet clinique complète.' },
+              { name: 'PsyLib vs Terapiz', href: '/comparaison/psylib-vs-terapiz', price: '~40€/mois', desc: 'Même tarif, mais IA, Scribe audio, visio HDS et comptabilité en plus.' },
               { name: 'PsyLib vs Docorga', href: '/comparaison/psylib-vs-docorga', price: '54,90€/mois', desc: 'Gestion de cabinet classique vs tout-en-un avec IA et visio.' },
               { name: 'PsyLib vs MaGestionPsy', href: '/comparaison/psylib-vs-magestionpsy', price: '29€/mois', desc: 'Outil généraliste thérapeutes vs spécialisé psychologues.' },
               { name: 'PsyLib vs Scriboupsy', href: '/comparaison/psylib-vs-scriboupsy', price: '27€/mois', desc: 'Écrits cliniques vs logiciel tout-en-un complet.' },

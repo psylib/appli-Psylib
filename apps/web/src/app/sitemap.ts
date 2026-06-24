@@ -431,6 +431,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     },
     {
+      url: `${BASE}/comparaison/psylib-vs-doctolib`,
+      lastModified: new Date('2026-06-24'),
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${BASE}/comparaison/psylib-vs-terapiz`,
+      lastModified: new Date('2026-06-24'),
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
       url: `${BASE}/comparaison/psylib-vs-docorga`,
       lastModified: new Date('2026-05-10'),
       changeFrequency: 'monthly',
