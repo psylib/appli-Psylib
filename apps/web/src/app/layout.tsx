@@ -28,12 +28,12 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://psylib.eu'),
   title: {
-    default: 'PsyLib — Gestion cabinet psychologue',
+    default: 'PsyLib — Gestion cabinet psychologue & santé mentale',
     template: '%s | PsyLib',
   },
   description:
-    'La plateforme tout-en-un pour psychologues libéraux. Gestion cabinet, suivi patient, formations et assistant IA. Conforme HDS.',
-  keywords: ['psychologue', 'gestion cabinet', 'suivi patient', 'formations', 'HDS'],
+    'La plateforme tout-en-un pour les psychologues et professionnels de la santé mentale. Gestion cabinet, suivi patient, visio et assistant IA. Conforme HDS.',
+  keywords: ['psychologue', 'professionnel santé mentale', 'gestion cabinet', 'suivi patient', 'visio', 'HDS'],
   robots: { index: true, follow: true },
   alternates: {
     canonical: 'https://psylib.eu',
@@ -57,7 +57,7 @@ const organizationJsonLd = {
       url: 'https://psylib.eu',
       logo: 'https://psylib.eu/logo.png',
       description:
-        'Plateforme SaaS de gestion de cabinet pour psychologues liberaux en France. Dossiers patients securises, notes cliniques, facturation, outcome tracking. Conforme HDS.',
+        'Plateforme SaaS de gestion de cabinet pour les psychologues et professionnels de la sante mentale en France. Dossiers patients securises, notes cliniques, facturation, outcome tracking. Conforme HDS.',
       foundingDate: '2026',
       areaServed: {
         '@type': 'Country',
@@ -80,7 +80,7 @@ const organizationJsonLd = {
       name: 'PsyLib',
       url: 'https://psylib.eu',
       description:
-        'Logiciel de gestion de cabinet tout-en-un pour psychologues liberaux. Conforme HDS France.',
+        'Logiciel de gestion de cabinet tout-en-un pour les psychologues et professionnels de la sante mentale. Conforme HDS France.',
       inLanguage: 'fr',
       potentialAction: {
         '@type': 'SearchAction',

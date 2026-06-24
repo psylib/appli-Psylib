@@ -41,7 +41,7 @@ export function NewsletterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <p className="text-sm text-charcoal-400">
-        Recevez nos conseils pour psychologues, 1x/mois. Pas de spam.
+        Recevez nos conseils pour les pros de la santé mentale, 1x/mois. Pas de spam.
       </p>
       <div className="flex gap-2">
         <div className="relative flex-1">

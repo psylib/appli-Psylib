@@ -4,12 +4,12 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Fonctionnalites PsyLib : Logiciel Complet pour Psychologues Liberaux',
   description:
-    'PsyLib reunit les outils essentiels du psychologue liberal : outcome tracking PHQ-9/GAD-7, notes cliniques SOAP/DAP, facturation PDF, agenda en ligne, reseau professionnel et espace patient securise. Hebergement HDS certifie France.',
+    'PsyLib reunit les outils essentiels des psychologues et professionnels de la sante mentale : outcome tracking PHQ-9/GAD-7, notes cliniques SOAP/DAP, facturation PDF, agenda en ligne, reseau professionnel et espace patient securise. Hebergement HDS certifie France.',
   alternates: { canonical: 'https://psylib.eu/fonctionnalites' },
   openGraph: {
     title: 'Fonctionnalites PsyLib : Logiciel Complet pour Psychologues Liberaux',
     description:
-      'Outcome tracking, notes cliniques, reseau pro, espace patient, facturation — tous les outils pour gerer votre cabinet de psychologue liberal.',
+      'Outcome tracking, notes cliniques, reseau pro, espace patient, facturation — tous les outils pour gerer votre cabinet en sante mentale.',
     url: 'https://psylib.eu/fonctionnalites',
     type: 'website',
   },
@@ -105,8 +105,8 @@ export default function FonctionnalitesPage() {
             Toutes les fonctionnalites pour votre cabinet
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/90">
-            PsyLib reunit les outils essentiels du psychologue liberal dans une
-            plateforme unique, securisee et conforme HDS.
+            PsyLib reunit les outils essentiels des professionnels de la sante
+            mentale dans une plateforme unique, securisee et conforme HDS.
           </p>
         </div>
       </section>

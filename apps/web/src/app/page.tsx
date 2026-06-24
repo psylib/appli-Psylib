@@ -28,7 +28,7 @@ const jsonLd = {
       applicationSubCategory: 'Logiciel de gestion de cabinet psychologue',
       operatingSystem: 'Web',
       description:
-        'Logiciel de gestion de cabinet tout-en-un pour psychologues liberaux. Dossiers patients securises, notes cliniques structurees, outcome tracking (PHQ-9/GAD-7), reseau professionnel, facturation. Conforme HDS France.',
+        'Logiciel de gestion de cabinet tout-en-un pour les psychologues et professionnels de la sante mentale. Dossiers patients securises, notes cliniques structurees, outcome tracking (PHQ-9/GAD-7), reseau professionnel, facturation. Conforme HDS France.',
       url: 'https://psylib.eu',
       featureList:
         'Dossiers patients securises HDS, Notes cliniques structurees (SOAP/DAP), Resume de seance par IA en streaming, Outcome tracking PHQ-9 GAD-7 CORE-OM, Facturation PDF automatique, Comptabilite integree (recettes depenses export FEC preparation 2035), Prise de rendez-vous en ligne, Prepaiement a la reservation (optionnel) ou empreinte bancaire carte enregistree anti no-show, Rappels SMS et email automatiques, Liste d attente automatisee, Suivi Mon Soutien Psy 12 seances, Teleconsultation video HD integree HDS, Scribe IA transcription audio de consultation, Alerte place plus tot pour patients (style Doctolib), Partage de documents securise psy vers patient, Compte assistant secretaire avec acces administratif separe du clinique, Espace patient avec mood tracking et journal therapeutique, Exercices therapeutiques personnalises par IA, Notifications temps reel WebSocket, Reseau professionnel entre psychologues, Supervision et intervision, Chiffrement AES-256-GCM',
@@ -139,11 +139,11 @@ const jsonLd = {
 };
 
 export const metadata: Metadata = {
-  title: 'PsyLib — Gestion cabinet psychologue libéral | HDS',
+  title: 'PsyLib — Gestion cabinet psychologue & santé mentale | HDS',
   description:
-    'Logiciel de gestion de cabinet pour psychologues liberaux. Notes cliniques, facturation, IA, visio, outcome tracking. Conforme HDS France. Gratuit.',
+    'Logiciel de gestion de cabinet pour les psychologues et professionnels de la sante mentale. Notes cliniques, facturation, IA, visio, outcome tracking. Conforme HDS France. Gratuit.',
   openGraph: {
-    title: 'PsyLib — L\'atelier numérique du psy libéral',
+    title: 'PsyLib — L\'atelier numérique des pros de la santé mentale',
     description:
       'Outcome tracking, visio HDS, espace patient, réseau pro, notes structurées, facturation auto, comptabilité intégrée. Tout ce que Doctolib n\'offre pas. 100% conforme HDS France.',
     url: 'https://psylib.eu',

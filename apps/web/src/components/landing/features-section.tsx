@@ -134,7 +134,7 @@ export function FeaturesSection() {
               Tout ce dont vous avez besoin
             </h2>
             <p className="text-charcoal-400 text-lg max-w-xl mx-auto">
-              Conçu avec et pour des psychologues libéraux. Chaque fonctionnalité répond à un besoin réel de votre pratique.
+              Conçu avec et pour les professionnels de la santé mentale. Chaque fonctionnalité répond à un besoin réel de votre pratique.
             </p>
           </div>
         </ScrollReveal>

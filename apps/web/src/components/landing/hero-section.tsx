@@ -118,8 +118,8 @@ export function HeroSection() {
 
               {/* H1 */}
               <h1 className="font-playfair text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight tracking-tight">
-                Le logiciel tout-en-un du{' '}
-                <em className="not-italic text-sage">psy libéral</em>
+                Le logiciel tout-en-un des{' '}
+                <em className="not-italic text-sage">pros de la santé mentale</em>
               </h1>
 
               {/* Subtitle */}
