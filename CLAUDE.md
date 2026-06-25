@@ -45,7 +45,7 @@ PsyScale = "Doctolib + Kajabi + Notion + ChatGPT" pour psychologues libéraux.
 | Backup DB | **OVHcloud Object Storage** | Snapshots chiffrés |
 | Frontend | **Vercel** | Next.js (aucune donnée de santé) |
 
-> ⚠️ **Statut HDS — réalité à ne pas surévaluer.** OVHcloud est un **hébergeur certifié HDS**, mais cette certification couvre les **activités 1-4 et 6** (sites physiques, infra matérielle/virtuelle, plateforme d'hébergement, sauvegarde) — **PAS l'activité 5** (administration et exploitation du SI de santé), qui est assurée par PsyLib et reste **à couvrir** (certification HDS propre ou infogérance HDS). De plus, **à confirmer** : le produit OVH hébergeant la prod doit être dans le périmètre HDS (Public Cloud HDS / Hosted Private Cloud) — un VPS standard n'est pas dans le périmètre certifié. Ne JAMAIS affirmer publiquement « PsyLib est certifié HDS ». Formulation exacte : « données hébergées en France chez OVHcloud, hébergeur certifié HDS ».
+> ✅ **Statut HDS — prod hébergée chez AZNetwork (depuis 2026-06-18, migration OVH→AZNetwork terminée).** AZNetwork est un **hébergeur certifié HDS sur les 6 activités (1-2-3-4-5-6)** — y compris **l'activité 5** (administration et exploitation du SI de santé), couverte par l'infogérance AZNetwork jusqu'à la couche système. Le gap activité 5 qu'OVHcloud (activités 1-4+6 seulement) laissait ouvert est **fermé**. PsyLib exploite son appli/BDD en tant qu'**éditeur de son propre SI** chez un hébergeur certifié → **pas soumis à une certification HDS propre**. Preuves : certificats `AZNETWORK-Certificat-HDS-…2026-2028.pdf` + ISO 27001, contrat + attestation hébergement santé signés. Accès prod via bastion **Wallix** (tracé) = renfort activité 5. ⚠️ Ne JAMAIS affirmer publiquement « PsyLib est certifié HDS » (PsyLib = éditeur, pas hébergeur). Formulation exacte : « données hébergées en France chez un **hébergeur certifié HDS** » (AZNetwork).
 
 ## Services tiers
 - **Stripe** (paiements + subscriptions)
@@ -169,8 +169,8 @@ KEYCLOAK_ADMIN_SECRET=***
 
 | Exigence | Solution | Statut |
 |---|---|---|
-| Hébergement HDS (infra) | OVHcloud, hébergeur certifié HDS — France | ✅ (activités 1-4, 6) |
-| Activité 5 HDS (exploitation SI) | Assurée par PsyLib — **certification/infogérance à mettre en place** | ⚠️ à couvrir |
+| Hébergement HDS (infra) | AZNetwork, hébergeur certifié HDS 6/6 — France | ✅ (activités 1-2-3-4-5-6) |
+| Activité 5 HDS (exploitation SI) | Couverte par l'infogérance AZNetwork (certif activité 5) ; PsyLib = éditeur exploitant son SI, pas de certif propre requise | ✅ couverte |
 | Chiffrement at-rest | Chiffrement disque infra + AES-256-GCM applicatif | ✅ |
 | Chiffrement applicatif | AES-256-GCM (NestJS) sur champs sensibles | ✅ |
 | Chiffrement transit | TLS 1.3 partout | ✅ |
