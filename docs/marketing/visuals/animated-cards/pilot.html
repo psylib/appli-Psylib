@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;}
+  #stage{
+    width:1920px;height:1080px;position:relative;overflow:hidden;
+    background:radial-gradient(120% 120% at 50% 18%, #fbf8f1 0%, #f3ecdd 70%, #ece2cf 100%);
+    font-family:'Inter','Segoe UI',sans-serif;
+  }
+  /* arc organique teal/navy en bas */
+  .arc{
+    position:absolute; left:-10%; right:-10%; bottom:-58%; height:120%;
+    background:radial-gradient(60% 60% at 50% 50%, rgba(27,100,120,.16) 0%, rgba(29,40,72,.10) 45%, transparent 72%);
+    border-radius:50%;
+  }
+  /* feuilles flottantes */
+  .leaf{position:absolute;opacity:0;}
+  .leaf svg{display:block;}
+
+  .center{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:0;
+  }
+  .logoRow{display:flex; align-items:center; gap:26px; opacity:0; will-change:transform,opacity;}
+  .logoRow img{width:148px;height:148px;display:block;}
+  .word{font-weight:800; font-size:118px; letter-spacing:-3px; color:#1d2848; opacity:0; will-change:transform,opacity;}
+  .headline{
+    margin-top:46px; font-family:'Playfair Display',serif; font-weight:700;
+    font-size:72px; color:#1d2848; text-align:center; opacity:0; will-change:transform,opacity; line-height:1.1;
+  }
+  .headline .accent{color:#0d9488;}
+  .sub{
+    margin-top:26px; font-size:36px; font-weight:500; color:#4a5a6a;
+    text-align:center; opacity:0; will-change:transform,opacity; letter-spacing:.3px;
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="arc"></div>
+
+    <div class="leaf" id="lf0" style="top:140px;left:240px;"><svg width="150" height="200" viewBox="0 0 160 220"><path d="M80 0 C20 60 20 160 80 220 C140 160 140 60 80 0 Z" fill="#41a093"/><path d="M80 12 L80 208" stroke="#1d6478" stroke-width="3" opacity=".5"/></svg></div>
+    <div class="leaf" id="lf1" style="top:760px;left:360px;"><svg width="120" height="165" viewBox="0 0 160 220"><path d="M80 0 C20 60 20 160 80 220 C140 160 140 60 80 0 Z" fill="#41a093"/></svg></div>
+    <div class="leaf" id="lf2" style="top:200px;right:300px;"><svg width="135" height="185" viewBox="0 0 160 220"><path d="M80 0 C20 60 20 160 80 220 C140 160 140 60 80 0 Z" fill="#1b6478"/></svg></div>
+    <div class="leaf" id="lf3" style="top:720px;right:240px;"><svg width="160" height="220" viewBox="0 0 160 220"><path d="M80 0 C20 60 20 160 80 220 C140 160 140 60 80 0 Z" fill="#41a093"/><path d="M80 12 L80 208" stroke="#1d6478" stroke-width="3" opacity=".5"/></svg></div>
+
+    <div class="center">
+      <div class="logoRow" id="logoRow">
+        <img id="mark" src="logo-mark.png" alt="">
+        <span class="word" id="word">PsyLib</span>
+      </div>
+      <div class="headline" id="headline">Tout votre cabinet.<br><span class="accent">Au même endroit.</span></div>
+      <div class="sub" id="sub">Le logiciel des professionnels de la santé mentale</div>
+    </div>
+  </div>
+
+<script>
+  window.TOTAL = 6;
+  const clamp = x => Math.max(0, Math.min(1, x));
+  const seg = (t,a,b) => clamp((t-a)/(b-a));
+  const easeOut = x => 1 - Math.pow(1-x, 3);
+  const easeInOut = x => x<0.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2,3)/2;
+
+  const mark = document.getElementById('mark');
+  const word = document.getElementById('word');
+  const logoRow = document.getElementById('logoRow');
+  const headline = document.getElementById('headline');
+  const sub = document.getElementById('sub');
+  const leaves = [0,1,2,3].map(i => document.getElementById('lf'+i));
+  const leafPhase = [0, 1.7, 3.1, 4.6];
+  const leafDrift = [16, -13, 12, -15];
+
+  window.render = function(t){
+    // logo mark : 0.3 -> 1.5
+    const p1 = easeOut(seg(t,0.3,1.5));
+    logoRow.style.opacity = p1;
+    mark.style.transform = `scale(${0.6 + 0.4*p1}) rotate(${ -12*(1-p1) }deg)`;
+    // wordmark : 1.0 -> 2.0 (slide depuis la gauche du mark)
+    const p2 = easeOut(seg(t,1.0,2.0));
+    word.style.opacity = p2;
+    word.style.transform = `translateX(${-30*(1-p2)}px)`;
+    // headline : 2.1 -> 3.3
+    const p3 = easeOut(seg(t,2.1,3.3));
+    headline.style.opacity = p3;
+    headline.style.transform = `translateY(${28*(1-p3)}px)`;
+    // sub : 3.3 -> 4.5
+    const p4 = easeOut(seg(t,3.3,4.5));
+    sub.style.opacity = p4;
+    sub.style.transform = `translateY(${22*(1-p4)}px)`;
+    // feuilles : fade in échelonné + drift continu
+    leaves.forEach((lf,i) => {
+      const fin = easeInOut(seg(t, 0.2 + i*0.25, 1.4 + i*0.25));
+      const drift = Math.sin(t*0.7 + leafPhase[i]) * leafDrift[i];
+      const rot = Math.sin(t*0.5 + leafPhase[i]) * 6;
+      lf.style.opacity = (0.16 * fin).toFixed(3);
+      lf.style.transform = `translateY(${drift.toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`;
+    });
+  };
+  window.render(0);
+</script>
+</body>
+</html>
