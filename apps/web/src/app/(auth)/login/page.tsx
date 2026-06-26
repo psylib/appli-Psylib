@@ -37,11 +37,12 @@ const VALUE_PROPS = [
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; error?: string; expired?: string }>;
 }) {
   const params = await searchParams;
   const callbackUrl = params?.callbackUrl ?? '/dashboard';
   const error = params?.error;
+  const expired = params?.expired === '1';
 
   return (
     <main className="flex min-h-screen">
@@ -133,6 +134,16 @@ export default async function LoginPage({
               Connectez-vous à votre espace professionnel
             </p>
           </div>
+
+          {/* Session expirée */}
+          {expired && !error && (
+            <div
+              role="status"
+              className="rounded-lg bg-accent/10 border border-accent/20 p-4 text-sm text-foreground"
+            >
+              Votre session a expiré pour des raisons de sécurité. Reconnectez-vous pour continuer.
+            </div>
+          )}
 
           {/* Error alert */}
           {error && (

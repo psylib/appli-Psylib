@@ -18,6 +18,40 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Session expirée → reconnexion propre.
+ *
+ * Quand l'API renvoie 401, le token (next-auth) est invalide/expiré et le
+ * refresh silencieux a échoué : `session.accessToken` est vide. Sans ça, l'UI
+ * continue de tourner avec un token mort et chaque action affiche un message
+ * trompeur ("Erreur lors de la sauvegarde"). On purge la session périmée et on
+ * redirige vers le login avec un message clair plutôt que de laisser
+ * l'utilisateur coincé. (Cause de l'incident "authentification requise" psy.)
+ */
+let authRedirecting = false;
+function handleSessionExpired(): void {
+  if (typeof window === 'undefined') return; // SSR : laisser remonter l'ApiError
+  if (authRedirecting) return;
+
+  const { pathname } = window.location;
+  // Déjà sur une page de login → ne pas boucler
+  if (pathname.startsWith('/login') || pathname.includes('/login')) return;
+
+  authRedirecting = true;
+  const loginPath = pathname.startsWith('/patient')
+    ? '/patient/login?expired=1'
+    : '/login?expired=1';
+
+  // Purge la session next-auth périmée (sinon le cookie ramène sur le dashboard
+  // avec un token vide → boucle), puis redirige.
+  import('next-auth/react')
+    .then(({ signOut }) => signOut({ redirect: false }))
+    .catch(() => {})
+    .finally(() => {
+      window.location.href = loginPath;
+    });
+}
+
 async function request<T>(
   path: string,
   options: RequestInit & { token?: string } = {},
@@ -43,6 +77,11 @@ async function request<T>(
       errorBody = await res.json() as { message?: string; error?: string };
     } catch {
       // ignore parse error
+    }
+    // Session expirée : déclencher la reconnexion propre (cause de l'incident
+    // "authentification requise" / "erreur lors de la sauvegarde").
+    if (res.status === 401) {
+      handleSessionExpired();
     }
     throw new ApiError(
       res.status,

@@ -27,6 +27,7 @@ function PatientLoginForm() {
   const searchParams = useSearchParams();
   const rawCallback = searchParams.get('callbackUrl') ?? '/patient-portal';
   const callbackUrl = rawCallback.startsWith('/') && !rawCallback.startsWith('//') ? rawCallback : '/patient-portal';
+  const expired = searchParams.get('expired') === '1';
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -69,6 +70,12 @@ function PatientLoginForm() {
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <h1 className="text-lg font-semibold text-slate-900 mb-6">Connexion</h1>
+
+          {expired && !error && (
+            <div className="mb-4 rounded-lg bg-teal-50 border border-teal-200 px-3 py-2 text-sm text-teal-800">
+              Votre session a expiré. Reconnectez-vous pour continuer.
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
