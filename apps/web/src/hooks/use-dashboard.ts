@@ -89,7 +89,7 @@ export function usePatientAdmin(id: string) {
   });
 }
 
-export function useSessions(params: { patientId?: string; page?: number } = {}) {
+export function useSessions(params: { patientId?: string; page?: number; from?: string; to?: string } = {}) {
   const { data: session } = useSession();
   const token = session?.accessToken;
 
