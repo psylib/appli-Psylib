@@ -26,6 +26,7 @@ const footerLinks = {
     { label: 'Consentement patient', href: '/modele-consentement' },
   ],
   Contact: [
+    { label: 'À propos', href: '/a-propos' },
     { label: 'Nous contacter', href: '/contact' },
     { label: 'Support', href: 'mailto:tony@psylib.eu' },
     { label: 'Partenariats', href: 'mailto:tony@psylib.eu' },

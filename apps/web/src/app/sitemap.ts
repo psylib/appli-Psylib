@@ -423,6 +423,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    // À propos
+    {
+      url: `${BASE}/a-propos`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
     // Comparaison
     {
       url: `${BASE}/comparaison`,
