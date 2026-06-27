@@ -9,7 +9,10 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, label, error, hint, id, ...props }, ref) => {
-    const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+    // useId garantit l'unicité même avec plusieurs Input de même label
+    // (ex. dialogs empilés) — évite les collisions htmlFor/aria-describedby.
+    const generatedId = React.useId();
+    const inputId = id ?? generatedId;
 
     return (
       <div className="space-y-1.5">
