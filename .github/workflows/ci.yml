@@ -84,8 +84,8 @@ jobs:
         run: pnpm --filter api test:integration
         continue-on-error: true
 
-      - name: Run Web tests (skipped — no test script yet)
-        run: echo "Web tests skipped — no test script in apps/web"
+      - name: Run Web tests
+        run: pnpm --filter web test
 
       - name: Run mobile tests
         run: pnpm --filter @psyscale/mobile test
