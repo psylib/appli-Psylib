@@ -357,6 +357,10 @@ psyscale/
 
 # DATABASE SCHEMA (PostgreSQL + Prisma)
 
+> ⚠️ **Source de vérité = `apps/api/prisma/schema.prisma` (56 modèles au 2026-06-27).** Les tables détaillées ci-dessous documentent le **cœur historique** ; les modèles ajoutés depuis ne sont PAS tous détaillés ici — se référer au schéma Prisma. Inventaire complet des 56 modèles :
+>
+> **Core** : User, Psychologist, Subscription, Patient, Session, Appointment · **Scheduling/paiement** : ConsultationType, Availability, MonSoutienPsyTracking, WaitlistEntry · **Portail patient** : MoodTracking, Exercise, JournalEntry · **Messagerie** : Conversation, Message · **Formations** : Course, CourseModule, CourseEnrollment · **Billing** : Payment, Invoice, StripeEvent · **Comptabilité** : Expense, RecurringExpense, AccountingEntry, FecSequence · **Vidéo** : VideoRoom, VideoGuest, AppointmentParticipant · **Mineurs/tuteurs** : LegalGuardian, GuardianInvitation, GuardianConsentRequest · **Calendrier externe** : CalendarConnection, ExternalCalendarEvent · **Documents** : SharedDocument, NoteTemplate · **Assistants** : Assistant, AssistantInvitation · **Réseau/supervision** : NetworkGroup, NetworkGroupMember, PsyNetworkProfile, Referral, ReferralInvite, SupervisionGroup, SupervisionMember, SupervisionSession · **Évaluations** : Assessment, AssessmentTemplate · **Marketing/croissance** : Lead, MarketingContent, CaseStudy · **Compliance** : AuditLog, GdprConsent · **Système** : Notification, OnboardingProgress, PatientInvitation, AiUsage
+
 ## Tables Core
 
 ### `users`
