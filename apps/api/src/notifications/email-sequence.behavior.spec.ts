@@ -1,4 +1,9 @@
-import { shouldSkipActivationEmail, type SequenceBehaviorSignals } from './email-sequence.service';
+import {
+  shouldSkipActivationEmail,
+  shouldSkipPostTrialEmail,
+  shouldSkipReEngagement,
+  type SequenceBehaviorSignals,
+} from './email-sequence.service';
 
 const ACTIVE: SequenceBehaviorSignals = {
   bioFilled: true,
@@ -74,5 +79,31 @@ describe('shouldSkipActivationEmail — ciblage comportemental', () => {
 
   it('action inconnue : jamais supprimée (fail-open, on n’interrompt pas un flux non géré)', () => {
     expect(shouldSkipActivationEmail('SOME_OTHER_ACTION', ACTIVE).skip).toBe(false);
+  });
+});
+
+describe('shouldSkipPostTrialEmail — anti-churn post-trial', () => {
+  it('envoie la séquence à un psy encore en essai (non converti)', () => {
+    expect(shouldSkipPostTrialEmail({ converted: false }).skip).toBe(false);
+  });
+
+  it('supprime la séquence d’upsell pour un psy déjà converti (abonnement actif)', () => {
+    expect(shouldSkipPostTrialEmail({ converted: true })).toEqual({
+      skip: true,
+      reason: 'already-converted',
+    });
+  });
+});
+
+describe('shouldSkipReEngagement — anti-churn re-engagement', () => {
+  it('relance un psy sans rendez-vous à venir (réellement inactif)', () => {
+    expect(shouldSkipReEngagement({ hasUpcomingAppointment: false }).skip).toBe(false);
+  });
+
+  it('ne relance pas un psy qui a un rendez-vous planifié (engagement actif)', () => {
+    expect(shouldSkipReEngagement({ hasUpcomingAppointment: true })).toEqual({
+      skip: true,
+      reason: 'has-upcoming-appointment',
+    });
   });
 });

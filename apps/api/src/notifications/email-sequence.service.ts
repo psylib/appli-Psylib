@@ -62,6 +62,39 @@ export function shouldSkipActivationEmail(
   }
 }
 
+/** Signaux pour le ciblage de la séquence post-trial. */
+export interface PostTrialSignals {
+  /** Essai déjà converti en abonnement payant (subscription.status === 'active'). */
+  converted: boolean;
+}
+
+/**
+ * Anti-churn post-trial : ne plus envoyer les emails « votre essai se termine,
+ * abonnez-vous » à un psy déjà converti (abonnement actif). La séquence cible
+ * `status in (trialing, active)` ; sans ce garde, un psy déjà payant continuait
+ * de recevoir l'upsell. Fonction pure → testable isolément.
+ */
+export function shouldSkipPostTrialEmail(s: PostTrialSignals): { skip: boolean; reason?: string } {
+  return s.converted ? { skip: true, reason: 'already-converted' } : { skip: false };
+}
+
+/** Signaux pour le ciblage du re-engagement hebdomadaire. */
+export interface ReEngagementSignals {
+  /** A au moins un rendez-vous planifié dans le futur (engagement actif). */
+  hasUpcomingAppointment: boolean;
+}
+
+/**
+ * Anti-churn re-engagement : ne pas relancer « ça fait longtemps, revenez » un
+ * psy qui a un RDV à venir. Le cron juge l'inactivité sur les séances passées
+ * uniquement et raterait ce signal d'engagement. Fonction pure → testable.
+ */
+export function shouldSkipReEngagement(s: ReEngagementSignals): { skip: boolean; reason?: string } {
+  return s.hasUpcomingAppointment
+    ? { skip: true, reason: 'has-upcoming-appointment' }
+    : { skip: false };
+}
+
 /** Forme minimale d'un psy nécessaire à la séquence d'activation. */
 type SequencePsy = {
   id: string;
@@ -289,6 +322,18 @@ export class EmailSequenceService {
     });
     const alreadySentSet = new Set(recentAuditLogs.map(l => l.entityId));
 
+    // Prefetch des psys ayant un RDV à venir — anti-churn (engagement actif non
+    // capté par les séances passées). 1 requête au lieu d'un N+1.
+    const upcoming = await this.prisma.appointment.findMany({
+      where: {
+        psychologistId: { in: candidates.map(c => c.id) },
+        scheduledAt: { gt: now },
+        status: { in: ['scheduled', 'confirmed'] },
+      },
+      select: { psychologistId: true },
+    });
+    const hasUpcomingSet = new Set(upcoming.map(a => a.psychologistId));
+
     for (const psy of candidates) {
       try {
         // Dernière séance depuis le include (pas de requête supplémentaire)
@@ -299,6 +344,13 @@ export class EmailSequenceService {
 
         // Dedup via Set (lookup O(1) — pas de requête DB)
         if (alreadySentSet.has(psy.id)) continue;
+
+        // Anti-churn : ne pas relancer un psy qui a un RDV à venir (engagement actif)
+        const eng = shouldSkipReEngagement({ hasUpcomingAppointment: hasUpcomingSet.has(psy.id) });
+        if (eng.skip) {
+          this.logger.log(`[ReEngagement] ignoré (${eng.reason}) → ${psy.user.email}`);
+          continue;
+        }
 
         // Calculer le nb de jours depuis la dernière séance (ou depuis l'inscription si aucune)
         const lastActivity = lastSession?.createdAt ?? psy.user.createdAt;
@@ -377,6 +429,13 @@ export class EmailSequenceService {
 
     for (const psy of trialPsys) {
       if (!psy.subscription?.trialEndsAt) continue;
+
+      // Anti-churn : ne pas upseller un psy déjà converti (abonnement actif)
+      const conv = shouldSkipPostTrialEmail({ converted: psy.subscription.status === 'active' });
+      if (conv.skip) {
+        this.logger.log(`[PostTrial] séquence ignorée (${conv.reason}) → ${psy.user.email}`);
+        continue;
+      }
 
       const daysLeft = Math.ceil(
         (psy.subscription.trialEndsAt.getTime() - now.getTime()) / 86400000,
