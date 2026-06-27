@@ -267,7 +267,7 @@ function template1(lead: Lead): { subject: string; html: string; text: string } 
   ✓ <strong>Comptabilité intégrée</strong> : suivi recettes/dépenses et export prêt pour la déclaration 2035<br />
   ✓ Notes de séance, agenda et <strong>facturation automatique</strong><br />
   ✓ Visio et messagerie sécurisée intégrées<br />
-  ✓ Données <strong>hébergées en France chez OVHcloud</strong> (hébergeur certifié HDS) et chiffrées
+  ✓ Données <strong>hébergées en France chez un hébergeur certifié HDS</strong> et chiffrées
 </p>
 <p>Vous pouvez tester gratuitement, <strong>sans carte bancaire</strong>, en 2 minutes :</p>
 <p style="margin:24px 0;"><a href="${registerUrl}" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Tester PsyLib gratuitement →</a></p>
@@ -288,7 +288,7 @@ Ce qui revient le plus chez les confrères qui l'utilisent :
 ✓ Comptabilité intégrée : suivi recettes/dépenses et export prêt pour la déclaration 2035
 ✓ Notes de séance, agenda et facturation automatique
 ✓ Visio et messagerie sécurisée intégrées
-✓ Données hébergées en France chez OVHcloud (hébergeur certifié HDS) et chiffrées
+✓ Données hébergées en France chez un hébergeur certifié HDS et chiffrées
 
 Vous pouvez tester gratuitement, sans carte bancaire, en 2 minutes :
 ${registerUrl}
@@ -305,27 +305,25 @@ https://psylib.eu${footerText(unsub)}`;
 function template2(lead: Lead): { subject: string; html: string; text: string } {
   const fn = lead.firstName || 'Docteur';
   const unsub = unsubscribePageUrl(lead.email);
-  const subject = `${fn}, le guide RGPD/HDS que je vous avais promis`;
-  const guideUrl =
-    'https://psylib.eu/ressources/guide-rgpd-hds?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email2';
+  const subject = `${fn}, combien de temps par mois sur votre administratif ?`;
+  const registerUrl =
+    'https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-q2&utm_content=email2';
 
   const html = `<div style="${baseStyle()}">
 <p>Bonjour ${fn},</p>
-<p>Comme promis, voici le guide gratuit :</p>
-<p style="margin:24px 0;"><a href="${guideUrl}" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">📘 Télécharger le guide RGPD & HDS (12 pages)</a></p>
-<p>Vous y trouverez :</p>
-<ol style="padding-left:20px;">
-  <li>Ce que dit exactement la loi (L.1111-8, RGPD, Code de déontologie)</li>
-  <li>Les 7 obligations HDS concrètes pour un cabinet psy</li>
-  <li>La checklist "mon logiciel est-il conforme ?"</li>
-  <li>Les pièges fréquents (Drive, Doctolib, Excel…)</li>
-  <li>Les sanctions CNIL récentes sur des professionnels de santé</li>
-  <li>Le droit d'information patient et mentions légales</li>
-  <li>Comment migrer sans douleur vers un outil conforme</li>
-</ol>
-<p>C'est gratuit, pas d'engagement. Téléchargez, lisez tranquillement.</p>
-<p>Si après lecture vous voulez comparer PsyLib à votre solution actuelle, je reste disponible pour une démo de 20 minutes.</p>
-<p>Bonne journée,<br />
+<p>Je me permets de revenir vers vous après mon précédent message au sujet de <strong>PsyLib</strong>.</p>
+<p>Le point qui revient le plus souvent chez les psychologues que j'accompagne, c'est le <strong>temps passé sur l'administratif</strong> : facturation, relances de rendez-vous, suivi des recettes pour la déclaration 2035… le tout éparpillé entre un tableur, un agenda et plusieurs applis.</p>
+<p style="background:#F1F0F9;border-left:4px solid #3D52A0;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;">
+  Avec PsyLib, tout est réuni au même endroit :<br />
+  ✓ <strong>Facturation automatique</strong> à la fin de chaque séance<br />
+  ✓ <strong>Comptabilité intégrée</strong> : recettes/dépenses suivies, export prêt pour la 2035<br />
+  ✓ Agenda avec <strong>rappels SMS/email</strong> automatiques (moins de lapins)<br />
+  ✓ Notes de séance chiffrées, hébergées en France chez un <strong>hébergeur certifié HDS</strong>
+</p>
+<p>La reprise de vos données existantes est accompagnée, et vous pouvez tout essayer gratuitement, <strong>sans carte bancaire</strong> :</p>
+<p style="margin:24px 0;"><a href="${registerUrl}" style="background:#3D52A0;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Essayer PsyLib gratuitement →</a></p>
+<p>Une question, un doute sur la migration ? Répondez simplement à cet email, je vous réponds personnellement.</p>
+<p>Bien à vous,<br />
 <strong>Tony</strong><br />
 PsyLib — <a href="https://psylib.eu" style="color:#3D52A0;">psylib.eu</a></p>
 ${footerHtml(unsub)}
@@ -333,23 +331,22 @@ ${footerHtml(unsub)}
 
   const text = `Bonjour ${fn},
 
-Comme promis, le guide gratuit :
+Je me permets de revenir vers vous après mon précédent message au sujet de PsyLib.
 
-Guide RGPD & HDS pour psychologues libéraux (12 pages)
-${guideUrl}
+Le point qui revient le plus souvent chez les psychologues que j'accompagne, c'est le temps passé sur l'administratif : facturation, relances de rendez-vous, suivi des recettes pour la déclaration 2035... le tout éparpillé entre un tableur, un agenda et plusieurs applis.
 
-Vous y trouverez :
-1. Ce que dit exactement la loi (L.1111-8, RGPD)
-2. Les 7 obligations HDS concrètes pour un cabinet psy
-3. La checklist "mon logiciel est-il conforme ?"
-4. Les pièges fréquents (Drive, Doctolib, Excel…)
-5. Sanctions CNIL récentes sur des professionnels de santé
-6. Droit d'information patient et mentions légales
-7. Guide de migration vers un outil conforme
+Avec PsyLib, tout est réuni au même endroit :
+✓ Facturation automatique à la fin de chaque séance
+✓ Comptabilité intégrée : recettes/dépenses suivies, export prêt pour la 2035
+✓ Agenda avec rappels SMS/email automatiques (moins de lapins)
+✓ Notes de séance chiffrées, hébergées en France chez un hébergeur certifié HDS
 
-Gratuit, sans engagement.
+La reprise de vos données existantes est accompagnée, et vous pouvez tout essayer gratuitement, sans carte bancaire :
+${registerUrl}
 
-Bonne lecture,
+Une question, un doute sur la migration ? Répondez simplement à cet email.
+
+Bien à vous,
 Tony - PsyLib
 https://psylib.eu${footerText(unsub)}`;
 
@@ -361,20 +358,19 @@ function template3(lead: Lead): { subject: string; html: string; text: string } 
   const unsub = unsubscribePageUrl(lead.email);
   const subject = `${fn}, je ne vous écrirai plus après ça`;
   const registerUrl =
-    'https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-hds-q2&utm_content=email3';
+    'https://psylib.eu/register?utm_source=cold&utm_medium=email&utm_campaign=psy-q2&utm_content=email3';
 
   const html = `<div style="${baseStyle()}">
 <p>Bonjour ${fn},</p>
 <p>Promis, c'est mon dernier email.</p>
-<p>Rapide récap :</p>
+<p>En deux lignes : <strong>PsyLib</strong> regroupe dans une seule appli tout ce qu'un psychologue libéral gère au quotidien — agenda, notes de séance, facturation, comptabilité 2035 — et, sur les formules supérieures, l'IA et la visioconférence.</p>
 <ul style="padding-left:20px;">
-  <li><strong>PsyLib</strong> = logiciel tout-en-un pour psys libéraux (agenda + notes + comptabilité + facturation + IA + visio + espace patient)</li>
-  <li>100% conforme HDS (hébergement France + chiffrement AES-256-GCM applicatif)</li>
-  <li>Alternative à Doctolib (139€+/mois) et aux 3-4 outils que vous cumulez probablement</li>
+  <li>Données <strong>hébergées en France chez un hébergeur certifié HDS</strong> et chiffrées (AES-256-GCM)</li>
+  <li>Une alternative simple aux 3 ou 4 outils que l'on cumule souvent (agenda + tableur + facturation + visio)</li>
 </ul>
-<p><strong>Le plan gratuit est illimité</strong> en patients et séances — vous pouvez tester sans engagement, sans carte bancaire. L'IA et la visio sont à 25€/mois si vous en avez besoin.</p>
+<p>Vous pouvez <strong>démarrer gratuitement, sans carte bancaire</strong> (jusqu'à 10 patients, séances illimitées). Avec plus de patients, le plan Solo est à 25€/mois (patients illimités + résumés IA) et le plan Pro à 40€/mois (visio et IA illimitées).</p>
 <p style="margin:24px 0;"><a href="${registerUrl}" style="background:#D97757;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Créer mon compte gratuit (30 sec) →</a></p>
-<p>Si rien ne vous intéresse, c'est OK — désabonnez-vous sans culpabilité avec le lien en bas.</p>
+<p>Et si ce n'est pas pour vous, aucun souci — désabonnez-vous sans culpabilité avec le lien en bas, je ne vous recontacterai pas.</p>
 <p>Bonne continuation dans votre pratique,<br />
 <strong>Tony</strong><br />
 Fondateur PsyLib — <a href="https://psylib.eu" style="color:#3D52A0;">psylib.eu</a></p>
@@ -385,12 +381,18 @@ ${footerHtml(unsub)}
 
 Promis, c'est mon dernier email.
 
-PsyLib = logiciel tout-en-un pour psys libéraux, 100% HDS.
-Plan gratuit illimité (patients + séances), sans carte bancaire.
-IA et visio à 25€/mois si besoin.
+PsyLib regroupe dans une seule appli tout ce qu'un psychologue libéral gère au quotidien : agenda, notes de séance, facturation, comptabilité 2035 — et, sur les formules supérieures, l'IA et la visioconférence.
+
+- Données hébergées en France chez un hébergeur certifié HDS et chiffrées (AES-256-GCM)
+- Une alternative simple aux 3 ou 4 outils que l'on cumule souvent
+
+Vous pouvez démarrer gratuitement, sans carte bancaire (jusqu'à 10 patients, séances illimitées).
+Plan Solo 25€/mois (patients illimités + résumés IA), plan Pro 40€/mois (visio et IA illimitées).
 
 Créer mon compte gratuit (30 sec) :
 ${registerUrl}
+
+Si ce n'est pas pour vous, désabonnez-vous sans culpabilité avec le lien en bas.
 
 Bonne continuation,
 Tony - Fondateur PsyLib
