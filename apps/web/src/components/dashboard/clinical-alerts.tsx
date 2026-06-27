@@ -95,15 +95,12 @@ export function ClinicalAlerts() {
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
           <AlertTriangle size={14} className="text-amber-500" />
           Alertes cliniques
+          {alerts && alerts.length > 0 && (
+            <span className="text-muted-foreground/70 font-normal normal-case tracking-normal">
+              ({alerts.length})
+            </span>
+          )}
         </h2>
-        {alerts && alerts.length > 3 && (
-          <Link
-            href="/dashboard/alerts"
-            className="text-xs text-primary hover:underline"
-          >
-            Voir toutes ({alerts.length}) →
-          </Link>
-        )}
       </div>
 
       {isLoading ? (
@@ -114,7 +111,7 @@ export function ClinicalAlerts() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {alerts?.slice(0, 6).map((alert) => {
+          {alerts?.map((alert) => {
             const config = ALERT_CONFIG[alert.type];
             const Icon = config.icon;
 
