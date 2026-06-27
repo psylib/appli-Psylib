@@ -20,6 +20,59 @@ const SEQUENCE_ACTIONS = {
   postTrialDay14: 'POST_TRIAL_DAY_14',
 } as const;
 
+/** Signaux d'activité d'un psy, utilisés pour le ciblage comportemental. */
+export interface SequenceBehaviorSignals {
+  /** Bio publique renseignée (profil complété). */
+  bioFilled: boolean;
+  /** A déjà utilisé une fonctionnalité IA au moins une fois. */
+  aiUsed: boolean;
+  /** A déjà invité au moins un patient au portail. */
+  patientInvited: boolean;
+  /** Est déjà sur un plan payant (déjà converti). */
+  isPaid: boolean;
+}
+
+/**
+ * Ciblage comportemental de la séquence d'activation.
+ *
+ * Renvoie `{ skip: true }` quand l'email doit être SUPPRIMÉ parce que son action
+ * principale est déjà accomplie. Objectif anti-churn : n'envoyer que des messages
+ * pertinents (ne pas demander à un psy qui utilise l'IA tous les jours de
+ * « l'essayer », ne pas relancer sur l'upgrade un psy déjà payant…). Fonction
+ * pure → testable isolément.
+ */
+export function shouldSkipActivationEmail(
+  action: string,
+  s: SequenceBehaviorSignals,
+): { skip: boolean; reason?: string } {
+  switch (action) {
+    case SEQUENCE_ACTIONS.day1: // « Avez-vous essayé le résumé IA ? »
+      return s.aiUsed ? { skip: true, reason: 'ai-already-used' } : { skip: false };
+    case SEQUENCE_ACTIONS.day3: // « Complétez votre profil public »
+      return s.bioFilled ? { skip: true, reason: 'profile-already-filled' } : { skip: false };
+    case SEQUENCE_ACTIONS.day7: // récap valeur + upsell plans
+      return s.isPaid ? { skip: true, reason: 'already-paid' } : { skip: false };
+    case SEQUENCE_ACTIONS.day10: // « Invitez un patient au portail »
+      return s.patientInvited ? { skip: true, reason: 'patient-already-invited' } : { skip: false };
+    case SEQUENCE_ACTIONS.day14: // bilan 2 semaines + upgrade
+      return s.isPaid ? { skip: true, reason: 'already-paid' } : { skip: false };
+    // day5 (info visio) : pas de signal de complétion fiable → toujours envoyé
+    default:
+      return { skip: false };
+  }
+}
+
+/** Forme minimale d'un psy nécessaire à la séquence d'activation. */
+type SequencePsy = {
+  id: string;
+  name: string;
+  slug: string | null;
+  bio: string | null;
+  user: { id: string; email: string; createdAt: Date };
+  subscription: { status: string; trialEndsAt: Date | null; plan?: string | null } | null;
+  _count: { aiUsages: number; patientInvitations: number };
+};
+
 @Injectable()
 export class EmailSequenceService {
   private readonly logger = new Logger(EmailSequenceService.name);
@@ -135,7 +188,11 @@ export class EmailSequenceService {
     // Psys créées dans la fenêtre de la journée J-N
     const psys = await this.prisma.psychologist.findMany({
       where: { user: { createdAt: { gte: windowStart, lte: windowEnd } } },
-      include: { user: true, subscription: true },
+      include: {
+        user: true,
+        subscription: true,
+        _count: { select: { aiUsages: true, patientInvitations: true } },
+      },
     });
 
     if (psys.length === 0) return;
@@ -147,7 +204,7 @@ export class EmailSequenceService {
   }
 
   private async sendIfNotAlreadySent(
-    psy: { id: string; name: string; slug: string | null; user: { id: string; email: string; createdAt: Date }; subscription: { status: string; trialEndsAt: Date | null } | null },
+    psy: SequencePsy,
     action: string,
   ): Promise<void> {
     // Vérifier si déjà envoyé via audit_logs
@@ -155,6 +212,19 @@ export class EmailSequenceService {
       where: { actorId: psy.user.id, action, entityType: 'email_sequence', entityId: psy.id },
     });
     if (alreadySent) return;
+
+    // Ciblage comportemental : ne pas envoyer un email dont l'action est déjà accomplie
+    const signals: SequenceBehaviorSignals = {
+      bioFilled: !!psy.bio && psy.bio.trim().length > 0,
+      aiUsed: psy._count.aiUsages > 0,
+      patientInvited: psy._count.patientInvitations > 0,
+      isPaid: !!psy.subscription?.plan && psy.subscription.plan !== 'free',
+    };
+    const { skip, reason } = shouldSkipActivationEmail(action, signals);
+    if (skip) {
+      this.logger.log(`[EmailSequence] ${action} ignoré (action déjà faite : ${reason}) → ${psy.user.email}`);
+      return;
+    }
 
     try {
       await this.sendEmail(psy, action);
@@ -478,7 +548,7 @@ export class EmailSequenceService {
   }
 
   private async sendEmail(
-    psy: { name: string; slug: string | null; user: { email: string; createdAt: Date }; subscription: { status: string; trialEndsAt: Date | null } | null },
+    psy: SequencePsy,
     action: string,
   ): Promise<void> {
     const dashboardUrl = `${this.frontendUrl}/dashboard`;
@@ -518,10 +588,7 @@ export class EmailSequenceService {
         dashboardUrl,
       });
     } else if (action === SEQUENCE_ACTIONS.day14) {
-      // Ne pas envoyer aux psys déjà sur un plan payant
-      const plan = (psy.subscription as { plan?: string } | null)?.plan;
-      if (plan && plan !== 'free') return;
-
+      // Le skip « déjà payant » est centralisé dans shouldSkipActivationEmail()
       await this.email.sendActivationDay14(psy.user.email, {
         psychologistName: psy.name,
         dashboardUrl,
