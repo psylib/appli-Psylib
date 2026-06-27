@@ -1,8 +1,13 @@
 name: Deploy to Production
 
+# ⚠️ DÉPLOIEMENT PROD = MANUEL depuis la migration OVH→AZNetwork (2026-06-15).
+# Le serveur AZNetwork n'est joignable QUE via le bastion Wallix interactif
+# (aucun SSH entrant direct) → ce pipeline SSH→OVH ne peut PLUS fonctionner
+# (OVH décommissionné). Procédure réelle = build sur le serveur depuis build-ctx
+# (cf. runbook migration-ovh-to-aznetwork). Web = `npx vercel --prod` manuel.
+# Déclenchement automatique sur push RETIRÉ (2026-06-27) pour ne plus générer
+# d'échecs trompeurs à chaque commit ; conservé en workflow_dispatch (archive).
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       force_deploy:
