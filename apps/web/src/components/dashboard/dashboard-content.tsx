@@ -22,6 +22,7 @@ import { KpiCard } from '@/components/shared/kpi-card';
 import { KpiCardSkeleton } from '@/components/ui/skeleton';
 import { ActivationChecklist } from '@/components/dashboard/activation-checklist';
 import { TrialBanner } from '@/components/dashboard/trial-banner';
+import { SoloUpgradeNudge } from '@/components/dashboard/solo-upgrade-nudge';
 import { ClinicalAlerts } from '@/components/dashboard/clinical-alerts';
 import { MspOverviewWidget } from '@/components/dashboard/msp-overview-widget';
 import {
@@ -275,6 +276,9 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           trialDaysLeft={kpis.subscription.trialDaysLeft}
         />
       )}
+
+      {/* Nudge contextuel Solo → Pro (uniquement si quota IA sous tension) */}
+      {kpis?.subscription && <SoloUpgradeNudge plan={kpis.subscription.plan} />}
 
       {/* ----------------------------------------------------------------- */}
       {/* Activation Checklist (disparaît à 5/5 ou si dismissed)          */}
