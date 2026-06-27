@@ -74,18 +74,35 @@ export default function MoodPage() {
           <p className="text-sm text-slate-400">{selected}/10</p>
         </div>
 
-        <input
-          type="range"
-          min={1}
-          max={10}
-          value={selected}
-          onChange={(e) => setSelected(Number(e.target.value))}
+        {/* Boutons tactiles 1-10 — remplacent le slider (imprécis au doigt sur mobile) */}
+        <div
+          className="grid grid-cols-10 gap-1"
+          role="group"
           aria-label="Niveau d'humeur, de 1 (très mal) à 10 (excellent)"
-          aria-valuetext={`${selected} sur 10 — ${MOOD_LABELS[selected]}`}
-          className="w-full accent-primary rounded-full focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-2"
-        />
+        >
+          {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => {
+            const isSel = selected === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSelected(value)}
+                aria-pressed={isSel}
+                aria-label={`${value} sur 10 — ${MOOD_LABELS[value]}`}
+                title={MOOD_LABELS[value]}
+                className={`flex items-center justify-center rounded-lg py-2 text-sm font-semibold border transition-all min-h-touch focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary focus-visible:ring-offset-1 ${
+                  isSel
+                    ? `${moodColor(value)} ring-2 ring-primary`
+                    : 'border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'
+                }`}
+              >
+                {value}
+              </button>
+            );
+          })}
+        </div>
 
-        <div className="flex justify-between text-xs text-slate-400 mt-1 px-0.5">
+        <div className="flex justify-between text-xs text-slate-400 mt-1.5 px-0.5">
           <span>😭 Très mal</span>
           <span>🤩 Excellent</span>
         </div>
