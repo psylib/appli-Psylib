@@ -17,6 +17,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RejectVerificationDto } from './dto/reject-verification.dto';
 import type { FunnelMetrics, PendingVerification } from './admin.service';
+import { AuditService } from '../common/audit.service';
+import type { AuditChainVerdict } from '../common/audit-hash';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -24,7 +26,18 @@ import type { FunnelMetrics, PendingVerification } from './admin.service';
 @Roles('admin')
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly auditService: AuditService,
+  ) {}
+
+  @Get('audit/verify')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @ApiOperation({ summary: 'Vérifie l’intégrité de la chaîne d’audit WORM (admin)' })
+  async verifyAuditChain(): Promise<AuditChainVerdict> {
+    return this.auditService.verifyChain();
+  }
 
   @Get('funnel')
   @HttpCode(HttpStatus.OK)

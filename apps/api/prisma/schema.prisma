@@ -1104,6 +1104,9 @@ model StripeEvent {
 
 model AuditLog {
   id         String   @id @default(uuid())
+  // Position monotone dans la chaîne WORM — retrouve le dernier maillon (tip)
+  // sans ambiguïté d'ordre (cf. audit-hash.ts + AuditService.log).
+  seq        BigInt   @unique @default(autoincrement())
   actorId    String?  @map("actor_id")
   actorType  String   @map("actor_type")
   action     String
@@ -1111,6 +1114,10 @@ model AuditLog {
   entityId   String   @map("entity_id")
   ipAddress  String?  @map("ip_address")
   metadata   Json?
+  // Chaînage cryptographique (preuve d'intégrité HDS). Nullable = entrées
+  // legacy antérieures à l'activation du WORM (hors chaîne).
+  hash       String?
+  prevHash   String?  @map("prev_hash")
   createdAt  DateTime @default(now()) @map("created_at")
 
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
