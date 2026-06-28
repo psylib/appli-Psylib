@@ -21,9 +21,11 @@ const isProd = process.env.NODE_ENV === 'production';
 // - prod : 'wasm-unsafe-eval' uniquement → autorise la compilation WebAssembly
 //   (LiveKit krisp noise filter + background blur en dépendent) tout en bloquant
 //   eval()/new Function() JS. Durcissement HDS (audit 2026-06-05, finding CSP medium).
-// 'unsafe-inline' conservé : la suppression nécessite une migration vers des nonces
-//   (next/script Crisp inject dynamiquement → exigerait 'strict-dynamic') à valider
-//   en navigateur sur Crisp/PostHog/Sentry avant cutover.
+// 'unsafe-inline' conservé : RISQUE RÉSIDUEL ÉVALUÉ ET ACCEPTÉ (révisable) — voir
+//   docs/security/csp-unsafe-inline.md (analyse de risque + recette de remédiation
+//   hybride nonce/strict-dynamic). Retrait reporté : le nonce force le rendu dynamique
+//   des pages SEO (perte du statique) + se branche sur le middleware d'auth, pour un
+//   risque XSS faible (aucun HTML utilisateur rendu, React échappe, JSON-LD non exécutable).
 // eu-assets.i.posthog.com : héberge les assets statiques PostHog (config.js,
 //   array.js, recorder…) sur le cloud EU — distinct de l'ingestion eu.i.posthog.com.
 const scriptSrc = isProd
