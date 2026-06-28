@@ -1,0 +1,4 @@
+# Les scripts shell tournent sur Linux (VPS AZNetwork) : toujours en LF.
+# Du CRLF (autocrlf Windows) casserait l'exécution (`\r` parasites) et
+# corromprait le tarball build-ctx qui embarque docker/api-prod/deploy.sh.
+*.sh text eol=lf
