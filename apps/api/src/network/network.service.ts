@@ -212,12 +212,22 @@ export class NetworkService {
     const referral = await this.prisma.referral.findUnique({ where: { id: referralId } });
     if (!referral) throw new NotFoundException('Adressage introuvable');
 
-    // Seul le destinataire peut accepter/décliner, l'expéditeur peut marquer completed
+    // Garde de base : seul un psy partie prenante de l'adressage peut le modifier.
+    // Défense en profondeur — couvre TOUTES les valeurs de statut (y compris 'pending',
+    // qui sinon passait sans contrôle = écriture cross-tenant sur l'adressage d'un tiers).
+    if (referral.fromPsyId !== psy.id && referral.toPsyId !== psy.id) {
+      throw new ForbiddenException();
+    }
+
+    // 'pending' est l'état initial système : aucune transition utilisateur n'y revient.
+    if (dto.status === 'pending') {
+      throw new BadRequestException('Transition de statut invalide');
+    }
+
+    // Seul le destinataire peut accepter/décliner (l'expéditeur peut marquer completed,
+    // déjà autorisé par la garde de base ci-dessus).
     if (dto.status === 'accepted' || dto.status === 'declined') {
       if (referral.toPsyId !== psy.id) throw new ForbiddenException();
-    }
-    if (dto.status === 'completed') {
-      if (referral.fromPsyId !== psy.id && referral.toPsyId !== psy.id) throw new ForbiddenException();
     }
 
     return this.prisma.referral.update({
