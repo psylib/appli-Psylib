@@ -40,12 +40,12 @@ const formatDate = (date: string) =>
 
 const createSchema = z.object({
   label:         z.string().min(1, 'Libellé requis'),
-  amount:        z.number({ invalid_type_error: 'Montant invalide' }).positive('Montant > 0'),
+  amount:        z.number({ error: 'Montant invalide' }).positive('Montant > 0'),
   category:      z.string().min(1, 'Catégorie requise'),
   paymentMethod: z.string().min(1, 'Mode de paiement requis'),
   supplier:      z.string().optional(),
   frequency:     z.string().min(1, 'Fréquence requise'),
-  dayOfMonth:    z.number({ invalid_type_error: 'Jour invalide' }).min(1).max(28),
+  dayOfMonth:    z.number({ error: 'Jour invalide' }).min(1).max(28),
   startDate:     z.string().min(1, 'Date de début requise'),
   endDate:       z.string().optional(),
 });

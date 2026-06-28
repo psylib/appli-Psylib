@@ -20,7 +20,7 @@ import { useToast } from '@/components/ui/toast';
 
 const createSchema = z.object({
   patientId: z.string().min(1, 'Sélectionnez un patient'),
-  amountTtc: z.number({ invalid_type_error: 'Montant invalide' }).positive('Montant > 0'),
+  amountTtc: z.number({ error: 'Montant invalide' }).positive('Montant > 0'),
   issuedAt: z.string().min(1, 'Date requise'),
 });
 type CreateForm = z.infer<typeof createSchema>;

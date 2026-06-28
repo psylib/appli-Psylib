@@ -26,7 +26,7 @@ const LAST_PAYMENT_KEY = 'psylib_last_payment_method';
 const schema = z.object({
   date:          z.string().min(1, 'Date requise'),
   label:         z.string().min(1, 'Libellé requis'),
-  amount:        z.number({ invalid_type_error: 'Montant invalide' }).positive('Montant > 0'),
+  amount:        z.number({ error: 'Montant invalide' }).positive('Montant > 0'),
   category:      z.string().min(1, 'Catégorie requise'),
   paymentMethod: z.string().min(1, 'Mode de paiement requis'),
   supplier:      z.string().optional(),

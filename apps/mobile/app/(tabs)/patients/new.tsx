@@ -37,7 +37,7 @@ export default function NewPatientScreen() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { name: '', email: '', phone: '', notes: '' },
   });
 

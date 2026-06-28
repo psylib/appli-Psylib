@@ -43,7 +43,7 @@ export default function NewInvoiceScreen() {
     watch,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { patientId: '', amountTtc: 0 },
   });
 
