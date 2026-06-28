@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Phone, Clock, Euro, Star, ChevronLeft, ChevronRight, X, Loader2, ShieldCheck, Video, Lock, Info, Home } from 'lucide-react';
 import { publicBookingApi } from '@/lib/api/public-booking';
@@ -489,7 +490,7 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
       {/* Header minimal */}
       <header className="bg-white border-b border-border sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <a href="/" className="text-[#3D52A0] font-bold text-lg">PsyLib</a>
+          <Link href="/" className="text-[#3D52A0] font-bold text-lg">PsyLib</Link>
           <a
             href="/login"
             className="text-sm text-muted-foreground hover:text-foreground transition"
@@ -735,9 +736,9 @@ export function PublicProfileClient({ profile }: { profile: PublicPsyProfile }) 
         <div className="text-center py-4">
           <p className="text-xs text-muted-foreground">
             Profil géré via{' '}
-            <a href="/" className="text-primary hover:underline">
+            <Link href="/" className="text-primary hover:underline">
               PsyLib
-            </a>{' '}
+            </Link>{' '}
             · Données hébergées en France (HDS conforme)
           </p>
         </div>

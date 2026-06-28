@@ -1,11 +1,6 @@
 import { auth } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
-import dynamic from 'next/dynamic';
-
-const MarketingGated = dynamic(
-  () => import('@/components/marketing/marketing-gated').then(m => m.MarketingGated),
-  { ssr: false },
-);
+import MarketingGatedClient from '@/components/marketing/marketing-gated-client';
 
 export const metadata = {
   title: 'Marketing IA — PsyLib',
@@ -15,5 +10,5 @@ export const metadata = {
 export default async function MarketingPage() {
   const session = await auth();
   if (!session) redirect('/login');
-  return <MarketingGated />;
+  return <MarketingGatedClient />;
 }
