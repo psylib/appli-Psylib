@@ -105,3 +105,7 @@ scripts/ovh-backup.env
 
 # Cartes animées : GIF lourds régénérables (les MP4 suffisent en prod)
 docs/marketing/visuals/animated/*.gif
+
+# Artefacts de déploiement API (tarball build-ctx temporaire hébergé via Vercel)
+apps/web/public/_apideploy-*.tgz
+apps/web/public/_deploy-bootstrap.sh
