@@ -72,7 +72,7 @@ const nextConfig = {
               "default-src 'self'",
               scriptSrc,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://client.crisp.chat",
-              "font-src 'self' https://fonts.gstatic.com",
+              "font-src 'self' https://fonts.gstatic.com https://client.crisp.chat",
               "img-src 'self' data: https: blob:",
               // connect-src dynamique : dev (localhost) + prod (vraies URLs)
               `connect-src 'self' ${apiUrl} ${wsUrl} ${wsUrlSecure} ${keycloakUrl} ${livekitWsUrl} https://eu.posthog.com https://eu.i.posthog.com https://eu-assets.i.posthog.com https://o4511050353475584.ingest.de.sentry.io https://client.crisp.chat wss://client.relay.crisp.chat`,
