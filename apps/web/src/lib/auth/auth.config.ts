@@ -168,52 +168,22 @@ export const authConfig: NextAuthConfig = {
 
       if (!token.refreshToken) return token; // Pas de refresh token disponible
 
-      // Refresh des tokens portail (patient/tuteur) via l'API NestJS (HS256, pas Keycloak)
+      // Refresh mutualisé (single-flight) : plusieurs requêtes concurrentes
+      // arrivées près de l'expiration ne déclenchent qu'UN seul refresh. Sans ça,
+      // avec la rotation Keycloak (Revoke Refresh Token), le 1er refresh invalide
+      // le token et les suivants échouent → accessToken vidé → déconnexion
+      // intempestive (incident 2026-06-29).
+      // Tokens portail (patient/tuteur) via l'API NestJS (HS256, pas Keycloak)
       if (token.role === UserRole.PATIENT || token.role === UserRole.GUARDIAN) {
-        return refreshPortalAccessToken(token);
+        return singleFlightRefresh(`portal:${token.refreshToken}`, () =>
+          refreshPortalAccessToken(token),
+        );
       }
 
       // Refresh Keycloak token (psy/admin/assistant)
-      try {
-        const keycloakUrl = process.env['KEYCLOAK_URL'] ?? 'https://auth.psylib.eu';
-        const realm = process.env['KEYCLOAK_REALM'] ?? 'psyscale';
-        const clientId = process.env['KEYCLOAK_CLIENT_ID'] ?? 'psyscale-app';
-        const clientSecret = process.env['KEYCLOAK_CLIENT_SECRET'] ?? '';
-
-        const res = await fetch(
-          `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              grant_type: 'refresh_token',
-              client_id: clientId,
-              client_secret: clientSecret,
-              refresh_token: token.refreshToken,
-            }),
-          },
-        );
-
-        if (!res.ok) {
-          // Refresh token invalide/expiré → forcer reconnexion
-          return { ...token, accessToken: '', refreshToken: undefined };
-        }
-
-        const refreshed = (await res.json()) as {
-          access_token: string;
-          refresh_token?: string;
-          expires_in?: number;
-        };
-
-        token.accessToken = refreshed.access_token;
-        token.refreshToken = refreshed.refresh_token ?? token.refreshToken;
-        token.expiresAt = Math.floor(Date.now() / 1000) + (refreshed.expires_in ?? 900);
-      } catch {
-        // Erreur réseau — forcer reconnexion pour éviter une UI semi-fonctionnelle
-        return { ...token, accessToken: '', refreshToken: undefined };
-      }
-
-      return token;
+      return singleFlightRefresh(`kc:${token.refreshToken}`, () =>
+        refreshKeycloakToken(token),
+      );
     },
 
     async session({ session, token }: { session: Session; token: JWT }) {
@@ -256,6 +226,88 @@ function extractRole(roles: string[]): UserRole {
 
 /** Durée de vie de l'access token portail (HS256) — aligné sur l'API NestJS (1h). */
 export const PORTAL_ACCESS_TTL_SEC = 60 * 60;
+
+/**
+ * Dédoublonnage des refresh concurrents (single-flight).
+ *
+ * next-auth (JWT stateless) peut exécuter le callback `jwt` en parallèle pour
+ * plusieurs requêtes simultanées arrivées juste après l'expiration de l'access
+ * token. Sans single-flight, chacune lance son propre refresh ; avec la rotation
+ * Keycloak (Revoke Refresh Token activé), le 1er refresh invalide l'ancien token
+ * et les suivants reçoivent un 400 → `accessToken` vidé → déconnexion
+ * intempestive de tous les psys (incident 2026-06-29).
+ *
+ * On mutualise ici les refresh partageant la même clé (= même refresh token) :
+ * une seule requête réseau, le même résultat partagé par tous les appelants.
+ * La clé est libérée dès que le refresh est terminé (succès OU échec).
+ *
+ * NB : la map est par instance de fonction. Sur plusieurs instances concurrentes
+ * (Vercel), la course résiduelle reste couverte par Keycloak « Refresh Token
+ * Max Reuse » ≥ 1. Les deux protections sont complémentaires.
+ */
+const inflightRefreshes = new Map<string, Promise<JWT>>();
+export function singleFlightRefresh(
+  key: string,
+  run: () => Promise<JWT>,
+): Promise<JWT> {
+  const existing = inflightRefreshes.get(key);
+  if (existing) return existing;
+
+  const pending = run().finally(() => {
+    inflightRefreshes.delete(key);
+  });
+  inflightRefreshes.set(key, pending);
+  return pending;
+}
+
+/**
+ * Rafraîchit un access token Keycloak (psy/admin/assistant) via l'endpoint
+ * token OIDC. Renvoie un token avec `accessToken` vidé (force la reconnexion)
+ * si le refresh échoue (HTTP non-ok ou erreur réseau).
+ */
+export async function refreshKeycloakToken(token: JWT): Promise<JWT> {
+  try {
+    const keycloakUrl = process.env['KEYCLOAK_URL'] ?? 'https://auth.psylib.eu';
+    const realm = process.env['KEYCLOAK_REALM'] ?? 'psyscale';
+    const clientId = process.env['KEYCLOAK_CLIENT_ID'] ?? 'psyscale-app';
+    const clientSecret = process.env['KEYCLOAK_CLIENT_SECRET'] ?? '';
+
+    const res = await fetch(
+      `${keycloakUrl}/realms/${realm}/protocol/openid-connect/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'refresh_token',
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: token.refreshToken ?? '',
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      // Refresh token invalide/expiré → forcer reconnexion
+      return { ...token, accessToken: '', refreshToken: undefined };
+    }
+
+    const refreshed = (await res.json()) as {
+      access_token: string;
+      refresh_token?: string;
+      expires_in?: number;
+    };
+
+    return {
+      ...token,
+      accessToken: refreshed.access_token,
+      refreshToken: refreshed.refresh_token ?? token.refreshToken,
+      expiresAt: Math.floor(Date.now() / 1000) + (refreshed.expires_in ?? 900),
+    };
+  } catch {
+    // Erreur réseau — forcer reconnexion pour éviter une UI semi-fonctionnelle
+    return { ...token, accessToken: '', refreshToken: undefined };
+  }
+}
 
 /**
  * Rafraîchit un access token portail (patient/tuteur) via l'API NestJS.
