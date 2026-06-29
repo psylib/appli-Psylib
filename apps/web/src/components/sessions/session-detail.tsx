@@ -11,6 +11,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { SessionNoteEditor } from './session-note-editor';
 import { ScribeResultBanner } from '@/components/video/scribe-result-banner';
 import { ScribeAudioImport } from './scribe-audio-import';
+import { SessionMindMap } from './session-mind-map';
 import { useSessionDetail } from '@/hooks/use-dashboard';
 import { sessionsApi } from '@/lib/api/sessions';
 import { formatDateTime } from '@/lib/utils';
@@ -260,6 +261,9 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
           }}
         />
       </div>
+
+      {/* Carte mentale IA — arborescence des thèmes de la séance */}
+      <SessionMindMap sessionId={sessionId} />
 
       {/* Delete confirmation */}
       <ConfirmDialog

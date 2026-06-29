@@ -223,6 +223,88 @@ describe('AiService', () => {
     });
   });
 
+  // ─── Carte mentale IA ───────────────────────────────────────────────────────
+  describe('generateMindMap', () => {
+    function buildMindMapEnv(opts: { session?: unknown; consent?: unknown } = {}) {
+      const prismaLocal = {
+        psychologist: { findUnique: vi.fn().mockResolvedValue(mockPsychologist) },
+        session: {
+          findUnique: vi.fn().mockResolvedValue({ patientId: 'pat1' }), // checkAiConsent
+          findFirst: vi.fn().mockResolvedValue(
+            'session' in opts ? opts.session : { patientId: 'pat1', summaryAi: 'cipher', notes: null, scribeTranscript: null },
+          ),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        gdprConsent: { findFirst: vi.fn().mockResolvedValue('consent' in opts ? opts.consent : { id: 'c1' }) },
+        aiUsage: { create: vi.fn().mockResolvedValue({}) },
+      };
+      const encryption = {
+        decrypt: vi.fn().mockReturnValue('Le patient évoque son anxiété au travail et des troubles du sommeil.'),
+        encrypt: vi.fn().mockReturnValue('encrypted-mindmap'),
+      };
+      const audit = { log: vi.fn().mockResolvedValue(undefined) };
+      const s = new AiService(prismaLocal as any, createConfigMock('key') as any, encryption as any, {} as any, audit as any);
+      s.onModuleInit();
+      return { s, prismaLocal, encryption, audit };
+    }
+
+    it('refuse (Forbidden) si le patient n’a pas consenti au traitement IA', async () => {
+      const { s } = buildMindMapEnv({ consent: null });
+      await expect(s.generateMindMap('user-uuid', 'sess1')).rejects.toThrow(ForbiddenException);
+    });
+
+    it('refuse (BadRequest) si aucun contenu exploitable', async () => {
+      const { s } = buildMindMapEnv({ session: { patientId: 'pat1', summaryAi: null, notes: null, scribeTranscript: null } });
+      await expect(s.generateMindMap('user-uuid', 'sess1')).rejects.toThrow(BadRequestException);
+    });
+
+    it('génère, sanitize, chiffre et persiste la carte mentale', async () => {
+      const { s, prismaLocal, encryption, audit } = buildMindMapEnv();
+      global.fetch = buildFetchJsonMock({
+        choices: [{ message: { content: '{"label":"Séance","children":[{"label":"Anxiété"},{"label":"Sommeil"}]}' } }],
+        usage: { total_tokens: 320 },
+      });
+
+      const { mindMap } = await s.generateMindMap('user-uuid', 'sess1');
+
+      expect(mindMap.label).toBe('Séance');
+      expect(mindMap.children).toHaveLength(2);
+      // chiffré avant stockage
+      expect(encryption.encrypt).toHaveBeenCalled();
+      expect(prismaLocal.session.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { mindMap: 'encrypted-mindmap' } }),
+      );
+      // audit DECRYPT (avant LLM) + CREATE
+      const actions = audit.log.mock.calls.map((c: any[]) => c[0]?.action);
+      expect(actions).toContain('DECRYPT');
+      expect(actions).toContain('CREATE');
+    });
+  });
+
+  describe('getMindMap', () => {
+    it('renvoie null si aucune carte stockée', async () => {
+      const prismaLocal = {
+        psychologist: { findUnique: vi.fn().mockResolvedValue(mockPsychologist) },
+        session: { findFirst: vi.fn().mockResolvedValue({ mindMap: null }) },
+      };
+      const s = new AiService(prismaLocal as any, createConfigMock('key') as any, { decrypt: vi.fn() } as any, {} as any, { log: vi.fn() } as any);
+      s.onModuleInit();
+      expect(await s.getMindMap('user-uuid', 'sess1')).toEqual({ mindMap: null });
+    });
+
+    it('déchiffre et parse la carte stockée', async () => {
+      const prismaLocal = {
+        psychologist: { findUnique: vi.fn().mockResolvedValue(mockPsychologist) },
+        session: { findFirst: vi.fn().mockResolvedValue({ mindMap: 'cipher' }) },
+      };
+      const encryption = { decrypt: vi.fn().mockReturnValue('{"label":"Séance","children":[{"label":"X"}]}') };
+      const s = new AiService(prismaLocal as any, createConfigMock('key') as any, encryption as any, {} as any, { log: vi.fn() } as any);
+      s.onModuleInit();
+      const { mindMap } = await s.getMindMap('user-uuid', 'sess1');
+      expect(mindMap?.label).toBe('Séance');
+    });
+  });
+
   // ─── HDS: audit DECRYPT lors de la collecte d'historique pour le résumé IA ──
   describe('collectPatientHistory — audit DECRYPT (HDS)', () => {
     function buildWithAudit() {

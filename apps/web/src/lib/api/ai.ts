@@ -134,6 +134,45 @@ export interface GeneratedExercise {
   disclaimer: string;
 }
 
+// ── Carte mentale IA ──────────────────────────────────────────────────────
+
+export interface MindMapNode {
+  label: string;
+  children?: MindMapNode[];
+}
+
+/** Génère (et stocke) la carte mentale de la séance. */
+export async function generateMindMap(
+  sessionId: string,
+  token: string,
+): Promise<{ mindMap: MindMapNode }> {
+  const res = await fetch(`${API_BASE}/api/v1/ai/mind-map`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ sessionId }),
+  });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(err.message ?? `Erreur ${res.status}`);
+  }
+  return res.json() as Promise<{ mindMap: MindMapNode }>;
+}
+
+/** Récupère la carte mentale stockée (ou null si absente). */
+export async function getMindMap(
+  sessionId: string,
+  token: string,
+): Promise<{ mindMap: MindMapNode | null }> {
+  const res = await fetch(`${API_BASE}/api/v1/ai/mind-map/${sessionId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throw new Error(err.message ?? `Erreur ${res.status}`);
+  }
+  return res.json() as Promise<{ mindMap: MindMapNode | null }>;
+}
+
 export async function generateExercise(
   params: GenerateExerciseParams,
   token: string,

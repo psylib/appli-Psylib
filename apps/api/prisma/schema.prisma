@@ -643,6 +643,7 @@ model Session {
   summaryAi        String?              @map("summary_ai") // ENCRYPTED si contient données patients
   scribeTranscript String?              @map("scribe_transcript") // ENCRYPTED — AES-256-GCM
   scribeStatus     String               @default("none") @map("scribe_status") // none | processing | done | failed — import audio Scribe IA
+  mindMap          String?              @map("mind_map") // ENCRYPTED — carte mentale IA (JSON hiérarchique chiffré AES-256-GCM)
   tags             String[]
   mood             Int? // 1-5 — humeur du patient relevée en séance par le psy
   rate           Decimal?             @db.Decimal(10, 2)

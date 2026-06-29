@@ -32,7 +32,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { SubscriptionGuard } from '../billing/guards/subscription.guard';
-import { RequireFeature } from '../billing/decorators/require-plan.decorator';
+import { RequireFeature, RequirePlan } from '../billing/decorators/require-plan.decorator';
+import { SubscriptionPlan } from '@psyscale/shared-types';
 import type { KeycloakUser } from '../auth/keycloak-jwt.strategy';
 
 class SessionSummaryRequestDto implements SessionSummaryDto {
@@ -87,6 +88,11 @@ class StreamContentRequestDto implements StreamContentDto {
   @IsEnum(['professional', 'warm', 'educational'])
   @IsOptional()
   tone?: 'professional' | 'warm' | 'educational';
+}
+
+class MindMapRequestDto {
+  @IsUUID()
+  sessionId!: string;
 }
 
 class SaveContentRequestDto {
@@ -176,6 +182,30 @@ export class AiController {
     @Res() res: Response,
   ) {
     await this.aiService.streamContent(user.sub, dto, res);
+  }
+
+  @Post('mind-map')
+  @UseGuards(SubscriptionGuard)
+  @RequirePlan(SubscriptionPlan.PRO, SubscriptionPlan.CLINIC)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Générer une carte mentale / arborescence de la séance',
+    description: 'Structure le contenu de la séance en arbre hiérarchique. DISCLAIMER: outil d\'aide — le praticien reste responsable.',
+  })
+  async generateMindMap(
+    @Body() dto: MindMapRequestDto,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.aiService.generateMindMap(user.sub, dto.sessionId);
+  }
+
+  @Get('mind-map/:sessionId')
+  @ApiOperation({ summary: 'Récupérer la carte mentale stockée d\'une séance' })
+  async getMindMap(
+    @Param('sessionId', ParseUUIDPipe) sessionId: string,
+    @CurrentUser() user: KeycloakUser,
+  ) {
+    return this.aiService.getMindMap(user.sub, sessionId);
   }
 
   @Get('content-library')

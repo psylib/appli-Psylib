@@ -14,6 +14,11 @@ import {
   getSessionSummaryPrompt,
   EXTRACTION_PROMPT,
 } from './prompts/session-summary.prompts';
+import {
+  MIND_MAP_SYSTEM_PROMPT,
+  sanitizeMindMap,
+  type MindMapNode,
+} from './prompts/mind-map.prompts';
 import type { Response } from 'express';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -729,6 +734,144 @@ RAPPEL : N'utilise JAMAIS de données patients réels.`;
     if (!content) throw new ForbiddenException('Contenu introuvable');
     await this.prisma.marketingContent.delete({ where: { id: contentId } });
     return { deleted: true };
+  }
+
+  /**
+   * Carte mentale / arborescence clinique d'une séance.
+   * Source = résumé IA (préféré) → notes → transcription Scribe. Stockée chiffrée.
+   * CRITIQUE : le contenu ne part vers le LLM qu'avec le consentement IA du patient.
+   */
+  async generateMindMap(
+    psychologistUserId: string,
+    sessionId: string,
+  ): Promise<{ mindMap: MindMapNode }> {
+    const psy = await this.getPsychologist(psychologistUserId);
+
+    const session = await this.prisma.session.findFirst({
+      where: { id: sessionId, psychologistId: psy.id },
+      select: { patientId: true, summaryAi: true, notes: true, scribeTranscript: true },
+    });
+    if (!session) throw new NotFoundException('Séance introuvable');
+
+    await this.checkAiConsent(sessionId);
+    this.requireAiKey();
+
+    // Choix de la source (la plus structurée d'abord).
+    let source: string | null = null;
+    try {
+      if (session.summaryAi) source = this.encryption.decrypt(session.summaryAi);
+      else if (session.notes) source = this.encryption.decrypt(session.notes);
+      else if (session.scribeTranscript) source = this.encryption.decrypt(session.scribeTranscript);
+    } catch {
+      source = null;
+    }
+
+    if (!source || source.trim().length < 20) {
+      throw new BadRequestException(
+        'Aucun contenu exploitable. Ajoutez des notes ou générez un résumé avant de créer une carte mentale.',
+      );
+    }
+
+    // HDS règle #7 : tracer le déchiffrement avant envoi au LLM.
+    await this.audit.log({
+      actorId: psychologistUserId,
+      actorType: 'psychologist',
+      action: 'DECRYPT',
+      entityType: 'session',
+      entityId: sessionId,
+      metadata: { context: 'ai_mind_map' },
+    });
+
+    const startedAt = Date.now();
+    const userMessage = `Contenu de la séance :\n\n${source.slice(0, 8000)}`;
+    const { result, tokens } = await this.callAiJsonMain(userMessage, MIND_MAP_SYSTEM_PROMPT, 1500);
+    const mindMap = sanitizeMindMap(result);
+
+    try {
+      const encrypted = this.encryption.encrypt(JSON.stringify(mindMap));
+      await this.prisma.session.update({
+        where: { id: sessionId, psychologistId: psy.id },
+        data: { mindMap: encrypted },
+      });
+      await this.audit.log({
+        actorId: psychologistUserId,
+        actorType: 'psychologist',
+        action: 'CREATE',
+        entityType: 'session_mind_map',
+        entityId: sessionId,
+        metadata: { model: this.modelMain, tokensUsed: tokens },
+      });
+    } catch (e) {
+      this.logger.error('Failed to persist mind map:', e);
+    }
+
+    await this.trackUsage(psy.id, 'mind_map', tokens, startedAt, this.modelMain);
+
+    return { mindMap };
+  }
+
+  /** Récupère la carte mentale stockée (déchiffrée), ou null si absente. */
+  async getMindMap(
+    psychologistUserId: string,
+    sessionId: string,
+  ): Promise<{ mindMap: MindMapNode | null }> {
+    const psy = await this.getPsychologist(psychologistUserId);
+    const session = await this.prisma.session.findFirst({
+      where: { id: sessionId, psychologistId: psy.id },
+      select: { mindMap: true },
+    });
+    if (!session) throw new NotFoundException('Séance introuvable');
+    if (!session.mindMap) return { mindMap: null };
+
+    try {
+      const decrypted = this.encryption.decrypt(session.mindMap);
+      return { mindMap: JSON.parse(decrypted) as MindMapNode };
+    } catch {
+      return { mindMap: null };
+    }
+  }
+
+  /** Appel IA JSON via le modèle principal (structures complexes). */
+  private async callAiJsonMain(
+    prompt: string,
+    system: string,
+    maxTokens: number,
+  ): Promise<{ result: object; tokens: number }> {
+    const apiKey = this.requireAiKey();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 45_000);
+    const res = await fetch(`${this.aiBaseUrl}/chat/completions`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://psylib.eu',
+        'X-Title': 'PsyLib',
+      },
+      body: JSON.stringify({
+        model: this.modelMain,
+        max_tokens: maxTokens,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    });
+    clearTimeout(timeout);
+    if (!res.ok) {
+      const errBody = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+      throw new BadRequestException(errBody.error?.message ?? `Erreur IA (${res.status})`);
+    }
+    const data = (await res.json()) as {
+      choices: Array<{ message: { content: string } }>;
+      usage?: { total_tokens: number };
+    };
+    const text = data.choices?.[0]?.message?.content ?? '{}';
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const result = JSON.parse(jsonMatch?.[0] ?? '{}') as object;
+    return { result, tokens: data.usage?.total_tokens ?? 0 };
   }
 
   private async getPsychologist(userId: string) {
