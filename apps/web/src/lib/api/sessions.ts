@@ -40,4 +40,35 @@ export const sessionsApi = {
 
   stats: (token: string) =>
     apiClient.get<{ totalThisMonth: number; revenueThisMonth: number }>('/sessions/stats', token),
+
+  // ── Scribe IA — import audio présentiel (Pro + Clinic) ──
+  /** Importe un fichier audio de séance pour transcription + note IA */
+  uploadScribeAudio: async (
+    id: string,
+    audioFile: File,
+    consentConfirmed: boolean,
+    token: string,
+  ): Promise<{ status: string }> => {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.psylib.eu';
+    const formData = new FormData();
+    formData.append('audio', audioFile, audioFile.name);
+    formData.append('consentConfirmed', String(consentConfirmed));
+    const response = await fetch(`${baseUrl}/sessions/${id}/scribe/audio`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || `HTTP ${response.status}`);
+    }
+    return response.json() as Promise<{ status: string }>;
+  },
+
+  /** Statut du Scribe IA (import audio) pour cette séance */
+  getScribeStatus: (id: string, token: string) =>
+    apiClient.get<{ status: 'none' | 'processing' | 'done' | 'failed'; hasNote: boolean }>(
+      `/sessions/${id}/scribe/status`,
+      token,
+    ),
 };

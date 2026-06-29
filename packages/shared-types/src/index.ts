@@ -227,6 +227,7 @@ export interface Session {
   notes: string | null; // chiffré en DB
   summaryAi: string | null;
   scribeTranscript?: string | null; // présent uniquement si scribe IA a généré la note
+  scribeStatus?: 'none' | 'processing' | 'done' | 'failed'; // import audio Scribe IA
   tags: string[];
   mood?: number | null; // 1-5 — humeur du patient relevée en séance
   rate: number | null;

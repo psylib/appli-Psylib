@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { SessionNoteEditor } from './session-note-editor';
 import { ScribeResultBanner } from '@/components/video/scribe-result-banner';
+import { ScribeAudioImport } from './scribe-audio-import';
 import { useSessionDetail } from '@/hooks/use-dashboard';
 import { sessionsApi } from '@/lib/api/sessions';
 import { formatDateTime } from '@/lib/utils';
@@ -232,6 +233,17 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
       {/* Scribe IA — note générée automatiquement (uniquement si scribeTranscript présent) */}
       {session.scribeTranscript != null && (
         <ScribeResultBanner summaryAi={session.summaryAi ?? null} />
+      )}
+
+      {/* Import audio → transcription IA (présentiel). Masqué une fois la note générée. */}
+      {session.scribeTranscript == null && (
+        <ScribeAudioImport
+          sessionId={sessionId}
+          initialStatus={session.scribeStatus}
+          onDone={() => {
+            void queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+          }}
+        />
       )}
 
       {/* Éditeur de notes */}

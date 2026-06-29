@@ -6,7 +6,10 @@ import { ScribeService } from './scribe.service';
 export const SCRIBE_QUEUE = 'scribe-processing';
 
 export interface ScribeJobData {
-  videoRoomId: string;
+  /** Pipeline visio (room → session liée). */
+  videoRoomId?: string;
+  /** Pipeline import audio attaché directement à une séance (présentiel). */
+  sessionId?: string;
   audioFilePath: string;
 }
 
@@ -19,8 +22,20 @@ export class ScribeProcessor extends WorkerHost {
   }
 
   async process(job: Job<ScribeJobData>): Promise<void> {
-    const { videoRoomId, audioFilePath } = job.data;
-    this.logger.log(`Processing scribe job for room ${videoRoomId}`);
-    await this.scribeService.processScribeJob(videoRoomId, audioFilePath);
+    const { videoRoomId, sessionId, audioFilePath } = job.data;
+
+    if (sessionId) {
+      this.logger.log(`Processing scribe job for session ${sessionId}`);
+      await this.scribeService.processSessionScribeJob(sessionId, audioFilePath);
+      return;
+    }
+
+    if (videoRoomId) {
+      this.logger.log(`Processing scribe job for room ${videoRoomId}`);
+      await this.scribeService.processScribeJob(videoRoomId, audioFilePath);
+      return;
+    }
+
+    this.logger.error(`Scribe job ${job.id} sans videoRoomId ni sessionId — ignoré`);
   }
 }

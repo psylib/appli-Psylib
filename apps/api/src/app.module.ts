@@ -39,6 +39,7 @@ import { MonSoutienPsyModule } from './mon-soutien-psy/mon-soutien-psy.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
 import { ReminderModule } from './reminder/reminder.module';
 import { VideoModule } from './video/video.module';
+import { SessionScribeModule } from './session-scribe/session-scribe.module';
 import { AccountingModule } from './accounting/accounting.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { RecurringExpensesModule } from './recurring-expenses/recurring-expenses.module';
@@ -148,6 +149,7 @@ import { RebookModule } from './rebook/rebook.module';
     WaitlistModule,
     ReminderModule,
     VideoModule,
+    SessionScribeModule,
     AccountingModule,
     ExpensesModule,
     RecurringExpensesModule,

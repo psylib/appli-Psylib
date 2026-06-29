@@ -189,6 +189,7 @@ export interface Session {
     notes: string | null;
     summaryAi: string | null;
     scribeTranscript?: string | null;
+    scribeStatus?: 'none' | 'processing' | 'done' | 'failed';
     tags: string[];
     mood?: number | null;
     rate: number | null;
