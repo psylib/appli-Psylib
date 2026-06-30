@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 export type RppsVerificationStatus =
   | 'verified' // numéro trouvé, profession = psychologue
   | 'invalid_format' // ni 9 (ADELI) ni 11 (RPPS) chiffres
+  | 'obvious_fake' // suite/répétition évidente (123456789, 111111111…)
   | 'not_found' // aucun professionnel avec ce numéro
   | 'not_psychologist' // numéro trouvé mais profession ≠ psychologue
   | 'api_unavailable'; // clé absente / API injoignable → dégradation gracieuse
@@ -59,6 +60,29 @@ export class RppsVerificationService {
    */
   static isValidFormat(normalized: string): boolean {
     return normalized.length === 9 || normalized.length === 11;
+  }
+
+  /**
+   * Détecte un numéro manifestement bidon : tous les chiffres identiques
+   * (111111111) ou suite arithmétique de pas ±1 modulo 10, ascendante ou
+   * descendante (123456789, 987654321, 12345678901, 0123456789…).
+   *
+   * Objectif : bloquer les inscriptions de test/bots MÊME quand l'annuaire ANS
+   * est indisponible (sinon la dégradation gracieuse les laisse passer). Un vrai
+   * RPPS porte une clé de Luhn → la probabilité qu'il soit une suite parfaite est
+   * négligeable, et un tel cas serait de toute façon rattrapé en revue manuelle.
+   */
+  static isObviousFake(normalized: string): boolean {
+    if (normalized.length < 2) return false;
+    const d = [...normalized].map(Number);
+
+    const allSame = d.every((x) => x === d[0]);
+    if (allSame) return true;
+
+    const isRun = (step: number) =>
+      d.every((x, i) => i === 0 || x === (d[i - 1]! + step + 10) % 10);
+
+    return isRun(1) || isRun(-1);
   }
 
   /**
@@ -138,6 +162,18 @@ export class RppsVerificationService {
         status: 'invalid_format',
         message:
           'Numéro ADELI (9 chiffres) ou RPPS (11 chiffres) invalide. Vérifiez votre numéro.',
+      };
+    }
+
+    // Numéro manifestement bidon (suite/répétition) → blocage hors-ligne, même
+    // si l'annuaire ANS est indisponible. Stoppe les inscriptions de test/bots.
+    if (RppsVerificationService.isObviousFake(number)) {
+      return {
+        ok: false,
+        blocking: true,
+        status: 'obvious_fake',
+        message:
+          'Ce numéro ADELI/RPPS est invalide. Vérifiez votre numéro sur votre carte CPS.',
       };
     }
 

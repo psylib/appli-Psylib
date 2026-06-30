@@ -61,6 +61,51 @@ describe('RppsVerificationService', () => {
     });
   });
 
+  describe('isObviousFake (numéros bidon)', () => {
+    it('détecte une suite ascendante (123456789)', () => {
+      expect(RppsVerificationService.isObviousFake('123456789')).toBe(true);
+    });
+
+    it('détecte une suite descendante (987654321)', () => {
+      expect(RppsVerificationService.isObviousFake('987654321')).toBe(true);
+    });
+
+    it('détecte un chiffre répété (111111111, 000000000)', () => {
+      expect(RppsVerificationService.isObviousFake('111111111')).toBe(true);
+      expect(RppsVerificationService.isObviousFake('000000000')).toBe(true);
+    });
+
+    it('détecte une suite avec passage par 0 (12345678901)', () => {
+      expect(RppsVerificationService.isObviousFake('12345678901')).toBe(true);
+    });
+
+    it("n'attrape pas un vrai numéro plausible", () => {
+      expect(RppsVerificationService.isObviousFake('10100092010')).toBe(false);
+      expect(RppsVerificationService.isObviousFake('10009079111')).toBe(false);
+    });
+  });
+
+  describe('verify : blocage des numéros bidon (même API down)', () => {
+    it('bloque 123456789 avec clé API', async () => {
+      const svc = new RppsVerificationService(createConfig({ ESANTE_API_KEY: 'k' }));
+      const r = await svc.verify('123456789');
+      expect(r.ok).toBe(false);
+      expect(r.blocking).toBe(true);
+      expect(r.status).toBe('obvious_fake');
+    });
+
+    it('bloque 123456789 SANS clé API (annuaire indisponible)', async () => {
+      const fetchSpy = vi.fn();
+      global.fetch = fetchSpy as never;
+      const svc = new RppsVerificationService(createConfig({}));
+      const r = await svc.verify('123456789');
+      expect(r.blocking).toBe(true);
+      expect(r.status).toBe('obvious_fake');
+      // Aucun appel réseau : le garde-fou agit hors-ligne.
+      expect(fetchSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('namesMatch (anti-usurpation)', () => {
     it('match exact prénom + nom', () => {
       expect(RppsVerificationService.namesMatch('Marie', 'Dupont', 'Marie Dupont')).toBe(true);
@@ -99,7 +144,7 @@ describe('RppsVerificationService', () => {
   describe('sans clé API → dégradation gracieuse', () => {
     it('laisse passer (non bloquant) si format valide mais pas de clé', async () => {
       const svc = new RppsVerificationService(createConfig({}));
-      const r = await svc.verify('12345678901');
+      const r = await svc.verify('10100092010');
       expect(r.ok).toBe(true);
       expect(r.blocking).toBe(false);
       expect(r.status).toBe('api_unavailable');
