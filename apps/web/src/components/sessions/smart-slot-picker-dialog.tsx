@@ -19,6 +19,7 @@ import { MiniCalendar } from './mini-calendar';
 import { TimeSlotPills } from './time-slot-pills';
 import { ParticipantMultiSelect } from '@/components/calendar/participant-multi-select';
 import { cn } from '@/lib/utils';
+import { parisToUtcIso } from '@/lib/paris-time';
 
 const DURATION_OPTIONS = [30, 45, 50, 60, 90, 120];
 
@@ -39,36 +40,6 @@ function utcToParisTime(isoStr: string): string {
     minute: '2-digit',
     hour12: false,
   }).format(new Date(isoStr));
-}
-
-/**
- * Given a Paris date string (YYYY-MM-DD) and a Paris time string (HH:MM),
- * returns the equivalent UTC ISO string.
- */
-function parisToUtcIso(dateStr: string, timeStr: string): string {
-  // Build a date string that Intl can interpret as Paris local time
-  // Using toLocaleString trick: create a Date from 'YYYY-MM-DDTHH:MM:00' treated
-  // as UTC, then compensate using the Paris offset.
-  // Simpler: Use the Temporal API polyfill pattern via Date constructor.
-  const naive = new Date(`${dateStr}T${timeStr}:00`);
-  // Determine the UTC offset for this naive date in Paris
-  const parisFormatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: PARIS_TZ,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
-  const parts = parisFormatter.formatToParts(naive);
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '0';
-  const parisFromNaive = new Date(
-    `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}Z`,
-  );
-  const offsetMs = naive.getTime() - parisFromNaive.getTime();
-  return new Date(naive.getTime() - offsetMs).toISOString();
 }
 
 /** Format a Paris day string for display */
