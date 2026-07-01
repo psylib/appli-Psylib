@@ -124,10 +124,15 @@ export function formatTemplatedNote(note: TemplatedScribeNote): string {
 @Injectable()
 export class ScribeService {
   private readonly logger = new Logger(ScribeService.name);
-  private readonly openaiApiKey: string;
   private readonly openrouterApiKey: string;
   private readonly openrouterBaseUrl: string;
   private readonly modelMain: string;
+  // Transcription (Whisper) — provider-configurable so it can point at an
+  // EU-hosted, OpenAI-compatible endpoint (ex. OVHcloud AI Endpoints, France)
+  // instead of OpenAI. Defaults keep the previous OpenAI behaviour.
+  private readonly transcriptionBaseUrl: string;
+  private readonly transcriptionModel: string;
+  private readonly transcriptionApiKey: string;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -136,28 +141,37 @@ export class ScribeService {
     private readonly notifications: NotificationsService,
     private readonly config: ConfigService,
   ) {
-    this.openaiApiKey = this.config.get<string>('OPENAI_API_KEY', '');
     this.openrouterApiKey = this.config.get<string>('OPENROUTER_API_KEY', '');
     this.openrouterBaseUrl = this.config.get<string>('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1');
     this.modelMain = this.config.get<string>('OPENROUTER_MODEL_MAIN', 'anthropic/claude-sonnet-4');
+    // Transcription config (falls back to OpenAI Whisper if the dedicated vars are absent).
+    this.transcriptionBaseUrl = this.config
+      .get<string>('TRANSCRIPTION_BASE_URL', 'https://api.openai.com/v1')
+      .replace(/\/+$/, '');
+    this.transcriptionModel = this.config.get<string>('TRANSCRIPTION_MODEL', 'whisper-1');
+    this.transcriptionApiKey =
+      this.config.get<string>('TRANSCRIPTION_API_KEY', '') ||
+      this.config.get<string>('OPENAI_API_KEY', '');
   }
 
   async transcribeAudio(audioBuffer: Buffer): Promise<string> {
-    if (!this.openaiApiKey) throw new Error('OPENAI_API_KEY manquante — transcription impossible');
+    if (!this.transcriptionApiKey) {
+      throw new Error('Clé de transcription manquante (TRANSCRIPTION_API_KEY / OPENAI_API_KEY) — transcription impossible');
+    }
 
     const blob = new Blob([audioBuffer], { type: 'audio/webm' });
     const formData = new FormData();
     formData.append('file', blob, 'session.webm');
-    formData.append('model', 'whisper-1');
+    formData.append('model', this.transcriptionModel);
     formData.append('language', 'fr');
     formData.append('response_format', 'text');
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120_000);
     try {
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      const response = await fetch(`${this.transcriptionBaseUrl}/audio/transcriptions`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${this.openaiApiKey}` },
+        headers: { Authorization: `Bearer ${this.transcriptionApiKey}` },
         body: formData,
         signal: controller.signal,
       });
