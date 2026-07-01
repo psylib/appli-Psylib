@@ -12,6 +12,7 @@ import {
   FolderLock,
   UserCog,
   Baby,
+  Workflow,
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 
@@ -59,6 +60,14 @@ const features: {
     color: 'text-terracotta bg-terracotta-50',
     border: 'border-terracotta-200',
     badge: 'Consentement explicite',
+  },
+  {
+    icon: Workflow,
+    title: 'Carte mentale de séance',
+    description: 'Transformez un résumé ou vos notes en arborescence visuelle et interactive : thèmes abordés, liens et fil de la séance d\'un coup d\'œil. Générée par IA, exportable.',
+    color: 'text-terracotta bg-terracotta-50',
+    border: 'border-terracotta-200',
+    badge: 'Nouveau — Pro & Clinic',
   },
   {
     icon: CreditCard,

@@ -92,15 +92,16 @@ export function ScribeSection() {
               </h2>
 
               <p className="text-charcoal-400 text-lg leading-relaxed">
-                Activez le Scribe en téléconsultation : l&apos;audio est transcrit, puis une note de
-                séance structurée vous est proposée à la fin de l&apos;appel. Vous relisez, ajustez,
-                validez. Le temps de rédaction fond — la qualité reste la vôtre.
+                Activez le Scribe en téléconsultation, ou importez l&apos;enregistrement audio
+                d&apos;une séance en présentiel : l&apos;audio est transcrit, puis une note
+                structurée — calquée sur votre propre modèle de notes — vous est proposée. Vous
+                relisez, ajustez, validez. Le temps de rédaction fond, la qualité reste la vôtre.
               </p>
 
               <ul className="space-y-3">
                 {[
-                  'Transcription automatique de la consultation visio',
-                  'Note clinique structurée proposée — motif, points abordés, plan de suivi',
+                  'Transcription automatique — en téléconsultation comme en présentiel (import d’un fichier audio)',
+                  'Note structurée générée selon VOTRE modèle : TCC, ACT, systémique ou personnalisé',
                   'Vous gardez toujours le dernier mot : rien n’est enregistré sans votre validation',
                   'Consentement patient explicite requis avant toute transcription',
                   'Transcription et note chiffrées AES-256-GCM, hébergées en France (HDS)',

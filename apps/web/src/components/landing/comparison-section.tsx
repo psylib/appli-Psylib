@@ -18,7 +18,8 @@ const rows: { feature: string; psylib: CellValue; generic: CellValue; files: Cel
   { feature: 'Suivi Mon Soutien Psy (12 séances)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Facturation PDF', psylib: 'yes', generic: 'partial', files: 'no' },
   { feature: 'Assistant IA (résumés séances)', psylib: 'yes', generic: 'no', files: 'no' },
-  { feature: 'Scribe IA (transcription audio de consultation)', psylib: 'yes', generic: 'no', files: 'no' },
+  { feature: 'Scribe IA (transcription audio — visio & présentiel)', psylib: 'yes', generic: 'no', files: 'no' },
+  { feature: 'Carte mentale de séance par IA', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Visio intégrée HDS (individuel, couple, famille)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Espace patient (humeur, journal, exercices)', psylib: 'yes', generic: 'no', files: 'no' },
   { feature: 'Factures PDF automatiques', psylib: 'yes', generic: 'partial', files: 'no' },
@@ -98,7 +99,7 @@ export function ComparisonSection() {
         </ScrollReveal>
 
         <p className="text-center text-xs text-charcoal-400 mt-4">
-          Comparatif basé sur les fonctionnalités publiquement documentées à mars 2026.
+          Comparatif basé sur les fonctionnalités publiquement documentées à juin 2026.
         </p>
       </div>
     </section>
