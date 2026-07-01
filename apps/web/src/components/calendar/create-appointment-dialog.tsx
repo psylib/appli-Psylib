@@ -12,6 +12,7 @@ import { appointmentsApi } from '@/lib/api/appointments';
 import { patientsApi } from '@/lib/api/patients';
 import { psychologistApi } from '@/lib/api/psychologist';
 import { cn } from '@/lib/utils';
+import { parisToUtcIso } from '@/lib/paris-time';
 import { ParticipantMultiSelect } from './participant-multi-select';
 
 interface CreateAppointmentDialogProps {
@@ -131,13 +132,14 @@ export function CreateAppointmentDialog({
       return;
     }
 
-    const scheduledDate = new Date(`${selectedDate}T${time}:00`);
-    if (scheduledDate < new Date()) {
+    // `selectedDate` (YYYY-MM-DD) + `time` (HH:MM) are Paris wall-clock → UTC ISO,
+    // browser-timezone-independent (see lib/paris-time).
+    const scheduledAt = parisToUtcIso(selectedDate, time);
+    if (new Date(scheduledAt) < new Date()) {
       setError('La date du rendez-vous ne peut pas être dans le passé');
       return;
     }
 
-    const scheduledAt = scheduledDate.toISOString();
     setError(null);
 
     const amount = paymentMode !== 'none' && paymentAmount ? Number(paymentAmount) : undefined;

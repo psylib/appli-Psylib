@@ -24,6 +24,7 @@ import {
   type WaitlistStatus,
 } from '@/lib/api/waitlist';
 import { formatDate } from '@/lib/utils';
+import { parisDateTimeLocalToUtcIso } from '@/lib/paris-time';
 
 const URGENCY_LABELS: Record<WaitlistUrgency, { label: string; className: string }> = {
   high: { label: 'Urgent', className: 'bg-red-100 text-red-700 border-red-200' },
@@ -112,7 +113,7 @@ export function WaitlistContent() {
     }
     setProcessing(id);
     try {
-      await waitlistApi.proposeSlot(id, new Date(slotDate).toISOString(), token);
+      await waitlistApi.proposeSlot(id, parisDateTimeLocalToUtcIso(slotDate), token);
       success('Créneau proposé — email envoyé');
       setProposeOpen(null);
       setSlotDate('');

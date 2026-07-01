@@ -15,6 +15,7 @@ import { SessionMindMap } from './session-mind-map';
 import { useSessionDetail } from '@/hooks/use-dashboard';
 import { sessionsApi } from '@/lib/api/sessions';
 import { formatDateTime } from '@/lib/utils';
+import { utcIsoToParisDateTimeLocal, parisDateTimeLocalToUtcIso } from '@/lib/paris-time';
 
 export function SessionDetailContent({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -55,7 +56,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
   const startEditing = () => {
     if (!session) return;
     setEditForm({
-      date: new Date(session.date).toISOString().slice(0, 16),
+      date: utcIsoToParisDateTimeLocal(session.date),
       duration: session.duration,
       type: session.type,
       rate: session.rate != null ? String(Number(session.rate)) : '',
@@ -66,7 +67,7 @@ export function SessionDetailContent({ sessionId }: { sessionId: string }) {
 
   const saveEdit = () => {
     updateMutation.mutate({
-      date: editForm.date,
+      date: parisDateTimeLocalToUtcIso(editForm.date),
       duration: editForm.duration,
       type: editForm.type,
       rate: editForm.rate ? Number(editForm.rate) : null,

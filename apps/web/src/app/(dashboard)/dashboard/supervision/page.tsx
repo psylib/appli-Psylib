@@ -12,6 +12,7 @@ import { cn, formatDate, getInitials } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { parisDateTimeLocalToUtcIso } from '@/lib/paris-time';
 import {
   supervisionApi,
   type SupervisionGroup, type SupervisionSession, type CaseStudy,
@@ -191,7 +192,7 @@ function CreateSessionModal({ token, groupId, onCreated, onClose }: {
     setError(null);
     try {
       const session = await supervisionApi.createSession(token, groupId, {
-        scheduledAt: new Date(form.scheduledAt).toISOString(),
+        scheduledAt: parisDateTimeLocalToUtcIso(form.scheduledAt),
         duration: form.duration,
         location: form.location.trim() || undefined,
       });

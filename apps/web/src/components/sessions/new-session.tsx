@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePatients } from '@/hooks/use-dashboard';
 import { sessionsApi } from '@/lib/api/sessions';
+import { parisNowDateTimeLocal, parisDateTimeLocalToUtcIso } from '@/lib/paris-time';
 
 interface NewSessionContentProps {
   preselectedPatientId?: string;
@@ -22,7 +23,7 @@ export function NewSessionContent({ preselectedPatientId }: NewSessionContentPro
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     patientId: preselectedPatientId ?? '',
-    date: new Date().toISOString().slice(0, 16),
+    date: parisNowDateTimeLocal(),
     duration: '50',
     type: 'individual',
     rate: '80',
@@ -39,7 +40,7 @@ export function NewSessionContent({ preselectedPatientId }: NewSessionContentPro
       const session = await sessionsApi.create(
         {
           patientId: form.patientId,
-          date: new Date(form.date).toISOString(),
+          date: parisDateTimeLocalToUtcIso(form.date),
           duration: Number(form.duration),
           type: form.type as 'individual' | 'group' | 'online',
           rate: form.rate ? Number(form.rate) : undefined,
