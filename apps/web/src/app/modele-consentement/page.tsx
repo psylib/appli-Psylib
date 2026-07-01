@@ -389,6 +389,7 @@ export default function ModeleConsentementPage() {
           <ul className="mb-4 list-inside list-disc space-y-1 text-gray-700">
             <li>De generer un resume structure a partir des notes de seance</li>
             <li>De proposer des exercices therapeutiques adaptes a votre profil</li>
+            <li>De transcrire un enregistrement audio de la seance (option «&nbsp;Scribe&nbsp;», uniquement avec votre accord prealable), puis d&apos;en generer une note structuree et une carte mentale</li>
           </ul>
           <div className="rounded-2xl bg-[#F1F0F9] p-6">
             <p className="mb-3 font-semibold text-[#1E1B4B]">Garanties :</p>
@@ -396,7 +397,9 @@ export default function ModeleConsentementPage() {
               <li>L&apos;IA est <strong>strictement une aide redactionnelle</strong>. Elle ne produit aucun diagnostic, aucune interpretation psychologique, aucun score de risque.</li>
               <li>Le psychologue <strong>valide, modifie ou supprime</strong> systematiquement tout contenu genere avant integration a votre dossier.</li>
               <li>Vos donnees <strong>ne sont jamais utilisees</strong> pour entrainer ou ameliorer des modeles d&apos;IA.</li>
-              <li>L&apos;IA n&apos;a <strong>jamais</strong> acces a l&apos;integralite de votre dossier — seules les notes de la seance concernee sont transmises.</li>
+              <li>Seules les donnees de la seance concernee sont transmises (vos notes ou, pour le Scribe, l&apos;enregistrement audio) — <strong>jamais l&apos;integralite de votre dossier</strong>.</li>
+              <li><strong>L&apos;enregistrement audio n&apos;est jamais conserve</strong> : il est supprime automatiquement des la transcription realisee. Seules la transcription et la note, chiffrees, sont conservees.</li>
+              <li>La transcription et la generation s&apos;executent <strong>en France</strong>, chez notre hebergeur certifie HDS (OVHcloud). Vos donnees de sante ne sont <strong>ni transferees ni traitees hors Union europeenne</strong>.</li>
               <li>Le traitement IA ne se declenche <strong>jamais automatiquement</strong> — c&apos;est toujours une action volontaire du psychologue.</li>
             </ul>
           </div>
@@ -416,9 +419,8 @@ export default function ModeleConsentementPage() {
           </h3>
           <ul className="mb-4 list-inside list-disc space-y-1 text-gray-700">
             <li>Les consultations video sont realisees via un systeme auto-heberge en France (infrastructure HDS).</li>
-            <li><strong>Aucun enregistrement</strong> audio ou video n&apos;est effectue.</li>
-            <li>Les flux sont transmis en temps reel et ne sont pas conserves.</li>
-            <li>Aucune transcription automatique n&apos;est realisee.</li>
+            <li><strong>Par defaut, aucun enregistrement</strong> audio ou video n&apos;est effectue : les flux sont transmis en temps reel et ne sont pas conserves.</li>
+            <li><strong>Exception — option «&nbsp;Scribe&nbsp;» (section 7)</strong> : si, et seulement si, vous y consentez explicitement, l&apos;audio de la seance peut etre enregistre le temps d&apos;en produire une transcription, puis supprime immediatement. Sans ce consentement, aucun enregistrement ni transcription n&apos;a lieu.</li>
           </ul>
 
           <h3 className="mb-2 font-playfair text-lg font-semibold text-[#1E1B4B]">
@@ -511,6 +513,23 @@ export default function ModeleConsentementPage() {
                 <span className="text-gray-700">
                   <strong>Je refuse</strong> le traitement de mes notes par intelligence artificielle.
                   Je comprends que mon suivi psychologique ne sera pas affecte par ce refus.
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3">
+                <span className="mt-0.5 inline-block h-5 w-5 shrink-0 rounded border-2 border-gray-400" />
+                <span className="text-gray-700">
+                  <strong>J&apos;accepte specifiquement l&apos;enregistrement audio de mes seances</strong> (option
+                  «&nbsp;Scribe&nbsp;») aux seules fins de transcription automatique et de generation d&apos;une note
+                  d&apos;aide par IA, l&apos;enregistrement etant supprime immediatement apres transcription.
+                  <em> (Consentement distinct et facultatif ; sans lui, aucun enregistrement n&apos;a lieu.)</em>
+                </span>
+              </label>
+
+              <label className="flex items-start gap-3">
+                <span className="mt-0.5 inline-block h-5 w-5 shrink-0 rounded border-2 border-gray-400" />
+                <span className="text-gray-700">
+                  <strong>Je refuse</strong> l&apos;enregistrement audio de mes seances.
                 </span>
               </label>
 

@@ -1,29 +1,43 @@
 # Registre des sous-traitants techniques — PsyLib
 
 **Responsable de traitement :** PsyLib (psylib.eu)
-**Date :** 2026-05-15
-**Version :** 1.1
+**Date :** 2026-07-01
+**Version :** 1.2
 **Objet :** Conformement a l'article 28 du RGPD, ce document recense l'ensemble des sous-traitants techniques auxquels PsyLib fait appel dans le cadre de son activite de plateforme SaaS destinee aux psychologues liberaux.
 
 ---
 
 ## 1. Liste des sous-traitants techniques
 
-### 1.1 OVH (OVHcloud)
+### 1.1 AZNetwork (hebergement principal — HDS)
+
+| Champ | Detail |
+|---|---|
+| **Raison sociale** | AZNetwork |
+| **Role** | Hebergement principal — compute (API NestJS), base de donnees PostgreSQL, cache/queues Redis, authentification Keycloak, visioconference LiveKit |
+| **Donnees transmises** | Donnees de la plateforme : donnees patients (chiffrees AES-256-GCM), donnees psychologues, sessions, rendez-vous, audit logs |
+| **Sensibilite des donnees** | Elevee — donnees de sante au sens de l'article L.1111-8 du Code de la sante publique |
+| **Localisation** | France |
+| **Certification HDS** | AZNetwork est **certifie hebergeur de donnees de sante (HDS) sur les 6 activites** (dont l'activite 5 — administration/exploitation du SI de sante) + ISO 27001 |
+| **DPA / Contrat** | Contrat d'hebergement de sante + attestation HDS signes ; acces d'administration traces via bastion Wallix |
+
+---
+
+### 1.2 OVHcloud (stockage fichiers + sauvegardes)
 
 | Champ | Detail |
 |---|---|
 | **Raison sociale** | OVHcloud SAS |
-| **Role** | Hebergement principal — compute, base de donnees PostgreSQL, stockage fichiers (Object Storage), authentification Keycloak, visioconference LiveKit |
-| **Donnees transmises** | Toutes les donnees de la plateforme : donnees patients (chiffrees AES-256-GCM), donnees psychologues, fichiers partages, sessions, rendez-vous, audit logs |
-| **Sensibilite des donnees** | Elevee — donnees de sante au sens de l'article L.1111-8 du Code de la sante publique |
-| **Localisation** | France (datacenters OVHcloud) |
+| **Role** | Stockage des fichiers patients (Object Storage S3, chiffrement SSE) et cible des sauvegardes chiffrees de la base de donnees |
+| **Donnees transmises** | Documents partages / fichiers patients, sauvegardes chiffrees de la base |
+| **Sensibilite des donnees** | Elevee — donnees de sante |
+| **Localisation** | France (region GRA) |
 | **Certification HDS** | OVHcloud est certifie hebergeur de donnees de sante (HDS), certification delivree par un organisme accredite COFRAC |
 | **DPA / Contrat** | Inclus dans le contrat d'hebergement HDS OVH |
 
 ---
 
-### 1.2 Vercel
+### 1.3 Vercel
 
 | Champ | Detail |
 |---|---|
@@ -37,7 +51,7 @@
 
 ---
 
-### 1.3 Stripe (Stripe Payments Europe Ltd)
+### 1.4 Stripe (Stripe Payments Europe Ltd)
 
 | Champ | Detail |
 |---|---|
@@ -51,7 +65,7 @@
 
 ---
 
-### 1.4 Resend (via Amazon SES)
+### 1.5 Resend (via Amazon SES)
 
 | Champ | Detail |
 |---|---|
@@ -66,22 +80,24 @@
 
 ---
 
-### 1.5 OpenRouter / Anthropic
+### 1.6 OVHcloud AI Endpoints (intelligence artificielle — France)
 
 | Champ | Detail |
 |---|---|
-| **Raison sociale** | OpenRouter Inc. / Anthropic PBC |
-| **Role** | Intelligence artificielle — resume automatique de seances, generation d'exercices therapeutiques personnalises |
-| **Donnees transmises** | Notes de seance du psychologue, uniquement apres consentement explicite du patient (type de consentement : `ai_processing`, enregistre dans la table `gdpr_consents`) |
-| **Sensibilite des donnees** | Elevee — donnees de sante (notes cliniques) transmises uniquement avec consentement |
-| **Localisation** | Etats-Unis |
-| **Certification HDS** | Non |
-| **DPA / Contrat** | [openrouter.ai/terms](https://openrouter.ai/terms) + [anthropic.com/legal](https://anthropic.com/legal) |
-| **Note** | Le consentement `ai_processing` du patient est verifie systematiquement avant chaque appel a l'API IA. Sans consentement enregistre et valide, aucune donnee ne quitte le serveur HDS. Le psychologue est informe de cette verification et peut consulter l'etat du consentement dans la fiche patient. |
+| **Raison sociale** | OVHcloud SAS |
+| **Role** | IA : **transcription automatique** de l'audio de seance (Whisper, fonctionnalite « Scribe »), **notes cliniques structurees**, **cartes mentales de seance**, resume automatique de seances, generation d'exercices therapeutiques |
+| **Donnees transmises** | Transcription / notes de seance et, pour le Scribe, l'enregistrement audio — uniquement apres consentement (patient : `ai_processing` ; Scribe : `ai_audio_transcription` + attestation du praticien), enregistre dans `gdpr_consents`. **L'audio n'est jamais conserve : supprime immediatement apres transcription** ; seules la transcription et la note (chiffrees) sont conservees |
+| **Sensibilite des donnees** | Elevee — donnees de sante |
+| **Localisation** | **France** — OVHcloud AI Endpoints, inference hebergee en France. **Aucun transfert hors Union europeenne.** |
+| **Certification HDS** | OVHcloud est hebergeur certifie HDS |
+| **Modeles** | `whisper-large-v3-turbo` (transcription) · `Mistral-Small` (modele open-weights, notes / cartes / resumes / exercices) |
+| **Reutilisation** | Aucune : les donnees transmises a l'inference ne sont pas utilisees pour entrainer ou ameliorer des modeles |
+| **DPA / Contrat** | Inclus dans le contrat OVHcloud (meme fournisseur que l'hebergement principal / le stockage) |
+| **Note** | Le consentement est verifie avant chaque appel IA ; sans consentement valide, aucune donnee ne quitte le serveur. **Migration effectuee le 2026-07-01** depuis des API tierces hors UE (OpenAI / Anthropic) → **desormais toute la chaine IA (transcription + generation) reste en France.** |
 
 ---
 
-### 1.6 Sentry
+### 1.7 Sentry
 
 | Champ | Detail |
 |---|---|
@@ -96,7 +112,7 @@
 
 ---
 
-### 1.7 PostHog
+### 1.8 PostHog
 
 | Champ | Detail |
 |---|---|
@@ -111,7 +127,7 @@
 
 ---
 
-### 1.8 LiveKit (auto-heberge)
+### 1.9 LiveKit (auto-heberge)
 
 | Champ | Detail |
 |---|---|
@@ -119,8 +135,8 @@
 | **Role** | Visioconference en temps reel (consultations individuelles et groupees) |
 | **Donnees transmises** | Metadonnees de salle (identifiants codes, tokens de participation JWT). Les flux audio/video transitent en temps reel et ne sont pas enregistres |
 | **Sensibilite des donnees** | Faible — metadonnees techniques uniquement, pas de stockage de contenu |
-| **Localisation** | France (auto-heberge sur OVH HDS, meme VPS que l'infrastructure principale) |
-| **Certification HDS** | Oui (heberge sur infrastructure OVH certifiee HDS) |
+| **Localisation** | France (auto-heberge chez AZNetwork, meme infrastructure que le compute principal) |
+| **Certification HDS** | Oui (heberge sur infrastructure AZNetwork certifiee HDS) |
 | **DPA / Contrat** | N/A — aucune donnee transmise a un tiers. LiveKit est deploye en auto-hebergement, les flux restent integralement sur l'infrastructure HDS |
 
 ---
@@ -131,7 +147,7 @@ PsyLib met en oeuvre les mesures techniques et organisationnelles suivantes pour
 
 - **Chiffrement au repos :** AES-256-GCM sur tous les champs sensibles (notes de seance, resumes IA, messages, journal patient). Format stocke : `iv:authTag:encrypted`. Cle de chiffrement rotative via variable d'environnement.
 - **Chiffrement en transit :** TLS 1.3 sur l'ensemble des communications (API, frontend, WebSocket, emails).
-- **Authentification forte :** Keycloak (auto-heberge OVH HDS) avec MFA TOTP obligatoire pour les psychologues. Tokens JWT : access 15 min, refresh 8 heures.
+- **Authentification forte :** Keycloak (auto-heberge chez AZNetwork, hebergeur certifie HDS) avec MFA TOTP obligatoire pour les psychologues. Tokens JWT : access 15 min, refresh 8 heures.
 - **Journalisation des acces :** Table `audit_logs` enregistrant toutes les operations sur les donnees sensibles (creation, lecture, modification, suppression, dechiffrement). Chaque entree inclut : acteur, action, entite, adresse IP, horodatage.
 - **Isolation multi-tenant :** Filtrage systematique par `psychologist_id` sur toutes les requetes. Double protection : filtre applicatif (NestJS Guards) + contraintes au niveau de la base de donnees.
 - **Consentement RGPD :** Table `gdpr_consents` versionnee et horodatee. Types de consentement : `data_processing`, `ai_processing`, `marketing`. Chaque consentement enregistre la version, la date et l'adresse IP.
@@ -160,5 +176,6 @@ Ce registre est mis a jour a chaque ajout, modification ou suppression d'un sous
 
 ---
 
-*Document mis a jour le 2026-05-15 — PsyLib v1.1*
-*Changements v1.1 : ajout de Sentry (§1.6) et PostHog (§1.7) au registre*
+*Document mis a jour le 2026-07-01 — PsyLib v1.2*
+*Changements v1.2 : hebergement principal migre OVHcloud → **AZNetwork** (certifie HDS 6/6) ; OVHcloud conserve pour le stockage fichiers + sauvegardes (§1.2) ; **brique IA migree sur OVHcloud AI Endpoints en France** (§1.6, remplace OpenAI/Anthropic hors UE) — transcription Scribe + notes/cartes + resumes/exercices ; renumerotation Sentry/PostHog/LiveKit.*
+*Changements v1.1 (2026-05-15) : ajout de Sentry et PostHog au registre.*

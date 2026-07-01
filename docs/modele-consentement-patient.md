@@ -148,16 +148,19 @@ Votre psychologue peut utiliser un outil d'**aide redactionnelle par intelligenc
 
 - De generer un **resume structure** a partir des notes de seance redigees par le psychologue
 - De proposer des **exercices therapeutiques** adaptes a votre profil
+- **De transcrire un enregistrement audio de la seance** — uniquement avec votre accord prealable et explicite (option « Scribe ») — puis d'en generer une note structuree et, le cas echeant, une carte mentale de la seance
 
 **Garanties :**
 
 - L'IA est **strictement une aide redactionnelle**. Elle ne produit aucun diagnostic, aucune interpretation psychologique, aucun score de risque.
 - Le psychologue **valide, modifie ou supprime** systematiquement tout contenu genere avant integration a votre dossier.
-- Vos donnees **ne sont jamais utilisees** pour entrainer ou ameliorer des modeles d'IA.
-- L'IA n'a **jamais** acces a l'integralite de votre dossier — seules les notes de la seance concernee sont transmises, sans informations directement identifiantes.
+- Vos donnees **ne sont jamais utilisees** pour entrainer ou ameliorer des modeles d'IA (exclusion contractuelle aupres des prestataires).
+- Seules les donnees de la **seance concernee** sont transmises (les notes du psychologue ou, dans le cas du Scribe, l'enregistrement audio de cette seance) — **jamais l'integralite de votre dossier**. La transcription de la seance peut contenir vos propos tels que prononces ; elle est traitee de facon securisee et confidentielle.
+- **L'enregistrement audio n'est jamais conserve** : il est supprime automatiquement des la transcription realisee. Seules la transcription et la note generee sont conservees, **chiffrees** (AES-256-GCM), sur nos serveurs en France.
 - Le traitement IA ne se declenche **jamais automatiquement** — c'est toujours une action volontaire du psychologue.
+- La transcription et la generation de notes s'executent **en France**, chez notre hebergeur (OVHcloud AI Endpoints, hebergeur certifie HDS). **Vos donnees de sante ne sont transferees ni traitees hors Union europeenne**, et ne sont jamais reutilisees pour entrainer des modeles d'IA.
 
-**Ce traitement necessite votre consentement specifique** (voir section 10).
+**Ce traitement — en particulier l'enregistrement audio (Scribe) — necessite votre consentement specifique** (voir section 11).
 
 ---
 
@@ -165,8 +168,8 @@ Votre psychologue peut utiliser un outil d'**aide redactionnelle par intelligenc
 
 **Visioconference :**
 - Les consultations video sont realisees via un systeme auto-heberge en France sur infrastructure HDS.
-- **Aucun enregistrement** audio ou video n'est effectue. Les flux sont transmis en temps reel et ne sont pas conserves.
-- Aucune transcription automatique n'est realisee.
+- **Par defaut, aucun enregistrement** audio ou video n'est effectue : les flux sont transmis en temps reel et ne sont pas conserves.
+- **Exception — option « Scribe » (voir section 8)** : si, et seulement si, vous y consentez explicitement, l'audio de la seance peut etre enregistre le temps d'en produire une transcription automatique, puis **supprime immediatement**. Sans ce consentement specifique, aucun enregistrement ni aucune transcription n'a lieu.
 
 **Messagerie securisee :**
 - Les messages echanges avec votre psychologue sont **chiffres** (AES-256-GCM) et heberges en France (HDS).
@@ -207,6 +210,10 @@ En signant ce document, je reconnais avoir pris connaissance des informations ci
 &#9744; **J'accepte** que mes notes de seance puissent faire l'objet d'un traitement par intelligence artificielle (aide redactionnelle), sous le controle et la validation de mon psychologue.
 
 &#9744; **Je refuse** le traitement de mes notes par intelligence artificielle. Je comprends que mon suivi psychologique ne sera pas affecte par ce refus.
+
+&#9744; **J'accepte specifiquement l'enregistrement audio de mes seances** (option « Scribe ») aux seules fins de transcription automatique et de generation d'une note d'aide par intelligence artificielle, etant entendu que l'enregistrement est **supprime immediatement apres transcription**. *(Consentement distinct et facultatif — sans lui, aucun enregistrement n'a lieu.)*
+
+&#9744; **Je refuse** l'enregistrement audio de mes seances.
 
 &#9744; **J'accepte** de recevoir des messages de mon psychologue via la messagerie securisee PsyLib.
 
