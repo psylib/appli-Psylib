@@ -113,7 +113,7 @@ export function useScribeRecorder({
       formData.append('audio', audioBlob, 'session.webm');
 
       const response = await fetch(
-        `${baseUrl}/video/rooms/${appointmentId}/scribe/audio`,
+        `${baseUrl}/api/v1/video/rooms/${appointmentId}/scribe/audio`,
         {
           method: 'POST',
           headers: { Authorization: `Bearer ${accessToken}` },

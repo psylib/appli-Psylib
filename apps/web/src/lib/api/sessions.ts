@@ -53,7 +53,7 @@ export const sessionsApi = {
     const formData = new FormData();
     formData.append('audio', audioFile, audioFile.name);
     formData.append('consentConfirmed', String(consentConfirmed));
-    const response = await fetch(`${baseUrl}/sessions/${id}/scribe/audio`, {
+    const response = await fetch(`${baseUrl}/api/v1/sessions/${id}/scribe/audio`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,

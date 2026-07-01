@@ -99,7 +99,7 @@ export const videoApi = {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.psylib.eu';
     const formData = new FormData();
     formData.append('audio', audioBlob, 'session.webm');
-    const response = await fetch(`${baseUrl}/video/rooms/${appointmentId}/scribe/audio`, {
+    const response = await fetch(`${baseUrl}/api/v1/video/rooms/${appointmentId}/scribe/audio`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
